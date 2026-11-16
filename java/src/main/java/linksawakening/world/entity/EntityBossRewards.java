@@ -89,9 +89,10 @@ public final class EntityBossRewards {
         int[] drops = {0x2D, 0x2E, 0x38, 0x37};
         for (int slot = RoomEntity.SLOT_COUNT - 1; slot >= 0; slot--) {
             RoomEntity other = this.slots.get(slot);
+            var ghiniMotion = this.motions.get(GhiniMotion.class, GhiniMotion::new);
             if (slot == killed.slot()
                     || (other.type() != 0x10 && other.type() != 0x11)
-                    || this.motions.get(GhiniMotion.class, GhiniMotion::new).state(slot) != 0
+                    || ghiniMotion.state(slot) != 0
                     || other.status() == EntityStatus.DISABLED) continue;
             this.slots.replace(slot, withStatus(other, EntityStatus.DYING));
             this.combatTables.writeDyingCountdown(slot, 0x1F);
@@ -101,8 +102,9 @@ public final class EntityBossRewards {
     }
 
     void handleTerminalEnemyDeath(RoomEntity entity, IntSupplier randomByteSupplier) {
+        var likeLikeMotion = this.motions.get(LikeLikeMotion.class, LikeLikeMotion::new);
         boolean swallowedShield = entity.type() == EntityRomConstants.ENTITY_LIKE_LIKE
-                && this.motions.get(LikeLikeMotion.class, LikeLikeMotion::new).privateState1(entity.slot()) != 0;
+                && likeLikeMotion.privateState1(entity.slot()) != 0;
         if (entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
             // The mini-boss option reaches DidKillEnemy's room-event branch,
             // permanently opening the east rescue-room path.
@@ -151,8 +153,9 @@ public final class EntityBossRewards {
 
     public void advanceRollingBonesDestruction(RoomEntity entity, IntSupplier randomByteSupplier) {
         int slot = entity.slot();
-        if (!this.motions.get(RollingBonesMotion.class, RollingBonesMotion::new).deathInitialized(slot)) {
-            this.motions.get(RollingBonesMotion.class, RollingBonesMotion::new).setDeathInitialized(slot, true);
+        var rollingBonesMotion = this.motions.get(RollingBonesMotion.class, RollingBonesMotion::new);
+        if (!rollingBonesMotion.deathInitialized(slot)) {
+            rollingBonesMotion.setDeathInitialized(slot, true);
             this.physicsTables.writeEnemyTransitionCountdown(slot, 0xFF);
             this.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
             return;
@@ -201,9 +204,9 @@ public final class EntityBossRewards {
         int slot = source.slot();
         // Main resolves sword damage before dispatch; the ROM dispatches the
         // dying branch on the following frame, after this hit's active handler.
-        boolean hitThisFrame =
-                this.motions.get(MoblinKingMotion.class, MoblinKingMotion::new).lethalHitFrame(slot) == frame + 1;
-        this.motions.get(MoblinKingMotion.class, MoblinKingMotion::new).setLethalHitFrame(slot, 0);
+        var moblinKingMotion = this.motions.get(MoblinKingMotion.class, MoblinKingMotion::new);
+        boolean hitThisFrame = moblinKingMotion.lethalHitFrame(slot) == frame + 1;
+        moblinKingMotion.setLethalHitFrame(slot, 0);
         if (hitThisFrame) return;
         {
             source = this.spriteHandlers.present(
@@ -228,7 +231,8 @@ public final class EntityBossRewards {
         } else if (this.physicsTables.readEnemyTransitionCountdown(slot) == 0) {
             this.events.pendingEntityEvents.add(
                     new EntityCombatEvent(slot, source.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x0C));
-            this.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new).writeSwordMoblinAlertingSoundCounter(4);
+            var moblinSwordMotion = this.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new);
+            moblinSwordMotion.writeSwordMoblinAlertingSoundCounter(4);
             this.handleTerminalEnemyDeath(source, random);
         } else if ((this.physicsTables.readEnemyTransitionCountdown(slot) & 7) == 0
                 && this.backgroundMechanics.entityHandlerInteractive(false)) {
@@ -245,17 +249,14 @@ public final class EntityBossRewards {
         int tailState =
                 this.motions.get(MoldormMotion.class, MoldormMotion::new).destructionTailState(slot);
         {
+            var moldormMotion = this.motions.get(MoldormMotion.class, MoldormMotion::new);
             RoomEntity rendered = this.spriteHandlers.present(
                     source,
                     this.spriteHandlers.forMoldormState(
-                            this.motions
-                                    .get(MoldormMotion.class, MoldormMotion::new)
-                                    .headSpriteVariant(slot),
+                            moldormMotion.headSpriteVariant(slot),
                             source.x(),
                             (source.y() - source.z()) & 0xFF,
-                            this.motions
-                                    .get(MoldormMotion.class, MoldormMotion::new)
-                                    .currentTailSegments(slot),
+                            moldormMotion.currentTailSegments(slot),
                             tailState,
                             frameCounter),
                     0);
@@ -289,12 +290,11 @@ public final class EntityBossRewards {
                     this.state.writeBossDeathProducerState(slot, 3);
                     return;
                 }
-                MoldormSegmentPosition poofPosition = this.motions
-                        .get(MoldormMotion.class, MoldormMotion::new)
-                        .currentTailSegments(slot)
-                        .get(3 - tailState);
+                var moldormMotion = this.motions.get(MoldormMotion.class, MoldormMotion::new);
+                MoldormSegmentPosition poofPosition =
+                        moldormMotion.currentTailSegments(slot).get(3 - tailState);
                 this.createMoldormPoof(source, poofPosition.x(), poofPosition.y());
-                this.motions.get(MoldormMotion.class, MoldormMotion::new).setDestructionTailState(slot, tailState + 1);
+                moldormMotion.setDestructionTailState(slot, tailState + 1);
             }
             default -> this.advanceMoldormBossExplosion(source);
         }
@@ -319,7 +319,8 @@ public final class EntityBossRewards {
         this.createMoldormPoof(
                 source, (source.x() + xOffsets[index]) & 0xFF, ((source.y() - source.z()) + yOffsets[index]) & 0xFF);
         if (countdown == 0x10) {
-            this.motions.get(MoldormMotion.class, MoldormMotion::new).setDestructionTailState(slot, 5);
+            var moldormMotion = this.motions.get(MoldormMotion.class, MoldormMotion::new);
+            moldormMotion.setDestructionTailState(slot, 5);
         }
     }
 
@@ -351,9 +352,8 @@ public final class EntityBossRewards {
                         false));
         this.lifecycle.initializeHealthGroup(freeSlot);
         this.pickups.resetEnemyDropState(freeSlot);
-        this.motions
-                .get(EnemyDropMotion.class, EnemyDropMotion::new)
-                .initialize(freeSlot, this.physicsTables.readGroundInteractionSideScrolling(), 0x10);
+        var enemyDropMotion = this.motions.get(EnemyDropMotion.class, EnemyDropMotion::new);
+        enemyDropMotion.initialize(freeSlot, this.physicsTables.readGroundInteractionSideScrolling(), 0x10);
         this.state.writeEnemyDropActive(freeSlot, true);
         this.physicsTables.writeSlowTransitionCountdown(freeSlot, 0);
         this.physicsTables.writeSlowTimerInitialized(freeSlot, false);
@@ -370,7 +370,8 @@ public final class EntityBossRewards {
         this.physicsTables.writeEntityGroundStatus(freeSlot, 0);
         this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
         this.physicsTables.writeEntityOptions1Override(freeSlot, -1);
-        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(freeSlot);
         this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
@@ -411,13 +412,14 @@ public final class EntityBossRewards {
         }
 
         if (target.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
+            var bowWowMotion = this.motions.get(BowWowMotion.class, BowWowMotion::new);
             if (this.physicsTables.readEntityPrivateState4(targetSlot) == 0
                     || this.linkState.readDialogActive()
-                    || this.motions.get(BowWowMotion.class, BowWowMotion::new).privateCountdown2(source.slot()) != 0) {
+                    || bowWowMotion.privateCountdown2(source.slot()) != 0) {
                 return;
             }
-            this.motions.get(BowWowMotion.class, BowWowMotion::new).setTransitionCountdown(source.slot(), 0);
-            this.motions.get(BowWowMotion.class, BowWowMotion::new).setPrivateCountdown2(source.slot(), 0x80);
+            bowWowMotion.setTransitionCountdown(source.slot(), 0);
+            bowWowMotion.setPrivateCountdown2(source.slot(), 0x80);
             this.events.pendingDialogRequests.add(new DialogRequest(1, EntityRomConstants.DIALOG_BOW_WOW));
             return;
         }

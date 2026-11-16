@@ -255,7 +255,8 @@ public final class EntitySlotLifecycle {
         this.combatTables.writeEnemyIgnoreHitsCountdown(slot, 0);
         this.combatTables.writeDyingCountdown(slot, 0);
         this.combatTables.writePowerRecoilDeath(slot, false);
-        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot);
+        var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(slot);
 
         int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot >= 0) {
@@ -288,8 +289,9 @@ public final class EntitySlotLifecycle {
             this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
             // SpawnNewEntity sets the new entity's ignore-hits countdown to 1.
             this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-            this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-            this.motions.get(ZolGelMotion.class, ZolGelMotion::new).prepareSpawnedGel(freeSlot);
+            enemyRecoilMotion.clear(freeSlot);
+            var zolGelMotion = this.motions.get(ZolGelMotion.class, ZolGelMotion::new);
+            zolGelMotion.prepareSpawnedGel(freeSlot);
         }
         return gel;
     }
@@ -311,10 +313,10 @@ public final class EntitySlotLifecycle {
             this.physicsTables.writeEnemyPhysicsFlags(slot, EntityRomConstants.EVASIVE_PHYSICS_FLAGS);
             this.combatTables.writeDyingCountdown(slot, 0);
             this.combatTables.writePowerRecoilDeath(slot, false);
-            this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot);
-            this.motions
-                    .get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
-                    .clear(slot);
+            var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+            enemyRecoilMotion.clear(slot);
+            var stalfosEvasiveMotion = this.motions.get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new);
+            stalfosEvasiveMotion.clear(slot);
             return;
         }
 
@@ -356,10 +358,9 @@ public final class EntitySlotLifecycle {
         if (this.combatTables.readEnemyFlashCountdown(slot) > 0) {
             this.combatTables.postEnemyFlashCountdown(slot, -1);
         }
+        var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
         if (decrementIgnoreHits
-                && !this.motions
-                        .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                        .isActive(slot)
+                && !enemyRecoilMotion.isActive(slot)
                 && this.combatTables.readEnemyIgnoreHitsCountdown(slot) > 0) {
             this.combatTables.postEnemyIgnoreHitsCountdown(slot, -1);
             return true;
@@ -386,13 +387,16 @@ public final class EntitySlotLifecycle {
         if (this.story.owlState().readOwlPrivateCountdown1(slot) > 0 && this.linkState.entityTimersInteractive()) {
             this.story.owlState().postOwlPrivateCountdown1(slot, -1);
         }
-        this.motions.get(HinoxMotion.class, HinoxMotion::new).decrementPrivateCountdown1(slot);
+        var hinoxMotion = this.motions.get(HinoxMotion.class, HinoxMotion::new);
+        hinoxMotion.decrementPrivateCountdown1(slot);
         if (this.liftThrow.readLiftableRockSmashActive(slot)
                 && this.liftThrow.readLiftableRockSmashCountdown(slot) > 0) {
             this.liftThrow.postLiftableRockSmashCountdown(slot, -1);
         }
-        this.motions.get(BlooperMotion.class, BlooperMotion::new).decrementPrivateCountdown3(slot);
-        this.motions.get(WingedOctorokMotion.class, WingedOctorokMotion::new).decrementPrivateCountdown2(slot);
+        var blooperMotion = this.motions.get(BlooperMotion.class, BlooperMotion::new);
+        blooperMotion.decrementPrivateCountdown3(slot);
+        var wingedOctorokMotion = this.motions.get(WingedOctorokMotion.class, WingedOctorokMotion::new);
+        wingedOctorokMotion.decrementPrivateCountdown2(slot);
     }
 
     public void requestPersistentClearMask(int mask) {
@@ -406,10 +410,8 @@ public final class EntitySlotLifecycle {
     // Preserve the eager ROM clinging-state accumulator merge across slots.
     @SuppressWarnings("ShortCircuitBoolean")
     public void recordGelClinging(boolean clinging) {
-        this.motions
-                .get(ZolGelMotion.class, ZolGelMotion::new)
-                .writeGelClingingToLink(
-                        this.motions.get(ZolGelMotion.class, ZolGelMotion::new).readGelClingingToLink() | clinging);
+        var zolGelMotion = this.motions.get(ZolGelMotion.class, ZolGelMotion::new);
+        zolGelMotion.writeGelClingingToLink(zolGelMotion.readGelClingingToLink() | clinging);
     }
 
     public void setDroppedItemBySlot(int slot, int value) {
@@ -447,11 +449,12 @@ public final class EntitySlotLifecycle {
     private static void entityPersistentSlotResetClearBossState(EntitySlotLifecycle runtime, int slot) {
         runtime.slimeEye.clear(slot);
         runtime.bossRewards.resetEnemyDropState(slot, runtime.motions);
-        runtime.motions
-                .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
-                .clear(slot);
-        runtime.motions.get(SideViewPotMotion.class, SideViewPotMotion::new).clear(slot);
-        runtime.motions.get(GenieMotion.class, GenieMotion::new).clear(slot);
+        var sideViewPlatformMotion = runtime.motions.get(SideViewPlatformMotion.class, SideViewPlatformMotion::new);
+        sideViewPlatformMotion.clear(slot);
+        var sideViewPotMotion = runtime.motions.get(SideViewPotMotion.class, SideViewPotMotion::new);
+        sideViewPotMotion.clear(slot);
+        var genieMotion = runtime.motions.get(GenieMotion.class, GenieMotion::new);
+        genieMotion.clear(slot);
         if (runtime.genie.genieControllerSlot() == slot) {
             runtime.genie.setGenieControllerSlot(-1);
         }
@@ -480,21 +483,17 @@ public final class EntitySlotLifecycle {
         runtime.bombInteractions.writeBombPrivateCountdown3(slot, 0);
         runtime.projectiles.writeMagicPowderState(slot, 0);
         runtime.projectiles.writeMagicPowderPrivateState4(slot, 0);
-        runtime.motions
-                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .clear(slot);
+        var secretSeashellMotion = runtime.motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+        secretSeashellMotion.clear(slot);
         runtime.physicsTables.writeEntityPrivateState4(slot, 0);
         runtime.physicsTables.writeEntityInertia(slot, 0);
         runtime.projectiles.writeMusicalNoteInertia(slot, 0);
         runtime.projectiles.writeMusicalNoteSpeedX(slot, 0);
         runtime.projectiles.writeMusicalNoteSpeedY(slot, 0);
         runtime.physicsTables.writeEntityUnknownJ(slot, 0);
-        runtime.motions
-                .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
-                .setMaskRemovalState(slot, 0);
-        runtime.motions
-                .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
-                .setMaskSourceHookshotSlot(slot, 0);
+        var unmaskedIronMaskMotion = runtime.motions.get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new);
+        unmaskedIronMaskMotion.setMaskRemovalState(slot, 0);
+        unmaskedIronMaskMotion.setMaskSourceHookshotSlot(slot, 0);
         runtime.liftThrow.writeLiftableRockSmashCountdown(slot, 0);
         runtime.liftThrow.writeLiftableRockSmashSourceVariant(slot, 0);
         runtime.liftThrow.writeLiftableRockSmashActive(slot, false);
@@ -504,22 +503,38 @@ public final class EntitySlotLifecycle {
         if (runtime.projectiles.readLatestShotArrowEntityIndex() == slot) {
             runtime.projectiles.writeLatestShotArrowEntityIndex(-1);
         }
-        runtime.motions.get(BombiteMotion.class, BombiteMotion::new).clear(slot);
-        runtime.motions.get(BlooperMotion.class, BlooperMotion::new).clear(slot);
-        runtime.motions.get(PincerMotion.class, PincerMotion::new).clear(slot);
-        runtime.motions.get(BushCrawlerMotion.class, BushCrawlerMotion::new).clear(slot);
-        runtime.motions.get(PokeyMotion.class, PokeyMotion::new).clear(slot);
-        runtime.motions.get(ZoraMotion.class, ZoraMotion::new).clear(slot);
-        runtime.motions.get(ZombieMotion.class, ZombieMotion::new).clear(slot);
-        runtime.motions.get(BuzzBlobMotion.class, BuzzBlobMotion::new).clear(slot);
-        runtime.motions.get(SandCrabMotion.class, SandCrabMotion::new).clear(slot);
-        runtime.motions.get(DogMotion.class, DogMotion::new).clear(slot);
-        runtime.motions.get(UrchinMotion.class, UrchinMotion::new).clear(slot);
-        runtime.motions.get(WitchRatMotion.class, WitchRatMotion::new).clear(slot);
-        runtime.motions.get(MimicMotion.class, MimicMotion::new).clear(slot);
-        runtime.motions.get(MaskedMimicMotion.class, MaskedMimicMotion::new).clear(slot);
-        runtime.motions.get(MiniMoldormMotion.class, MiniMoldormMotion::new).clear(slot);
-        runtime.motions.get(MoldormMotion.class, MoldormMotion::new).clear(slot);
+        var bombiteMotion = runtime.motions.get(BombiteMotion.class, BombiteMotion::new);
+        bombiteMotion.clear(slot);
+        var blooperMotion = runtime.motions.get(BlooperMotion.class, BlooperMotion::new);
+        blooperMotion.clear(slot);
+        var pincerMotion = runtime.motions.get(PincerMotion.class, PincerMotion::new);
+        pincerMotion.clear(slot);
+        var bushCrawlerMotion = runtime.motions.get(BushCrawlerMotion.class, BushCrawlerMotion::new);
+        bushCrawlerMotion.clear(slot);
+        var pokeyMotion = runtime.motions.get(PokeyMotion.class, PokeyMotion::new);
+        pokeyMotion.clear(slot);
+        var zoraMotion = runtime.motions.get(ZoraMotion.class, ZoraMotion::new);
+        zoraMotion.clear(slot);
+        var zombieMotion = runtime.motions.get(ZombieMotion.class, ZombieMotion::new);
+        zombieMotion.clear(slot);
+        var buzzBlobMotion = runtime.motions.get(BuzzBlobMotion.class, BuzzBlobMotion::new);
+        buzzBlobMotion.clear(slot);
+        var sandCrabMotion = runtime.motions.get(SandCrabMotion.class, SandCrabMotion::new);
+        sandCrabMotion.clear(slot);
+        var dogMotion = runtime.motions.get(DogMotion.class, DogMotion::new);
+        dogMotion.clear(slot);
+        var urchinMotion = runtime.motions.get(UrchinMotion.class, UrchinMotion::new);
+        urchinMotion.clear(slot);
+        var witchRatMotion = runtime.motions.get(WitchRatMotion.class, WitchRatMotion::new);
+        witchRatMotion.clear(slot);
+        var mimicMotion = runtime.motions.get(MimicMotion.class, MimicMotion::new);
+        mimicMotion.clear(slot);
+        var maskedMimicMotion = runtime.motions.get(MaskedMimicMotion.class, MaskedMimicMotion::new);
+        maskedMimicMotion.clear(slot);
+        var miniMoldormMotion = runtime.motions.get(MiniMoldormMotion.class, MiniMoldormMotion::new);
+        miniMoldormMotion.clear(slot);
+        var moldormMotion = runtime.motions.get(MoldormMotion.class, MoldormMotion::new);
+        moldormMotion.clear(slot);
     }
 
     private static void entityPersistentSlotResetClearSlotTables(EntitySlotLifecycle runtime, int slot) {
@@ -564,15 +579,16 @@ public final class EntitySlotLifecycle {
 
     private static void entityPersistentSlotResetClearWeaponState(
             EntitySlotLifecycle runtime, int slot, RoomEntity entity) {
-        runtime.motions.get(HookshotChainMotion.class, HookshotChainMotion::new).clear(slot);
-        runtime.motions
-                .get(HookshotBridgeMotion.class, HookshotBridgeMotion::new)
-                .clear(slot);
-        runtime.motions.get(BoomerangMotion.class, BoomerangMotion::new).clear(slot);
-        runtime.motions
-                .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
-                .clear(slot);
-        runtime.motions.get(SwordBeamMotion.class, SwordBeamMotion::new).clear(slot);
+        var hookshotChainMotion = runtime.motions.get(HookshotChainMotion.class, HookshotChainMotion::new);
+        hookshotChainMotion.clear(slot);
+        var hookshotBridgeMotion = runtime.motions.get(HookshotBridgeMotion.class, HookshotBridgeMotion::new);
+        hookshotBridgeMotion.clear(slot);
+        var boomerangMotion = runtime.motions.get(BoomerangMotion.class, BoomerangMotion::new);
+        boomerangMotion.clear(slot);
+        var magicRodFireballMotion = runtime.motions.get(MagicRodFireballMotion.class, MagicRodFireballMotion::new);
+        magicRodFireballMotion.clear(slot);
+        var swordBeamMotion = runtime.motions.get(SwordBeamMotion.class, SwordBeamMotion::new);
+        swordBeamMotion.clear(slot);
         if (entity.type() == EntityRomConstants.ENTITY_HOOKSHOT_CHAIN) {
             runtime.slotPresentation.writeHookshotChainOam(List.of());
         }
@@ -581,92 +597,136 @@ public final class EntitySlotLifecycle {
     private static void entityPersistentSlotResetClearRoamingMotions(EntitySlotLifecycle runtime, int slot) {
         runtime.physicsTables.writeBaseEntityFlipAttribute(slot, 0);
         runtime.physicsTables.writeEntityOptions1Override(slot, -1);
-        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot);
-        runtime.motions.get(ColorShellMotion.class, ColorShellMotion::new).clear(slot);
-        runtime.motions.get(ButterflyMotion.class, ButterflyMotion::new).clear(slot);
-        runtime.motions.get(KeeseMotion.class, KeeseMotion::new).clear(slot);
-        runtime.motions.get(RoamingEnemyMotion.class, RoamingEnemyMotion::new).clear(slot);
-        runtime.motions
-                .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
-                .clear(slot);
-        runtime.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new).clear(slot);
-        runtime.motions.get(PlayerArrowMotion.class, PlayerArrowMotion::new).clear(slot);
-        runtime.motions.get(TektiteMotion.class, TektiteMotion::new).clear(slot);
-        runtime.motions.get(LeeverMotion.class, LeeverMotion::new).clear(slot);
-        runtime.motions.get(AntiFairyMotion.class, AntiFairyMotion::new).clear(slot);
-        runtime.motions.get(SparkMotion.class, SparkMotion::new).clear(slot);
-        runtime.motions.get(ZolGelMotion.class, ZolGelMotion::new).clear(slot);
-        runtime.motions.get(PokeyMotion.class, PokeyMotion::new).clear(slot);
-        runtime.motions.get(HidingZolMotion.class, HidingZolMotion::new).clear(slot);
-        runtime.motions.get(StarMotion.class, StarMotion::new).clear(slot);
-        runtime.motions.get(BlooperMotion.class, BlooperMotion::new).clear(slot);
-        runtime.motions.get(PincerMotion.class, PincerMotion::new).clear(slot);
-        runtime.motions.get(SpikeTrapMotion.class, SpikeTrapMotion::new).clear(slot);
-        runtime.motions.get(PairoddMotion.class, PairoddMotion::new).clear(slot);
-        runtime.motions
-                .get(PairoddProjectileMotion.class, PairoddProjectileMotion::new)
-                .clear(slot);
-        runtime.motions
-                .get(EnemyProjectileMotion.class, EnemyProjectileMotion::new)
-                .clear(slot);
-        runtime.motions.get(WingedOctorokMotion.class, WingedOctorokMotion::new).clear(slot);
-        runtime.motions.get(BushCrawlerMotion.class, BushCrawlerMotion::new).clear(slot);
-        runtime.motions.get(CuccoMotion.class, CuccoMotion::new).clear(slot);
-        runtime.motions.get(GiantGopongaMotion.class, GiantGopongaMotion::new).clear(slot);
-        runtime.motions
-                .get(GopongaProjectileMotion.class, GopongaProjectileMotion::new)
-                .clear(slot);
-        runtime.motions.get(ZoraMotion.class, ZoraMotion::new).clear(slot);
-        runtime.motions.get(ZombieMotion.class, ZombieMotion::new).clear(slot);
-        runtime.motions.get(BuzzBlobMotion.class, BuzzBlobMotion::new).clear(slot);
-        runtime.motions.get(SandCrabMotion.class, SandCrabMotion::new).clear(slot);
-        runtime.motions.get(DogMotion.class, DogMotion::new).clear(slot);
-        runtime.motions.get(UrchinMotion.class, UrchinMotion::new).clear(slot);
-        runtime.motions.get(WitchRatMotion.class, WitchRatMotion::new).clear(slot);
+        var enemyRecoilMotion = runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(slot);
+        var colorShellMotion = runtime.motions.get(ColorShellMotion.class, ColorShellMotion::new);
+        colorShellMotion.clear(slot);
+        var butterflyMotion = runtime.motions.get(ButterflyMotion.class, ButterflyMotion::new);
+        butterflyMotion.clear(slot);
+        var keeseMotion = runtime.motions.get(KeeseMotion.class, KeeseMotion::new);
+        keeseMotion.clear(slot);
+        var roamingEnemyMotion = runtime.motions.get(RoamingEnemyMotion.class, RoamingEnemyMotion::new);
+        roamingEnemyMotion.clear(slot);
+        var unmaskedIronMaskMotion = runtime.motions.get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new);
+        unmaskedIronMaskMotion.clear(slot);
+        var moblinSwordMotion = runtime.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new);
+        moblinSwordMotion.clear(slot);
+        var playerArrowMotion = runtime.motions.get(PlayerArrowMotion.class, PlayerArrowMotion::new);
+        playerArrowMotion.clear(slot);
+        var tektiteMotion = runtime.motions.get(TektiteMotion.class, TektiteMotion::new);
+        tektiteMotion.clear(slot);
+        var leeverMotion = runtime.motions.get(LeeverMotion.class, LeeverMotion::new);
+        leeverMotion.clear(slot);
+        var antiFairyMotion = runtime.motions.get(AntiFairyMotion.class, AntiFairyMotion::new);
+        antiFairyMotion.clear(slot);
+        var sparkMotion = runtime.motions.get(SparkMotion.class, SparkMotion::new);
+        sparkMotion.clear(slot);
+        var zolGelMotion = runtime.motions.get(ZolGelMotion.class, ZolGelMotion::new);
+        zolGelMotion.clear(slot);
+        var pokeyMotion = runtime.motions.get(PokeyMotion.class, PokeyMotion::new);
+        pokeyMotion.clear(slot);
+        var hidingZolMotion = runtime.motions.get(HidingZolMotion.class, HidingZolMotion::new);
+        hidingZolMotion.clear(slot);
+        var starMotion = runtime.motions.get(StarMotion.class, StarMotion::new);
+        starMotion.clear(slot);
+        var blooperMotion = runtime.motions.get(BlooperMotion.class, BlooperMotion::new);
+        blooperMotion.clear(slot);
+        var pincerMotion = runtime.motions.get(PincerMotion.class, PincerMotion::new);
+        pincerMotion.clear(slot);
+        var spikeTrapMotion = runtime.motions.get(SpikeTrapMotion.class, SpikeTrapMotion::new);
+        spikeTrapMotion.clear(slot);
+        var pairoddMotion = runtime.motions.get(PairoddMotion.class, PairoddMotion::new);
+        pairoddMotion.clear(slot);
+        var pairoddProjectileMotion = runtime.motions.get(PairoddProjectileMotion.class, PairoddProjectileMotion::new);
+        pairoddProjectileMotion.clear(slot);
+        var enemyProjectileMotion = runtime.motions.get(EnemyProjectileMotion.class, EnemyProjectileMotion::new);
+        enemyProjectileMotion.clear(slot);
+        var wingedOctorokMotion = runtime.motions.get(WingedOctorokMotion.class, WingedOctorokMotion::new);
+        wingedOctorokMotion.clear(slot);
+        var bushCrawlerMotion = runtime.motions.get(BushCrawlerMotion.class, BushCrawlerMotion::new);
+        bushCrawlerMotion.clear(slot);
+        var cuccoMotion = runtime.motions.get(CuccoMotion.class, CuccoMotion::new);
+        cuccoMotion.clear(slot);
+        var giantGopongaMotion = runtime.motions.get(GiantGopongaMotion.class, GiantGopongaMotion::new);
+        giantGopongaMotion.clear(slot);
+        var gopongaProjectileMotion = runtime.motions.get(GopongaProjectileMotion.class, GopongaProjectileMotion::new);
+        gopongaProjectileMotion.clear(slot);
+        var zoraMotion = runtime.motions.get(ZoraMotion.class, ZoraMotion::new);
+        zoraMotion.clear(slot);
+        var zombieMotion = runtime.motions.get(ZombieMotion.class, ZombieMotion::new);
+        zombieMotion.clear(slot);
+        var buzzBlobMotion = runtime.motions.get(BuzzBlobMotion.class, BuzzBlobMotion::new);
+        buzzBlobMotion.clear(slot);
+        var sandCrabMotion = runtime.motions.get(SandCrabMotion.class, SandCrabMotion::new);
+        sandCrabMotion.clear(slot);
+        var dogMotion = runtime.motions.get(DogMotion.class, DogMotion::new);
+        dogMotion.clear(slot);
+        var urchinMotion = runtime.motions.get(UrchinMotion.class, UrchinMotion::new);
+        urchinMotion.clear(slot);
+        var witchRatMotion = runtime.motions.get(WitchRatMotion.class, WitchRatMotion::new);
+        witchRatMotion.clear(slot);
     }
 
     private static void entityPersistentSlotResetClearRemainingMotions(EntitySlotLifecycle runtime, int slot) {
         runtime.slotPresentation.writeWingedSwordAttackThisFrame(slot, false);
         runtime.slotPresentation.writeWingedStateTwoThisFrame(slot, false);
-        runtime.motions.get(LaserMotion.class, LaserMotion::new).clear(slot);
-        runtime.motions.get(WaterTektiteMotion.class, WaterTektiteMotion::new).clear(slot);
-        runtime.motions.get(FishMotion.class, FishMotion::new).clear(slot);
-        runtime.motions.get(CrowMotion.class, CrowMotion::new).clear(slot);
-        runtime.motions.get(BooBuddyMotion.class, BooBuddyMotion::new).clear(slot);
-        runtime.motions
-                .get(StalfosAggressiveMotion.class, StalfosAggressiveMotion::new)
-                .clear(slot);
-        runtime.motions
-                .get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
-                .clear(slot);
-        runtime.motions.get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new).clear(slot);
-        runtime.motions.get(GibdoMotion.class, GibdoMotion::new).clear(slot);
-        runtime.motions.get(LikeLikeMotion.class, LikeLikeMotion::new).clear(slot);
-        runtime.motions.get(GoombaMotion.class, GoombaMotion::new).clear(slot);
-        runtime.motions.get(SnakeMotion.class, SnakeMotion::new).clear(slot);
-        runtime.motions.get(WizrobeMotion.class, WizrobeMotion::new).clear(slot);
-        runtime.motions
-                .get(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new)
-                .clear(slot);
-        runtime.motions.get(PeaHatMotion.class, PeaHatMotion::new).clear(slot);
-        runtime.motions.get(ArmosMotion.class, ArmosMotion::new).clear(slot);
-        runtime.motions.get(GhiniMotion.class, GhiniMotion::new).clear(slot);
-        runtime.motions.get(HardHatMotion.class, HardHatMotion::new).clear(slot);
-        runtime.motions.get(MadBomberMotion.class, MadBomberMotion::new).clear(slot);
-        runtime.motions.get(FollowingNpcMotion.class, FollowingNpcMotion::new).clear(slot);
-        runtime.motions.get(BowWowMotion.class, BowWowMotion::new).clear(slot);
-        runtime.motions.get(MoblinKingMotion.class, MoblinKingMotion::new).clear(slot);
-        runtime.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(slot);
+        var laserMotion = runtime.motions.get(LaserMotion.class, LaserMotion::new);
+        laserMotion.clear(slot);
+        var waterTektiteMotion = runtime.motions.get(WaterTektiteMotion.class, WaterTektiteMotion::new);
+        waterTektiteMotion.clear(slot);
+        var fishMotion = runtime.motions.get(FishMotion.class, FishMotion::new);
+        fishMotion.clear(slot);
+        var crowMotion = runtime.motions.get(CrowMotion.class, CrowMotion::new);
+        crowMotion.clear(slot);
+        var booBuddyMotion = runtime.motions.get(BooBuddyMotion.class, BooBuddyMotion::new);
+        booBuddyMotion.clear(slot);
+        var stalfosAggressiveMotion = runtime.motions.get(StalfosAggressiveMotion.class, StalfosAggressiveMotion::new);
+        stalfosAggressiveMotion.clear(slot);
+        var stalfosEvasiveMotion = runtime.motions.get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new);
+        stalfosEvasiveMotion.clear(slot);
+        var threeOfAKindMotion = runtime.motions.get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new);
+        threeOfAKindMotion.clear(slot);
+        var gibdoMotion = runtime.motions.get(GibdoMotion.class, GibdoMotion::new);
+        gibdoMotion.clear(slot);
+        var likeLikeMotion = runtime.motions.get(LikeLikeMotion.class, LikeLikeMotion::new);
+        likeLikeMotion.clear(slot);
+        var goombaMotion = runtime.motions.get(GoombaMotion.class, GoombaMotion::new);
+        goombaMotion.clear(slot);
+        var snakeMotion = runtime.motions.get(SnakeMotion.class, SnakeMotion::new);
+        snakeMotion.clear(slot);
+        var wizrobeMotion = runtime.motions.get(WizrobeMotion.class, WizrobeMotion::new);
+        wizrobeMotion.clear(slot);
+        var wizrobeProjectileMotion = runtime.motions.get(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new);
+        wizrobeProjectileMotion.clear(slot);
+        var peaHatMotion = runtime.motions.get(PeaHatMotion.class, PeaHatMotion::new);
+        peaHatMotion.clear(slot);
+        var armosMotion = runtime.motions.get(ArmosMotion.class, ArmosMotion::new);
+        armosMotion.clear(slot);
+        var ghiniMotion = runtime.motions.get(GhiniMotion.class, GhiniMotion::new);
+        ghiniMotion.clear(slot);
+        var hardHatMotion = runtime.motions.get(HardHatMotion.class, HardHatMotion::new);
+        hardHatMotion.clear(slot);
+        var madBomberMotion = runtime.motions.get(MadBomberMotion.class, MadBomberMotion::new);
+        madBomberMotion.clear(slot);
+        var followingNpcMotion = runtime.motions.get(FollowingNpcMotion.class, FollowingNpcMotion::new);
+        followingNpcMotion.clear(slot);
+        var bowWowMotion = runtime.motions.get(BowWowMotion.class, BowWowMotion::new);
+        bowWowMotion.clear(slot);
+        var moblinKingMotion = runtime.motions.get(MoblinKingMotion.class, MoblinKingMotion::new);
+        moblinKingMotion.clear(slot);
+        var thrownEntityMotion = runtime.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+        thrownEntityMotion.clear(slot);
     }
 
     private static void entityTransientSlotResetClearBossState(EntitySlotLifecycle runtime, int slot) {
         runtime.slimeEye.clear(slot);
         runtime.bossRewards.resetEnemyDropState(slot, runtime.motions);
-        runtime.motions
-                .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
-                .clear(slot);
-        runtime.motions.get(SideViewPotMotion.class, SideViewPotMotion::new).clear(slot);
-        runtime.motions.get(GenieMotion.class, GenieMotion::new).clear(slot);
+        var sideViewPlatformMotion = runtime.motions.get(SideViewPlatformMotion.class, SideViewPlatformMotion::new);
+        sideViewPlatformMotion.clear(slot);
+        var sideViewPotMotion = runtime.motions.get(SideViewPotMotion.class, SideViewPotMotion::new);
+        sideViewPotMotion.clear(slot);
+        var genieMotion = runtime.motions.get(GenieMotion.class, GenieMotion::new);
+        genieMotion.clear(slot);
         if (runtime.genie.genieControllerSlot() == slot) {
             runtime.genie.setGenieControllerSlot(-1);
         }
@@ -688,14 +748,14 @@ public final class EntitySlotLifecycle {
     }
 
     private static void entityTransientSlotResetClearRoomAndRewardState(EntitySlotLifecycle runtime, int slot) {
-        runtime.motions
-                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .clear(slot);
+        var secretSeashellMotion = runtime.motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+        secretSeashellMotion.clear(slot);
         runtime.physicsTables.writeSlowTransitionCountdown(slot, 0);
         runtime.physicsTables.writeSlowTimerInitialized(slot, false);
         runtime.physicsTables.writeEnemyTransitionCountdown(slot, 0);
         runtime.bossRewards.writeBossDeathProducerState(slot, 0);
-        runtime.motions.get(MoldormMotion.class, MoldormMotion::new).setDestructionTailState(slot, 0);
+        var moldormMotion = runtime.motions.get(MoldormMotion.class, MoldormMotion::new);
+        moldormMotion.setDestructionTailState(slot, 0);
         runtime.combatTables.writeEnemyStunnedCountdown(slot, 0);
         runtime.combatTables.writeDyingCountdown(slot, 0);
         runtime.combatTables.writePowerRecoilDeath(slot, false);
@@ -714,7 +774,8 @@ public final class EntitySlotLifecycle {
         runtime.rewards.writeInstrumentParticleSpeedY(slot, 0);
         runtime.rewards.writeInstrumentParticleXAccumulator(slot, 0);
         runtime.rewards.writeInstrumentParticleYAccumulator(slot, 0);
-        runtime.motions.get(ArmosKnightMotion.class, ArmosKnightMotion::new).clear(slot);
+        var armosKnightMotion = runtime.motions.get(ArmosKnightMotion.class, ArmosKnightMotion::new);
+        armosKnightMotion.clear(slot);
     }
 
     private static void entityTransientSlotResetClearPhysicsAndWeaponState(EntitySlotLifecycle runtime, int slot) {
@@ -736,12 +797,9 @@ public final class EntitySlotLifecycle {
         runtime.projectiles.writeMagicPowderPrivateState4(slot, 0);
         runtime.bombInteractions.writeBombPrivateCountdown1(slot, 0);
         runtime.bombInteractions.writeBombPrivateCountdown3(slot, 0);
-        runtime.motions
-                .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
-                .setMaskRemovalState(slot, 0);
-        runtime.motions
-                .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
-                .setMaskSourceHookshotSlot(slot, 0);
+        var unmaskedIronMaskMotion = runtime.motions.get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new);
+        unmaskedIronMaskMotion.setMaskRemovalState(slot, 0);
+        unmaskedIronMaskMotion.setMaskSourceHookshotSlot(slot, 0);
         runtime.liftThrow.writeLiftableRockSmashCountdown(slot, 0);
         runtime.liftThrow.writeLiftableRockSmashSourceVariant(slot, 0);
         runtime.liftThrow.writeLiftableRockSmashActive(slot, false);
@@ -752,52 +810,83 @@ public final class EntitySlotLifecycle {
         runtime.liftThrow.writeThrownMotionInitialized(slot, false);
         runtime.physicsTables.writeBaseEntityFlipAttribute(slot, 0);
         runtime.physicsTables.writeEntityOptions1Override(slot, -1);
-        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot);
-        runtime.motions.get(BomberMotion.class, BomberMotion::new).clear(slot);
+        var enemyRecoilMotion = runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(slot);
+        var bomberMotion = runtime.motions.get(BomberMotion.class, BomberMotion::new);
+        bomberMotion.clear(slot);
     }
 
     private static void entityTransientSlotResetClearRoamingMotions(EntitySlotLifecycle runtime, int slot) {
-        runtime.motions.get(MadBomberMotion.class, MadBomberMotion::new).clear(slot);
-        runtime.motions.get(BombiteMotion.class, BombiteMotion::new).clear(slot);
-        runtime.motions.get(ColorShellMotion.class, ColorShellMotion::new).clear(slot);
-        runtime.motions.get(ButterflyMotion.class, ButterflyMotion::new).clear(slot);
-        runtime.motions.get(KeeseMotion.class, KeeseMotion::new).clear(slot);
-        runtime.motions.get(RoamingEnemyMotion.class, RoamingEnemyMotion::new).clear(slot);
-        runtime.motions
-                .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
-                .clear(slot);
-        runtime.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new).clear(slot);
-        runtime.motions.get(TektiteMotion.class, TektiteMotion::new).clear(slot);
-        runtime.motions.get(LeeverMotion.class, LeeverMotion::new).clear(slot);
-        runtime.motions.get(AntiFairyMotion.class, AntiFairyMotion::new).clear(slot);
-        runtime.motions.get(SparkMotion.class, SparkMotion::new).clear(slot);
-        runtime.motions.get(ZolGelMotion.class, ZolGelMotion::new).clear(slot);
-        runtime.motions.get(HidingZolMotion.class, HidingZolMotion::new).clear(slot);
-        runtime.motions.get(StarMotion.class, StarMotion::new).clear(slot);
-        runtime.motions.get(BlooperMotion.class, BlooperMotion::new).clear(slot);
-        runtime.motions.get(PincerMotion.class, PincerMotion::new).clear(slot);
-        runtime.motions.get(BushCrawlerMotion.class, BushCrawlerMotion::new).clear(slot);
-        runtime.motions.get(PokeyMotion.class, PokeyMotion::new).clear(slot);
-        runtime.motions.get(PiranhaMotion.class, PiranhaMotion::new).clear(slot);
-        runtime.motions.get(ZoraMotion.class, ZoraMotion::new).clear(slot);
-        runtime.motions.get(ZombieMotion.class, ZombieMotion::new).clear(slot);
-        runtime.motions.get(BuzzBlobMotion.class, BuzzBlobMotion::new).clear(slot);
-        runtime.motions.get(SandCrabMotion.class, SandCrabMotion::new).clear(slot);
-        runtime.motions.get(DogMotion.class, DogMotion::new).clear(slot);
-        runtime.motions.get(MimicMotion.class, MimicMotion::new).clear(slot);
-        runtime.motions.get(MaskedMimicMotion.class, MaskedMimicMotion::new).clear(slot);
-        runtime.motions.get(MiniMoldormMotion.class, MiniMoldormMotion::new).clear(slot);
-        runtime.motions.get(MoldormMotion.class, MoldormMotion::new).clear(slot);
-        runtime.motions.get(CuccoMotion.class, CuccoMotion::new).clear(slot);
-        runtime.motions.get(SpikeTrapMotion.class, SpikeTrapMotion::new).clear(slot);
-        runtime.motions.get(PairoddMotion.class, PairoddMotion::new).clear(slot);
-        runtime.motions
-                .get(PairoddProjectileMotion.class, PairoddProjectileMotion::new)
-                .clear(slot);
-        runtime.motions.get(PlayerArrowMotion.class, PlayerArrowMotion::new).clear(slot);
-        runtime.motions
-                .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
-                .clear(slot);
+        var madBomberMotion = runtime.motions.get(MadBomberMotion.class, MadBomberMotion::new);
+        madBomberMotion.clear(slot);
+        var bombiteMotion = runtime.motions.get(BombiteMotion.class, BombiteMotion::new);
+        bombiteMotion.clear(slot);
+        var colorShellMotion = runtime.motions.get(ColorShellMotion.class, ColorShellMotion::new);
+        colorShellMotion.clear(slot);
+        var butterflyMotion = runtime.motions.get(ButterflyMotion.class, ButterflyMotion::new);
+        butterflyMotion.clear(slot);
+        var keeseMotion = runtime.motions.get(KeeseMotion.class, KeeseMotion::new);
+        keeseMotion.clear(slot);
+        var roamingEnemyMotion = runtime.motions.get(RoamingEnemyMotion.class, RoamingEnemyMotion::new);
+        roamingEnemyMotion.clear(slot);
+        var unmaskedIronMaskMotion = runtime.motions.get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new);
+        unmaskedIronMaskMotion.clear(slot);
+        var moblinSwordMotion = runtime.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new);
+        moblinSwordMotion.clear(slot);
+        var tektiteMotion = runtime.motions.get(TektiteMotion.class, TektiteMotion::new);
+        tektiteMotion.clear(slot);
+        var leeverMotion = runtime.motions.get(LeeverMotion.class, LeeverMotion::new);
+        leeverMotion.clear(slot);
+        var antiFairyMotion = runtime.motions.get(AntiFairyMotion.class, AntiFairyMotion::new);
+        antiFairyMotion.clear(slot);
+        var sparkMotion = runtime.motions.get(SparkMotion.class, SparkMotion::new);
+        sparkMotion.clear(slot);
+        var zolGelMotion = runtime.motions.get(ZolGelMotion.class, ZolGelMotion::new);
+        zolGelMotion.clear(slot);
+        var hidingZolMotion = runtime.motions.get(HidingZolMotion.class, HidingZolMotion::new);
+        hidingZolMotion.clear(slot);
+        var starMotion = runtime.motions.get(StarMotion.class, StarMotion::new);
+        starMotion.clear(slot);
+        var blooperMotion = runtime.motions.get(BlooperMotion.class, BlooperMotion::new);
+        blooperMotion.clear(slot);
+        var pincerMotion = runtime.motions.get(PincerMotion.class, PincerMotion::new);
+        pincerMotion.clear(slot);
+        var bushCrawlerMotion = runtime.motions.get(BushCrawlerMotion.class, BushCrawlerMotion::new);
+        bushCrawlerMotion.clear(slot);
+        var pokeyMotion = runtime.motions.get(PokeyMotion.class, PokeyMotion::new);
+        pokeyMotion.clear(slot);
+        var piranhaMotion = runtime.motions.get(PiranhaMotion.class, PiranhaMotion::new);
+        piranhaMotion.clear(slot);
+        var zoraMotion = runtime.motions.get(ZoraMotion.class, ZoraMotion::new);
+        zoraMotion.clear(slot);
+        var zombieMotion = runtime.motions.get(ZombieMotion.class, ZombieMotion::new);
+        zombieMotion.clear(slot);
+        var buzzBlobMotion = runtime.motions.get(BuzzBlobMotion.class, BuzzBlobMotion::new);
+        buzzBlobMotion.clear(slot);
+        var sandCrabMotion = runtime.motions.get(SandCrabMotion.class, SandCrabMotion::new);
+        sandCrabMotion.clear(slot);
+        var dogMotion = runtime.motions.get(DogMotion.class, DogMotion::new);
+        dogMotion.clear(slot);
+        var mimicMotion = runtime.motions.get(MimicMotion.class, MimicMotion::new);
+        mimicMotion.clear(slot);
+        var maskedMimicMotion = runtime.motions.get(MaskedMimicMotion.class, MaskedMimicMotion::new);
+        maskedMimicMotion.clear(slot);
+        var miniMoldormMotion = runtime.motions.get(MiniMoldormMotion.class, MiniMoldormMotion::new);
+        miniMoldormMotion.clear(slot);
+        var moldormMotion = runtime.motions.get(MoldormMotion.class, MoldormMotion::new);
+        moldormMotion.clear(slot);
+        var cuccoMotion = runtime.motions.get(CuccoMotion.class, CuccoMotion::new);
+        cuccoMotion.clear(slot);
+        var spikeTrapMotion = runtime.motions.get(SpikeTrapMotion.class, SpikeTrapMotion::new);
+        spikeTrapMotion.clear(slot);
+        var pairoddMotion = runtime.motions.get(PairoddMotion.class, PairoddMotion::new);
+        pairoddMotion.clear(slot);
+        var pairoddProjectileMotion = runtime.motions.get(PairoddProjectileMotion.class, PairoddProjectileMotion::new);
+        pairoddProjectileMotion.clear(slot);
+        var playerArrowMotion = runtime.motions.get(PlayerArrowMotion.class, PlayerArrowMotion::new);
+        playerArrowMotion.clear(slot);
+        var magicRodFireballMotion = runtime.motions.get(MagicRodFireballMotion.class, MagicRodFireballMotion::new);
+        magicRodFireballMotion.clear(slot);
         runtime.bombInteractions.writePlayerArrowBombArrow(slot, false);
     }
 
@@ -808,36 +897,51 @@ public final class EntitySlotLifecycle {
         if (runtime.projectiles.readLatestShotArrowEntityIndex() == slot) {
             runtime.projectiles.writeLatestShotArrowEntityIndex(-1);
         }
-        runtime.motions
-                .get(EnemyProjectileMotion.class, EnemyProjectileMotion::new)
-                .clear(slot);
-        runtime.motions.get(LaserMotion.class, LaserMotion::new).clear(slot);
-        runtime.motions.get(WaterTektiteMotion.class, WaterTektiteMotion::new).clear(slot);
-        runtime.motions.get(FishMotion.class, FishMotion::new).clear(slot);
-        runtime.motions.get(CrowMotion.class, CrowMotion::new).clear(slot);
-        runtime.motions.get(BooBuddyMotion.class, BooBuddyMotion::new).clear(slot);
-        runtime.motions
-                .get(StalfosAggressiveMotion.class, StalfosAggressiveMotion::new)
-                .clear(slot);
-        runtime.motions
-                .get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
-                .clear(slot);
-        runtime.motions.get(GibdoMotion.class, GibdoMotion::new).clear(slot);
-        runtime.motions.get(GoombaMotion.class, GoombaMotion::new).clear(slot);
-        runtime.motions.get(SnakeMotion.class, SnakeMotion::new).clear(slot);
-        runtime.motions.get(WizrobeMotion.class, WizrobeMotion::new).clear(slot);
-        runtime.motions
-                .get(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new)
-                .clear(slot);
-        runtime.motions.get(PeaHatMotion.class, PeaHatMotion::new).clear(slot);
-        runtime.motions.get(ArmosMotion.class, ArmosMotion::new).clear(slot);
-        runtime.motions.get(FollowingNpcMotion.class, FollowingNpcMotion::new).clear(slot);
-        runtime.motions.get(GhiniMotion.class, GhiniMotion::new).clear(slot);
-        runtime.motions.get(HardHatMotion.class, HardHatMotion::new).clear(slot);
-        runtime.motions.get(PolsVoiceMotion.class, PolsVoiceMotion::new).clear(slot);
-        runtime.motions.get(SpikedBeetleMotion.class, SpikedBeetleMotion::new).clear(slot);
-        runtime.motions.get(BowWowMotion.class, BowWowMotion::new).clear(slot);
-        runtime.motions.get(MoblinKingMotion.class, MoblinKingMotion::new).clear(slot);
-        runtime.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(slot);
+        var enemyProjectileMotion = runtime.motions.get(EnemyProjectileMotion.class, EnemyProjectileMotion::new);
+        enemyProjectileMotion.clear(slot);
+        var laserMotion = runtime.motions.get(LaserMotion.class, LaserMotion::new);
+        laserMotion.clear(slot);
+        var waterTektiteMotion = runtime.motions.get(WaterTektiteMotion.class, WaterTektiteMotion::new);
+        waterTektiteMotion.clear(slot);
+        var fishMotion = runtime.motions.get(FishMotion.class, FishMotion::new);
+        fishMotion.clear(slot);
+        var crowMotion = runtime.motions.get(CrowMotion.class, CrowMotion::new);
+        crowMotion.clear(slot);
+        var booBuddyMotion = runtime.motions.get(BooBuddyMotion.class, BooBuddyMotion::new);
+        booBuddyMotion.clear(slot);
+        var stalfosAggressiveMotion = runtime.motions.get(StalfosAggressiveMotion.class, StalfosAggressiveMotion::new);
+        stalfosAggressiveMotion.clear(slot);
+        var stalfosEvasiveMotion = runtime.motions.get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new);
+        stalfosEvasiveMotion.clear(slot);
+        var gibdoMotion = runtime.motions.get(GibdoMotion.class, GibdoMotion::new);
+        gibdoMotion.clear(slot);
+        var goombaMotion = runtime.motions.get(GoombaMotion.class, GoombaMotion::new);
+        goombaMotion.clear(slot);
+        var snakeMotion = runtime.motions.get(SnakeMotion.class, SnakeMotion::new);
+        snakeMotion.clear(slot);
+        var wizrobeMotion = runtime.motions.get(WizrobeMotion.class, WizrobeMotion::new);
+        wizrobeMotion.clear(slot);
+        var wizrobeProjectileMotion = runtime.motions.get(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new);
+        wizrobeProjectileMotion.clear(slot);
+        var peaHatMotion = runtime.motions.get(PeaHatMotion.class, PeaHatMotion::new);
+        peaHatMotion.clear(slot);
+        var armosMotion = runtime.motions.get(ArmosMotion.class, ArmosMotion::new);
+        armosMotion.clear(slot);
+        var followingNpcMotion = runtime.motions.get(FollowingNpcMotion.class, FollowingNpcMotion::new);
+        followingNpcMotion.clear(slot);
+        var ghiniMotion = runtime.motions.get(GhiniMotion.class, GhiniMotion::new);
+        ghiniMotion.clear(slot);
+        var hardHatMotion = runtime.motions.get(HardHatMotion.class, HardHatMotion::new);
+        hardHatMotion.clear(slot);
+        var polsVoiceMotion = runtime.motions.get(PolsVoiceMotion.class, PolsVoiceMotion::new);
+        polsVoiceMotion.clear(slot);
+        var spikedBeetleMotion = runtime.motions.get(SpikedBeetleMotion.class, SpikedBeetleMotion::new);
+        spikedBeetleMotion.clear(slot);
+        var bowWowMotion = runtime.motions.get(BowWowMotion.class, BowWowMotion::new);
+        bowWowMotion.clear(slot);
+        var moblinKingMotion = runtime.motions.get(MoblinKingMotion.class, MoblinKingMotion::new);
+        moblinKingMotion.clear(slot);
+        var thrownEntityMotion = runtime.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+        thrownEntityMotion.clear(slot);
     }
 }

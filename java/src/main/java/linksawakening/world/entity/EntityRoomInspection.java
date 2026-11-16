@@ -215,9 +215,8 @@ public final class EntityRoomInspection {
 
     int hookshotSlot() {
         for (int slot = 0; slot < this.slots.size(); slot++) {
-            if (this.motions
-                    .get(HookshotChainMotion.class, HookshotChainMotion::new)
-                    .active(slot)) {
+            var hookshotChainMotion = this.motions.get(HookshotChainMotion.class, HookshotChainMotion::new);
+            if (hookshotChainMotion.active(slot)) {
                 return slot;
             }
         }
@@ -246,7 +245,8 @@ public final class EntityRoomInspection {
     }
 
     public int bowWowState() {
-        return this.motions.get(BowWowMotion.class, BowWowMotion::new).readBowWowState() & 0xFF;
+        var bowWowMotion = this.motions.get(BowWowMotion.class, BowWowMotion::new);
+        return bowWowMotion.readBowWowState() & 0xFF;
     }
 
     public boolean shouldGetLostInMysteriousWoods() {
@@ -259,8 +259,8 @@ public final class EntityRoomInspection {
     }
 
     public boolean witchGotItemPresentationActive() {
-        for (int countdown :
-                this.motions.get(WitchMotion.class, WitchMotion::new).storageWitchGotItemCountdown()) {
+        var witchMotion = this.motions.get(WitchMotion.class, WitchMotion::new);
+        for (int countdown : witchMotion.storageWitchGotItemCountdown()) {
             if (countdown != 0) {
                 return true;
             }
@@ -390,11 +390,10 @@ public final class EntityRoomInspection {
             RoomEntity entity = this.slots.get(entitySlotIndex);
             if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
                 int slot = entity.slot();
+                var moblinKingMotion = this.motions.get(MoblinKingMotion.class, MoblinKingMotion::new);
                 return "%d,%d,%d,%d,%d,%d,%d"
                         .formatted(
-                                this.motions
-                                        .get(MoblinKingMotion.class, MoblinKingMotion::new)
-                                        .state(slot),
+                                moblinKingMotion.state(slot),
                                 entity.x(),
                                 entity.y(),
                                 entity.z(),
@@ -471,18 +470,11 @@ public final class EntityRoomInspection {
         if (!ColorShellMotion.isColorShellType(entity.type()) || !this.spriteHandlers.supportsPresentation()) {
             return entity;
         }
+        var colorShellMotion = this.motions.get(ColorShellMotion.class, ColorShellMotion::new);
         EntitySpriteDefinition definition = this.slotProperties
                 .spriteViews()
-                .forColorShellState(
-                        entity.type(),
-                        this.motions
-                                .get(ColorShellMotion.class, ColorShellMotion::new)
-                                .state(entity.slot()),
-                        status);
-        return withDefinition(
-                entity,
-                definition,
-                this.motions.get(ColorShellMotion.class, ColorShellMotion::new).spriteVariant(entity.slot()));
+                .forColorShellState(entity.type(), colorShellMotion.state(entity.slot()), status);
+        return withDefinition(entity, definition, colorShellMotion.spriteVariant(entity.slot()));
     }
 
     public int killOrderAt(int index) {
@@ -498,12 +490,14 @@ public final class EntityRoomInspection {
 
     public int dropSpeedX(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return this.motions.get(EnemyDropMotion.class, EnemyDropMotion::new).speedX(slot);
+        var enemyDropMotion = this.motions.get(EnemyDropMotion.class, EnemyDropMotion::new);
+        return enemyDropMotion.speedX(slot);
     }
 
     public int dropSpeedZ(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return this.motions.get(EnemyDropMotion.class, EnemyDropMotion::new).speedZ(slot);
+        var enemyDropMotion = this.motions.get(EnemyDropMotion.class, EnemyDropMotion::new);
+        return enemyDropMotion.speedZ(slot);
     }
 
     public int entityMapId() {
@@ -551,7 +545,8 @@ public final class EntityRoomInspection {
     }
 
     public ColorShellWorld colorShellWorld() {
-        return this.motions.get(ColorShellMotion.class, ColorShellMotion::new).readColorShellWorld();
+        var colorShellMotion = this.motions.get(ColorShellMotion.class, ColorShellMotion::new);
+        return colorShellMotion.readColorShellWorld();
     }
 
     /** Reusable read-only view for immediate consumption; use snapshot() to retain owned frame data. */
@@ -560,19 +555,15 @@ public final class EntityRoomInspection {
     }
 
     static boolean entityRoomQueriesIndoorMarinAbsent(EntityRoomInspection runtime) {
-        if (runtime.motions
-                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                .readFollowingNpcState()
-                .marinFollowing()) return true;
+        var followingNpcMotion = runtime.motions.get(FollowingNpcMotion.class, FollowingNpcMotion::new);
+        if (followingNpcMotion.readFollowingNpcState().marinFollowing()) return true;
         if (runtime.story.readHouseTradeItem() >= 7) return (runtime.story.readHouseWalrusStatus() & 0x30) != 0;
         return runtime.pickups.readChestPlayerLevelsKnown() && runtime.pickups.readChestSwordLevel() != 0;
     }
 
     static boolean entityRoomQueriesIndoorTarinAbsent(EntityRoomInspection runtime) {
-        if (!runtime.motions
-                        .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                        .readFollowingNpcState()
-                        .marinFollowing()
+        var followingNpcMotion = runtime.motions.get(FollowingNpcMotion.class, FollowingNpcMotion::new);
+        if (!followingNpcMotion.readFollowingNpcState().marinFollowing()
                 && ((runtime.story.readHouseInstrument3Flags() & 2) != 0 || runtime.story.readHouseTradeItem() >= 4))
             return true;
         return runtime.story.readHouseTarinFlag() == 0

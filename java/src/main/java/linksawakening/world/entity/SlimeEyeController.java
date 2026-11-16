@@ -658,10 +658,8 @@ public final class SlimeEyeController {
             owner.combatTables.writeEnemyHealth(s, Math.max(0, owner.combatTables.readEnemyHealth(s) - amount));
             owner.combatTables.writeEnemyIgnoreHitsCountdown(s, attack.powerRecoil() ? 0x20 : 0x0A);
             owner.combatTables.writeEnemyFlashCountdown(s, 0x18);
-            if (isHalf)
-                owner.motions
-                        .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                        .configure(s, e.x(), e.y(), e.z(), lx, ly, 0x30);
+            var enemyRecoilMotion = owner.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+            if (isHalf) enemyRecoilMotion.configure(s, e.x(), e.y(), e.z(), lx, ly, 0x30);
             if (isHalf && owner.combatTables.readEnemyHealth(s) == 0) {
                 owner.encounter.state[s] = 0;
                 owner.slots.replace(s, withStatus(e, EntityStatus.DYING));
@@ -763,9 +761,8 @@ public final class SlimeEyeController {
             }
             if (owner.combatTables.readEnemyIgnoreHitsCountdown(s) != 0
                     && !owner.hitThisFrame(s, f.inputs().frame())) {
-                if (owner.motions
-                        .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                        .isActive(s)) {
+                var enemyRecoilMotion = owner.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+                if (enemyRecoilMotion.isActive(s)) {
                     e = owner.backgroundMechanics
                             .applyEnemyRecoilIfNeeded(e, f.inputs().backgroundCollision())
                             .entity();

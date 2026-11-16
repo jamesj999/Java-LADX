@@ -18,62 +18,73 @@ final class EntityFlyingEnemyInspection {
     }
 
     int keeseState(int slot) {
-        return motions.get(KeeseMotion.class, KeeseMotion::new).state(slot);
+        var keeseMotion = motions.get(KeeseMotion.class, KeeseMotion::new);
+        return keeseMotion.state(slot);
     }
 
     int keeseTransitionCountdown(int slot) {
-        return motions.get(KeeseMotion.class, KeeseMotion::new).transitionCountdown(slot);
+        var keeseMotion = motions.get(KeeseMotion.class, KeeseMotion::new);
+        return keeseMotion.transitionCountdown(slot);
     }
 
     int keeseAngle(int slot) {
-        return motions.get(KeeseMotion.class, KeeseMotion::new).angle(slot);
+        var keeseMotion = motions.get(KeeseMotion.class, KeeseMotion::new);
+        return keeseMotion.angle(slot);
     }
 
     int keeseSpeedX(int slot) {
-        return motions.get(KeeseMotion.class, KeeseMotion::new).speedX(slot);
+        var keeseMotion = motions.get(KeeseMotion.class, KeeseMotion::new);
+        return keeseMotion.speedX(slot);
     }
 
     int keeseSpeedY(int slot) {
-        return motions.get(KeeseMotion.class, KeeseMotion::new).speedY(slot);
+        var keeseMotion = motions.get(KeeseMotion.class, KeeseMotion::new);
+        return keeseMotion.speedY(slot);
     }
 
     int pairoddState(int slot) {
-        return motions.get(PairoddMotion.class, PairoddMotion::new).state(slot);
+        var pairoddMotion = motions.get(PairoddMotion.class, PairoddMotion::new);
+        return pairoddMotion.state(slot);
     }
 
     int pairoddTransitionCountdown(int slot) {
-        return motions.get(PairoddMotion.class, PairoddMotion::new).transitionCountdown(slot);
+        var pairoddMotion = motions.get(PairoddMotion.class, PairoddMotion::new);
+        return pairoddMotion.transitionCountdown(slot);
     }
 
     int pairoddDirection(int slot) {
-        return motions.get(PairoddMotion.class, PairoddMotion::new).direction(slot);
+        var pairoddMotion = motions.get(PairoddMotion.class, PairoddMotion::new);
+        return pairoddMotion.direction(slot);
     }
 
     int pairoddProjectileSpeedX(int slot) {
-        return motions.get(PairoddProjectileMotion.class, PairoddProjectileMotion::new)
-                .speedX(slot);
+        var pairoddProjectileMotion = motions.get(PairoddProjectileMotion.class, PairoddProjectileMotion::new);
+        return pairoddProjectileMotion.speedX(slot);
     }
 
     int pairoddProjectileSpeedY(int slot) {
-        return motions.get(PairoddProjectileMotion.class, PairoddProjectileMotion::new)
-                .speedY(slot);
+        var pairoddProjectileMotion = motions.get(PairoddProjectileMotion.class, PairoddProjectileMotion::new);
+        return pairoddProjectileMotion.speedY(slot);
     }
 
     int pairoddProjectileDirection(int slot) {
-        return motions.get(PairoddProjectileMotion.class, PairoddProjectileMotion::new)
-                .direction(slot);
+        var pairoddProjectileMotion = motions.get(PairoddProjectileMotion.class, PairoddProjectileMotion::new);
+        return pairoddProjectileMotion.direction(slot);
     }
 
     int fishState(int slot) {
-        return motions.get(FishMotion.class, FishMotion::new).state(slot);
+        var fishMotion = motions.get(FishMotion.class, FishMotion::new);
+        return fishMotion.state(slot);
     }
 
     int fishSpeedX(int slot) {
-        return motions.get(FishMotion.class, FishMotion::new).speedX(slot);
+        var fishMotion = motions.get(FishMotion.class, FishMotion::new);
+        return fishMotion.speedX(slot);
     }
 
     int fishSpeedZ(int slot) {
-        return motions.get(FishMotion.class, FishMotion::new).speedZ(slot);
+        var fishMotion = motions.get(FishMotion.class, FishMotion::new);
+        return fishMotion.speedZ(slot);
     }
 
     int fishTransitionCountdown(int slot) {
@@ -82,19 +93,23 @@ final class EntityFlyingEnemyInspection {
     }
 
     int crowState(int slot) {
-        return motions.get(CrowMotion.class, CrowMotion::new).state(slot);
+        var crowMotion = motions.get(CrowMotion.class, CrowMotion::new);
+        return crowMotion.state(slot);
     }
 
     int crowSpeedX(int slot) {
-        return motions.get(CrowMotion.class, CrowMotion::new).speedX(slot);
+        var crowMotion = motions.get(CrowMotion.class, CrowMotion::new);
+        return crowMotion.speedX(slot);
     }
 
     int crowSpeedY(int slot) {
-        return motions.get(CrowMotion.class, CrowMotion::new).speedY(slot);
+        var crowMotion = motions.get(CrowMotion.class, CrowMotion::new);
+        return crowMotion.speedY(slot);
     }
 
     int crowSpeedZ(int slot) {
-        return motions.get(CrowMotion.class, CrowMotion::new).speedZ(slot);
+        var crowMotion = motions.get(CrowMotion.class, CrowMotion::new);
+        return crowMotion.speedZ(slot);
     }
 
     int crowTransitionCountdown(int slot) {
@@ -103,15 +118,18 @@ final class EntityFlyingEnemyInspection {
     }
 
     int booBuddyState(int slot) {
-        return motions.get(BooBuddyMotion.class, BooBuddyMotion::new).state(slot);
+        var booBuddyMotion = motions.get(BooBuddyMotion.class, BooBuddyMotion::new);
+        return booBuddyMotion.state(slot);
     }
 
     int booBuddySpeedX(int slot) {
-        return motions.get(BooBuddyMotion.class, BooBuddyMotion::new).speedX(slot);
+        var booBuddyMotion = motions.get(BooBuddyMotion.class, BooBuddyMotion::new);
+        return booBuddyMotion.speedX(slot);
     }
 
     int booBuddySpeedY(int slot) {
-        return motions.get(BooBuddyMotion.class, BooBuddyMotion::new).speedY(slot);
+        var booBuddyMotion = motions.get(BooBuddyMotion.class, BooBuddyMotion::new);
+        return booBuddyMotion.speedY(slot);
     }
 
     int booBuddyTransitionCountdown(int slot) {
@@ -120,6 +138,7 @@ final class EntityFlyingEnemyInspection {
     }
 
     int booBuddyTriggerCount() {
-        return motions.get(BooBuddyMotion.class, BooBuddyMotion::new).readBooBuddyTriggerCount();
+        var booBuddyMotion = motions.get(BooBuddyMotion.class, BooBuddyMotion::new);
+        return booBuddyMotion.readBooBuddyTriggerCount();
     }
 }

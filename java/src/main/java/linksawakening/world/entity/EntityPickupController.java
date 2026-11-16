@@ -147,25 +147,23 @@ public final class EntityPickupController {
                     linkEntityX,
                     linkEntityY,
                     EntityRomConstants.DROPPABLE_REVEAL_VECTOR_LENGTH);
-            this.motions.get(FairyMotion.class, FairyMotion::new).setSpeed(slot, vector.x(), vector.y());
+            var fairyMotion = this.motions.get(FairyMotion.class, FairyMotion::new);
+            fairyMotion.setSpeed(slot, vector.x(), vector.y());
             return;
         }
 
-        this.motions
-                .get(EnemyDropMotion.class, EnemyDropMotion::new)
-                .initialize(
-                        slot,
-                        this.physicsTables.readGroundInteractionSideScrolling(),
-                        EntityRomConstants.DROPPABLE_REVEAL_SPEED_Z);
-        this.motions
-                .get(EnemyDropMotion.class, EnemyDropMotion::new)
-                .initializeAwayFromLink(
-                        slot,
-                        entity.x(),
-                        entity.y(),
-                        linkEntityX,
-                        linkEntityY,
-                        EntityRomConstants.DROPPABLE_REVEAL_VECTOR_LENGTH);
+        var enemyDropMotion = this.motions.get(EnemyDropMotion.class, EnemyDropMotion::new);
+        enemyDropMotion.initialize(
+                slot,
+                this.physicsTables.readGroundInteractionSideScrolling(),
+                EntityRomConstants.DROPPABLE_REVEAL_SPEED_Z);
+        enemyDropMotion.initializeAwayFromLink(
+                slot,
+                entity.x(),
+                entity.y(),
+                linkEntityX,
+                linkEntityY,
+                EntityRomConstants.DROPPABLE_REVEAL_VECTOR_LENGTH);
         this.bossRewards.writeEnemyDropActive(slot, true);
         this.physicsTables.writeEntityOptions1Override(slot, EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
     }
@@ -214,9 +212,8 @@ public final class EntityPickupController {
             initializeCommonDroppable(entity);
         }
         if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
-            this.motions
-                    .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                    .ensureInitialized(slot, this.roomVariables.readEntityRoomId());
+            var secretSeashellMotion = this.motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+            secretSeashellMotion.ensureInitialized(slot, this.roomVariables.readEntityRoomId());
             this.physicsTables.writeEntityOptions1Override(slot, EntityRomConstants.SECRET_SEASHELL_HIDDEN_OPTIONS1);
         }
         if (this.indoorRoom && RoomEntityPickupRules.usesIndoorDefaultSlowTimer(entity.type())) {
@@ -378,7 +375,8 @@ public final class EntityPickupController {
                 false);
         this.slots.replace(freeSlot, zol);
         this.lifecycle.initializeHealthGroup(freeSlot);
-        this.motions.get(ZolGelMotion.class, ZolGelMotion::new).prepareChestSpawn(freeSlot);
+        var zolGelMotion = this.motions.get(ZolGelMotion.class, ZolGelMotion::new);
+        zolGelMotion.prepareChestSpawn(freeSlot);
         this.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_ZOL));
         this.combatTables.writeEnemyHitboxFlags(freeSlot, 0);
         this.combatTables.writeEnemyHealth(freeSlot, this.slotProperties.initialHealth(EntityRomConstants.ENTITY_ZOL));
@@ -430,15 +428,16 @@ public final class EntityPickupController {
         this.physicsTables.writeEntityGroundStatus(freeSlot, 0);
         this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
         this.physicsTables.writeEntityOptions1Override(freeSlot, -1);
-        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(freeSlot);
         this.bossRewards.writeDropPrivateCountdown1(freeSlot, 0x18);
         this.bossRewards.writeDropPrivateCountdown3(freeSlot, 0x03);
         if (itemType == EntityRomConstants.ENTITY_DROPPABLE_FAIRY) {
-            this.motions.get(FairyMotion.class, FairyMotion::new).initialize(freeSlot);
+            var fairyMotion = this.motions.get(FairyMotion.class, FairyMotion::new);
+            fairyMotion.initialize(freeSlot);
         } else {
-            this.motions
-                    .get(EnemyDropMotion.class, EnemyDropMotion::new)
-                    .initialize(freeSlot, this.physicsTables.readGroundInteractionSideScrolling());
+            var enemyDropMotion = this.motions.get(EnemyDropMotion.class, EnemyDropMotion::new);
+            enemyDropMotion.initialize(freeSlot, this.physicsTables.readGroundInteractionSideScrolling());
             this.bossRewards.writeEnemyDropActive(freeSlot, true);
         }
         this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
@@ -480,9 +479,8 @@ public final class EntityPickupController {
         this.slots.replace(freeSlot, drop);
         this.lifecycle.initializeHealthGroup(freeSlot);
         this.resetEnemyDropState(freeSlot);
-        this.motions
-                .get(EnemyDropMotion.class, EnemyDropMotion::new)
-                .initialize(freeSlot, this.physicsTables.readGroundInteractionSideScrolling(), speedZ);
+        var enemyDropMotion = this.motions.get(EnemyDropMotion.class, EnemyDropMotion::new);
+        enemyDropMotion.initialize(freeSlot, this.physicsTables.readGroundInteractionSideScrolling(), speedZ);
         this.bossRewards.writeEnemyDropActive(freeSlot, true);
         this.physicsTables.writeSlowTransitionCountdown(freeSlot, 0);
         this.physicsTables.writeSlowTimerInitialized(freeSlot, false);
@@ -499,7 +497,8 @@ public final class EntityPickupController {
         this.physicsTables.writeEntityGroundStatus(freeSlot, 0);
         this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
         this.physicsTables.writeEntityOptions1Override(freeSlot, -1);
-        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(freeSlot);
         this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         return freeSlot;
     }
@@ -547,26 +546,17 @@ public final class EntityPickupController {
                         }
                     }
                 } else if (hiddenState == EntityRomConstants.DROPPABLE_HIDDEN_STATE_PEGASUS) {
-                    reveal = owner.motions
-                                    .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                                    .readSecretSeashellScreenShakeActive()
-                            && owner.motions
-                                    .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                                    .readSecretSeashellPegasusCollisionActive()
-                            && (!owner.motions
-                                            .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                                            .readSecretSeashellPegasusCollisionCoordinatesKnown()
+                    var secretSeashellMotion = owner.motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+                    reveal = secretSeashellMotion.readSecretSeashellScreenShakeActive()
+                            && secretSeashellMotion.readSecretSeashellPegasusCollisionActive()
+                            && (!secretSeashellMotion.readSecretSeashellPegasusCollisionCoordinatesKnown()
                                     || (withinUnsignedWindow(
                                                     entity.x() + 0x08,
-                                                    owner.motions
-                                                            .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                                                            .readSecretSeashellPegasusCollisionX(),
+                                                    secretSeashellMotion.readSecretSeashellPegasusCollisionX(),
                                                     0x10)
                                             && withinUnsignedWindow(
                                                     entity.y() + 0x08,
-                                                    owner.motions
-                                                            .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                                                            .readSecretSeashellPegasusCollisionY(),
+                                                    secretSeashellMotion.readSecretSeashellPegasusCollisionY(),
                                                     0x10)));
                 }
 
@@ -592,9 +582,8 @@ public final class EntityPickupController {
                             : EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
             if (entity.type() != EntityRomConstants.ENTITY_DROPPABLE_FAIRY
                     && !owner.bossRewards.readEnemyDropActive(slot)) {
-                owner.motions
-                        .get(EnemyDropMotion.class, EnemyDropMotion::new)
-                        .initialize(slot, owner.physicsTables.readGroundInteractionSideScrolling());
+                var enemyDropMotion = owner.motions.get(EnemyDropMotion.class, EnemyDropMotion::new);
+                enemyDropMotion.initialize(slot, owner.physicsTables.readGroundInteractionSideScrolling());
                 owner.bossRewards.writeEnemyDropActive(slot, true);
             }
             return owner.commonUpdate(

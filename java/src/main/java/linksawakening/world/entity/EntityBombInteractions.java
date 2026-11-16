@@ -79,7 +79,8 @@ public final class EntityBombInteractions {
         }
         // ConvertToBombArrowIfNeeded zeros speeds, but BombEntityHandler
         // must still run gravity and floor contact on subsequent frames.
-        this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new).startEnemyBomb(slot, 0, 0, 0);
+        var thrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+        thrownEntityMotion.startEnemyBomb(slot, 0, 0, 0);
         // Keep the placed-bomb bridge from restoring directional launch speed.
         state.writePlacedBombMotionInitialized(slot, true);
     }
@@ -88,14 +89,13 @@ public final class EntityBombInteractions {
         state.writePlayerArrowBombArrow(slot, true);
         RoomEntity arrow = this.slots.get(slot);
         if (arrow.loaded() && arrow.type() == EntityRomConstants.ENTITY_ARROW) {
+            var playerArrowMotion = this.motions.get(PlayerArrowMotion.class, PlayerArrowMotion::new);
             this.slots.replace(
                     slot,
                     this.spriteHandlers.present(
                             arrow,
                             this.slotProperties.spriteViews().forBombArrow(),
-                            this.motions
-                                    .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
-                                    .direction(slot)));
+                            playerArrowMotion.direction(slot)));
         }
     }
 
@@ -186,7 +186,8 @@ public final class EntityBombInteractions {
             this.queueEnemyBombLinkCollision(bomb, projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
             return;
         }
-        this.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new).writeSwordMoblinAlertingSoundCounter(0x04);
+        var moblinSwordMotion = this.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new);
+        moblinSwordMotion.writeSwordMoblinAlertingSoundCounter(0x04);
 
         for (int targetSlot = this.slots.size() - 1; targetSlot >= 0; targetSlot--) {
             RoomEntity target = this.slots.get(targetSlot);
@@ -213,7 +214,8 @@ public final class EntityBombInteractions {
             int linkEntityX,
             int linkEntityY,
             EnemyProjectileCollision.LinkState projectileLinkState) {
-        this.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new).writeSwordMoblinAlertingSoundCounter(0x04);
+        var moblinSwordMotion = this.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new);
+        moblinSwordMotion.writeSwordMoblinAlertingSoundCounter(0x04);
         int bombX = bomb.x() & 0xFF;
         int bombY = bomb.y() & 0xFF;
         if (!isWithinBombExplosionWindow(bombX, linkEntityX) || !isWithinBombExplosionWindow(bombY, linkEntityY)) {
@@ -312,22 +314,22 @@ public final class EntityBombInteractions {
                             .build());
         }
 
-        this.motions
-                .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                .configureFromSource(targetSlot, bomb.x(), bomb.y(), bomb.z(), target.x(), target.y(), 0x30);
+        var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.configureFromSource(targetSlot, bomb.x(), bomb.y(), bomb.z(), target.x(), target.y(), 0x30);
     }
 
     public RoomEntity applyBombStunnedPostActiveWork(
             RoomEntity stunned, RoomEntityBackgroundCollision backgroundCollision, int frame) {
         int slot = stunned.slot();
         RoomEntity moved = stunned;
-        if (this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).isActive(slot)) {
+        var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        if (enemyRecoilMotion.isActive(slot)) {
             moved = this.backgroundMechanics
                     .applyEnemyRecoilIfNeeded(moved, backgroundCollision)
                     .entity();
         }
-        moved = this.motions
-                .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
+        var thrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+        moved = thrownEntityMotion
                 .advance(
                         moved,
                         this.physicsTables.readGroundInteractionSideScrolling(),
@@ -335,7 +337,7 @@ public final class EntityBombInteractions {
                         frame,
                         this.physicsTables.readEntityGroundStatus(slot))
                 .entity();
-        this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(slot);
+        thrownEntityMotion.clear(slot);
         this.liftThrow.writeThrownMotionInitialized(slot, false);
         return withStatus(moved, stunned.status());
     }

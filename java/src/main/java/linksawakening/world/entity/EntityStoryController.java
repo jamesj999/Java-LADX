@@ -183,17 +183,15 @@ public final class EntityStoryController {
                 && !linkAirborne
                 && this.linkState.readDialogCooldown() == 0
                 && this.linkState.readWindowY() == 0x80) {
-            if ((this.roomVariables.readInstrument2Flags() & 0x02) != 0
-                    && this.motions.get(BowWowMotion.class, BowWowMotion::new).readBowWowState() == 0x01) {
-                this.motions.get(BowWowMotion.class, BowWowMotion::new).writeBowWowState(0);
+            var bowWowMotion = this.motions.get(BowWowMotion.class, BowWowMotion::new);
+            if ((this.roomVariables.readInstrument2Flags() & 0x02) != 0 && bowWowMotion.readBowWowState() == 0x01) {
+                bowWowMotion.writeBowWowState(0);
                 this.physicsTables.writeEnemyTransitionCountdown(slot, 0x10);
                 this.events.pendingDialogRequests.add(new DialogRequest(1, 0x2F));
                 return;
             }
             int dialogLowId =
-                    switch (this.motions
-                            .get(BowWowMotion.class, BowWowMotion::new)
-                            .readBowWowState()) {
+                    switch (bowWowMotion.readBowWowState()) {
                         case 0 -> 0x30;
                         case 1 -> 0x32;
                         default -> 0x31;
@@ -273,7 +271,8 @@ public final class EntityStoryController {
     }
 
     public void advanceWitchGotItemPresentation(int slot) {
-        int countdown = this.motions.get(WitchMotion.class, WitchMotion::new).readWitchGotItemCountdown(slot);
+        var witchMotion = this.motions.get(WitchMotion.class, WitchMotion::new);
+        int countdown = witchMotion.readWitchGotItemCountdown(slot);
         if (countdown == 0) {
             return;
         }
@@ -282,7 +281,7 @@ public final class EntityStoryController {
             return;
         }
         countdown--;
-        this.motions.get(WitchMotion.class, WitchMotion::new).writeWitchGotItemCountdown(slot, countdown);
+        witchMotion.writeWitchGotItemCountdown(slot, countdown);
         if (countdown == 0x02) {
             this.events.pendingDialogRequests.add(new DialogRequest(0, 0x99));
         }
@@ -293,38 +292,20 @@ public final class EntityStoryController {
     }
 
     public void enableBowWowFollowing() {
-        this.motions
-                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                .writeFollowingNpcState(new FollowingNpcState(
-                        this.motions
-                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                                .readFollowingNpcState()
-                                .roosterFollowing(),
-                        this.motions
-                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                                .readFollowingNpcState()
-                                .ghostFollowingState(),
-                        this.motions
-                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                                .readFollowingNpcState()
-                                .marinFollowing(),
-                        true,
-                        this.motions
-                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                                .readFollowingNpcState()
-                                .instrument4Flags(),
-                        this.motions
-                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                                .readFollowingNpcState()
-                                .powerBraceletLevel(),
-                        this.motions
-                                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                                .readFollowingNpcState()
-                                .db10()));
+        var followingNpcMotion = this.motions.get(FollowingNpcMotion.class, FollowingNpcMotion::new);
+        followingNpcMotion.writeFollowingNpcState(new FollowingNpcState(
+                followingNpcMotion.readFollowingNpcState().roosterFollowing(),
+                followingNpcMotion.readFollowingNpcState().ghostFollowingState(),
+                followingNpcMotion.readFollowingNpcState().marinFollowing(),
+                true,
+                followingNpcMotion.readFollowingNpcState().instrument4Flags(),
+                followingNpcMotion.readFollowingNpcState().powerBraceletLevel(),
+                followingNpcMotion.readFollowingNpcState().db10()));
     }
 
     public void markBowWowRescued() {
-        this.motions.get(BowWowMotion.class, BowWowMotion::new).writeBowWowState(0x01);
+        var bowWowMotion = this.motions.get(BowWowMotion.class, BowWowMotion::new);
+        bowWowMotion.writeBowWowState(0x01);
     }
 
     public void consumeToadstool() {
@@ -332,21 +313,23 @@ public final class EntityStoryController {
     }
 
     public void startWitchGotItemCountdown(int slot) {
-        this.motions.get(WitchMotion.class, WitchMotion::new).writeWitchGotItemCountdown(slot, 0x2A);
+        var witchMotion = this.motions.get(WitchMotion.class, WitchMotion::new);
+        witchMotion.writeWitchGotItemCountdown(slot, 0x2A);
     }
 
     public int bowWowState() {
-        return this.motions.get(BowWowMotion.class, BowWowMotion::new).readBowWowState();
+        var bowWowMotion = this.motions.get(BowWowMotion.class, BowWowMotion::new);
+        return bowWowMotion.readBowWowState();
     }
 
     public FollowingNpcState followingNpcState() {
-        return this.motions
-                .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                .readFollowingNpcState();
+        var followingNpcMotion = this.motions.get(FollowingNpcMotion.class, FollowingNpcMotion::new);
+        return followingNpcMotion.readFollowingNpcState();
     }
 
     public int booBuddyTriggerCount() {
-        return this.motions.get(BooBuddyMotion.class, BooBuddyMotion::new).readBooBuddyTriggerCount();
+        var booBuddyMotion = this.motions.get(BooBuddyMotion.class, BooBuddyMotion::new);
+        return booBuddyMotion.readBooBuddyTriggerCount();
     }
 
     public boolean playerHasToadstool() {
@@ -450,12 +433,10 @@ public final class EntityStoryController {
                 owner.state.owlState().writeOwlEventState(slot, 2);
                 return false;
             } else if (owner.roomVariables.readEntityRoomId() == EntityRomConstants.ROOM_OW_EAST_OF_MOBLIN_HIDEOUT) {
+                var bowWowMotion = owner.motions.get(BowWowMotion.class, BowWowMotion::new);
                 if (owner.pickups.readChestSwordLevel() == 0
                         || owner.roomVariables.readInstrument2Flags() != 0
-                        || owner.motions
-                                        .get(BowWowMotion.class, BowWowMotion::new)
-                                        .readBowWowState()
-                                != 0x01
+                        || bowWowMotion.readBowWowState() != 0x01
                         || (owner.roomVariables.readInstrument1Flags() & 0x02) == 0) {
                     owner.lifecycle.disableEntityWithoutPersistence(slot);
                     return false;
@@ -722,7 +703,8 @@ public final class EntityStoryController {
                 owner.slots.replace(slot, updated);
                 return false;
             }
-            if (owner.motions.get(BowWowMotion.class, BowWowMotion::new).readBowWowState() != 0) {
+            var bowWowMotion = owner.motions.get(BowWowMotion.class, BowWowMotion::new);
+            if (bowWowMotion.readBowWowState() != 0) {
                 owner.events.pendingDialogRequests.add(new DialogRequest(1, 0x2D));
             } else if ((owner.roomVariables.readEntityRoomStatus() & 0x10) == 0
                     || owner.roomVariables.readEntityGoldenLeavesCount() == 0) {
@@ -869,7 +851,8 @@ public final class EntityStoryController {
                 owner.slots.replace(slot, withZ(withPositionAndVariant(entity, x, entity.y(), 0), z));
                 return false;
             }
-            if (owner.motions.get(BowWowMotion.class, BowWowMotion::new).readBowWowState() == 0x80) {
+            var bowWowMotion = owner.motions.get(BowWowMotion.class, BowWowMotion::new);
+            if (bowWowMotion.readBowWowState() == 0x80) {
                 owner.advanceKidnapWarningKid(entity, frame, linkX, linkY);
                 return false;
             }

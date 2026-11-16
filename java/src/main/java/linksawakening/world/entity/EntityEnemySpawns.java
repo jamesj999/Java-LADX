@@ -154,12 +154,12 @@ public final class EntityEnemySpawns {
                 freeSlot, this.slotProperties.initialHealth(EntityRomConstants.ENTITY_PAIRODD_PROJECTILE));
         this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
         this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(freeSlot);
         this.combatTables.writeDyingCountdown(freeSlot, 0);
         this.combatTables.writePowerRecoilDeath(freeSlot, false);
-        this.motions
-                .get(PairoddProjectileMotion.class, PairoddProjectileMotion::new)
-                .initializeSpawn(freeSlot, source, linkEntityX, linkEntityY);
+        var pairoddProjectileMotion = this.motions.get(PairoddProjectileMotion.class, PairoddProjectileMotion::new);
+        pairoddProjectileMotion.initializeSpawn(freeSlot, source, linkEntityX, linkEntityY);
     }
 
     public void spawnGopongaProjectile(RoomEntity source, GiantGopongaMotion.ProjectileSpawn spawn) {
@@ -198,10 +198,10 @@ public final class EntityEnemySpawns {
         this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
         this.combatTables.writeEnemyIgnoreHitsCountdown(
                 freeSlot, GopongaProjectileMotion.INITIAL_IGNORE_HITS_COUNTDOWN);
-        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        this.motions
-                .get(GopongaProjectileMotion.class, GopongaProjectileMotion::new)
-                .initializeSpawn(freeSlot, spawn.speedX(), spawn.speedY());
+        var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(freeSlot);
+        var gopongaProjectileMotion = this.motions.get(GopongaProjectileMotion.class, GopongaProjectileMotion::new);
+        gopongaProjectileMotion.initializeSpawn(freeSlot, spawn.speedX(), spawn.speedY());
         this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
@@ -241,10 +241,10 @@ public final class EntityEnemySpawns {
         this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
         this.combatTables.writeEnemyIgnoreHitsCountdown(
                 freeSlot, GopongaProjectileMotion.INITIAL_IGNORE_HITS_COUNTDOWN);
-        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        this.motions
-                .get(GopongaProjectileMotion.class, GopongaProjectileMotion::new)
-                .initializeSpawn(freeSlot, spawn.speedX(), spawn.speedY(), true);
+        var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(freeSlot);
+        var gopongaProjectileMotion = this.motions.get(GopongaProjectileMotion.class, GopongaProjectileMotion::new);
+        gopongaProjectileMotion.initializeSpawn(freeSlot, spawn.speedX(), spawn.speedY(), true);
         this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
@@ -287,8 +287,10 @@ public final class EntityEnemySpawns {
                 freeSlot, this.slotProperties.initialHealth(EntityRomConstants.ENTITY_ZOMBIE));
         this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
         this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        this.motions.get(ZombieMotion.class, ZombieMotion::new).initializeChild(freeSlot);
+        var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(freeSlot);
+        var zombieMotion = this.motions.get(ZombieMotion.class, ZombieMotion::new);
+        zombieMotion.initializeChild(freeSlot);
         this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
@@ -330,11 +332,11 @@ public final class EntityEnemySpawns {
         // ConfigureNewEntity seeds one ignored-hit frame; the child handler
         // decrements it before its first interactive collision pass.
         this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(freeSlot);
         this.physicsTables.writeEntityInertia(freeSlot, 0);
-        this.motions
-                .get(PokeyMotion.class, PokeyMotion::new)
-                .initializeSegment(freeSlot, spawn.speedX(), spawn.speedY());
+        var pokeyMotion = this.motions.get(PokeyMotion.class, PokeyMotion::new);
+        pokeyMotion.initializeSegment(freeSlot, spawn.speedX(), spawn.speedY());
         this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
@@ -374,10 +376,10 @@ public final class EntityEnemySpawns {
                 freeSlot, this.slotProperties.initialHealth(EntityRomConstants.ENTITY_WIZROBE_PROJECTILE));
         this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
         this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        this.motions
-                .get(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new)
-                .initializeSpawn(freeSlot, spawn.direction());
+        var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(freeSlot);
+        var wizrobeProjectileMotion = this.motions.get(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new);
+        wizrobeProjectileMotion.initializeSpawn(freeSlot, spawn.direction());
         this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
@@ -420,10 +422,10 @@ public final class EntityEnemySpawns {
         // stores register B over it. AnimateEntities keeps B at zero, so this
         // clone enters its fleeing handler with no ignore-hits countdown.
         this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 0);
-        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
-        this.motions
-                .get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
-                .initializeClone(freeSlot, request.speedX(), request.speedY());
+        var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(freeSlot);
+        var stalfosEvasiveMotion = this.motions.get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new);
+        stalfosEvasiveMotion.initializeClone(freeSlot, request.speedX(), request.speedY());
         this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         this.events.pendingEntityEvents.add(new EntityCombatEvent(
                 source.slot(), source.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x0A));
@@ -477,12 +479,12 @@ public final class EntityEnemySpawns {
                 freeSlot, this.slotProperties.initialHealth(EntityRomConstants.ENTITY_OCTOROK_ROCK));
         this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
         this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(freeSlot);
         this.combatTables.writeDyingCountdown(freeSlot, 0);
         this.combatTables.writePowerRecoilDeath(freeSlot, false);
-        this.motions
-                .get(EnemyProjectileMotion.class, EnemyProjectileMotion::new)
-                .initializeSpawn(freeSlot, EntityRomConstants.ENTITY_OCTOROK_ROCK, direction);
+        var enemyProjectileMotion = this.motions.get(EnemyProjectileMotion.class, EnemyProjectileMotion::new);
+        enemyProjectileMotion.initializeSpawn(freeSlot, EntityRomConstants.ENTITY_OCTOROK_ROCK, direction);
         this.physicsTables.writeEnemyProjectileSpawnedThisFrame(freeSlot, true);
     }
 
@@ -517,9 +519,8 @@ public final class EntityEnemySpawns {
                 false);
         this.slots.replace(freeSlot, angry);
         this.lifecycle.initializeHealthGroup(freeSlot);
-        this.motions
-                .get(CuccoMotion.class, CuccoMotion::new)
-                .initializeAngry(freeSlot, request.speedX(), request.speedY());
+        var cuccoMotion = this.motions.get(CuccoMotion.class, CuccoMotion::new);
+        cuccoMotion.initializeAngry(freeSlot, request.speedX(), request.speedY());
         this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
         this.physicsTables.writeEntityOptions1Override(freeSlot, CuccoMotion.ANGRY_OPTIONS1);
         this.physicsTables.writeEnemyPhysicsFlags(freeSlot, CuccoMotion.ANGRY_PHYSICS_FLAGS);
@@ -563,12 +564,8 @@ public final class EntityEnemySpawns {
         this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
         this.combatTables.writeDyingCountdown(freeSlot, 0);
         this.combatTables.writePowerRecoilDeath(freeSlot, false);
-        this.motions
-                .get(LaserMotion.class, LaserMotion::new)
-                .initializeSensor(
-                        freeSlot,
-                        parent.slot(),
-                        this.motions.get(LaserMotion.class, LaserMotion::new).direction(parent.slot()));
+        var laserMotion = this.motions.get(LaserMotion.class, LaserMotion::new);
+        laserMotion.initializeSensor(freeSlot, parent.slot(), laserMotion.direction(parent.slot()));
         this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
     }
 
@@ -602,13 +599,12 @@ public final class EntityEnemySpawns {
         this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
         this.combatTables.writeDyingCountdown(freeSlot, 0);
         this.combatTables.writePowerRecoilDeath(freeSlot, false);
-        this.motions
-                .get(LaserMotion.class, LaserMotion::new)
-                .initializeBeam(
-                        freeSlot,
-                        this.motions.get(LaserMotion.class, LaserMotion::new).direction(parent.slot()),
-                        this.motions.get(LaserMotion.class, LaserMotion::new).speedX(parent.slot()),
-                        this.motions.get(LaserMotion.class, LaserMotion::new).speedY(parent.slot()));
+        var laserMotion = this.motions.get(LaserMotion.class, LaserMotion::new);
+        laserMotion.initializeBeam(
+                freeSlot,
+                laserMotion.direction(parent.slot()),
+                laserMotion.speedX(parent.slot()),
+                laserMotion.speedY(parent.slot()));
         this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         return true;
     }
@@ -682,13 +678,11 @@ public final class EntityEnemySpawns {
         runtime.bombInteractions.writePlacedBombMotionInitialized(freeSlot, false);
         runtime.bombInteractions.writeEnemyBombMotionInitialized(freeSlot, initializeMotion);
         if (initializeMotion) {
-            runtime.motions
-                    .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
-                    .startEnemyBomb(freeSlot, speedX, speedY, speedZ);
+            var thrownEntityMotion = runtime.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+            thrownEntityMotion.startEnemyBomb(freeSlot, speedX, speedY, speedZ);
         } else {
-            runtime.motions
-                    .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
-                    .clear(freeSlot);
+            var thrownEntityMotion = runtime.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+            thrownEntityMotion.clear(freeSlot);
         }
         runtime.liftThrow.writeThrownMotionInitialized(freeSlot, false);
         runtime.combatTables.writeEnemyHitboxFlags(freeSlot, 0);
@@ -708,13 +702,9 @@ public final class EntityEnemySpawns {
 
     static void enemyProjectileSpawnsSpawnEnemyProjectile(
             EntityEnemySpawns runtime, RoomEntity source, RoamingEnemyMotion.LaunchRequest request) {
+        var roamingEnemyMotion = runtime.motions.get(RoamingEnemyMotion.class, RoamingEnemyMotion::new);
         EntityEnemySpawns.enemyProjectileSpawnsSpawnEnemyProjectile(
-                runtime,
-                source,
-                request,
-                runtime.motions
-                        .get(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
-                        .direction(source.slot()));
+                runtime, source, request, roamingEnemyMotion.direction(source.slot()));
     }
 
     static void enemyProjectileSpawnsSpawnEnemyProjectile(
@@ -756,12 +746,12 @@ public final class EntityEnemySpawns {
         runtime.combatTables.writeEnemyHealth(freeSlot, runtime.slotProperties.initialHealth(request.projectileType()));
         runtime.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
         runtime.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
-        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        var enemyRecoilMotion = runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(freeSlot);
         runtime.combatTables.writeDyingCountdown(freeSlot, 0);
         runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
-        runtime.motions
-                .get(EnemyProjectileMotion.class, EnemyProjectileMotion::new)
-                .initializeSpawn(freeSlot, request.projectileType(), direction);
+        var enemyProjectileMotion = runtime.motions.get(EnemyProjectileMotion.class, EnemyProjectileMotion::new);
+        enemyProjectileMotion.initializeSpawn(freeSlot, request.projectileType(), direction);
         runtime.physicsTables.writeEnemyProjectileSpawnedThisFrame(freeSlot, true);
     }
 }

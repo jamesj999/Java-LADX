@@ -93,9 +93,9 @@ public final class EntitySlotProperties {
     }
 
     void resolveThreeOfAKindPuzzle() {
-        ThreeOfAKindMotion.PuzzleResult result = this.motions
-                .get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new)
-                .resolvePuzzle(this.puzzleEntities(), this.puzzleCountdown);
+        var threeOfAKindMotion = this.motions.get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new);
+        ThreeOfAKindMotion.PuzzleResult result =
+                threeOfAKindMotion.resolvePuzzle(this.puzzleEntities(), this.puzzleCountdown);
         if (result == ThreeOfAKindMotion.PuzzleResult.NONE) {
             return;
         }
@@ -109,9 +109,7 @@ public final class EntitySlotProperties {
             }
         }
         int jingle = result == ThreeOfAKindMotion.PuzzleResult.MATCH
-                ? this.motions
-                        .get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new)
-                        .matchedJingle(coordinatorSlot)
+                ? threeOfAKindMotion.matchedJingle(coordinatorSlot)
                 : 0x1D;
         this.events.pendingEntityEvents.add(new EntityCombatEvent(
                 coordinatorSlot,
@@ -129,11 +127,7 @@ public final class EntitySlotProperties {
                 continue;
             }
             int slot = entity.slot();
-            this.bossRewards.writeDroppedItemBySlot(
-                    slot,
-                    this.motions
-                            .get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new)
-                            .matchedDrop(slot));
+            this.bossRewards.writeDroppedItemBySlot(slot, threeOfAKindMotion.matchedDrop(slot));
             this.combatTables.writeDyingCountdown(slot, 0x1F);
             this.combatTables.writeEnemyHealth(slot, 0);
             this.physicsTables.writeEnemyPhysicsFlags(slot, 0x04);
@@ -208,24 +202,9 @@ public final class EntitySlotProperties {
         for (int slot = 0; slot < this.slots.size(); slot++) {
             RoomEntity entity = this.slots.get(slot);
             if (entity.type() != EntityRomConstants.ENTITY_BOW_WOW || entity.status() != EntityStatus.ACTIVE) continue;
-            this.slots.replace(
-                    slot,
-                    this.motions
-                            .get(BowWowMotion.class, BowWowMotion::new)
-                            .advanceChain(
-                                    entity,
-                                    this.motions
-                                            .get(BowWowMotion.class, BowWowMotion::new)
-                                            .readBowWowState(),
-                                    moving));
-            entries.addAll(this.motions
-                    .get(BowWowMotion.class, BowWowMotion::new)
-                    .chainEntries(
-                            slot,
-                            this.motions
-                                    .get(BowWowMotion.class, BowWowMotion::new)
-                                    .readBowWowState(),
-                            frame));
+            var bowWowMotion = this.motions.get(BowWowMotion.class, BowWowMotion::new);
+            this.slots.replace(slot, bowWowMotion.advanceChain(entity, bowWowMotion.readBowWowState(), moving));
+            entries.addAll(bowWowMotion.chainEntries(slot, bowWowMotion.readBowWowState(), frame));
         }
         this.state.writeBowWowChainOam(List.copyOf(entries));
     }
@@ -243,11 +222,10 @@ public final class EntitySlotProperties {
             if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_WINGED_OCTOROK) {
                 continue;
             }
+            var wingedOctorokMotion = this.motions.get(WingedOctorokMotion.class, WingedOctorokMotion::new);
             entries.addAll(WingedOctorokOam.entries(
                     entity.slot(),
-                    this.motions
-                            .get(WingedOctorokMotion.class, WingedOctorokMotion::new)
-                            .privateState2(entity.slot()),
+                    wingedOctorokMotion.privateState2(entity.slot()),
                     entity.x(),
                     entity.y(),
                     entity.z()));

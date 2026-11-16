@@ -168,9 +168,8 @@ public final class EntityLiftThrowController {
                 this.physicsTables.writeEnemyPhysicsFlags(slot, 0xC1);
                 this.combatTables.writeEnemyHitboxFlags(slot, 0);
                 this.physicsTables.writeDynamicEntitySpawnedThisFrame(slot, true);
-                this.motions
-                        .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
-                        .startEnemyBomb(slot, vx[piece], vy[piece], vz[piece]);
+                var thrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+                thrownEntityMotion.startEnemyBomb(slot, vx[piece], vy[piece], vz[piece]);
             }
         }
         int visualY = (entity.y() - entity.z()) & 255;
@@ -191,19 +190,13 @@ public final class EntityLiftThrowController {
         int slot = entity.slot();
         if (!this.state.readThrownMotionInitialized(slot)) {
             this.state.writeThrownDirection(slot, romLinkDirection);
-            this.motions
-                    .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
-                    .start(slot, romLinkDirection, entity.type(), sideScrolling);
+            var thrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+            thrownEntityMotion.start(slot, romLinkDirection, entity.type(), sideScrolling);
             this.state.writeThrownMotionInitialized(slot, true);
         }
-        ThrownEntityMotion.Update update = this.motions
-                .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
-                .advance(
-                        entity,
-                        sideScrolling,
-                        backgroundCollision,
-                        frame,
-                        this.physicsTables.readEntityGroundStatus(slot));
+        var thrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+        ThrownEntityMotion.Update update = thrownEntityMotion.advance(
+                entity, sideScrolling, backgroundCollision, frame, this.physicsTables.readEntityGroundStatus(slot));
         RoomEntity updated = update.entity();
         if (entity.type() == EntityRomConstants.ENTITY_GENIE && (update.blockedX() || update.blockedY())) {
             updated = this.genie.registerGenieJarImpact(updated);
@@ -213,7 +206,7 @@ public final class EntityLiftThrowController {
         }
         if (entity.type() == 0x9D && (update.blockedX() || update.blockedY() || updated.z() == 0)) {
             this.slots.clear(slot);
-            this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(slot);
+            thrownEntityMotion.clear(slot);
             this.state.writeThrownMotionInitialized(slot, false);
             this.smashStatue(updated);
             return this.slots.get(slot);
@@ -222,17 +215,13 @@ public final class EntityLiftThrowController {
                 && (update.blockedX() || update.blockedY() || updated.z() == 0)) {
             this.collideThrownEntityWithEntities(updated, frame);
             this.slots.clear(slot);
-            this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(slot);
+            thrownEntityMotion.clear(slot);
             this.state.writeThrownMotionInitialized(slot, false);
             this.playerSpawns.spawnLiftableRockSmash(updated.x(), updated.y(), entity.spriteVariant());
             return this.slots.get(slot);
         }
-        if (this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new).speedX(slot) == 0
-                && this.motions
-                                .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
-                                .speedY(slot)
-                        == 0) {
-            this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(slot);
+        if (thrownEntityMotion.speedX(slot) == 0 && thrownEntityMotion.speedY(slot) == 0) {
+            thrownEntityMotion.clear(slot);
             this.state.writeThrownMotionInitialized(slot, false);
             this.combatTables.writeEnemyStunnedCountdown(slot, 0xFF);
             updated = withStatus(updated, EntityStatus.STUNNED);
@@ -245,12 +234,9 @@ public final class EntityLiftThrowController {
         fallback = RoomEntityBackgroundCollision.orOpen(fallback);
         int slot = original.slot();
         boolean blocked = false;
-        if (this.motions.get(SideViewPotMotion.class, SideViewPotMotion::new).speedX(slot) != 0) {
-            int direction = (this.motions
-                                            .get(SideViewPotMotion.class, SideViewPotMotion::new)
-                                            .speedX(slot)
-                                    & 0x80)
-                            != 0
+        var sideViewPotMotion = this.motions.get(SideViewPotMotion.class, SideViewPotMotion::new);
+        if (sideViewPotMotion.speedX(slot) != 0) {
+            int direction = (sideViewPotMotion.speedX(slot) & 0x80) != 0
                     ? EntityBackgroundCollisionResult.LEFT
                     : EntityBackgroundCollisionResult.RIGHT;
             if (this.physicsTables.hasRichBackgroundInteraction()) {
@@ -268,12 +254,8 @@ public final class EntityLiftThrowController {
                 blocked |= fallback.blocks(original, direction, moved.x(), original.y());
             }
         }
-        if (this.motions.get(SideViewPotMotion.class, SideViewPotMotion::new).speedY(slot) != 0) {
-            int direction = (this.motions
-                                            .get(SideViewPotMotion.class, SideViewPotMotion::new)
-                                            .speedY(slot)
-                                    & 0x80)
-                            != 0
+        if (sideViewPotMotion.speedY(slot) != 0) {
+            int direction = (sideViewPotMotion.speedY(slot) & 0x80) != 0
                     ? EntityBackgroundCollisionResult.UP
                     : EntityBackgroundCollisionResult.DOWN;
             if (this.physicsTables.hasRichBackgroundInteraction()) {
@@ -315,15 +297,12 @@ public final class EntityLiftThrowController {
                     || this.combatTables.readEnemyIgnoreHitsCountdown(targetSlot) != 0) {
                 continue;
             }
+            var thrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
             this.projectiles.applyPlayerProjectileDamage(
                     target,
                     EntityRomConstants.DAMAGE_TYPE_THROW_AT,
-                    this.motions
-                            .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
-                            .speedX(sourceSlot),
-                    this.motions
-                            .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
-                            .speedY(sourceSlot));
+                    thrownEntityMotion.speedX(sourceSlot),
+                    thrownEntityMotion.speedY(sourceSlot));
         }
     }
 
@@ -338,13 +317,12 @@ public final class EntityLiftThrowController {
                 // Preserve its static source state instead of inventing a table index.
                 return entity;
             }
-            this.motions
-                    .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
-                    .startPlacedBomb(slot, this.bombInteractions.readBombDirection(slot));
+            var thrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+            thrownEntityMotion.startPlacedBomb(slot, this.bombInteractions.readBombDirection(slot));
             this.bombInteractions.writePlacedBombMotionInitialized(slot, true);
         }
-        return this.motions
-                .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
+        var thrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+        return thrownEntityMotion
                 .advance(
                         entity,
                         this.physicsTables.readGroundInteractionSideScrolling(),
@@ -362,8 +340,8 @@ public final class EntityLiftThrowController {
             // bombs have no source speed tables to advance.
             return entity;
         }
-        return this.motions
-                .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
+        var thrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+        return thrownEntityMotion
                 .advance(
                         entity,
                         this.physicsTables.readGroundInteractionSideScrolling(),
@@ -397,7 +375,8 @@ public final class EntityLiftThrowController {
         carried = withVariant(carried, rockDefinition.supported() ? (privateState4 ^ 0x01) & 0x01 : -1);
         this.slots.replace(slot, carried);
         this.physicsTables.writeFallingVisualYOffset(slot, 0);
-        this.motions.get(BushCrawlerMotion.class, BushCrawlerMotion::new).clear(slot);
+        var bushCrawlerMotion = this.motions.get(BushCrawlerMotion.class, BushCrawlerMotion::new);
+        bushCrawlerMotion.clear(slot);
         this.events.pendingEntityEvents.add(new EntityCombatEvent(
                 slot, EntityRomConstants.ENTITY_BUSH_CRAWLER, 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x02));
 
@@ -435,9 +414,10 @@ public final class EntityLiftThrowController {
         this.combatTables.writeEnemyHitboxFlags(freeSlot, initialHitboxFlags(EntityRomConstants.ENTITY_BUSH_CRAWLER));
         this.physicsTables.writeEnemyPhysicsFlags(
                 freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_BUSH_CRAWLER));
-        this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(freeSlot);
+        var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(freeSlot);
         this.physicsTables.writeFallingVisualYOffset(freeSlot, 0);
-        this.motions.get(BushCrawlerMotion.class, BushCrawlerMotion::new).initializeSpecial(freeSlot);
+        bushCrawlerMotion.initializeSpecial(freeSlot);
         this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
         return true;
     }

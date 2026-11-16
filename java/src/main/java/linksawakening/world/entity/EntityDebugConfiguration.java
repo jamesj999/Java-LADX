@@ -19,7 +19,7 @@ public final class EntityDebugConfiguration {
 
     public void setColorShellState(
             int slot, int state, int transitionCountdown, int direction, int speedX, int speedY) {
-        motions.get(ColorShellMotion.class, ColorShellMotion::new)
-                .restoreState(slot, state, transitionCountdown, direction, speedX, speedY);
+        var colorShellMotion = motions.get(ColorShellMotion.class, ColorShellMotion::new);
+        colorShellMotion.restoreState(slot, state, transitionCountdown, direction, speedX, speedY);
     }
 }

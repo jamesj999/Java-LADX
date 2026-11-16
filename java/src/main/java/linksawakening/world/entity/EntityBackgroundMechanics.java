@@ -102,18 +102,15 @@ public final class EntityBackgroundMechanics {
     }
 
     public void advanceHookshotBridgeEntity(int index, RoomEntity entity) {
-        HookshotBridgeMotion.State bridgeState = this.motions
-                .get(HookshotBridgeMotion.class, HookshotBridgeMotion::new)
-                .state(entity.slot());
+        var hookshotBridgeMotion = this.motions.get(HookshotBridgeMotion.class, HookshotBridgeMotion::new);
+        HookshotBridgeMotion.State bridgeState = hookshotBridgeMotion.state(entity.slot());
         if (bridgeState == null) {
             this.lifecycle.clearEntity(entity.slot());
             return;
         }
 
         HookshotBridgeMotion.ObjectCell cell = HookshotBridgeMotion.objectCell(bridgeState);
-        HookshotBridgeMotion.Step step = this.motions
-                .get(HookshotBridgeMotion.class, HookshotBridgeMotion::new)
-                .advance(entity.slot());
+        HookshotBridgeMotion.Step step = hookshotBridgeMotion.advance(entity.slot());
         RoomEntity moved =
                 withPositionAndVariant(entity, step.state().x(), step.state().y(), entity.spriteVariant());
         RoomEntityObjectSample object = this.physicsTables.readObjectQuery().sampleOrAbsent(moved);
@@ -209,13 +206,11 @@ public final class EntityBackgroundMechanics {
             int variant = entity.spriteVariant();
             if (entity.type() == EntityRomConstants.ENTITY_OCTOROK
                     || entity.type() == EntityRomConstants.ENTITY_MOBLIN) {
-                variant = this.motions
-                        .get(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
-                        .advancePresentationVariant(slot, 3);
+                var roamingEnemyMotion = this.motions.get(RoamingEnemyMotion.class, RoamingEnemyMotion::new);
+                variant = roamingEnemyMotion.advancePresentationVariant(slot, 3);
             } else if (entity.type() == EntityRomConstants.ENTITY_MOBLIN_SWORD) {
-                variant = this.motions
-                        .get(MoblinSwordMotion.class, MoblinSwordMotion::new)
-                        .advancePresentationVariant(slot, entity.x(), 3);
+                var moblinSwordMotion = this.motions.get(MoblinSwordMotion.class, MoblinSwordMotion::new);
+                variant = moblinSwordMotion.advancePresentationVariant(slot, entity.x(), 3);
             }
             return withPositionAndVariant(entity, entity.x(), entity.y(), variant);
         }
@@ -252,71 +247,72 @@ public final class EntityBackgroundMechanics {
     public int verticalSpeedZ(RoomEntity entity) {
         int slot = entity.slot();
         if (this.bossRewards.readEnemyDropActive(slot)) {
-            return this.motions.get(EnemyDropMotion.class, EnemyDropMotion::new).speedZ(slot);
+            var enemyDropMotion = this.motions.get(EnemyDropMotion.class, EnemyDropMotion::new);
+            return enemyDropMotion.speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_TEKTITE) {
-            return this.motions.get(TektiteMotion.class, TektiteMotion::new).speedZ(slot);
+            var tektiteMotion = this.motions.get(TektiteMotion.class, TektiteMotion::new);
+            return tektiteMotion.speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_FISH) {
-            return this.motions.get(FishMotion.class, FishMotion::new).speedZ(slot);
+            var fishMotion = this.motions.get(FishMotion.class, FishMotion::new);
+            return fishMotion.speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_CROW) {
-            return this.motions.get(CrowMotion.class, CrowMotion::new).speedZ(slot);
+            var crowMotion = this.motions.get(CrowMotion.class, CrowMotion::new);
+            return crowMotion.speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_CUCCO) {
-            return this.motions.get(CuccoMotion.class, CuccoMotion::new).speedZ(slot);
+            var cuccoMotion = this.motions.get(CuccoMotion.class, CuccoMotion::new);
+            return cuccoMotion.speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
-            return this.motions
-                    .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                    .speedZ(slot);
+            var secretSeashellMotion = this.motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+            return secretSeashellMotion.speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_WINGED_OCTOROK) {
-            return this.motions
-                    .get(WingedOctorokMotion.class, WingedOctorokMotion::new)
-                    .speedZ(slot);
+            var wingedOctorokMotion = this.motions.get(WingedOctorokMotion.class, WingedOctorokMotion::new);
+            return wingedOctorokMotion.speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_STALFOS_AGGRESSIVE) {
-            return this.motions
-                    .get(StalfosAggressiveMotion.class, StalfosAggressiveMotion::new)
-                    .speedZ(slot);
+            var stalfosAggressiveMotion = this.motions.get(StalfosAggressiveMotion.class, StalfosAggressiveMotion::new);
+            return stalfosAggressiveMotion.speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_STALFOS_EVASIVE) {
-            return this.motions
-                    .get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
-                    .speedZ(slot);
+            var stalfosEvasiveMotion = this.motions.get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new);
+            return stalfosEvasiveMotion.speedZ(slot);
         }
         if (isZolGelType(entity.type())) {
-            return this.motions.get(ZolGelMotion.class, ZolGelMotion::new).speedZ(slot);
+            var zolGelMotion = this.motions.get(ZolGelMotion.class, ZolGelMotion::new);
+            return zolGelMotion.speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_HIDING_ZOL) {
-            return this.motions.get(HidingZolMotion.class, HidingZolMotion::new).speedZ(slot);
+            var hidingZolMotion = this.motions.get(HidingZolMotion.class, HidingZolMotion::new);
+            return hidingZolMotion.speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_POLS_VOICE) {
-            return this.motions.get(PolsVoiceMotion.class, PolsVoiceMotion::new).speedZ(slot);
+            var polsVoiceMotion = this.motions.get(PolsVoiceMotion.class, PolsVoiceMotion::new);
+            return polsVoiceMotion.speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_SPIKED_BEETLE) {
-            return this.motions
-                    .get(SpikedBeetleMotion.class, SpikedBeetleMotion::new)
-                    .speedZ(slot);
+            var spikedBeetleMotion = this.motions.get(SpikedBeetleMotion.class, SpikedBeetleMotion::new);
+            return spikedBeetleMotion.speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_DOG) {
-            return this.motions.get(DogMotion.class, DogMotion::new).speedZ(slot);
+            var dogMotion = this.motions.get(DogMotion.class, DogMotion::new);
+            return dogMotion.speedZ(slot);
         }
         if (isEnemyProjectileType(entity.type())) {
-            return this.motions
-                    .get(EnemyProjectileMotion.class, EnemyProjectileMotion::new)
-                    .speedZ(slot);
+            var enemyProjectileMotion = this.motions.get(EnemyProjectileMotion.class, EnemyProjectileMotion::new);
+            return enemyProjectileMotion.speedZ(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_ARROW) {
-            return this.motions
-                    .get(PlayerArrowMotion.class, PlayerArrowMotion::new)
-                    .speedZ(slot);
+            var playerArrowMotion = this.motions.get(PlayerArrowMotion.class, PlayerArrowMotion::new);
+            return playerArrowMotion.speedZ(slot);
         }
         if (ColorShellMotion.isColorShellType(entity.type())) {
-            return this.motions
-                    .get(ColorShellMotion.class, ColorShellMotion::new)
-                    .speedZ(slot);
+            var colorShellMotion = this.motions.get(ColorShellMotion.class, ColorShellMotion::new);
+            return colorShellMotion.speedZ(slot);
         }
         return 0;
     }
@@ -356,32 +352,27 @@ public final class EntityBackgroundMechanics {
 
     void resetHookshotChainAfterLinkPush() {
         for (int slot = 0; slot < this.slots.size(); slot++) {
+            var hookshotChainMotion = this.motions.get(HookshotChainMotion.class, HookshotChainMotion::new);
             if (!this.slots.get(slot).loaded()
                     || this.slots.get(slot).type() != EntityRomConstants.ENTITY_HOOKSHOT_CHAIN
-                    || !this.motions
-                            .get(HookshotChainMotion.class, HookshotChainMotion::new)
-                            .active(slot)) {
+                    || !hookshotChainMotion.active(slot)) {
                 continue;
             }
-            HookshotChainMotion.State state = this.motions
-                    .get(HookshotChainMotion.class, HookshotChainMotion::new)
-                    .state(slot);
-            this.motions
-                    .get(HookshotChainMotion.class, HookshotChainMotion::new)
-                    .setState(
-                            slot,
-                            new HookshotChainMotion.State(
-                                    state.x(),
-                                    state.y(),
-                                    state.z(),
-                                    state.direction(),
-                                    state.speedX(),
-                                    state.speedY(),
-                                    state.transitionCountdown(),
-                                    state.speedXAccumulator(),
-                                    state.speedYAccumulator(),
-                                    0,
-                                    state.wallCollisionPending()));
+            HookshotChainMotion.State state = hookshotChainMotion.state(slot);
+            hookshotChainMotion.setState(
+                    slot,
+                    new HookshotChainMotion.State(
+                            state.x(),
+                            state.y(),
+                            state.z(),
+                            state.direction(),
+                            state.speedX(),
+                            state.speedY(),
+                            state.transitionCountdown(),
+                            state.speedXAccumulator(),
+                            state.speedYAccumulator(),
+                            0,
+                            state.wallCollisionPending()));
             return;
         }
     }
@@ -389,23 +380,24 @@ public final class EntityBackgroundMechanics {
     public EnemyRecoilMotion.Update applyEnemyRecoilIfNeeded(
             RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
-        if (!this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).isActive(slot)) {
+        var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        if (!enemyRecoilMotion.isActive(slot)) {
             return new EnemyRecoilMotion.Update(entity, false);
         }
         if (this.combatTables.readEnemyIgnoreHitsCountdown(slot) == 0) {
-            this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot);
+            enemyRecoilMotion.clear(slot);
             return new EnemyRecoilMotion.Update(entity, false);
         }
 
         if (isRoamingEnemyType(entity.type())) {
-            this.motions.get(RoamingEnemyMotion.class, RoamingEnemyMotion::new).beginRecoil(slot);
+            var roamingEnemyMotion = this.motions.get(RoamingEnemyMotion.class, RoamingEnemyMotion::new);
+            roamingEnemyMotion.beginRecoil(slot);
         }
         // ApplyRecoilIfNeeded_03/06 decrements the shared countdown
         // immediately before applying one fixed-point recoil step.
         this.combatTables.postEnemyIgnoreHitsCountdown(slot, -1);
-        EnemyRecoilMotion.Update update = this.motions
-                .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                .advance(entity, backgroundCollision, isRoamingEnemyType(entity.type()));
+        EnemyRecoilMotion.Update update =
+                enemyRecoilMotion.advance(entity, backgroundCollision, isRoamingEnemyType(entity.type()));
         if (update.blocked() && isRoamingEnemyType(entity.type())) {
             // StopEntityRecoilOnCollision clears the ignore-hits countdown.
             this.combatTables.writeEnemyIgnoreHitsCountdown(slot, 0);

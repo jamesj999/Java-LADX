@@ -23,11 +23,13 @@ final class EntityPickupInspection {
     }
 
     int colorShellState(int slot) {
-        return motions.get(ColorShellMotion.class, ColorShellMotion::new).state(slot);
+        var colorShellMotion = motions.get(ColorShellMotion.class, ColorShellMotion::new);
+        return colorShellMotion.state(slot);
     }
 
     int bombiteState(int slot) {
-        return motions.get(BombiteMotion.class, BombiteMotion::new).state(slot);
+        var bombiteMotion = motions.get(BombiteMotion.class, BombiteMotion::new);
+        return bombiteMotion.state(slot);
     }
 
     int bombitePrivateCountdown1(int slot) {
@@ -35,49 +37,52 @@ final class EntityPickupInspection {
     }
 
     int bombiteSpeedX(int slot) {
-        return motions.get(BombiteMotion.class, BombiteMotion::new).speedX(slot);
+        var bombiteMotion = motions.get(BombiteMotion.class, BombiteMotion::new);
+        return bombiteMotion.speedX(slot);
     }
 
     int bombiteSpeedY(int slot) {
-        return motions.get(BombiteMotion.class, BombiteMotion::new).speedY(slot);
+        var bombiteMotion = motions.get(BombiteMotion.class, BombiteMotion::new);
+        return bombiteMotion.speedY(slot);
     }
 
     int colorShellPhysicsFlags(int slot) {
-        return motions.get(ColorShellMotion.class, ColorShellMotion::new).physicsFlags(slot);
+        var colorShellMotion = motions.get(ColorShellMotion.class, ColorShellMotion::new);
+        return colorShellMotion.physicsFlags(slot);
     }
 
     int secretSeashellPrivateState3(int slot) {
-        return motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .privateState3(slot);
+        var secretSeashellMotion = motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+        return secretSeashellMotion.privateState3(slot);
     }
 
     int secretSeashellPrivateState4(int slot) {
-        return motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .privateState4(slot);
+        var secretSeashellMotion = motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+        return secretSeashellMotion.privateState4(slot);
     }
 
     int secretSeashellPrivateCountdown1(int slot) {
-        return motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .privateCountdown1(slot);
+        var secretSeashellMotion = motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+        return secretSeashellMotion.privateCountdown1(slot);
     }
 
     int secretSeashellSlowTransitionCountdown(int slot) {
-        return motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .slowTransitionCountdown(slot);
+        var secretSeashellMotion = motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+        return secretSeashellMotion.slowTransitionCountdown(slot);
     }
 
     int secretSeashellSpeedX(int slot) {
-        return motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .speedX(slot);
+        var secretSeashellMotion = motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+        return secretSeashellMotion.speedX(slot);
     }
 
     int secretSeashellSpeedY(int slot) {
-        return motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .speedY(slot);
+        var secretSeashellMotion = motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+        return secretSeashellMotion.speedY(slot);
     }
 
     int secretSeashellSpeedZ(int slot) {
-        return motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .speedZ(slot);
+        var secretSeashellMotion = motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+        return secretSeashellMotion.speedZ(slot);
     }
 }

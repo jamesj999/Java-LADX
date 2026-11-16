@@ -222,8 +222,11 @@ final class EntityBossState {
         this.writeDroppablePrivateState3(slot, 0);
         this.writeDroppablePrivateState4(slot, 0);
         this.writeEnemyDropActive(slot, false);
-        motions.get(EnemyDropMotion.class, EnemyDropMotion::new).clear(slot);
-        motions.get(FairyMotion.class, FairyMotion::new).clear(slot);
-        motions.get(HookshotChainMotion.class, HookshotChainMotion::new).clear(slot);
+        var enemyDropMotion = motions.get(EnemyDropMotion.class, EnemyDropMotion::new);
+        enemyDropMotion.clear(slot);
+        var fairyMotion = motions.get(FairyMotion.class, FairyMotion::new);
+        fairyMotion.clear(slot);
+        var hookshotChainMotion = motions.get(HookshotChainMotion.class, HookshotChainMotion::new);
+        hookshotChainMotion.clear(slot);
     }
 }

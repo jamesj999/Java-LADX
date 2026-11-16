@@ -95,13 +95,14 @@ final class EntitySlotPresentation {
             if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_PINCER) {
                 continue;
             }
+            var pincerMotion = motions.get(PincerMotion.class, PincerMotion::new);
             entries.addAll(PincerBodyOam.entries(
                     entity.slot(),
-                    motions.get(PincerMotion.class, PincerMotion::new).holeX(entity.slot()),
-                    motions.get(PincerMotion.class, PincerMotion::new).holeY(entity.slot()),
+                    pincerMotion.holeX(entity.slot()),
+                    pincerMotion.holeY(entity.slot()),
                     entity.x(),
                     entity.y(),
-                    motions.get(PincerMotion.class, PincerMotion::new).state(entity.slot())));
+                    pincerMotion.state(entity.slot())));
         }
         writePincerBodyOam(List.copyOf(entries));
     }

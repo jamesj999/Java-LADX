@@ -125,22 +125,19 @@ public final class EntityEnemyInspection {
     }
 
     boolean isDisabledFollower(int type) {
+        var followingNpcMotion = this.motions.get(FollowingNpcMotion.class, FollowingNpcMotion::new);
         return switch (type) {
-            case FollowingNpcEntitySpawner.ENTITY_ROOSTER -> !this.motions
-                    .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
+            case FollowingNpcEntitySpawner.ENTITY_ROOSTER -> !followingNpcMotion
                     .readFollowingNpcState()
                     .roosterFollowing();
-            case FollowingNpcEntitySpawner.ENTITY_GHOST -> this.motions
-                            .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
+            case FollowingNpcEntitySpawner.ENTITY_GHOST -> followingNpcMotion
                             .readFollowingNpcState()
                             .ghostFollowingState()
                     != 1;
-            case FollowingNpcEntitySpawner.ENTITY_MARIN_AT_THE_SHORE -> !this.motions
-                    .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
+            case FollowingNpcEntitySpawner.ENTITY_MARIN_AT_THE_SHORE -> !followingNpcMotion
                     .readFollowingNpcState()
                     .marinFollowing();
-            case FollowingNpcEntitySpawner.ENTITY_BOW_WOW -> !this.motions
-                    .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
+            case FollowingNpcEntitySpawner.ENTITY_BOW_WOW -> !followingNpcMotion
                     .readFollowingNpcState()
                     .bowWowFollowing();
             default -> false;
@@ -166,9 +163,9 @@ public final class EntityEnemyInspection {
     }
 
     public boolean gelClingingToLink() {
-        return motions.get(
-                        linksawakening.world.entity.motion.ZolGelMotion.class,
-                        linksawakening.world.entity.motion.ZolGelMotion::new)
-                .readGelClingingToLink();
+        var zolGelMotion = motions.get(
+                linksawakening.world.entity.motion.ZolGelMotion.class,
+                linksawakening.world.entity.motion.ZolGelMotion::new);
+        return zolGelMotion.readGelClingingToLink();
     }
 }

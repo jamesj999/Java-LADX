@@ -267,7 +267,8 @@ public final class GenieEntityController {
         this.encounter.genieSpeedXAccumulator[freeSlot] = 0;
         this.encounter.genieSpeedYAccumulator[freeSlot] = 0;
         this.encounter.genieSpeedZAccumulator[freeSlot] = 0;
-        this.motions.get(GenieMotion.class, GenieMotion::new).clear(freeSlot);
+        var genieMotion = this.motions.get(GenieMotion.class, GenieMotion::new);
+        genieMotion.clear(freeSlot);
         this.physicsTables.writeEnemyTransitionCountdown(freeSlot, transitionCountdown & 0xFF);
         this.combatTables.writeEnemyHealth(freeSlot, health & 0xFF);
         this.physicsTables.writeEnemyPhysicsFlags(freeSlot, physicsFlags & 0xFF);
@@ -296,7 +297,8 @@ public final class GenieEntityController {
         this.encounter.genieActiveState[slot] = 1;
         this.encounter.romPrivateState3[slot] = 0;
         this.physicsTables.writeEnemyTransitionCountdown(slot, 0x80);
-        this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(slot);
+        var thrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+        thrownEntityMotion.clear(slot);
         this.liftThrow.writeThrownMotionInitialized(slot, false);
         return withStatus(jar, EntityStatus.ACTIVE);
     }
@@ -940,16 +942,15 @@ public final class GenieEntityController {
             }
             bodySpawnSucceeded = freeSlots >= 1;
             rockSpawnSucceeded = freeSlots >= 2;
-            update = owner.motions
-                    .get(GenieMotion.class, GenieMotion::new)
-                    .advanceState0(
-                            slot,
-                            jarEntity.x(),
-                            jarEntity.y(),
-                            jarEntity.z(),
-                            owner.encounter.romPrivateState4[slot],
-                            bodySpawnSucceeded,
-                            rockSpawnSucceeded);
+            var genieMotion = owner.motions.get(GenieMotion.class, GenieMotion::new);
+            update = genieMotion.advanceState0(
+                    slot,
+                    jarEntity.x(),
+                    jarEntity.y(),
+                    jarEntity.z(),
+                    owner.encounter.romPrivateState4[slot],
+                    bodySpawnSucceeded,
+                    rockSpawnSucceeded);
             jar = update.jar();
             owner.encounter.handlerState[slot] = jar.privateState1();
             owner.combatTables.writeEnemyHealth(slot, jar.health());

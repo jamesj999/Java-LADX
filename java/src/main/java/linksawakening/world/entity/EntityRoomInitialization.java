@@ -195,97 +195,121 @@ final class EntityRoomInitialization {
             this.pickups.writeChestItemBySlot(entity.slot(), entity.spriteVariant());
         }
         if (entity.loaded() && isBombiteType(entity.type())) {
-            this.motions.get(BombiteMotion.class, BombiteMotion::new).initialize(entity.slot());
+            var bombiteMotion = this.motions.get(BombiteMotion.class, BombiteMotion::new);
+            bombiteMotion.initialize(entity.slot());
             // The bank-$04 handlers use the global slow-transition tick
             // for TimerBombite's fuse. Keep it live for either family;
             // BouncingBombite simply leaves its value at zero.
             this.physicsTables.writeSlowTimerInitialized(entity.slot(), true);
         }
         if (entity.loaded() && isGhiniType(entity.type())) {
-            this.motions.get(GhiniMotion.class, GhiniMotion::new).initialize(entity.slot(), entity.type());
+            var ghiniMotion = this.motions.get(GhiniMotion.class, GhiniMotion::new);
+            ghiniMotion.initialize(entity.slot(), entity.type());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_LIKE_LIKE) {
-            this.motions.get(LikeLikeMotion.class, LikeLikeMotion::new).initialize(entity.slot());
+            var likeLikeMotion = this.motions.get(LikeLikeMotion.class, LikeLikeMotion::new);
+            likeLikeMotion.initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_POLS_VOICE) {
-            this.motions.get(PolsVoiceMotion.class, PolsVoiceMotion::new).initialize(entity.slot());
+            var polsVoiceMotion = this.motions.get(PolsVoiceMotion.class, PolsVoiceMotion::new);
+            polsVoiceMotion.initialize(entity.slot());
         }
     }
 
     private void initializeRoamingEntities(RoomEntity entity) {
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_FISH) {
-            this.motions.get(FishMotion.class, FishMotion::new).initialize(entity.slot());
+            var fishMotion = this.motions.get(FishMotion.class, FishMotion::new);
+            fishMotion.initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_CROW) {
-            this.motions.get(CrowMotion.class, CrowMotion::new).initialize(entity.slot());
+            var crowMotion = this.motions.get(CrowMotion.class, CrowMotion::new);
+            crowMotion.initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_BOO_BUDDY) {
-            this.motions.get(BooBuddyMotion.class, BooBuddyMotion::new).initialize(entity.slot());
+            var booBuddyMotion = this.motions.get(BooBuddyMotion.class, BooBuddyMotion::new);
+            booBuddyMotion.initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_BUZZ_BLOB) {
-            this.motions.get(BuzzBlobMotion.class, BuzzBlobMotion::new).initialize(entity.slot());
+            var buzzBlobMotion = this.motions.get(BuzzBlobMotion.class, BuzzBlobMotion::new);
+            buzzBlobMotion.initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_SAND_CRAB) {
-            this.motions.get(SandCrabMotion.class, SandCrabMotion::new).initialize(entity.slot());
+            var sandCrabMotion = this.motions.get(SandCrabMotion.class, SandCrabMotion::new);
+            sandCrabMotion.initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_DOG) {
-            this.motions.get(DogMotion.class, DogMotion::new).initialize(entity.slot());
+            var dogMotion = this.motions.get(DogMotion.class, DogMotion::new);
+            dogMotion.initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_URCHIN) {
-            this.motions.get(UrchinMotion.class, UrchinMotion::new).initialize(entity.slot());
+            var urchinMotion = this.motions.get(UrchinMotion.class, UrchinMotion::new);
+            urchinMotion.initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_WITCH_RAT) {
-            this.motions.get(WitchRatMotion.class, WitchRatMotion::new).initialize(entity.slot());
+            var witchRatMotion = this.motions.get(WitchRatMotion.class, WitchRatMotion::new);
+            witchRatMotion.initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_DROPPABLE_FAIRY) {
-            this.motions.get(FairyMotion.class, FairyMotion::new).initialize(entity.slot());
+            var fairyMotion = this.motions.get(FairyMotion.class, FairyMotion::new);
+            fairyMotion.initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_SPIKED_BEETLE) {
-            this.motions.get(SpikedBeetleMotion.class, SpikedBeetleMotion::new).initialize(entity.slot());
+            var spikedBeetleMotion = this.motions.get(SpikedBeetleMotion.class, SpikedBeetleMotion::new);
+            spikedBeetleMotion.initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_PINCER) {
-            this.motions.get(PincerMotion.class, PincerMotion::new).initialize(entity.slot());
+            var pincerMotion = this.motions.get(PincerMotion.class, PincerMotion::new);
+            pincerMotion.initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_BUSH_CRAWLER) {
-            this.motions.get(BushCrawlerMotion.class, BushCrawlerMotion::new).initialize(entity.slot());
+            var bushCrawlerMotion = this.motions.get(BushCrawlerMotion.class, BushCrawlerMotion::new);
+            bushCrawlerMotion.initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_MIMIC) {
-            this.motions.get(MimicMotion.class, MimicMotion::new).initialize(entity.slot());
+            var mimicMotion = this.motions.get(MimicMotion.class, MimicMotion::new);
+            mimicMotion.initialize(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_MASKED_MIMIC_GORIYA) {
-            this.motions.get(MaskedMimicMotion.class, MaskedMimicMotion::new).initialize(entity.slot());
+            var maskedMimicMotion = this.motions.get(MaskedMimicMotion.class, MaskedMimicMotion::new);
+            maskedMimicMotion.initialize(entity.slot());
         }
     }
 
     private void initializeBossAndFollowerEntities(RoomEntity entity) {
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_MINI_MOLDORM) {
-            this.motions.get(MiniMoldormMotion.class, MiniMoldormMotion::new).initialize(entity);
+            var miniMoldormMotion = this.motions.get(MiniMoldormMotion.class, MiniMoldormMotion::new);
+            miniMoldormMotion.initialize(entity);
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_MOLDORM) {
-            this.motions.get(MoldormMotion.class, MoldormMotion::new).initialize(entity);
+            var moldormMotion = this.motions.get(MoldormMotion.class, MoldormMotion::new);
+            moldormMotion.initialize(entity);
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES) {
-            this.motions.get(RollingBonesMotion.class, RollingBonesMotion::new).initializeBoss(entity.slot());
+            var rollingBonesMotion = this.motions.get(RollingBonesMotion.class, RollingBonesMotion::new);
+            rollingBonesMotion.initializeBoss(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES_BAR) {
-            this.motions.get(RollingBonesMotion.class, RollingBonesMotion::new).initializeBar(entity.slot());
+            var rollingBonesMotion = this.motions.get(RollingBonesMotion.class, RollingBonesMotion::new);
+            rollingBonesMotion.initializeBar(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_CUCCO) {
-            this.motions.get(CuccoMotion.class, CuccoMotion::new).initialize(entity.slot());
+            var cuccoMotion = this.motions.get(CuccoMotion.class, CuccoMotion::new);
+            cuccoMotion.initialize(entity.slot());
         }
         if (entity.status() == EntityStatus.DYING) {
             this.combatTables.writePowerRecoilDeath(entity.slot(), entity.powerRecoilDeath());
         }
         if (isLaserType(entity.type())) {
-            this.motions.get(LaserMotion.class, LaserMotion::new).initializeForEntity(entity);
+            var laserMotion = this.motions.get(LaserMotion.class, LaserMotion::new);
+            laserMotion.initializeForEntity(entity);
         }
         if (isFollowingNpcType(entity.type())) {
             if (entity.type() == EntityRomConstants.ENTITY_BOW_WOW) {
-                this.motions.get(BowWowMotion.class, BowWowMotion::new).initialize(entity.slot());
+                var bowWowMotion = this.motions.get(BowWowMotion.class, BowWowMotion::new);
+                bowWowMotion.initialize(entity.slot());
             } else {
-                this.motions
-                        .get(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                        .initialize(entity.slot(), entity.type());
+                var followingNpcMotion = this.motions.get(FollowingNpcMotion.class, FollowingNpcMotion::new);
+                followingNpcMotion.initialize(entity.slot(), entity.type());
             }
         }
         if (entity.status() == EntityStatus.LIFTED) {

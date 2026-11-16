@@ -88,9 +88,8 @@ public final class EntityPlayerCommands {
         this.physicsTables.writeEnemyTransitionCountdown(slot, 0x02);
         if (entity.type() == EntityRomConstants.ENTITY_BOMB) {
             if (this.bombInteractions.readPlacedBombMotionInitialized(slot)) {
-                this.motions
-                        .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
-                        .clear(slot);
+                var thrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+                thrownEntityMotion.clear(slot);
                 this.bombInteractions.writePlacedBombMotionInitialized(slot, false);
             }
             this.bombInteractions.setBombFinalPresentationPending(slot, false);
@@ -120,8 +119,10 @@ public final class EntityPlayerCommands {
                 EntityRomConstants.LIFTED_THROW_JINGLE_ID));
         if (entity.type() == EntityRomConstants.ENTITY_SIDE_VIEW_POT) {
             this.liftThrow.writeThrownDirection(slot, romDirection);
-            this.motions.get(SideViewPotMotion.class, SideViewPotMotion::new).start(slot, romDirection);
-            this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new).clear(slot);
+            var sideViewPotMotion = this.motions.get(SideViewPotMotion.class, SideViewPotMotion::new);
+            sideViewPotMotion.start(slot, romDirection);
+            var thrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+            thrownEntityMotion.clear(slot);
             this.liftThrow.writeThrownMotionInitialized(slot, false);
             this.liftThrow.writeLiftedStateInitialized(slot, false);
             this.liftThrow.writeLiftedPhase(slot, 0);
@@ -133,9 +134,9 @@ public final class EntityPlayerCommands {
             return true;
         }
         this.liftThrow.writeThrownDirection(slot, romDirection);
-        this.motions
-                .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
-                .start(slot, romDirection, entity.type(), this.physicsTables.readGroundInteractionSideScrolling());
+        var thrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+        thrownEntityMotion.start(
+                slot, romDirection, entity.type(), this.physicsTables.readGroundInteractionSideScrolling());
         this.liftThrow.writeThrownMotionInitialized(slot, true);
         this.liftThrow.writeLiftedStateInitialized(slot, false);
         this.liftThrow.writeLiftedPhase(slot, 0);

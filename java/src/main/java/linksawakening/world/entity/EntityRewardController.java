@@ -273,33 +273,28 @@ public final class EntityRewardController {
     }
 
     public boolean secretSeashellScreenShakeActive() {
-        return this.motions
-                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .readSecretSeashellScreenShakeActive();
+        var secretSeashellMotion = this.motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+        return secretSeashellMotion.readSecretSeashellScreenShakeActive();
     }
 
     public boolean secretSeashellPegasusCollisionActive() {
-        return this.motions
-                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .readSecretSeashellPegasusCollisionActive();
+        var secretSeashellMotion = this.motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+        return secretSeashellMotion.readSecretSeashellPegasusCollisionActive();
     }
 
     public boolean secretSeashellPegasusCollisionCoordinatesKnown() {
-        return this.motions
-                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .readSecretSeashellPegasusCollisionCoordinatesKnown();
+        var secretSeashellMotion = this.motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+        return secretSeashellMotion.readSecretSeashellPegasusCollisionCoordinatesKnown();
     }
 
     public int secretSeashellPegasusCollisionX() {
-        return this.motions
-                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .readSecretSeashellPegasusCollisionX();
+        var secretSeashellMotion = this.motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+        return secretSeashellMotion.readSecretSeashellPegasusCollisionX();
     }
 
     public int secretSeashellPegasusCollisionY() {
-        return this.motions
-                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .readSecretSeashellPegasusCollisionY();
+        var secretSeashellMotion = this.motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+        return secretSeashellMotion.readSecretSeashellPegasusCollisionY();
     }
 
     final ItemPickupFrameStep itemPickupFrameStep = new ItemPickupFrameStep(this);
@@ -400,9 +395,8 @@ public final class EntityRewardController {
 
             RoomEntity entity = owner.slots.get(index);
             if (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
-                owner.motions
-                        .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                        .ensureInitialized(entity.slot(), owner.roomVariables.readEntityRoomId());
+                var secretSeashellMotion = owner.motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+                secretSeashellMotion.ensureInitialized(entity.slot(), owner.roomVariables.readEntityRoomId());
             }
             boolean swordPickup =
                     swordActive && RoomEntityPickupRules.overlapsSword(entity, swordX, swordWidth, swordY, swordHeight);
@@ -450,6 +444,7 @@ public final class EntityRewardController {
         }
 
         private boolean canCollect(RoomEntity entity, boolean swordPickup, boolean floatingType, boolean floating) {
+            var secretSeashellMotion = owner.motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
             return !(!entity.loaded()
                     || entity.status() != EntityStatus.ACTIVE
                     || !RoomEntityPickupRules.isPickable(entity.type())
@@ -465,14 +460,8 @@ public final class EntityRewardController {
                     || (isCommonDroppableType(entity.type())
                             && owner.bossRewards.readDroppablePrivateState3(entity.slot()) != 0)
                     || (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL
-                            && (owner.motions
-                                                    .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                                                    .privateState3(entity.slot())
-                                            != 0
-                                    || owner.motions
-                                                    .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                                                    .privateCountdown1(entity.slot())
-                                            != 0))
+                            && (secretSeashellMotion.privateState3(entity.slot()) != 0
+                                    || secretSeashellMotion.privateCountdown1(entity.slot()) != 0))
                     || (!swordPickup
                             && !floating
                             && !RoomEntityPickupRules.collisionCadenceMatches(frameCounter, entity.slot()))

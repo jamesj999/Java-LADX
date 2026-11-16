@@ -144,7 +144,8 @@ public final class EntityRuntimeConfiguration {
     }
 
     public void setBowWowState(int bowWowState) {
-        this.motions.get(BowWowMotion.class, BowWowMotion::new).writeBowWowState(bowWowState & 0xFF);
+        var bowWowMotion = this.motions.get(BowWowMotion.class, BowWowMotion::new);
+        bowWowMotion.writeBowWowState(bowWowState & 0xFF);
     }
 
     public void setLikeLikeLinkInventory(int itemA, int itemB) {
@@ -255,21 +256,12 @@ public final class EntityRuntimeConfiguration {
             boolean screenShakeActive, boolean collisionActive, int collisionX, int collisionY) {
         EntitySlotValidation.validateByte(collisionX, "Pegasus collision X");
         EntitySlotValidation.validateByte(collisionY, "Pegasus collision Y");
-        this.motions
-                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .writeSecretSeashellScreenShakeActive(screenShakeActive);
-        this.motions
-                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .writeSecretSeashellPegasusCollisionActive(collisionActive);
-        this.motions
-                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .writeSecretSeashellPegasusCollisionCoordinatesKnown(true);
-        this.motions
-                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .writeSecretSeashellPegasusCollisionX(collisionX);
-        this.motions
-                .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                .writeSecretSeashellPegasusCollisionY(collisionY);
+        var secretSeashellMotion = this.motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
+        secretSeashellMotion.writeSecretSeashellScreenShakeActive(screenShakeActive);
+        secretSeashellMotion.writeSecretSeashellPegasusCollisionActive(collisionActive);
+        secretSeashellMotion.writeSecretSeashellPegasusCollisionCoordinatesKnown(true);
+        secretSeashellMotion.writeSecretSeashellPegasusCollisionX(collisionX);
+        secretSeashellMotion.writeSecretSeashellPegasusCollisionY(collisionY);
     }
 
     public void setHouseNpcStoryState(int tarinFlag, int tradeItem, int instrument3Flags, int walrusStatus) {
@@ -320,15 +312,15 @@ public final class EntityRuntimeConfiguration {
         if (state == null) {
             throw new IllegalArgumentException("Follower state cannot be null");
         }
-        this.motions.get(FollowingNpcMotion.class, FollowingNpcMotion::new).writeFollowingNpcState(state);
-        if (state.bowWowFollowing())
-            this.motions.get(BowWowMotion.class, BowWowMotion::new).writeBowWowState(1);
+        var followingNpcMotion = this.motions.get(FollowingNpcMotion.class, FollowingNpcMotion::new);
+        followingNpcMotion.writeFollowingNpcState(state);
+        var bowWowMotion = this.motions.get(BowWowMotion.class, BowWowMotion::new);
+        if (state.bowWowFollowing()) bowWowMotion.writeBowWowState(1);
     }
 
     public void setColorShellWorld(ColorShellWorld world) {
-        this.motions
-                .get(ColorShellMotion.class, ColorShellMotion::new)
-                .writeColorShellWorld(java.util.Objects.requireNonNullElse(world, ColorShellWorld.none()));
+        var colorShellMotion = this.motions.get(ColorShellMotion.class, ColorShellMotion::new);
+        colorShellMotion.writeColorShellWorld(java.util.Objects.requireNonNullElse(world, ColorShellWorld.none()));
     }
 
     public void setSwitchBlockAnimationActive(boolean active) {
@@ -393,7 +385,8 @@ public final class EntityRuntimeConfiguration {
 
     public void setBooBuddyTriggerCount(int value) {
         EntitySlotValidation.validateByte(value, "Boo Buddy trigger count");
-        this.motions.get(BooBuddyMotion.class, BooBuddyMotion::new).writeBooBuddyTriggerCount(value);
+        var booBuddyMotion = this.motions.get(BooBuddyMotion.class, BooBuddyMotion::new);
+        booBuddyMotion.writeBooBuddyTriggerCount(value);
     }
 
     public void setWitchEnvironment(int bgPaletteEffectAddress, int paletteDataFlags, int defaultMusicTrack) {

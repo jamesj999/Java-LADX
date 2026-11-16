@@ -202,17 +202,15 @@ public final class EntityCombatResolver {
                 || !RoomEntityCombatRules.supportsEnemyCollision(slot.entity.type())) {
             return false;
         }
+        var hinoxMotion = runtime.motions.get(HinoxMotion.class, HinoxMotion::new);
         if (slot.entity.type() == EntityRomConstants.ENTITY_HINOX
-                && runtime.motions.get(HinoxMotion.class, HinoxMotion::new).state(slot.entity.slot())
-                        == HinoxMotion.STATE_GRAB) {
+                && hinoxMotion.state(slot.entity.slot()) == HinoxMotion.STATE_GRAB) {
             // HinoxState4Handler does not call DefaultEnemyDamageCollisionHandler.
             return false;
         }
+        var threeOfAKindMotion = runtime.motions.get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new);
         if (slot.entity.type() == EntityRomConstants.ENTITY_THREE_OF_A_KIND
-                && runtime.motions
-                                .get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new)
-                                .state(slot.entity.slot())
-                        == 2) {
+                && threeOfAKindMotion.state(slot.entity.slot()) == 2) {
             return false;
         }
         if (slot.entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES_BAR && frame.linkAirborne()) {
@@ -220,8 +218,9 @@ public final class EntityCombatResolver {
             // collision handler whenever hLinkPositionZ is non-zero.
             return false;
         }
+        var piranhaMotion = runtime.motions.get(PiranhaMotion.class, PiranhaMotion::new);
         if (slot.entity.type() == EntityRomConstants.ENTITY_PIRANHA_PLANT
-                && runtime.motions.get(PiranhaMotion.class, PiranhaMotion::new).state(slot.entity.slot()) == 0) {
+                && piranhaMotion.state(slot.entity.slot()) == 0) {
             // PiranhaPlantState0Handler keeps the plant hidden and does
             // not call DefaultEnemyDamageCollisionHandler.
             return false;
@@ -233,10 +232,9 @@ public final class EntityCombatResolver {
         var runtime = slot.runtime;
         var frame = slot.inputs;
 
+        var zombieMotion = runtime.motions.get(ZombieMotion.class, ZombieMotion::new);
         if (slot.entity.type() == EntityRomConstants.ENTITY_ZOMBIE
-                && !runtime.motions
-                        .get(ZombieMotion.class, ZombieMotion::new)
-                        .allowsEnemyCollision(slot.entity.slot())) {
+                && !zombieMotion.allowsEnemyCollision(slot.entity.slot())) {
             // ZombieState2Handler is the only Zombie branch that calls
             // DefaultEnemyDamageCollisionHandler.
             return false;
@@ -251,12 +249,14 @@ public final class EntityCombatResolver {
             // collision call when Link is non-interactive.
             return false;
         }
+        var fishMotion = runtime.motions.get(FishMotion.class, FishMotion::new);
         if (slot.entity.type() == EntityRomConstants.ENTITY_FISH
-                && !runtime.motions.get(FishMotion.class, FishMotion::new).allowsEnemyCollision(slot.entity.slot())) {
+                && !fishMotion.allowsEnemyCollision(slot.entity.slot())) {
             return false;
         }
+        var crowMotion = runtime.motions.get(CrowMotion.class, CrowMotion::new);
         if (slot.entity.type() == EntityRomConstants.ENTITY_CROW
-                && !runtime.motions.get(CrowMotion.class, CrowMotion::new).allowsEnemyCollision(slot.entity.slot())) {
+                && !crowMotion.allowsEnemyCollision(slot.entity.slot())) {
             return false;
         }
         return true;
@@ -266,54 +266,42 @@ public final class EntityCombatResolver {
         var runtime = slot.runtime;
         var frame = slot.inputs;
 
+        var booBuddyMotion = runtime.motions.get(BooBuddyMotion.class, BooBuddyMotion::new);
         slot.booBuddyAllowsLinkCollision = slot.entity.type() != EntityRomConstants.ENTITY_BOO_BUDDY
-                || runtime.motions
-                        .get(BooBuddyMotion.class, BooBuddyMotion::new)
-                        .allowsEnemyCollision(
-                                slot.entity.slot(),
-                                runtime.motions
-                                        .get(BooBuddyMotion.class, BooBuddyMotion::new)
-                                        .readBooBuddyTriggerCount(),
-                                runtime.physicsTables.readEnemyTransitionCountdown(slot.entity.slot()),
-                                frame.swordCollisionActive());
+                || booBuddyMotion.allowsEnemyCollision(
+                        slot.entity.slot(),
+                        booBuddyMotion.readBooBuddyTriggerCount(),
+                        runtime.physicsTables.readEnemyTransitionCountdown(slot.entity.slot()),
+                        frame.swordCollisionActive());
         slot.booBuddyAllowsSwordCollision = slot.entity.type() != EntityRomConstants.ENTITY_BOO_BUDDY
-                || runtime.motions
-                        .get(BooBuddyMotion.class, BooBuddyMotion::new)
-                        .allowsSwordCollision(
-                                slot.entity.slot(),
-                                runtime.motions
-                                        .get(BooBuddyMotion.class, BooBuddyMotion::new)
-                                        .readBooBuddyTriggerCount());
+                || booBuddyMotion.allowsSwordCollision(slot.entity.slot(), booBuddyMotion.readBooBuddyTriggerCount());
         if (!slot.booBuddyAllowsLinkCollision && !slot.booBuddyAllowsSwordCollision) {
             return false;
         }
+        var ghiniMotion = runtime.motions.get(GhiniMotion.class, GhiniMotion::new);
         if (isGhiniType(slot.entity.type())
-                && (runtime.motions.get(GhiniMotion.class, GhiniMotion::new).hidden(slot.entity.slot())
-                        || slot.entity.spriteVariant() < 0)) {
+                && (ghiniMotion.hidden(slot.entity.slot()) || slot.entity.spriteVariant() < 0)) {
             return false;
         }
+        var spikedBeetleMotion = runtime.motions.get(SpikedBeetleMotion.class, SpikedBeetleMotion::new);
         if (slot.entity.type() == EntityRomConstants.ENTITY_SPIKED_BEETLE
-                && !runtime.motions
-                        .get(SpikedBeetleMotion.class, SpikedBeetleMotion::new)
-                        .allowsCombat(slot.entity.slot())) {
+                && !spikedBeetleMotion.allowsCombat(slot.entity.slot())) {
             return false;
         }
-        if (slot.entity.type() == EntityRomConstants.ENTITY_ARMOS_STATUE
-                && !runtime.motions.get(ArmosMotion.class, ArmosMotion::new).isActive(slot.entity.slot())) {
+        var armosMotion = runtime.motions.get(ArmosMotion.class, ArmosMotion::new);
+        if (slot.entity.type() == EntityRomConstants.ENTITY_ARMOS_STATUE && !armosMotion.isActive(slot.entity.slot())) {
             return false;
         }
         // $15:4EFA skips DefaultEnemyDamageCollisionHandler only for
         // the jump's initial $08 transition countdown, not all airtime.
+        var stalfosEvasiveMotion = runtime.motions.get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new);
         if (slot.entity.type() == EntityRomConstants.ENTITY_STALFOS_EVASIVE
-                && runtime.motions
-                                .get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
-                                .privateState1(slot.entity.slot())
-                        == 0
+                && stalfosEvasiveMotion.privateState1(slot.entity.slot()) == 0
                 && runtime.physicsTables.readEnemyTransitionCountdown(slot.entity.slot()) != 0) {
             return false;
         }
-        if (slot.entity.type() == EntityRomConstants.ENTITY_LEEVER
-                && !runtime.motions.get(LeeverMotion.class, LeeverMotion::new).isChasing(slot.entity.slot())) {
+        var leeverMotion = runtime.motions.get(LeeverMotion.class, LeeverMotion::new);
+        if (slot.entity.type() == EntityRomConstants.ENTITY_LEEVER && !leeverMotion.isChasing(slot.entity.slot())) {
             return false;
         }
         return true;
@@ -322,37 +310,36 @@ public final class EntityCombatResolver {
     static boolean entityCombatGatesAcceptMovementState(EntityCombatSlot slot) {
         var runtime = slot.runtime;
 
-        slot.peaHatGrounded = slot.entity.type() != EntityRomConstants.ENTITY_PEAHAT
-                || runtime.motions.get(PeaHatMotion.class, PeaHatMotion::new).isGrounded(slot.entity);
+        var peaHatMotion = runtime.motions.get(PeaHatMotion.class, PeaHatMotion::new);
+        slot.peaHatGrounded =
+                slot.entity.type() != EntityRomConstants.ENTITY_PEAHAT || peaHatMotion.isGrounded(slot.entity);
+        var pairoddMotion = runtime.motions.get(PairoddMotion.class, PairoddMotion::new);
         if (slot.entity.type() == EntityRomConstants.ENTITY_PAIRODD
-                && !runtime.motions
-                        .get(PairoddMotion.class, PairoddMotion::new)
-                        .allowsEnemyCollision(slot.entity.slot())) {
+                && !pairoddMotion.allowsEnemyCollision(slot.entity.slot())) {
             return false;
         }
-        if (slot.entity.type() == EntityRomConstants.ENTITY_WIZROBE
-                && runtime.motions.get(WizrobeMotion.class, WizrobeMotion::new).state(slot.entity.slot()) != 3) {
+        var wizrobeMotion = runtime.motions.get(WizrobeMotion.class, WizrobeMotion::new);
+        if (slot.entity.type() == EntityRomConstants.ENTITY_WIZROBE && wizrobeMotion.state(slot.entity.slot()) != 3) {
             return false;
         }
+        var pokeyMotion = runtime.motions.get(PokeyMotion.class, PokeyMotion::new);
         if (slot.entity.type() == EntityRomConstants.ENTITY_POKEY
-                && runtime.motions.get(PokeyMotion.class, PokeyMotion::new).isSegment(slot.entity.slot())
+                && pokeyMotion.isSegment(slot.entity.slot())
                 && runtime.physicsTables.readEnemyTransitionCountdown(slot.entity.slot()) != 0) {
             // The detached branch calls DefaultEnemyDamageCollisionHandler
             // only after its transition countdown reaches zero.
             return false;
         }
+        var wingedOctorokMotion = runtime.motions.get(WingedOctorokMotion.class, WingedOctorokMotion::new);
         if (slot.entity.type() == EntityRomConstants.ENTITY_WINGED_OCTOROK
-                && (runtime.motions
-                                        .get(WingedOctorokMotion.class, WingedOctorokMotion::new)
-                                        .state(slot.entity.slot())
-                                == 2
+                && (wingedOctorokMotion.state(slot.entity.slot()) == 2
                         || runtime.slotProperties.state.readWingedStateTwoThisFrame(slot.entity.slot()))) {
             // WingedOctorokEntityHandler returns directly from its jump
             // state instead of calling DefaultEnemyDamageCollisionHandler.
             return false;
         }
-        if (isZolGelType(slot.entity.type())
-                && runtime.motions.get(ZolGelMotion.class, ZolGelMotion::new).skipsEnemyCollision(slot.entity.slot())) {
+        var zolGelMotion = runtime.motions.get(ZolGelMotion.class, ZolGelMotion::new);
+        if (isZolGelType(slot.entity.type()) && zolGelMotion.skipsEnemyCollision(slot.entity.slot())) {
             return false;
         }
         return true;
@@ -361,14 +348,11 @@ public final class EntityCombatResolver {
     static boolean entityCombatGatesAcceptDamageCountdowns(EntityCombatSlot slot) {
         var runtime = slot.runtime;
 
+        var hidingZolMotion = runtime.motions.get(HidingZolMotion.class, HidingZolMotion::new);
         slot.hidingZolSwordCollision = slot.entity.type() != EntityRomConstants.ENTITY_HIDING_ZOL
-                || runtime.motions
-                        .get(HidingZolMotion.class, HidingZolMotion::new)
-                        .allowsSwordCollision(slot.entity.slot());
+                || hidingZolMotion.allowsSwordCollision(slot.entity.slot());
         slot.hidingZolLinkCollision = slot.entity.type() != EntityRomConstants.ENTITY_HIDING_ZOL
-                || runtime.motions
-                        .get(HidingZolMotion.class, HidingZolMotion::new)
-                        .allowsLinkCollision(slot.entity.slot());
+                || hidingZolMotion.allowsLinkCollision(slot.entity.slot());
         if (!slot.hidingZolSwordCollision && !slot.hidingZolLinkCollision) {
             return false;
         }
@@ -382,11 +366,9 @@ public final class EntityCombatResolver {
                 || runtime.combatTables.readEnemyIgnoreHitsCountdown(slot.entity.slot()) > 0) {
             return false;
         }
+        var bombiteMotion = runtime.motions.get(BombiteMotion.class, BombiteMotion::new);
         if ((slot.entity.type() == EntityRomConstants.ENTITY_TIMER_BOMBITE
-                        && runtime.motions
-                                        .get(BombiteMotion.class, BombiteMotion::new)
-                                        .state(slot.entity.slot())
-                                == 1)
+                        && bombiteMotion.state(slot.entity.slot()) == 1)
                 || (slot.entity.type() == EntityRomConstants.ENTITY_BOUNCING_BOMBITE
                         && runtime.bombInteractions.state.readBombPrivateCountdown1(slot.entity.slot()) > 0)) {
             return false;
@@ -414,14 +396,12 @@ public final class EntityCombatResolver {
                 && slot.peaHatGrounded
                 && slot.hidingZolLinkCollision
                 && RoomEntityCombatRules.overlapsLink(slot.entity, frame.linkEntityX(), frame.linkEntityY());
+        var likeLikeMotion = runtime.motions.get(LikeLikeMotion.class, LikeLikeMotion::new);
         slot.swordHit = frame.swordCollisionActive()
                 && slot.booBuddyAllowsSwordCollision
                 && !runtime.slotProperties.state.readWingedSwordAttackThisFrame(slot.entity.slot())
                 && (slot.entity.type() != EntityRomConstants.ENTITY_LIKE_LIKE
-                        || runtime.motions
-                                        .get(LikeLikeMotion.class, LikeLikeMotion::new)
-                                        .state(slot.entity.slot())
-                                == 0)
+                        || likeLikeMotion.state(slot.entity.slot()) == 0)
                 && slot.hidingZolSwordCollision
                 && runtime.backgroundMechanics.moldormOrHeadOverlapsSword(
                         slot.entity, frame.swordX(), frame.swordWidth(), frame.swordY(), frame.swordHeight());
@@ -451,21 +431,16 @@ public final class EntityCombatResolver {
                             frame.attackContext().shieldWidth(),
                             shieldY,
                             frame.attackContext().shieldHeight())) {
-                if (runtime.motions
-                                .get(SpikedBeetleMotion.class, SpikedBeetleMotion::new)
-                                .state(slot.entity.slot())
-                        != 3) {
-                    runtime.motions
-                            .get(SpikedBeetleMotion.class, SpikedBeetleMotion::new)
-                            .flipFromShield(slot.entity.slot(), direction);
+                var spikedBeetleMotion = runtime.motions.get(SpikedBeetleMotion.class, SpikedBeetleMotion::new);
+                if (spikedBeetleMotion.state(slot.entity.slot()) != 3) {
+                    spikedBeetleMotion.flipFromShield(slot.entity.slot(), direction);
                     runtime.physicsTables.writeEnemyTransitionCountdown(slot.entity.slot(), 0xFF);
                 }
                 // func_003_6F5C clears the ignore-hits countdown after
                 // the shared shield bump; it does not damage the shell.
                 runtime.combatTables.writeEnemyIgnoreHitsCountdown(slot.entity.slot(), 0);
-                runtime.motions
-                        .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                        .clear(slot.entity.slot());
+                var enemyRecoilMotion = runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+                enemyRecoilMotion.clear(slot.entity.slot());
                 EnemyRecoilMotion.Vector vector = EnemyRecoilMotion.vectorTowardsLinkForLinkCollision(
                         slot.entity.x(),
                         slot.entity.y(),
@@ -508,7 +483,8 @@ public final class EntityCombatResolver {
         }
 
         if (slot.goombaStomp) {
-            runtime.motions.get(GoombaMotion.class, GoombaMotion::new).enterStomp(slot.entity.slot());
+            var goombaMotion = runtime.motions.get(GoombaMotion.class, GoombaMotion::new);
+            goombaMotion.enterStomp(slot.entity.slot());
             runtime.physicsTables.writeEnemyTransitionCountdown(slot.entity.slot(), 0x30);
             EntityCombatEvent.LinkAction linkAction = runtime.physicsTables.readGroundInteractionSideScrolling()
                     ? EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_SIDE_SCROLLING
@@ -548,16 +524,15 @@ public final class EntityCombatResolver {
         if (usesSharedRecoil(slot.entity.type()) || slot.entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
             // EnemyCollidedWithSword applies the default `$30` recoil
             // before ApplySwordDamagesToEnemy changes health.
-            runtime.motions
-                    .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                    .configure(
-                            slot.entity.slot(),
-                            slot.entity.x(),
-                            slot.entity.y(),
-                            slot.entity.z(),
-                            frame.linkEntityX(),
-                            frame.linkEntityY(),
-                            0x30);
+            var enemyRecoilMotion = runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+            enemyRecoilMotion.configure(
+                    slot.entity.slot(),
+                    slot.entity.x(),
+                    slot.entity.y(),
+                    slot.entity.z(),
+                    frame.linkEntityX(),
+                    frame.linkEntityY(),
+                    0x30);
         }
         // ConfigureEntityRecoil reaches StartIgnoringHitsForEntity
         // before ApplySwordDamagesToEnemy, including lethal hits.
@@ -566,15 +541,15 @@ public final class EntityCombatResolver {
         if (slot.swordDamage > 0) {
             // $06:6CEB checks existing recoil before $6CEE applies a new hit.
             // Main resolves combat before ticking handlers, so preserve that phase.
+            var rollingBonesMotion = runtime.motions.get(RollingBonesMotion.class, RollingBonesMotion::new);
             if (slot.entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES)
-                runtime.motions
-                        .get(RollingBonesMotion.class, RollingBonesMotion::new)
-                        .setSwordHitFrame(slot.entity.slot(), (frame.frameCounter() & 0xFF) + 1);
+                rollingBonesMotion.setSwordHitFrame(slot.entity.slot(), (frame.frameCounter() & 0xFF) + 1);
             runtime.combatTables.writeEnemyHealth(
                     slot.entity.slot(),
                     Math.max(0, runtime.combatTables.readEnemyHealth(slot.entity.slot()) - slot.swordDamage));
             if (slot.entity.type() == EntityRomConstants.ENTITY_MOLDORM) {
-                runtime.motions.get(MoldormMotion.class, MoldormMotion::new).onSwordHit(slot.entity.slot());
+                var moldormMotion = runtime.motions.get(MoldormMotion.class, MoldormMotion::new);
+                moldormMotion.onSwordHit(slot.entity.slot());
                 runtime.combatTables.writeEnemyFlashCountdown(slot.entity.slot(), 0x28);
                 runtime.combatTables.writeEnemyIgnoreHitsCountdown(slot.entity.slot(), 0);
             }
@@ -600,29 +575,23 @@ public final class EntityCombatResolver {
         slot.maskedMimicSwordClink = slot.entity.type() == EntityRomConstants.ENTITY_MASKED_MIMIC_GORIYA
                 && (runtime.slotProperties.options1(slot.entity.slot()) & 0x40) != 0;
         slot.rollingBonesBarSwordClink = slot.entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES_BAR;
+        var moblinKingMotion = runtime.motions.get(MoblinKingMotion.class, MoblinKingMotion::new);
         slot.moblinKingSwordClink = slot.entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING
-                && runtime.motions
-                                .get(MoblinKingMotion.class, MoblinKingMotion::new)
-                                .state(slot.entity.slot())
-                        != 5;
+                && moblinKingMotion.state(slot.entity.slot()) != 5;
         return true;
     }
 
     static boolean entitySwordImpactApply(EntityCombatSlot slot) {
         var runtime = slot.runtime;
 
+        var roamingEnemyMotion = runtime.motions.get(RoamingEnemyMotion.class, RoamingEnemyMotion::new);
+        var unmaskedIronMaskMotion = runtime.motions.get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new);
         if (slot.entity.type() == EntityRomConstants.ENTITY_CRYSTAL_SWITCH) {
             entitySwordImpactApplyCrystalSwitch(slot);
         } else if (slot.swordHit
                 && slot.entity.type() == EntityRomConstants.ENTITY_IRON_MASK
-                && runtime.motions
-                                .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
-                                .maskRemovalState(slot.entity.slot())
-                        == 0
-                && runtime.linkState.readLastRomLinkDirection()
-                        != runtime.motions
-                                .get(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
-                                .direction(slot.entity.slot())) {
+                && unmaskedIronMaskMotion.maskRemovalState(slot.entity.slot()) == 0
+                && runtime.linkState.readLastRomLinkDirection() != roamingEnemyMotion.direction(slot.entity.slot())) {
             entitySwordImpactApplyMaskedIronMask(slot);
         } else if (slot.swordHit
                 && RoomEntityCombatRules.swordPokeForSwordCollision(
@@ -653,7 +622,8 @@ public final class EntityCombatResolver {
             runtime.combatTables.writeEnemyIgnoreHitsCountdown(
                     slot.entity.slot(), frame.attackContext().powerRecoil() ? 0x20 : 0x0A);
             runtime.combatTables.writeEnemyFlashCountdown(slot.entity.slot(), 0x18);
-            runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot.entity.slot());
+            var enemyRecoilMotion = runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+            enemyRecoilMotion.clear(slot.entity.slot());
             slot.soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
             slot.soundId = 0x03;
         }
@@ -670,16 +640,15 @@ public final class EntityCombatResolver {
         slot.swordPokeVfx =
                 new EntityCombatEvent.SwordPokeVfx(byteValue(frame.swordX() - 0x08), byteValue(frame.swordY() - 0x08));
         runtime.combatTables.writeEnemyIgnoreHitsCountdown(slot.entity.slot(), 0x10);
-        runtime.motions
-                .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                .configure(
-                        slot.entity.slot(),
-                        slot.entity.x(),
-                        slot.entity.y(),
-                        slot.entity.z(),
-                        frame.linkEntityX(),
-                        frame.linkEntityY(),
-                        0x10);
+        var enemyRecoilMotion = runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.configure(
+                slot.entity.slot(),
+                slot.entity.x(),
+                slot.entity.y(),
+                slot.entity.z(),
+                frame.linkEntityX(),
+                frame.linkEntityY(),
+                0x10);
         slot.soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
         slot.soundId = 0x07;
     }
@@ -695,7 +664,8 @@ public final class EntityCombatResolver {
         slot.swordPokeVfx =
                 new EntityCombatEvent.SwordPokeVfx(byteValue(frame.swordX() - 0x08), byteValue(frame.swordY() - 0x08));
         runtime.combatTables.writeEnemyIgnoreHitsCountdown(slot.entity.slot(), 0x10);
-        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot.entity.slot());
+        var enemyRecoilMotion = runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(slot.entity.slot());
         slot.soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
         slot.soundId = 0x07;
     }
@@ -707,12 +677,13 @@ public final class EntityCombatResolver {
         // EnemyCollidedWithSword's Bombite branch is not a damage hit:
         // it enters state-$02, reverses the vector returned by
         // GetVectorTowardsLink, and starts the private lit window.
-        runtime.motions
-                .get(BombiteMotion.class, BombiteMotion::new)
-                .enterBouncingLitFromSword(slot.entity.slot(), slot.entity, frame.linkEntityX(), frame.linkEntityY());
+        var bombiteMotion = runtime.motions.get(BombiteMotion.class, BombiteMotion::new);
+        bombiteMotion.enterBouncingLitFromSword(
+                slot.entity.slot(), slot.entity, frame.linkEntityX(), frame.linkEntityY());
         runtime.physicsTables.writeEnemyTransitionCountdown(slot.entity.slot(), 0x40);
         runtime.bombInteractions.state.writeBombPrivateCountdown1(slot.entity.slot(), 0x08);
-        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot.entity.slot());
+        var enemyRecoilMotion = runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(slot.entity.slot());
     }
 
     static void entitySwordStatusApply(EntityCombatSlot slot) {
@@ -738,7 +709,8 @@ public final class EntityCombatResolver {
         runtime.combatTables.writeEnemyStunnedCountdown(slot.entity.slot(), 0);
         runtime.combatTables.writeEnemyFlashCountdown(slot.entity.slot(), 0);
         runtime.combatTables.writeEnemyIgnoreHitsCountdown(slot.entity.slot(), 0x0A);
-        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot.entity.slot());
+        var enemyRecoilMotion = runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(slot.entity.slot());
         runtime.slots.replace(slot.entity.slot(), withStatus(slot.entity, EntityStatus.BURNING));
         slot.secondarySoundChannel = EntityCombatEvent.SoundChannel.NOISE;
         slot.secondarySoundId = 0x12;
@@ -755,7 +727,8 @@ public final class EntityCombatResolver {
         runtime.combatTables.writeEnemyStunnedCountdown(slot.entity.slot(), 0xFF);
         runtime.combatTables.writeEnemyFlashCountdown(slot.entity.slot(), 0);
         runtime.combatTables.writeEnemyIgnoreHitsCountdown(slot.entity.slot(), 0x0A);
-        runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot.entity.slot());
+        var enemyRecoilMotion = runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        enemyRecoilMotion.clear(slot.entity.slot());
         runtime.slots.replace(slot.entity.slot(), withStatus(slot.entity, EntityStatus.STUNNED));
     }
 
@@ -779,13 +752,13 @@ public final class EntityCombatResolver {
                         : (frame.attackContext().powerRecoil() ? 0x40 : 0x2F));
         if (slot.entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
             runtime.bossRewards.state.writeBossDeathProducerState(slot.entity.slot(), 0);
-            runtime.motions
-                    .get(MoblinKingMotion.class, MoblinKingMotion::new)
-                    .setLethalHitFrame(slot.entity.slot(), (frame.frameCounter() & 255) + 1);
+            var moblinKingMotion = runtime.motions.get(MoblinKingMotion.class, MoblinKingMotion::new);
+            moblinKingMotion.setLethalHitFrame(slot.entity.slot(), (frame.frameCounter() & 255) + 1);
         }
         if (slot.entity.type() == EntityRomConstants.ENTITY_MOLDORM) {
             runtime.bossRewards.state.writeBossDeathProducerState(slot.entity.slot(), 0);
-            runtime.motions.get(MoldormMotion.class, MoldormMotion::new).setDestructionTailState(slot.entity.slot(), 0);
+            var moldormMotion = runtime.motions.get(MoldormMotion.class, MoldormMotion::new);
+            moldormMotion.setDestructionTailState(slot.entity.slot(), 0);
         }
         if (slot.entity.type() == 0x12) {
             runtime.bossRewards.cascadeGhiniDeath(slot.entity, runtime.frameRandom.forFrame(frame.frameCounter()));
@@ -816,7 +789,8 @@ public final class EntityCombatResolver {
                         ? 0
                         : frame.attackContext().powerRecoil() ? 0x20 : 0x0A);
         if (isZolGelType(slot.entity.type())) {
-            runtime.motions.get(ZolGelMotion.class, ZolGelMotion::new).onSwordHit(slot.entity.slot());
+            var zolGelMotion = runtime.motions.get(ZolGelMotion.class, ZolGelMotion::new);
+            zolGelMotion.onSwordHit(slot.entity.slot());
         }
         if (slot.entity.type() == EntityRomConstants.ENTITY_ZOL) {
             slot.entity = runtime.spriteHandlers.present(
@@ -929,7 +903,8 @@ public final class EntityCombatResolver {
         var runtime = slot.runtime;
 
         if (slot.linkCollision && slot.entity.type() == EntityRomConstants.ENTITY_GEL) {
-            runtime.motions.get(ZolGelMotion.class, ZolGelMotion::new).onLinkCollision(slot.entity.slot());
+            var zolGelMotion = runtime.motions.get(ZolGelMotion.class, ZolGelMotion::new);
+            zolGelMotion.onLinkCollision(slot.entity.slot());
         }
         // ApplyLinkCollisionWithEnemy's Gel branch ($03:6D3D) returns
         // immediately after starting the cling, before damage/recoil.
@@ -977,21 +952,14 @@ public final class EntityCombatResolver {
                         new EntityCombatEvent.LinkCollisionResponse(vector.x() & 0xFF, vector.y() & 0xFF, 0x10);
             }
         }
+        var moblinKingMotion = runtime.motions.get(MoblinKingMotion.class, MoblinKingMotion::new);
         if (slot.linkDamage > 0
                 && !slot.swordHit
                 && slot.entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING
-                && runtime.motions
-                                .get(MoblinKingMotion.class, MoblinKingMotion::new)
-                                .state(slot.entity.slot())
-                        == 9
+                && moblinKingMotion.state(slot.entity.slot()) == 9
                 && runtime.physicsTables.readEnemyTransitionCountdown(slot.entity.slot()) == 0x60) {
             slot.linkCollisionResponse = new EntityCombatEvent.LinkCollisionResponse(
-                    runtime.motions
-                            .get(MoblinKingMotion.class, MoblinKingMotion::new)
-                            .speedX(slot.entity.slot()),
-                    0,
-                    0x28,
-                    0x40);
+                    moblinKingMotion.speedX(slot.entity.slot()), 0, 0x28, 0x40);
         }
         return true;
     }
