@@ -61,7 +61,7 @@ final class SandCrabRuntimeTest {
         assertEquals(0x04, RoomEntityCombatRules.contactDamage(ENTITY_SAND_CRAB));
         assertEquals(0x02, RoomEntityCombatRules.initialHealth(ENTITY_SAND_CRAB));
         assertEquals(0x12, runtime.enemies().physicsFlags(0));
-        assertEquals(0x02, runtime.options1(0));
+        assertEquals(0x02, runtime.execution().slotProperties().options1(0));
         assertEquals(0x02, runtime.enemies().enemyHealth(0));
     }
 

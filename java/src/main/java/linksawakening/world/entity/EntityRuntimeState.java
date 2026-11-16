@@ -8,11 +8,17 @@ final class EntityRuntimeState {
     final EntityLinkState linkState = new EntityLinkState();
     final EntityLinkView linkView = new EntityLinkView(linkState);
 
-    final EntityCombatTables combatTables = new EntityCombatTables();
-    final EntityPhysicsTables physicsTables = new EntityPhysicsTables();
+    final EntityCombatTables combatTables;
+    final EntityPhysicsTables physicsTables;
     final EntityRoomVariables roomVariables = new EntityRoomVariables();
     final EntityPresentationState presentationState = new EntityPresentationState();
     final EntityMotionRegistry motions = new EntityMotionRegistry();
-    final EntitySlotView slotView = new EntitySlotView(
-            combatTables, physicsTables, motions.get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new));
+    final EntitySlotView slotView;
+
+    EntityRuntimeState(EntitySlots slots) {
+        combatTables = slots.combat();
+        physicsTables = slots.physics();
+        slotView = new EntitySlotView(
+                combatTables, physicsTables, motions.get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new));
+    }
 }

@@ -32,7 +32,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         }
         assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).leeverState(0));
 
-        runtime.resolveCombat(new EntitySwordContactFrame(0, 72, 72, false, true, true, 72, 1, 72, 1));
+        runtime.combat().resolveCombat(new EntitySwordContactFrame(0, 72, 72, false, true, true, 72, 1, 72, 1));
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 1 || direction == 2;
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00), wall));
@@ -149,12 +149,12 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
 
         List<EntityCombatEvent> contact =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
+                runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(0x04, contact.get(0).linkDamage());
 
         List<EntityCombatEvent> sword =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 72, 72, false, true, true, 72, 1, 72, 1));
+                runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 72, 72, false, true, true, 72, 1, 72, 1));
         assertEquals(1, sword.size());
         assertEquals(1, runtime.enemies().enemyHealth(0));
     }
@@ -254,14 +254,15 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
 
-        List<LikeLikeEvent> events = runtime.consumePendingLikeLikeEvents();
+        List<LikeLikeEvent> events = runtime.outbox().consumePendingLikeLikeEvents();
         assertEquals(1, events.size());
         assertEquals(LikeLikeEvent.Kind.CAPTURE, events.getFirst().kind());
         assertEquals(-1, events.getFirst().stolenInventorySlot());
         assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).likeLikeState(0));
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
 
-        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(3, 64, 64, false, true, true, 72, 1, 72, 1))
+        assertTrue(runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(3, 64, 64, false, true, true, 72, 1, 72, 1))
                 .isEmpty());
         assertEquals(2, runtime.enemies().enemyHealth(0));
     }
@@ -287,7 +288,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 sequence(0x00),
                 linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
-        runtime.consumePendingLikeLikeEvents();
+        runtime.outbox().consumePendingLikeLikeEvents();
 
         runtime.tick(EntityTestFrames.projectileFrame(
                 runtime,
@@ -297,7 +298,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 sequence(0x00),
                 linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
-        LikeLikeEvent stolen = runtime.consumePendingLikeLikeEvents().getFirst();
+        LikeLikeEvent stolen = runtime.outbox().consumePendingLikeLikeEvents().getFirst();
         assertEquals(LikeLikeEvent.Kind.CAPTURE, stolen.kind());
         assertEquals(0, stolen.stolenInventorySlot());
         assertEquals(1, stolen.stolenShieldLevel());
@@ -321,7 +322,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 sequence(0x00),
                 linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 2, 0)));
-        levelTwo.consumePendingLikeLikeEvents();
+        levelTwo.outbox().consumePendingLikeLikeEvents();
         levelTwo.tick(EntityTestFrames.projectileFrame(
                 levelTwo,
                 2,
@@ -330,7 +331,8 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 sequence(0x00),
                 linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 2, 0)));
-        LikeLikeEvent protectedShield = levelTwo.consumePendingLikeLikeEvents().getFirst();
+        LikeLikeEvent protectedShield =
+                levelTwo.outbox().consumePendingLikeLikeEvents().getFirst();
         assertEquals(-1, protectedShield.stolenInventorySlot());
         assertEquals(0, new EntityRoomInspectionQueries(levelTwo.inspection()).likeLikePrivateState1(0));
     }
@@ -355,7 +357,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 sequence(0x00),
                 linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
-        runtime.consumePendingLikeLikeEvents();
+        runtime.outbox().consumePendingLikeLikeEvents();
 
         runtime.tick(EntityTestFrames.projectileFrame(
                 runtime,
@@ -365,7 +367,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 sequence(0x00),
                 linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(80, 80, 0, 1, 0, false, 1, 0)));
-        var events = runtime.consumePendingLikeLikeEvents();
+        var events = runtime.outbox().consumePendingLikeLikeEvents();
         assertEquals(1, events.size());
         assertEquals(LikeLikeEvent.Kind.CAPTURE, events.getFirst().kind());
         assertFalse(events.getFirst().pinLinkPosition());
@@ -393,7 +395,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 sequence(0x00),
                 linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
-        runtime.consumePendingLikeLikeEvents();
+        runtime.outbox().consumePendingLikeLikeEvents();
 
         runtime.configuration().setActionButtonsHeld(true);
         for (int frame = 2; frame <= 8; frame++) {
@@ -405,7 +407,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                     sequence(0x00),
                     linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                     new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
-            runtime.consumePendingLikeLikeEvents();
+            runtime.outbox().consumePendingLikeLikeEvents();
         }
         assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).likeLikeState(0));
         assertEquals(7, new EntityRoomInspectionQueries(runtime.inspection()).likeLikeInertia(0));
@@ -418,7 +420,7 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 sequence(0x00),
                 linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(64, 64, 0, 0, 0, false, 1, 0)));
-        LikeLikeEvent release = runtime.consumePendingLikeLikeEvents().getFirst();
+        LikeLikeEvent release = runtime.outbox().consumePendingLikeLikeEvents().getFirst();
         assertEquals(LikeLikeEvent.Kind.RELEASE, release.kind());
         assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).likeLikeState(0));
         assertEquals(0x15, new EntityRoomInspectionQueries(runtime.inspection()).slowTransitionCountdown(0));
@@ -482,12 +484,12 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 .build();
 
         List<EntityCombatEvent> contact =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 72, 72, false, true, false, 0, 0, 0, 0));
+                runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 72, 72, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(0x04, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> sword =
-                runtime.resolveCombat(new EntitySwordContactFrame(2, 120, 120, false, true, true, 72, 1, 72, 1));
+        List<EntityCombatEvent> sword = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(2, 120, 120, false, true, true, 72, 1, 72, 1));
         assertEquals(1, sword.size());
         assertTrue(sword.get(0).swordHit());
         assertEquals(0, runtime.enemies().enemyHealth(0));
@@ -514,8 +516,8 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 .enemyCombatTables(tables)
                 .build();
 
-        List<EntityCombatEvent> events =
-                runtime.resolveCombat(new EntityAttackContactFrame(1, 72, 72, true, 0xF0, true, false, 0, 0, 0, 0));
+        List<EntityCombatEvent> events = runtime.combat()
+                .resolveCombat(new EntityAttackContactFrame(1, 72, 72, true, 0xF0, true, false, 0, 0, 0, 0));
         assertEquals(1, events.size());
         assertEquals(
                 EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_TOP_DOWN,
@@ -558,8 +560,8 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 .enemyCombatTables(tables)
                 .build();
 
-        List<EntityCombatEvent> events =
-                runtime.resolveCombat(new EntityAttackContactFrame(1, 72, 72, true, 0x10, true, false, 0, 0, 0, 0));
+        List<EntityCombatEvent> events = runtime.combat()
+                .resolveCombat(new EntityAttackContactFrame(1, 72, 72, true, 0x10, true, false, 0, 0, 0, 0));
         assertTrue(events.isEmpty());
         assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).goombaState(0));
     }
@@ -584,8 +586,8 @@ final class EntityRuntimeGroundEnemies3Test extends EntityRuntimeTestSupport {
                 .enemyCombatTables(tables)
                 .build();
 
-        List<EntityCombatEvent> events =
-                runtime.resolveCombat(new EntityAttackContactFrame(1, 72, 72, true, 0x10, true, false, 0, 0, 0, 0));
+        List<EntityCombatEvent> events = runtime.combat()
+                .resolveCombat(new EntityAttackContactFrame(1, 72, 72, true, 0x10, true, false, 0, 0, 0, 0));
         assertEquals(1, events.size());
         assertEquals(
                 EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_SIDE_SCROLLING,

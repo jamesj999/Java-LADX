@@ -738,42 +738,42 @@ final class EntityEnemyInspectionQueries {
     }
 
     int stunnedCountdown(int slot) {
-        if (slot < 0 || slot >= runtime.slots.length) {
+        if (slot < 0 || slot >= runtime.slots.size()) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         return runtime.combatTables.readEnemyStunnedCountdown(slot);
     }
 
     int dyingCountdown(int slot) {
-        if (slot < 0 || slot >= runtime.slots.length) {
+        if (slot < 0 || slot >= runtime.slots.size()) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         return runtime.combatTables.readDyingCountdown(slot);
     }
 
     boolean powerRecoilDeath(int slot) {
-        if (slot < 0 || slot >= runtime.slots.length) {
+        if (slot < 0 || slot >= runtime.slots.size()) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         return runtime.combatTables.readPowerRecoilDeath(slot);
     }
 
     int enemyFlashCountdown(int slot) {
-        if (slot < 0 || slot >= runtime.slots.length) {
+        if (slot < 0 || slot >= runtime.slots.size()) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         return runtime.combatTables.readEnemyFlashCountdown(slot);
     }
 
     int fallingTargetY(int slot) {
-        if (slot < 0 || slot >= runtime.slots.length) {
+        if (slot < 0 || slot >= runtime.slots.size()) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         return runtime.physicsTables.readFallingTargetY(slot);
     }
 
     int fallingVisualYOffset(int slot) {
-        if (slot < 0 || slot >= runtime.slots.length) {
+        if (slot < 0 || slot >= runtime.slots.size()) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         return runtime.physicsTables.readFallingVisualYOffset(slot);

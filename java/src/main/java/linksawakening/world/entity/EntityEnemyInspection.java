@@ -22,21 +22,21 @@ public final class EntityEnemyInspection {
     final EntityRoomInspection roomInspection;
     final EntityRoomVariables roomVariables;
     final EntitySlotPresentation slotProperties;
-    final RoomEntity[] slots;
+    final EntitySlots slots;
 
     EntityEnemyInspection(
             EntityBossState bossRewards,
-            EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityLiftState liftThrow,
             EntityLinkState linkState,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
-            EntityRoomInspection inspection,
             EntityRoomInspection roomInspection,
             EntityRoomVariables roomVariables,
             EntitySlotPresentation slotProperties,
-            RoomEntity[] slots) {
+            EntitySlots slots) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
+        EntityRoomInspection inspection = roomInspection;
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
         this.events = java.util.Objects.requireNonNull(events, "events");
@@ -68,28 +68,28 @@ public final class EntityEnemyInspection {
     }
 
     public int physicsFlags(int slot) {
-        if (slot < 0 || slot >= this.slots.length) {
+        if (slot < 0 || slot >= this.slots.size()) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         return this.physicsTables.readEnemyPhysicsFlags(slot);
     }
 
     public int transitionCountdown(int slot) {
-        if (slot < 0 || slot >= this.slots.length) {
+        if (slot < 0 || slot >= this.slots.size()) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         return this.physicsTables.readEnemyTransitionCountdown(slot);
     }
 
     public int enemyHealth(int slot) {
-        if (slot < 0 || slot >= this.slots.length) {
+        if (slot < 0 || slot >= this.slots.size()) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         return this.combatTables.readEnemyHealth(slot);
     }
 
     public int enemyIgnoreHitsCountdown(int slot) {
-        if (slot < 0 || slot >= this.slots.length) {
+        if (slot < 0 || slot >= this.slots.size()) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         return this.combatTables.readEnemyIgnoreHitsCountdown(slot);
@@ -101,16 +101,16 @@ public final class EntityEnemyInspection {
     }
 
     public int fallingTargetX(int slot) {
-        if (slot < 0 || slot >= this.slots.length) {
+        if (slot < 0 || slot >= this.slots.size()) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         return this.physicsTables.readFallingTargetX(slot);
     }
 
     public boolean polsVoiceBalladOcarinaTrigger() {
-        return this.linkState.linkPlayingOcarinaCountdown == 0x01
-                && (this.linkState.ocarinaSongFlags & 0x04) != 0
-                && this.linkState.selectedSongIndex == 0;
+        return this.linkState.readLinkPlayingOcarinaCountdown() == 0x01
+                && (this.linkState.readOcarinaSongFlags() & 0x04) != 0
+                && this.linkState.readSelectedSongIndex() == 0;
     }
 
     boolean shouldDisappear(RoomEntity entity) {
@@ -153,15 +153,22 @@ public final class EntityEnemyInspection {
                         || this.roomVariables.readTransitionSequenceCounter() != 0x04)) {
             return false;
         }
-        return !this.linkState.dialogActive
-                && !this.linkState.inventoryAppearing
+        return !this.linkState.readDialogActive()
+                && !this.linkState.readInventoryAppearing()
                 && !this.inspection.witchGotItemPresentationActive()
                 && !this.roomVariables.readRoomTransitionActive();
     }
 
     boolean entityTimersInteractive() {
-        return !this.linkState.dialogActive
-                && !this.linkState.inventoryAppearing
-                && this.linkState.linkPlayingOcarinaCountdown == 0;
+        return !this.linkState.readDialogActive()
+                && !this.linkState.readInventoryAppearing()
+                && this.linkState.readLinkPlayingOcarinaCountdown() == 0;
+    }
+
+    public boolean gelClingingToLink() {
+        return motions.get(
+                        linksawakening.world.entity.motion.ZolGelMotion.class,
+                        linksawakening.world.entity.motion.ZolGelMotion::new)
+                .readGelClingingToLink();
     }
 }

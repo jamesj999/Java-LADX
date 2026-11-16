@@ -107,7 +107,7 @@ public final class EntitySlotLifecycle {
     final EntityStoryState story;
     final GenieEntityController.State genie;
     final RomEnemyCombatTables enemyCombatTables;
-    final RoomEntity[] slots;
+    final EntitySlots slots;
     final SlimeEyeController.State slimeEye;
     // Optional ROM data, absent in ROM-free runtimes.
     final java.util.function.IntUnaryOperator entityProperties;
@@ -119,13 +119,11 @@ public final class EntitySlotLifecycle {
             EntityWarpController warpState,
             EntityBombState bombInteractions,
             EntityBossState bossRewards,
-            EntityCombatTables combatTables,
             EntityEnemyInspection enemyInspection,
             EntityEventChannels events,
             EntityLiftState liftThrow,
             EntityLinkState linkState,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityPickupState pickups,
             EntityPresentationState presentationState,
             EntityProjectileState projectiles,
@@ -134,13 +132,13 @@ public final class EntitySlotLifecycle {
             EntityStoryState story,
             GenieEntityController.State genie,
             RomEnemyCombatTables enemyCombatTables,
-            RoomEntity[] slots,
+            EntitySlots slots,
             SlimeEyeController.State slimeEye,
-            /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ java.util.function
-                            .IntUnaryOperator
-                    entityProperties,
+            java.util.function.IntUnaryOperator entityProperties,
             EntityRoomInspection inspection,
             EntitySlotPresentation slotPresentation) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
         this.inspection = java.util.Objects.requireNonNull(inspection, "inspection");
         this.slotPresentation = java.util.Objects.requireNonNull(slotPresentation, "slotPresentation");
 
@@ -189,10 +187,13 @@ public final class EntitySlotLifecycle {
         // ConfigureEntityHealth, $03:489B-489F, before setting initial HP.
         // Active spawns bypass the INIT dispatch; use their fresh ROM options,
         // not an override remaining from the previous occupant of this slot.
-        if (this.slots[slot].status() == EntityStatus.ACTIVE) {
-            initializeBossBattle(this.slots[slot], entityProperties.applyAsInt(this.slots[slot].type()));
+        if (this.slots.get(slot).status() == EntityStatus.ACTIVE) {
+            initializeBossBattle(
+                    this.slots.get(slot),
+                    entityProperties.applyAsInt(this.slots.get(slot).type()));
         }
-        this.combatTables.writeEnemyHealthGroup(slot, this.enemyCombatTables.healthGroup(this.slots[slot].type()));
+        this.combatTables.writeEnemyHealthGroup(
+                slot, this.enemyCombatTables.healthGroup(this.slots.get(slot).type()));
     }
 
     public int transitionSequenceCounter() {
@@ -200,11 +201,11 @@ public final class EntitySlotLifecycle {
     }
 
     public int clearEntity(int slot) {
-        if (slot < 0 || slot >= this.slots.length) {
+        if (slot < 0 || slot >= this.slots.size()) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         entityPersistentSlotResetClearBossState(this, slot);
-        RoomEntity entity = this.slots[slot];
+        RoomEntity entity = this.slots.get(slot);
         entityPersistentSlotResetClearPrivateState(this, slot);
         if (!entity.loaded()) {
             return 0;
@@ -218,7 +219,7 @@ public final class EntitySlotLifecycle {
             this.liftThrow.writeLiftedCarryState(0);
             this.liftThrow.writeLiftedEffectiveDirection(0);
         }
-        this.slots[slot] = RoomEntity.disabled(slot);
+        this.slots.clear(slot);
         this.slotPresentation.updatePincerBodyOam(this.slots, this.motions);
         return entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() < 8 ? 1 << entity.sourceLoadOrder() : 0;
     }
@@ -256,7 +257,7 @@ public final class EntitySlotLifecycle {
         this.combatTables.writePowerRecoilDeath(slot, false);
         this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot);
 
-        int freeSlot = EntitySlotAllocator.findFreeSlot(this.slots, this.combatTables, this.slots.length - 1);
+        int freeSlot = this.slots.findFree(this.slots.size() - 1);
         if (freeSlot >= 0) {
             this.physicsTables.writeBaseEntityFlipAttribute(
                     freeSlot, this.physicsTables.readBaseEntityFlipAttribute(original.slot()));
@@ -274,7 +275,7 @@ public final class EntitySlotLifecycle {
                     split.originalZ(),
                     -1,
                     false);
-            this.slots[freeSlot] = spawnedGel;
+            this.slots.replace(freeSlot, spawnedGel);
             this.initializeHealthGroup(freeSlot);
             this.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_GEL));
             this.combatTables.writeEnemyHitboxFlags(freeSlot, initialHitboxFlags(EntityRomConstants.ENTITY_GEL));
@@ -300,7 +301,7 @@ public final class EntitySlotLifecycle {
             EntitySpriteDefinition definition =
                     this.inspection.spriteDefinitionFor(EntityRomConstants.ENTITY_STALFOS_EVASIVE);
             RoomEntity stalfos = withType(entity, EntityRomConstants.ENTITY_STALFOS_EVASIVE, definition);
-            this.slots[slot] = withStatus(stalfos, EntityStatus.ACTIVE);
+            this.slots.replace(slot, withStatus(stalfos, EntityStatus.ACTIVE));
             this.initializeHealthGroup(slot); // $03:4C89 reconfigures attributes/health.
             this.combatTables.writeEnemyHealth(
                     slot, this.inspection.initialHealth(EntityRomConstants.ENTITY_STALFOS_EVASIVE));
@@ -320,7 +321,7 @@ public final class EntitySlotLifecycle {
         this.physicsTables.writeEnemyPhysicsFlags(slot, 0x04);
         this.combatTables.writeDyingCountdown(slot, 0x1F);
         this.combatTables.writePowerRecoilDeath(slot, false);
-        this.slots[slot] = withDeathPresentation(withStatus(entity, EntityStatus.DYING), 3, false);
+        this.slots.replace(slot, withDeathPresentation(withStatus(entity, EntityStatus.DYING), 3, false));
         this.events.pendingEntityEvents.add(
                 new EntityCombatEvent(slot, entity.type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13));
     }
@@ -348,7 +349,7 @@ public final class EntitySlotLifecycle {
             this.liftThrow.writeLiftedCarryState(0);
             this.liftThrow.writeLiftedEffectiveDirection(0);
         }
-        this.slots[slot] = RoomEntity.disabled(slot);
+        this.slots.clear(slot);
     }
 
     boolean decrementEnemyCombatCountdowns(int slot, boolean decrementIgnoreHits) {

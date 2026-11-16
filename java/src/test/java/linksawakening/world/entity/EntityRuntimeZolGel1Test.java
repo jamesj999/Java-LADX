@@ -42,8 +42,9 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
                     .enemyCombatTables(tables)
                     .build();
 
-            runtime.resolveCombat(
-                    new EntityVerticalContactFrame(0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging));
+            runtime.combat()
+                    .resolveCombat(
+                            new EntityVerticalContactFrame(0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging));
             runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x01)));
 
             assertEquals(61, runtime.inspection().snapshot().slots().get(0).x(), "type=" + Integer.toHexString(type));
@@ -72,8 +73,9 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
                     .enemyCombatTables(tables)
                     .build();
 
-            runtime.resolveCombat(
-                    new EntityVerticalContactFrame(0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging));
+            runtime.combat()
+                    .resolveCombat(
+                            new EntityVerticalContactFrame(0, 120, 120, false, false, true, 72, 1, 72, 1, nonDamaging));
             RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 1 || direction == 2;
 
             runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x01), wall));
@@ -247,8 +249,8 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x01)));
         assertEquals(2, runtime.enemies().enemyHealth(0));
-        List<EntityCombatEvent> sword =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 120, 120, false, true, true, 72, 1, 72, 1));
+        List<EntityCombatEvent> sword = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 120, 120, false, true, true, 72, 1, 72, 1));
         assertEquals(1, sword.size());
         assertEquals(1, runtime.enemies().enemyHealth(0));
         assertEquals(
@@ -360,16 +362,18 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
                         .build()))
                 .build();
 
-        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 72, 64, false, true, false, 0, 0, 0, 0))
+        assertTrue(runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 72, 64, false, true, false, 0, 0, 0, 0))
                 .isEmpty());
 
         List<EntityCombatEvent> contact =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 68, 64, false, true, false, 0, 0, 0, 0));
+                runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 68, 64, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(0, contact.get(0).linkDamage());
         assertFalse(contact.get(0).linkCollisionResponse().active());
         assertEquals(4, new EntityEnemyInspectionQueries(runtime.enemies()).zolState(0));
-        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 68, 64, false, true, false, 0, 0, 0, 0))
+        assertTrue(runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 68, 64, false, true, false, 0, 0, 0, 0))
                 .isEmpty());
     }
 
@@ -382,19 +386,19 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
                         .spriteDefinition(pairDefinition(0x1C, 2))
                         .build()))
                 .build();
-        runtime.resolveCombat(new EntitySwordContactFrame(1, 68, 64, false, true, false, 0, 0, 0, 0));
-        assertFalse(runtime.gelClingingToLink());
+        runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 68, 64, false, true, false, 0, 0, 0, 0));
+        assertFalse(runtime.enemies().gelClingingToLink());
         runtime.configuration().setJoypadHeld(true);
         for (int frame = 0; frame < 43; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 68, 64, () -> 0));
-            assertTrue(runtime.gelClingingToLink());
+            assertTrue(runtime.enemies().gelClingingToLink());
             if (frame == 2) {
                 assertEquals(67, runtime.inspection().snapshot().slots().get(0).x());
                 assertEquals(62, runtime.inspection().snapshot().slots().get(0).y());
             }
         }
         runtime.tick(EntityTestFrames.frame(runtime, 43, 68, 64, () -> 0));
-        assertFalse(runtime.gelClingingToLink());
+        assertFalse(runtime.enemies().gelClingingToLink());
     }
 
     @Test
@@ -410,7 +414,8 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
 
         assertEquals(
                 1,
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 68, 64, false, true, false, 0, 0, 0, 0))
+                runtime.combat()
+                        .resolveCombat(new EntitySwordContactFrame(1, 68, 64, false, true, false, 0, 0, 0, 0))
                         .size());
         assertEquals(4, new EntityEnemyInspectionQueries(runtime.enemies()).zolState(0));
         assertEquals(0x80, new EntityEnemyInspectionQueries(runtime.enemies()).zolTransitionCountdown(0));
@@ -492,7 +497,8 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, sequence(0x00)));
-        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 72, 72, false, true, true, 72, 1, 72, 1))
+        assertTrue(runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 72, 72, false, true, true, 72, 1, 72, 1))
                 .isEmpty());
 
         int frame = 1;
@@ -506,12 +512,14 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
         // frame before checking state-3 collision behavior.
         runtime.tick(EntityTestFrames.frame(runtime, frame++, 80, 64, sequence(0x00)));
         RoomEntity hidingZol = runtime.inspection().snapshot().slots().get(0);
-        List<EntityCombatEvent> contact = runtime.resolveCombat(
-                new EntitySwordContactFrame(1, hidingZol.x() + 4, hidingZol.y() + 4, false, true, false, 0, 0, 0, 0));
+        List<EntityCombatEvent> contact = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(
+                        1, hidingZol.x() + 4, hidingZol.y() + 4, false, true, false, 0, 0, 0, 0));
         assertTrue(contact.isEmpty());
 
-        List<EntityCombatEvent> sword = runtime.resolveCombat(new EntitySwordContactFrame(
-                1, 120, 120, false, true, true, hidingZol.x() + 8, 1, hidingZol.y() + 8, 1));
+        List<EntityCombatEvent> sword = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(
+                        1, 120, 120, false, true, true, hidingZol.x() + 8, 1, hidingZol.y() + 8, 1));
         assertEquals(1, sword.size());
         assertTrue(sword.get(0).swordHit());
         assertEquals(
@@ -683,6 +691,6 @@ final class EntityRuntimeZolGel1Test extends EntityRuntimeTestSupport {
         assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).hidingZolState(0));
         assertEquals(
                 List.of(new EntityCombatEvent(0, 0x9B, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x24)),
-                runtime.consumePendingEntityEvents());
+                runtime.outbox().consumePendingEntityEvents());
     }
 }

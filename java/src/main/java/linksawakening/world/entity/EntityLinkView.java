@@ -9,74 +9,74 @@ public final class EntityLinkView {
     }
 
     public boolean actionButtonAHeld() {
-        return state.actionButtonAHeld;
+        return state.readActionButtonAHeld();
     }
 
     public boolean actionButtonBHeld() {
-        return state.actionButtonBHeld;
+        return state.readActionButtonBHeld();
     }
 
     public boolean actionButtonsHeld() {
-        return state.actionButtonsHeld;
+        return state.readActionButtonsHeld();
     }
 
     public int currentLinkFinalPositionX() {
-        return state.currentLinkFinalPositionX;
+        return state.readCurrentLinkFinalPositionX();
     }
 
     public boolean currentLinkFinalPositionXConfigured() {
-        return state.currentLinkFinalPositionXConfigured;
+        return state.readCurrentLinkFinalPositionXConfigured();
     }
 
     public int currentLinkSpeedX() {
-        return state.currentLinkSpeedX;
+        return state.readCurrentLinkSpeedX();
     }
 
     public int currentLinkSpeedY() {
-        return state.currentLinkSpeedY;
+        return state.readCurrentLinkSpeedY();
     }
 
     public boolean dialogActive() {
-        return state.dialogActive;
+        return state.readDialogActive();
     }
 
     public int dialogCooldown() {
-        return state.dialogCooldown;
+        return state.readDialogCooldown();
     }
 
     public boolean inventoryAppearing() {
-        return state.inventoryAppearing;
+        return state.readInventoryAppearing();
     }
 
     public boolean joypadHeld() {
-        return state.joypadHeld;
+        return state.readJoypadHeld();
     }
 
     public int linkAttackStepAnimationCountdown() {
-        return state.linkAttackStepAnimationCountdown;
+        return state.readLinkAttackStepAnimationCountdown();
     }
 
     public int linkItemA() {
-        return state.linkItemA;
+        return state.readLinkItemA();
     }
 
     public int linkItemB() {
-        return state.linkItemB;
+        return state.readLinkItemB();
     }
 
     public int linkPlayingOcarinaCountdown() {
-        return state.linkPlayingOcarinaCountdown;
+        return state.readLinkPlayingOcarinaCountdown();
     }
 
     public int linkPressedButtonsMask() {
-        return state.linkPressedButtonsMask;
+        return state.readLinkPressedButtonsMask();
     }
 
     public boolean runningWithPegasusBoots() {
-        return state.runningWithPegasusBoots;
+        return state.readRunningWithPegasusBoots();
     }
 
     public int windowY() {
-        return state.windowY;
+        return state.readWindowY();
     }
 }

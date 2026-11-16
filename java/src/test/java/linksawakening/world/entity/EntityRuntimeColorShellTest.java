@@ -31,8 +31,19 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
                 .spriteHandlers(catalog)
                 .build();
 
-        runtime.resolveCombat(new EntityVerticalContactFrame(
-                0, 120, 120, false, true, true, 72, 1, 72, 1, new EnemyAttackContext(1, false, true, false, false)));
+        runtime.combat()
+                .resolveCombat(new EntityVerticalContactFrame(
+                        0,
+                        120,
+                        120,
+                        false,
+                        true,
+                        true,
+                        72,
+                        1,
+                        72,
+                        1,
+                        new EnemyAttackContext(1, false, true, false, false)));
         assertEquals(
                 EntityStatus.DYING,
                 runtime.inspection().snapshot().slots().get(0).status());
@@ -143,7 +154,7 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.DISABLED,
                 runtime.inspection().snapshot().slots().get(0).status());
-        assertEquals(1, runtime.consumePendingClearedEntityMask());
+        assertEquals(1, runtime.outbox().consumePendingClearedEntityMask());
         assertEquals(List.of(0x5F), world.objectWrites);
         assertEquals(List.of(List.of(0x40, 0x40)), world.poofs);
     }
@@ -164,8 +175,8 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
                 .enemyCombatTables(tables)
                 .build();
 
-        List<EntityCombatEvent> events =
-                runtime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
+        List<EntityCombatEvent> events = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
 
         assertEquals(1, events.size());
         assertEquals(0xFF, events.get(0).enemySpecialAction());
@@ -179,7 +190,8 @@ final class EntityRuntimeColorShellTest extends EntityRuntimeTestSupport {
         assertEquals(0x03, events.get(0).soundId());
         assertEquals(EntityCombatEvent.SoundChannel.NONE, events.get(0).secondarySoundChannel());
         assertEquals(-1, events.get(0).secondarySoundId());
-        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 120, 120, false, true, true, 72, 1, 72, 1))
+        assertTrue(runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 120, 120, false, true, true, 72, 1, 72, 1))
                 .isEmpty());
 
         for (int frame = 0; frame < 0xFF; frame++) {

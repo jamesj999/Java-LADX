@@ -37,7 +37,7 @@ final class EntityRuntimeMoldormTest extends EntityRuntimeTestSupport {
                         .indoorRoom(true)
                         .build();
                 runtime.tick(EntityTestFrames.frame(runtime, 0, point[0], point[1], () -> 0));
-                var requests = runtime.consumePendingLinkMotionBlockRequests();
+                var requests = runtime.outbox().consumePendingLinkMotionBlockRequests();
                 if (point[2] == 0 && point[3] == 0) {
                     assertTrue(requests.isEmpty());
                 } else {
@@ -45,13 +45,15 @@ final class EntityRuntimeMoldormTest extends EntityRuntimeTestSupport {
                     assertEquals(point[2], requests.get(0).positionDeltaX());
                     assertEquals(point[3], requests.get(0).positionDeltaY());
                 }
-                runtime.setFreeMovementMode(true);
+                runtime.configuration().setFreeMovementMode(true);
                 runtime.tick(EntityTestFrames.frame(runtime, 1, 8, 72, () -> 0));
-                assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
-                runtime.setFreeMovementMode(false);
+                assertTrue(
+                        runtime.outbox().consumePendingLinkMotionBlockRequests().isEmpty());
+                runtime.configuration().setFreeMovementMode(false);
                 EntityRuntimeFixture.debug(runtime).setRoomTransitionStateForTest(true);
                 runtime.tick(EntityTestFrames.frame(runtime, 2, 8, 72, () -> 0));
-                assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
+                assertTrue(
+                        runtime.outbox().consumePendingLinkMotionBlockRequests().isEmpty());
             }
         }
     }
@@ -65,7 +67,8 @@ final class EntityRuntimeMoldormTest extends EntityRuntimeTestSupport {
                 .spriteDefinition(pairDefinition(0x59, 2))
                 .build();
         var runtime = RoomEntityRuntime.builder(snapshot(enemy)).build();
-        var events = runtime.resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x58, false, true, false, 0, 0, 0, 0));
+        var events = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x58, false, true, false, 0, 0, 0, 0));
         assertEquals(1, events.size());
         assertEquals(
                 new EntityCombatEvent.LinkCollisionResponse(0, 0x18, 0x10),

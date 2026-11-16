@@ -55,12 +55,12 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
 
         List<EntityCombatEvent> contact =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
+                runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(0x08, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> firstHit =
-                runtime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
+        List<EntityCombatEvent> firstHit = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
         assertEquals(1, firstHit.size());
         assertEquals(0x07, runtime.enemies().enemyHealth(0));
         assertEquals(
@@ -137,8 +137,8 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
             assertEquals(EntityStatus.ACTIVE, afterInit.status());
             assertEquals(-1, afterInit.spriteVariant(), "type=0x" + Integer.toHexString(type));
             assertTrue(groundCalls.isEmpty());
-            assertTrue(runtime.resolveCombat(
-                            new EntitySwordContactFrame(1, 0x50, 0x50, false, true, true, 0x58, 1, 0x58, 1))
+            assertTrue(runtime.combat()
+                    .resolveCombat(new EntitySwordContactFrame(1, 0x50, 0x50, false, true, true, 0x58, 1, 0x58, 1))
                     .isEmpty());
         }
     }
@@ -196,8 +196,9 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
             RoomEntity current = runtime.inspection().snapshot().slots().get(0);
             int linkX = (current.x() + 0x08) & 0xFF;
             int linkY = (current.y() - current.z() + 0x08) & 0xFF;
-            List<EntityCombatEvent> events = runtime.resolveCombat(new EntityVerticalContactFrame(
-                    0, linkX, linkY, false, false, true, linkX, 1, linkY, 1, nonDamaging));
+            List<EntityCombatEvent> events = runtime.combat()
+                    .resolveCombat(new EntityVerticalContactFrame(
+                            0, linkX, linkY, false, false, true, linkX, 1, linkY, 1, nonDamaging));
             assertEquals(1, events.size(), "type=0x" + Integer.toHexString(type));
             assertTrue(
                     new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(0),
@@ -237,7 +238,7 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
 
         assertTrue(groundCalls.isEmpty());
         for (int slot = 0; slot < 3; slot++) {
-            assertEquals(0x11, runtime.options1(slot));
+            assertEquals(0x11, runtime.execution().slotProperties().options1(slot));
         }
     }
 }

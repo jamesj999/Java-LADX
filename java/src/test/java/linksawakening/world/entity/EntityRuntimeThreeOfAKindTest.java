@@ -32,7 +32,7 @@ final class EntityRuntimeThreeOfAKindTest extends EntityRuntimeTestSupport {
 
         assertTrue(runtime.inspection().snapshot().loadedEntities().stream()
                 .allMatch(card -> card.status() == EntityStatus.DYING));
-        List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
+        List<EntityCombatEvent> events = runtime.outbox().consumePendingEntityEvents();
         assertTrue(events.stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.JINGLE && event.soundId() == 0x02));
@@ -59,8 +59,8 @@ final class EntityRuntimeThreeOfAKindTest extends EntityRuntimeTestSupport {
                 linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
 
-        List<EntityCombatEvent> hit =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 0, 0, false, true, true, 0x40, 0x10, 0x50, 0x10));
+        List<EntityCombatEvent> hit = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 0, 0, false, true, true, 0x40, 0x10, 0x50, 0x10));
         assertTrue(hit.getFirst().swordHit());
 
         runtime.tick(EntityTestFrames.projectileFrame(
@@ -82,9 +82,9 @@ final class EntityRuntimeThreeOfAKindTest extends EntityRuntimeTestSupport {
                 .build();
         EntityRuntimeFixture.debug(runtime).setThreeOfAKindSettledForTest(0, 0);
 
-        assertTrue(
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 0, 0, false, true, true, 0x40, 0x10, 0x50, 0x10))
-                        .isEmpty());
+        assertTrue(runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 0, 0, false, true, true, 0x40, 0x10, 0x50, 0x10))
+                .isEmpty());
     }
 
     @Test
@@ -109,7 +109,7 @@ final class EntityRuntimeThreeOfAKindTest extends EntityRuntimeTestSupport {
                 new EnemyProjectileCollision.LinkState(0, 0, 0, 7, 3, false)));
 
         assertEquals(1, EntityRuntimeFixture.inspection(runtime).transitionCountdownForTest(0));
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
         assertTrue(runtime.inspection().snapshot().loadedEntities().stream()
                 .allMatch(card -> card.status() == EntityStatus.ACTIVE));
 
@@ -123,6 +123,6 @@ final class EntityRuntimeThreeOfAKindTest extends EntityRuntimeTestSupport {
                 linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                 new EnemyProjectileCollision.LinkState(0, 0, 0, 0, 3, false)));
         assertEquals(1, EntityRuntimeFixture.inspection(runtime).transitionCountdownForTest(0));
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
     }
 }

@@ -60,10 +60,10 @@ final class SlimeEyeControlsTest {
                     if (frame % 24 < 8) desired.add("a");
                 } else if (!split && eyes.size() == 1) {
                     var eye = eyes.getFirst();
-                    int stretch = runtime.slimeEye.stretch(eye.slot());
+                    int stretch = runtime.execution().slimeEye().stretch(eye.slot());
                     if (stretch > previousBodyStretch) bodyHits++;
                     previousBodyStretch = stretch;
-                    if (runtime.slimeEye.state(eye.slot()) >= 2) {
+                    if (runtime.execution().slimeEye().state(eye.slot()) >= 2) {
                         approach(desired, link, eye.x(), eye.y());
                         if (stretch == 4) {
                             desired.add("a");
@@ -125,18 +125,19 @@ final class SlimeEyeControlsTest {
                                         .formatted(
                                                 e.slot(),
                                                 e.status().value(),
-                                                runtime.slimeEye.state(e.slot()),
+                                                runtime.execution().slimeEye().state(e.slot()),
                                                 e.x(),
                                                 e.y(),
                                                 e.z(),
                                                 room.entityState().entityHealth(e.slot()),
-                                                runtime.entityState.physicsTables.readEnemyTransitionCountdown(
-                                                        e.slot())))
+                                                runtime.inspection()
+                                                        .physicsTables
+                                                        .readEnemyTransitionCountdown(e.slot())))
                                 .collect(java.util.stream.Collectors.joining(";")))
                         .append('\n');
                 if (!body
                         && after.size() == 1
-                        && runtime.slimeEye.state(after.getFirst().slot()) == 3) {
+                        && runtime.execution().slimeEye().state(after.getFirst().slot()) == 3) {
                     save(rgba, out.resolve("body.png"));
                     body = true;
                 }

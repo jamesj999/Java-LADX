@@ -41,7 +41,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(0x6F, runtime.enemies().transitionCountdown(0));
         assertEquals(0x01, runtime.enemies().enemyIgnoreHitsCountdown(0));
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
     }
 
     @Test
@@ -242,12 +242,12 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
 
         List<EntityCombatEvent> contact =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
+                runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(4, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> firstHit =
-                runtime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
+        List<EntityCombatEvent> firstHit = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
         assertEquals(1, firstHit.size());
         assertEquals(
                 EntityStatus.ACTIVE,
@@ -306,11 +306,11 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
         EntityRuntimeFixture.debug(runtime).setTransitionSequenceCounterForTest(0x04);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 0x40, () -> 0));
-        assertEquals(List.of(new DialogRequest(1, 0x90)), runtime.consumePendingDialogRequests());
+        assertEquals(List.of(new DialogRequest(1, 0x90)), runtime.outbox().consumePendingDialogRequests());
         assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).moblinSwordPrivateState3(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 3, 0x70, 0x40, () -> 0));
-        assertTrue(runtime.consumePendingDialogRequests().isEmpty());
+        assertTrue(runtime.outbox().consumePendingDialogRequests().isEmpty());
         assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).moblinSwordPrivateState3(0));
     }
 
@@ -352,13 +352,14 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
 
         List<EntityCombatEvent> contact =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
+                runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(4, contact.get(0).linkDamage());
 
         RoomEntityRuntime swordRuntime = RoomEntityRuntime.builder(initial).build();
-        List<EntityCombatEvent> events =
-                swordRuntime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
+        List<EntityCombatEvent> events = swordRuntime
+                .combat()
+                .resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
 
         assertEquals(1, events.size());
         assertTrue(events.get(0).swordHit());
@@ -379,12 +380,12 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
 
         List<EntityCombatEvent> contact =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
+                runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(4, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> firstHit =
-                runtime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
+        List<EntityCombatEvent> firstHit = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
         assertEquals(1, firstHit.size());
         assertTrue(firstHit.get(0).swordHit());
         assertEquals(
@@ -392,7 +393,8 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(1, runtime.enemies().enemyHealth(0));
         assertEquals(0x18, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(0));
-        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 120, 120, false, true, true, 72, 1, 72, 1))
+        assertTrue(runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 120, 120, false, true, true, 72, 1, 72, 1))
                 .isEmpty());
 
         for (int frame = 1; frame <= 0x18; frame++) {
@@ -401,8 +403,9 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
         assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(0));
 
         RoomEntity movedMoblin = runtime.inspection().snapshot().slots().get(0);
-        List<EntityCombatEvent> secondHit = runtime.resolveCombat(new EntitySwordContactFrame(
-                0x19, 120, 120, false, true, true, movedMoblin.x() + 8, 1, movedMoblin.y() + 8, 1));
+        List<EntityCombatEvent> secondHit = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(
+                        0x19, 120, 120, false, true, true, movedMoblin.x() + 8, 1, movedMoblin.y() + 8, 1));
         assertEquals(1, secondHit.size());
         assertEquals(
                 EntityStatus.DYING,
@@ -421,8 +424,8 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 .build());
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
 
-        List<EntityCombatEvent> events =
-                runtime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
+        List<EntityCombatEvent> events = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
 
         assertEquals(1, events.size());
         EntityCombatEvent event = events.get(0);
@@ -453,8 +456,8 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 .build());
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
 
-        List<EntityCombatEvent> events =
-                runtime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
+        List<EntityCombatEvent> events = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
 
         assertEquals(1, events.size());
         assertEquals(
@@ -482,8 +485,8 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 .enemyCombatTables(tables)
                 .build();
 
-        List<EntityCombatEvent> events =
-                runtime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
+        List<EntityCombatEvent> events = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
         assertEquals(0xFE, events.get(0).enemySpecialAction());
 
         for (int frame = 0; frame < 0x60; frame++) {
@@ -503,7 +506,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                         .get(0)
                         .spriteDefinition()
                         .address());
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
     }
 
     @Test
@@ -542,12 +545,12 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(initial).build();
 
         List<EntityCombatEvent> contact =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
+                runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(0x08, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> firstHit =
-                runtime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
+        List<EntityCombatEvent> firstHit = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
         assertEquals(1, firstHit.size());
         assertEquals(0x03, runtime.enemies().enemyHealth(0));
         assertEquals(
@@ -567,7 +570,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                 .build();
 
         List<EntityCombatEvent> events =
-                runtime.resolveCombat(new EntitySwordContactFrame(0, 72, 72, false, true, true, 72, 1, 72, 1));
+                runtime.combat().resolveCombat(new EntitySwordContactFrame(0, 72, 72, false, true, true, 72, 1, 72, 1));
 
         assertEquals(1, events.size());
         assertEquals(0x03, runtime.enemies().enemyHealth(0));
@@ -596,7 +599,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                         .build()))
                 .build();
 
-        runtime.resolveCombat(new EntitySwordContactFrame(0, 72, 72, false, true, true, 72, 1, 72, 1));
+        runtime.combat().resolveCombat(new EntitySwordContactFrame(0, 72, 72, false, true, true, 72, 1, 72, 1));
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 1 || direction == 2;
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x00), wall));
@@ -618,7 +621,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
                         .build()))
                 .build();
 
-        runtime.resolveCombat(new EntitySwordContactFrame(0, 72, 72, false, true, true, 72, 1, 72, 1));
+        runtime.combat().resolveCombat(new EntitySwordContactFrame(0, 72, 72, false, true, true, 72, 1, 72, 1));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 72, 72, sequence(0x00)));
 
         assertEquals(61, runtime.inspection().snapshot().slots().get(0).x());
@@ -683,6 +686,7 @@ final class EntityRuntimeGroundEnemies1Test extends EntityRuntimeTestSupport {
         RoomEntity statue = runtime.inspection().snapshot().slots().get(0);
         assertEquals(56, statue.x());
         assertEquals(64, statue.y());
-        assertEquals(List.of(new LinkFinalPositionRequest(0)), runtime.consumePendingLinkFinalPositionRequests());
+        assertEquals(
+                List.of(new LinkFinalPositionRequest(0)), runtime.outbox().consumePendingLinkFinalPositionRequests());
     }
 }

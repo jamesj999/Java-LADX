@@ -49,7 +49,7 @@ final class PlayerProjectilePauseTest {
         assertEquals(before.x(), paused.x());
         assertEquals(before.y(), paused.y());
         assertEquals(before.z(), paused.z());
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
         if (type == 1) {
             // wC1A8 gates the handler, but UpdateEntityTimers does not read it.
             assertEquals(
@@ -143,12 +143,12 @@ final class PlayerProjectilePauseTest {
 
     private static int spawn(RoomEntityRuntime runtime, int type) {
         return switch (type) {
-            case 1 -> runtime.spawnBoomerang(0x40, 0x50, 0, 0, 0);
-            case 4 -> runtime.spawnMagicRodFireball(0x40, 0x50, 0, 0);
+            case 1 -> runtime.spawns().spawnBoomerang(0x40, 0x50, 0, 0, 0);
+            case 4 -> runtime.spawns().spawnMagicRodFireball(0x40, 0x50, 0, 0);
             case 0xDF -> {
-                int slot = runtime.spawnSwordBeam(0x40, 0x50, 0, 0);
+                int slot = runtime.spawns().spawnSwordBeam(0x40, 0x50, 0, 0);
                 tick(runtime, 0, 0); // State zero precedes the ROM pause check.
-                runtime.consumePendingEntityEvents();
+                runtime.outbox().consumePendingEntityEvents();
                 yield slot;
             }
             default -> throw new IllegalArgumentException("Unexpected projectile");

@@ -13,14 +13,15 @@ final class LeeverContactRecoilTest {
     @Test
     void acceptedContactKeepsCachedHitboxButUsesMovedPositionForRecoil() {
         var runtime = chasingLeever(110, 40);
-        var contact = runtime.resolveCombat(new EntitySwordContactFrame(35, 109, 39, false, true, false, 0, 0, 0, 0))
+        var contact = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(35, 109, 39, false, true, false, 0, 0, 0, 0))
                 .getFirst();
         assertEquals(4, contact.linkDamage());
-        assertTrue(runtime.deferContactRecoil(contact.slot(), 109, 39));
+        assertTrue(runtime.combat().deferContactRecoil(contact.slot(), 109, 39));
 
         runtime.tick(EntityTestFrames.frame(runtime, 35, 109, 39, () -> 0));
 
-        var response = runtime.consumePendingEntityEvents().getFirst();
+        var response = runtime.outbox().consumePendingEntityEvents().getFirst();
         assertEquals(109, runtime.inspection().snapshot().slots().get(2).x());
         assertResponse(response, 0, 0xEC);
     }
@@ -28,34 +29,34 @@ final class LeeverContactRecoilTest {
     @Test
     void backgroundRestorationKeepsTheOriginalRecoilVector() {
         var runtime = chasingLeever(64, 65);
-        runtime.resolveCombat(new EntitySwordContactFrame(35, 63, 64, false, true, false, 0, 0, 0, 0));
-        assertTrue(runtime.deferContactRecoil(2, 63, 64));
+        runtime.combat().resolveCombat(new EntitySwordContactFrame(35, 63, 64, false, true, false, 0, 0, 0, 0));
+        assertTrue(runtime.combat().deferContactRecoil(2, 63, 64));
 
         runtime.tick(EntityTestFrames.frame(runtime, 35, 63, 64, () -> 0, (entity, direction, x, y) -> true));
 
         assertEquals(64, runtime.inspection().snapshot().slots().get(2).x());
-        assertResponse(runtime.consumePendingEntityEvents().getFirst(), 0xEC, 0xEC);
+        assertResponse(runtime.outbox().consumePendingEntityEvents().getFirst(), 0xEC, 0xEC);
     }
 
     @Test
     void contactsRejectedByThePlayerDamageGateDoNotWriteRecoil() {
         var runtime = chasingLeever(110, 40);
-        runtime.resolveCombat(new EntitySwordContactFrame(35, 109, 39, false, true, false, 0, 0, 0, 0));
+        runtime.combat().resolveCombat(new EntitySwordContactFrame(35, 109, 39, false, true, false, 0, 0, 0, 0));
         runtime.tick(EntityTestFrames.frame(runtime, 35, 109, 39, () -> 0));
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
     }
 
     @Test
     void skippedHandlerDoesNotLeaveAResponseForTheFollowingFrame() {
         var runtime = chasingLeever(110, 40);
-        runtime.resolveCombat(new EntitySwordContactFrame(35, 109, 39, false, true, false, 0, 0, 0, 0));
-        runtime.deferContactRecoil(2, 109, 39);
+        runtime.combat().resolveCombat(new EntitySwordContactFrame(35, 109, 39, false, true, false, 0, 0, 0, 0));
+        runtime.combat().deferContactRecoil(2, 109, 39);
         runtime.configuration().setDialogActive(true);
         runtime.tick(EntityTestFrames.frame(runtime, 35, 109, 39, () -> 0));
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
         runtime.configuration().setDialogActive(false);
         runtime.tick(EntityTestFrames.frame(runtime, 36, 109, 39, () -> 0));
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
     }
 
     private static void assertResponse(EntityCombatEvent event, int speedX, int speedY) {

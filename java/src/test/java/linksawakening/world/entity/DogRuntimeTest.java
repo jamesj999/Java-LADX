@@ -67,7 +67,7 @@ final class DogRuntimeTest {
 
         assertFalse(RoomEntityCombatRules.supportsEnemyCollision(ENTITY_DOG));
         assertEquals(0x92, runtime.enemies().physicsFlags(0));
-        assertEquals(0x00, runtime.options1(0));
+        assertEquals(0x00, runtime.execution().slotProperties().options1(0));
         assertEquals(0x01, runtime.enemies().enemyHealth(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x40, () -> 0));

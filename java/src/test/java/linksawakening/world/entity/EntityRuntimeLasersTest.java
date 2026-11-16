@@ -67,7 +67,7 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
         assertEquals(0x50, beam.y());
         assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).laserSpeedX(15));
         assertEquals(0xF0, new EntityEnemyInspectionQueries(runtime.enemies()).laserSpeedY(15));
-        List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
+        List<EntityCombatEvent> events = runtime.outbox().consumePendingEntityEvents();
         assertEquals(1, events.size());
         assertEquals(EntityCombatEvent.SoundChannel.NOISE, events.getFirst().soundChannel());
         assertEquals(0x08, events.getFirst().soundId());
@@ -101,7 +101,7 @@ final class EntityRuntimeLasersTest extends EntityRuntimeTestSupport {
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(15).status());
         assertEquals(0xFF, runtime.inspection().snapshot().slots().get(15).type());
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
     }
 
     @Test

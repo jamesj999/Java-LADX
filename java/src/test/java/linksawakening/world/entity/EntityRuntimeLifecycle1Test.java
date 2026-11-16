@@ -28,7 +28,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 RoomEntityRuntime.builder(snapshot()).indoorRoom(true).build();
         EntityRuntimeFixture.debug(runtime).setEntityMapIdForTest(0x05);
 
-        int slot = runtime.spawnRoomEventKeyDrop();
+        int slot = runtime.spawns().spawnRoomEventKeyDrop();
 
         assertEquals(0x30, runtime.inspection().snapshot().slots().get(slot).type());
     }
@@ -115,10 +115,21 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 .spriteHandlers(catalog)
                 .build();
 
-        runtime.resolveCombat(new EntityVerticalContactFrame(
-                0, 80, 64, false, true, true, 112, 16, 112, 16, new EnemyAttackContext(1, false, true, false, false)));
+        runtime.combat()
+                .resolveCombat(new EntityVerticalContactFrame(
+                        0,
+                        80,
+                        64,
+                        false,
+                        true,
+                        true,
+                        112,
+                        16,
+                        112,
+                        16,
+                        new EnemyAttackContext(1, false, true, false, false)));
         assertTrue(new EntityEnemyInspectionQueries(runtime.enemies()).powerRecoilDeath(15));
-        runtime.clearEntity(15);
+        runtime.lifecycle().clearEntity(15);
         assertFalse(new EntityEnemyInspectionQueries(runtime.enemies()).powerRecoilDeath(15));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 64, () -> 0, false));
@@ -215,7 +226,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 runtime.enemies().transientVfxRequests());
         assertEquals(
                 List.of(new EntityCombatEvent(0, 0x4D, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x0E)),
-                runtime.consumePendingEntityEvents());
+                runtime.outbox().consumePendingEntityEvents());
     }
 
     @Test
@@ -243,7 +254,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
         assertEquals(0x00, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(0));
         assertEquals(0x68, runtime.enemies().fallingTargetX(0));
         assertEquals(0x70, new EntityEnemyInspectionQueries(runtime.enemies()).fallingTargetY(0));
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
     }
 
     @Test
@@ -299,7 +310,7 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
         List<EntityCombatEvent> fallingEvents = new ArrayList<>();
         for (int frame = 1; frame <= 16; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
-            fallingEvents.addAll(runtime.consumePendingEntityEvents());
+            fallingEvents.addAll(runtime.outbox().consumePendingEntityEvents());
         }
 
         RoomEntity moving = runtime.inspection().snapshot().slots().get(0);
@@ -644,8 +655,10 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 .spriteHandlers(null)
                 .enemyCombatTables(burningTables)
                 .build();
-        burningRuntime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
-        burningRuntime.clearEntity(0);
+        burningRuntime
+                .combat()
+                .resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
+        burningRuntime.lifecycle().clearEntity(0);
 
         assertEquals(
                 EntityStatus.DISABLED,
@@ -666,8 +679,10 @@ final class EntityRuntimeLifecycle1Test extends EntityRuntimeTestSupport {
                 .spriteHandlers(null)
                 .enemyCombatTables(stunnedTables)
                 .build();
-        stunnedRuntime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
-        stunnedRuntime.clearEntity(0);
+        stunnedRuntime
+                .combat()
+                .resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
+        stunnedRuntime.lifecycle().clearEntity(0);
 
         assertEquals(0, stunnedRuntime.enemies().transitionCountdown(0));
         assertEquals(0, new EntityEnemyInspectionQueries(stunnedRuntime.enemies()).stunnedCountdown(0));

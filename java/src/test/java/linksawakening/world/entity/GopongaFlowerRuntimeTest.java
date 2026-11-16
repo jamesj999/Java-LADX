@@ -87,12 +87,12 @@ final class GopongaFlowerRuntimeTest {
 
         assertEquals(0x04, runtime.enemies().enemyHealth(0));
         assertEquals(0x02, runtime.enemies().physicsFlags(0));
-        assertEquals(0x02, runtime.options1(0));
+        assertEquals(0x02, runtime.execution().slotProperties().options1(0));
         assertEquals(0x04, RoomEntityCombatRules.initialHealth(ENTITY_GOPONGA_FLOWER));
         assertEquals(0x08, RoomEntityCombatRules.contactDamage(ENTITY_GOPONGA_FLOWER));
 
-        List<EntityCombatEvent> contact =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x40, false, true, false, 0, 0, 0, 0));
+        List<EntityCombatEvent> contact = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x40, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(0x08, contact.get(0).linkDamage());
     }
@@ -125,7 +125,7 @@ final class GopongaFlowerRuntimeTest {
 
         assertEquals(
                 List.of(new LinkFinalPositionRequest(0, true, true, false)),
-                runtime.consumePendingLinkFinalPositionRequests());
+                runtime.outbox().consumePendingLinkFinalPositionRequests());
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity entity) {

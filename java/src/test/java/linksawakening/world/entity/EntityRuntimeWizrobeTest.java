@@ -132,13 +132,13 @@ final class EntityRuntimeWizrobeTest extends EntityRuntimeTestSupport {
                 .build();
         EntityRuntimeFixture.debug(runtime).setWizrobeStateForTest(0, 3, 0, 0xFF, 0x28, 0);
 
-        List<EntityCombatEvent> contact =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 0x48, 0x58, false, true, false, 0, 0, 0, 0));
+        List<EntityCombatEvent> contact = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 0x48, 0x58, false, true, false, 0, 0, 0, 0));
         assertEquals(1, contact.size());
         assertEquals(0x08, contact.get(0).linkDamage());
 
-        List<EntityCombatEvent> sword =
-                runtime.resolveCombat(new EntitySwordContactFrame(2, 0x80, 0x80, false, true, true, 0x48, 1, 0x58, 1));
+        List<EntityCombatEvent> sword = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(2, 0x80, 0x80, false, true, true, 0x48, 1, 0x58, 1));
         assertEquals(1, sword.size());
         assertTrue(sword.get(0).swordHit());
         // Health group $0C's sword rows are zero in Data_003_43EC; Wizrobe

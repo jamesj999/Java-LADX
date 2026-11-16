@@ -25,8 +25,8 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
                     .spriteDefinition(pairDefinition(0x82, 2))
                     .build();
             var runtime = RoomEntityRuntime.builder(snapshot(enemy)).build();
-            var events =
-                    runtime.resolveCombat(new EntitySwordContactFrame(1, linkX, 0x58, false, true, false, 0, 0, 0, 0));
+            var events = runtime.combat()
+                    .resolveCombat(new EntitySwordContactFrame(1, linkX, 0x58, false, true, false, 0, 0, 0, 0));
             assertEquals(1, events.size());
             assertEquals(
                     new EntityCombatEvent.LinkCollisionResponse(linkX < 0x40 ? 0xE8 : 0x18, 0, 0x10),
@@ -141,7 +141,7 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
                 .spriteHandlers(catalog)
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
-        runtime.resolveCombat(new EntitySwordContactFrame(0, 87, 64, false, true, true, 71, 8, 64, 8));
+        runtime.combat().resolveCombat(new EntitySwordContactFrame(0, 87, 64, false, true, true, 71, 8, 64, 8));
         assertEquals(7, runtime.enemies().enemyHealth(1));
         runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 72, () -> 0));
         assertEquals(71, runtime.inspection().snapshot().slots().get(1).x());
@@ -157,8 +157,9 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
         for (int frame = 2; frame < 24; frame++) runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 72, () -> 0));
         RoomEntity recovered = runtime.inspection().snapshot().slots().get(1);
         assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(1));
-        runtime.resolveCombat(
-                new EntitySwordContactFrame(24, 87, 64, false, true, true, recovered.x(), 8, recovered.y(), 8));
+        runtime.combat()
+                .resolveCombat(
+                        new EntitySwordContactFrame(24, 87, 64, false, true, true, recovered.x(), 8, recovered.y(), 8));
         assertEquals(
                 6,
                 runtime.enemies().enemyHealth(1),
@@ -195,8 +196,8 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
         runtime.configuration()
                 .setEnemyDropResolver(new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom)));
         runtime.configuration().setEnemyDropPlayerState(3, 4, false);
-        runtime.entityState.slotView.setOptions1Override(15, 0x80);
-        runtime.initializeBossBattle(boss);
+        runtime.execution().slot().setOptions1Override(15, 0x80);
+        runtime.lifecycle().initializeBossBattle(boss);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, sequence(0x00, 0x1F)));
         assertEquals(0xFF, runtime.enemies().transitionCountdown(15));
@@ -209,8 +210,8 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
         assertEquals(
                 EntityStatus.DISABLED,
                 runtime.inspection().snapshot().slots().get(15).status());
-        assertEquals(0x20, runtime.consumePendingRoomStatusMask());
-        assertEquals(1, runtime.consumePendingClearedEntityMask());
+        assertEquals(0x20, runtime.outbox().consumePendingRoomStatusMask());
+        assertEquals(1, runtime.outbox().consumePendingClearedEntityMask());
         var fairy = runtime.inspection().snapshot().loadedEntities().stream()
                 .filter(e -> e.type() == 0x2F)
                 .findFirst()
@@ -242,12 +243,12 @@ final class EntityRuntimeRollingBonesTest extends EntityRuntimeTestSupport {
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
-        assertTrue(runtime.resolveCombat(
-                        new EntitySwordContactFrame(1, 0x50, 0x50, true, true, true, 0x50, 0x10, 0x50, 0x10))
+        assertTrue(runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 0x50, 0x50, true, true, true, 0x50, 0x10, 0x50, 0x10))
                 .isEmpty());
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(
-                new EntitySwordContactFrame(1, 0xC0, 0xC0, false, true, true, 0x50, 0x10, 0x50, 0x10));
+        List<EntityCombatEvent> events = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 0xC0, 0xC0, false, true, true, 0x50, 0x10, 0x50, 0x10));
 
         assertEquals(1, events.size());
         assertEquals(0, events.get(0).enemyDamage());

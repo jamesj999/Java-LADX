@@ -11,47 +11,47 @@ final class EntityBossInspectionFixture {
 
     int geniePrivateState1ForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.genie.geniePrivateState1(slot) & 0xFF;
+        return runtime.execution().genie().geniePrivateState1(slot) & 0xFF;
     }
 
     int genieActiveStateForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.genie.genieActiveState(slot) & 0xFF;
+        return runtime.execution().genie().genieActiveState(slot) & 0xFF;
     }
 
     int geniePrivateState3ForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.genie.geniePrivateState3(slot) & 0xFF;
+        return runtime.execution().genie().geniePrivateState3(slot) & 0xFF;
     }
 
     int geniePrivateCountdown1ForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.genie.geniePrivateCountdown1(slot) & 0xFF;
+        return runtime.execution().genie().geniePrivateCountdown1(slot) & 0xFF;
     }
 
     int geniePrivateCountdown2ForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.genie.geniePrivateCountdown2(slot) & 0xFF;
+        return runtime.execution().genie().geniePrivateCountdown2(slot) & 0xFF;
     }
 
     int genieSpeedXForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.genie.genieSpeedX(slot) & 0xFF;
+        return runtime.execution().genie().genieSpeedX(slot) & 0xFF;
     }
 
     int genieSpeedZForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.genie.genieSpeedZ(slot) & 0xFF;
+        return runtime.execution().genie().genieSpeedZ(slot) & 0xFF;
     }
 
     int geniePrivateState4ForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.genie.geniePrivateState4(slot) & 0xFF;
+        return runtime.execution().genie().geniePrivateState4(slot) & 0xFF;
     }
 
     int rollingBonesBarStateForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.entityState
+        return runtime.inspection()
                 .motions
                 .get(RollingBonesMotion.class, RollingBonesMotion::new)
                 .barState(slot);
@@ -59,7 +59,7 @@ final class EntityBossInspectionFixture {
 
     int rollingBonesBarSpeedXForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.entityState
+        return runtime.inspection()
                 .motions
                 .get(RollingBonesMotion.class, RollingBonesMotion::new)
                 .barSpeedX(slot);

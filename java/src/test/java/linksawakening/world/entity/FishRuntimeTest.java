@@ -49,7 +49,7 @@ final class FishRuntimeTest {
 
         for (int frame = 2; frame < 0x90; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0, 0, () -> 0));
-            List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
+            List<EntityCombatEvent> events = runtime.outbox().consumePendingEntityEvents();
             if (!events.isEmpty()) {
                 assertEquals(2, runtime.flyingEnemies().fishState(0));
                 assertEquals(0x12, runtime.enemies().physicsFlags(0));
@@ -63,8 +63,9 @@ final class FishRuntimeTest {
                         events);
 
                 int combatFrame = (frame & 0x01) == 0 ? frame + 1 : frame;
-                List<EntityCombatEvent> contact = runtime.resolveCombat(new EntitySwordContactFrame(
-                        combatFrame & 0xFF, fish.x(), fish.y(), false, true, false, 0, 0, 0, 0));
+                List<EntityCombatEvent> contact = runtime.combat()
+                        .resolveCombat(new EntitySwordContactFrame(
+                                combatFrame & 0xFF, fish.x(), fish.y(), false, true, false, 0, 0, 0, 0));
                 assertEquals(1, contact.size());
                 assertEquals(0x04, contact.get(0).linkDamage());
                 assertFalse(contact.get(0).swordHit());

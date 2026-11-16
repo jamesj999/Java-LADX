@@ -30,7 +30,8 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
         boolean openedIntro = false;
         for (int frame = 0; frame < 36; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x58, () -> 0));
-            openedIntro |= runtime.consumePendingDialogRequests().equals(List.of(new DialogRequest(1, 0x91, true)));
+            openedIntro |=
+                    runtime.outbox().consumePendingDialogRequests().equals(List.of(new DialogRequest(1, 0x91, true)));
         }
 
         assertEquals(
@@ -123,13 +124,13 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
         EntityRuntimeFixture.debug(runtime).setMoblinKingStateForTest(0, 2, 0, 0, 0, 0, 0x30);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x30, 0x58, () -> 0));
 
-        runtime.resolveCombat(new EntitySwordContactFrame(1, 0x30, 0x58, false, true, true, 0x58, 8, 0x58, 8));
+        runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 0x30, 0x58, false, true, true, 0x58, 8, 0x58, 8));
         assertEquals(0x08, runtime.enemies().enemyHealth(0));
 
         EntityRuntimeFixture.debug(runtime).setMoblinKingStateForTest(0, 5, 0, 0, 0, 0, 0x60);
         EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(0, 0);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0x30, 0x58, () -> 0));
-        runtime.resolveCombat(new EntitySwordContactFrame(3, 0x30, 0x58, false, true, true, 0x58, 8, 0x58, 8));
+        runtime.combat().resolveCombat(new EntitySwordContactFrame(3, 0x30, 0x58, false, true, true, 0x58, 8, 0x58, 8));
 
         assertEquals(0x07, runtime.enemies().enemyHealth(0));
         int beforeX = runtime.inspection().snapshot().slots().get(0).x();
@@ -158,8 +159,8 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x58, 0x58, () -> 0, true));
         assertEquals(4, new EntityRoomInspectionQueries(runtime.inspection()).moblinKingState(0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x58, 0x58, () -> 0, true));
-        List<EntityCombatEvent> events =
-                runtime.resolveCombat(new EntitySwordContactFrame(3, 0x58, 0x58, false, true, false, 0, 0, 0, 0));
+        List<EntityCombatEvent> events = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(3, 0x58, 0x58, false, true, false, 0, 0, 0, 0));
 
         EntityCombatEvent impact = events.getFirst();
         assertEquals(0x08, impact.linkDamage());
@@ -185,8 +186,8 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
         EntityRuntimeFixture.debug(runtime).setMoblinKingStateForTest(0, 5, 0, 0, 0, 0, 0x60);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x58, 0x58, () -> 0));
-        List<EntityCombatEvent> events =
-                runtime.resolveCombat(new EntitySwordContactFrame(1, 0x58, 0x58, false, true, false, 0, 0, 0, 0));
+        List<EntityCombatEvent> events = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 0x58, 0x58, false, true, false, 0, 0, 0, 0));
 
         assertEquals(0, events.getFirst().linkDamage());
     }
@@ -208,20 +209,20 @@ final class EntityRuntimeMoblinKingTest extends EntityRuntimeTestSupport {
         EntityRuntimeFixture.debug(runtime).setMoblinKingStateForTest(0, 5, 0, 0, 0, 0, 0x60);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x30, 0x58, () -> 0));
 
-        runtime.resolveCombat(new EntitySwordContactFrame(1, 0x30, 0x58, false, true, true, 0x58, 8, 0x58, 8));
+        runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 0x30, 0x58, false, true, true, 0x58, 8, 0x58, 8));
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0x30, 0x58, () -> 0));
         assertEquals(0xA0, EntityRuntimeFixture.inspection(runtime).transitionCountdownForTest(0));
         for (int frame = 3; frame <= 162; frame++)
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x58, () -> 0));
         assertEquals(0xC0, EntityRuntimeFixture.inspection(runtime).transitionCountdownForTest(0));
         assertTrue(runtime.inspection().snapshot().slots().get(0).loaded());
-        assertEquals(0, runtime.consumePendingRoomStatusMask());
+        assertEquals(0, runtime.outbox().consumePendingRoomStatusMask());
         for (int frame = 163; frame < 354; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x30, 0x58, () -> 0));
         }
         assertTrue(runtime.inspection().snapshot().slots().get(0).loaded());
         runtime.tick(EntityTestFrames.frame(runtime, 354, 0x30, 0x58, () -> 0));
         assertFalse(runtime.inspection().snapshot().slots().get(0).loaded());
-        assertEquals(0x20, runtime.consumePendingRoomStatusMask());
+        assertEquals(0x20, runtime.outbox().consumePendingRoomStatusMask());
     }
 }

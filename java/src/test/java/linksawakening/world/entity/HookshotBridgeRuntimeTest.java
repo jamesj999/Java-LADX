@@ -16,7 +16,7 @@ final class HookshotBridgeRuntimeTest {
     @Test
     void passableBridgeCellSpawnsTheRomBridgeAndEmitsItsRoomRewrite() {
         RoomEntityRuntime runtime = emptyIndoorRuntime();
-        runtime.spawnHookshotChain(0x40, 0x40, 0, 2);
+        runtime.spawns().spawnHookshotChain(0x40, 0x40, 0, 2);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x9E, 0, 0x20, 0x20));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x40, () -> 0));
@@ -39,7 +39,7 @@ final class HookshotBridgeRuntimeTest {
     @Test
     void wallCollisionDoesNotTriggerApassableBridgePath() {
         RoomEntityRuntime runtime = emptyIndoorRuntime();
-        runtime.spawnHookshotChain(0x40, 0x40, 0, 2);
+        runtime.spawns().spawnHookshotChain(0x40, 0x40, 0, 2);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x9E, 0, 0x20, 0x20));
         runtime.configuration()
                 .setBackgroundInteraction((entity, direction, nextX, nextY) ->
@@ -57,7 +57,7 @@ final class HookshotBridgeRuntimeTest {
     @Test
     void positiveHookshotYSpeedSelectsTheRomPullUpBridgeObject() {
         RoomEntityRuntime runtime = emptyIndoorRuntime();
-        runtime.spawnHookshotChain(0x40, 0x40, 0, 3);
+        runtime.spawns().spawnHookshotChain(0x40, 0x40, 0, 3);
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x9F, 0, 0x20, 0x20));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x40, () -> 0));
@@ -72,7 +72,7 @@ final class HookshotBridgeRuntimeTest {
     @Test
     void bridgeMovesThenClearsWhenTheRewrittenObjectIsGone() {
         RoomEntityRuntime runtime = emptyIndoorRuntime();
-        runtime.spawnHookshotChain(0x40, 0x40, 0, 2);
+        runtime.spawns().spawnHookshotChain(0x40, 0x40, 0, 2);
         AtomicBoolean firstChainSample = new AtomicBoolean(true);
         runtime.configuration().setObjectQuery(entity -> {
             if (entity.type() == HookshotBridgeMotion.ENTITY_TYPE) {

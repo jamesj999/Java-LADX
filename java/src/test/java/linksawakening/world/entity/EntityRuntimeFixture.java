@@ -13,7 +13,7 @@ public final class EntityRuntimeFixture {
     }
 
     static void disableWithoutPersistence(RoomEntityRuntime runtime, int slot) {
-        runtime.lifecycle.disableEntityWithoutPersistence(slot);
+        runtime.lifecycle().disableEntityWithoutPersistence(slot);
     }
 
     static EntityRoomInspectionFixture inspection(RoomEntityRuntime runtime) {

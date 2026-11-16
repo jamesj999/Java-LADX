@@ -120,14 +120,14 @@ final class PlayerProjectileEnemyCollisionTest {
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
         if (paused) {
             assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).playerArrowTransitionCountdown(slot));
-            runtime.clearEntity(0);
+            runtime.lifecycle().clearEntity(0);
             runtime.configuration().setDialogActive(false);
             runtime.tick(EntityTestFrames.frame(runtime, 3, 0, 0, () -> 0));
         }
         assertEquals(0x18, new EntityRoomInspectionQueries(runtime.inspection()).playerArrowTransitionCountdown(slot));
-        runtime.clearEntity(0);
-        runtime.clearEntity(slot);
-        assertEquals(slot, runtime.spawnArrow(0x40, 0x50, 0, 0));
+        runtime.lifecycle().clearEntity(0);
+        runtime.lifecycle().clearEntity(slot);
+        assertEquals(slot, runtime.spawns().spawnArrow(0x40, 0x50, 0, 0));
         runtime.tick(EntityTestFrames.frame(runtime, 4, 0, 0, () -> 0));
         assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).playerArrowTransitionCountdown(slot));
     }
@@ -136,7 +136,7 @@ final class PlayerProjectileEnemyCollisionTest {
     @CsvSource({"12, 0, true", "-12, 0, false", "0, -12, true", "0, 12, false"})
     void hookshotUnmaskingUsesTheSameCollisionEdges(int dx, int dy, boolean unmasked) throws IOException {
         RoomEntityRuntime runtime = runtime(3, 0x24, dx, dy);
-        runtime.spawnHookshotChain(0x40, 0x50, 0, 1);
+        runtime.spawns().spawnHookshotChain(0x40, 0x50, 0, 1);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0xC0, 0xC0, () -> 0));
         assertEquals(unmasked ? 1 : 0, new EntityEnemyInspectionQueries(runtime.enemies()).ironMaskPrivateState2(0));
     }
@@ -144,7 +144,7 @@ final class PlayerProjectileEnemyCollisionTest {
     @Test
     void hookshotUnmasksBeforeTestingBackgroundCollision() throws IOException {
         RoomEntityRuntime runtime = runtime(3, 0x24, 0, 0);
-        runtime.spawnHookshotChain(0x40, 0x50, 0, 1);
+        runtime.spawns().spawnHookshotChain(0x40, 0x50, 0, 1);
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0xC0, 0xC0, () -> 0, (entity, direction, x, y) -> {
             if (entity.type() == 3) {
                 assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).ironMaskPrivateState2(0));
@@ -160,7 +160,7 @@ final class PlayerProjectileEnemyCollisionTest {
         RoomEntityRuntime runtime = runtime(3, 0x24, 0, 0);
         int physics = runtime.enemies().physicsFlags(0);
         EntityRuntimeFixture.debug(runtime).setPhysicsFlagsForTest(0, 0x40);
-        int slot = runtime.spawnHookshotChain(0x40, 0x50, 0, 1);
+        int slot = runtime.spawns().spawnHookshotChain(0x40, 0x50, 0, 1);
         runtime.tick(EntityTestFrames.frame(
                 runtime, 0, 0xC0, 0xC0, () -> 0, (entity, direction, x, y) -> entity.type() == 3));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0xC0, 0xC0, () -> 0));
@@ -174,7 +174,7 @@ final class PlayerProjectileEnemyCollisionTest {
     }
 
     private static boolean hitTarget(RoomEntityRuntime runtime) {
-        return runtime.consumePendingEntityEvents().stream().anyMatch(event -> event.slot() == 0);
+        return runtime.outbox().consumePendingEntityEvents().stream().anyMatch(event -> event.slot() == 0);
     }
 
     private static void assertBlocked(RoomEntityRuntime runtime, int type, int slot) {
@@ -197,9 +197,9 @@ final class PlayerProjectileEnemyCollisionTest {
     private static int spawn(RoomEntityRuntime runtime, int type, int direction) {
         int slot =
                 switch (type) {
-                    case 0 -> runtime.spawnArrow(0x40, 0x50, 0, direction);
-                    case 1 -> runtime.spawnBoomerang(0x40, 0x50, 0, direction, 0);
-                    case 0xDF -> runtime.spawnSwordBeam(0x40, 0x50, 0, direction);
+                    case 0 -> runtime.spawns().spawnArrow(0x40, 0x50, 0, direction);
+                    case 1 -> runtime.spawns().spawnBoomerang(0x40, 0x50, 0, direction, 0);
+                    case 0xDF -> runtime.spawns().spawnSwordBeam(0x40, 0x50, 0, direction);
                     default -> throw new IllegalArgumentException();
                 };
         if (type == 0xDF) {
@@ -211,7 +211,7 @@ final class PlayerProjectileEnemyCollisionTest {
                     () -> 0,
                     linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
                     new EnemyProjectileCollision.LinkState(0x40, 0x50, 0, 0, 3, false)));
-            runtime.consumePendingEntityEvents();
+            runtime.outbox().consumePendingEntityEvents();
         }
         return slot;
     }

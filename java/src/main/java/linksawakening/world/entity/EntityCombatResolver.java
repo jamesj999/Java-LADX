@@ -40,7 +40,7 @@ import linksawakening.world.entity.motion.ZolGelMotion;
 import linksawakening.world.entity.motion.ZombieMotion;
 
 /** DefaultEnemyDamageCollisionHandler and ApplySwordDamagesToEnemy, in ROM collision order. */
-final class EntityCombatResolver {
+public final class EntityCombatResolver {
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
     final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBackgroundMechanics backgroundMechanics;
@@ -55,7 +55,7 @@ final class EntityCombatResolver {
     final EntitySlotProperties slotProperties;
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
     final RomEnemyCombatTables enemyCombatTables;
-    final RoomEntity[] slots;
+    final EntitySlots slots;
     final SlimeEyeController slimeEye;
     final EntityFrameRandom frameRandom;
     private final EntityCombatSlot slotScratch;
@@ -69,17 +69,17 @@ final class EntityCombatResolver {
             EntityBackgroundMechanics backgroundMechanics,
             EntityBombInteractions bombInteractions,
             EntityBossRewards bossRewards,
-            EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityLinkState linkState,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityRoomInspection roomInspection,
             EntitySlotProperties slotProperties,
             RomEnemyCombatTables enemyCombatTables,
-            RoomEntity[] slots,
+            EntitySlots slots,
             SlimeEyeController slimeEye,
             EntityFrameRandom frameRandom) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.backgroundMechanics = java.util.Objects.requireNonNull(backgroundMechanics, "backgroundMechanics");
         this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
@@ -109,8 +109,11 @@ final class EntityCombatResolver {
         if (slot == slotScratch) slotScratchInUse = false;
     }
 
-    boolean deferContactRecoil(int slot, int linkX, int linkY) {
-        RoomEntity entity = this.slots[slot];
+    public boolean deferContactRecoil(int slot, int linkX, int linkY) {
+        EntitySlotValidation.validateEntitySlot(slot);
+        EntitySlotValidation.validateByte(linkX, "Link X");
+        EntitySlotValidation.validateByte(linkY, "Link Y");
+        RoomEntity entity = this.slots.get(slot);
         if (entity.type() != EntityRomConstants.ENTITY_LEEVER || entity.status() != EntityStatus.ACTIVE) return false;
         deferredLeeverContact[slot] = true;
         contactLinkX[slot] = linkX;
@@ -148,7 +151,7 @@ final class EntityCombatResolver {
                         .build());
     }
 
-    List<EntityCombatEvent> resolveCombat(EnemyCombatInputs inputs) {
+    public List<EntityCombatEvent> resolveCombat(EnemyCombatInputs inputs) {
         var runtime = this;
 
         int linkVerticalVelocity = inputs.linkVerticalVelocity();
@@ -159,13 +162,13 @@ final class EntityCombatResolver {
         if (attackContext == null) {
             throw new IllegalArgumentException("Enemy attack context cannot be null");
         }
-        runtime.linkState.runningWithPegasusBoots = attackContext.pegasusBoots();
+        runtime.linkState.writeRunningWithPegasusBoots(attackContext.pegasusBoots());
         List<EntityCombatEvent> events = runtime.events.outbox.channel(EntityCombatEvent.class, "resolvedCombat");
         events.clear();
         EntityCombatSlot slot = this.acquireSlot();
         try {
-            for (int index = runtime.slots.length - 1; index >= 0; index--) {
-                slot.reset(inputs, events, runtime.slots[index]);
+            for (int index = runtime.slots.size() - 1; index >= 0; index--) {
+                slot.reset(inputs, events, runtime.slots.get(index));
                 resolveSlotCombat(slot);
             }
         } finally {
@@ -617,7 +620,7 @@ final class EntityCombatResolver {
                                 .get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new)
                                 .maskRemovalState(slot.entity.slot())
                         == 0
-                && runtime.linkState.lastRomLinkDirection
+                && runtime.linkState.readLastRomLinkDirection()
                         != runtime.motions
                                 .get(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
                                 .direction(slot.entity.slot())) {
@@ -737,7 +740,7 @@ final class EntityCombatResolver {
         runtime.combatTables.writeEnemyFlashCountdown(slot.entity.slot(), 0);
         runtime.combatTables.writeEnemyIgnoreHitsCountdown(slot.entity.slot(), 0x0A);
         runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot.entity.slot());
-        runtime.slots[slot.entity.slot()] = withStatus(slot.entity, EntityStatus.BURNING);
+        runtime.slots.replace(slot.entity.slot(), withStatus(slot.entity, EntityStatus.BURNING));
         slot.secondarySoundChannel = EntityCombatEvent.SoundChannel.NOISE;
         slot.secondarySoundId = 0x12;
     }
@@ -754,7 +757,7 @@ final class EntityCombatResolver {
         runtime.combatTables.writeEnemyFlashCountdown(slot.entity.slot(), 0);
         runtime.combatTables.writeEnemyIgnoreHitsCountdown(slot.entity.slot(), 0x0A);
         runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new).clear(slot.entity.slot());
-        runtime.slots[slot.entity.slot()] = withStatus(slot.entity, EntityStatus.STUNNED);
+        runtime.slots.replace(slot.entity.slot(), withStatus(slot.entity, EntityStatus.STUNNED));
     }
 
     private static void entitySwordStatusDie(EntityCombatSlot slot) {
@@ -790,10 +793,12 @@ final class EntityCombatResolver {
         }
         runtime.combatTables.writePowerRecoilDeath(
                 slot.entity.slot(), frame.attackContext().powerRecoil());
-        runtime.slots[slot.entity.slot()] = withDeathPresentation(
-                withStatus(slot.entity, EntityStatus.DYING),
-                -1,
-                runtime.combatTables.readPowerRecoilDeath(slot.entity.slot()));
+        runtime.slots.replace(
+                slot.entity.slot(),
+                withDeathPresentation(
+                        withStatus(slot.entity, EntityStatus.DYING),
+                        -1,
+                        runtime.combatTables.readPowerRecoilDeath(slot.entity.slot())));
     }
 
     private static void entitySwordStatusFlashSurvivor(EntityCombatSlot slot) {
@@ -817,50 +822,50 @@ final class EntityCombatResolver {
         if (slot.entity.type() == EntityRomConstants.ENTITY_ZOL) {
             slot.entity = runtime.spriteHandlers.present(
                     slot.entity, runtime.slotProperties.spriteViews().forZolSlimeEye(), slot.entity.spriteVariant());
-            runtime.slots[slot.entity.slot()] = slot.entity;
+            runtime.slots.replace(slot.entity.slot(), slot.entity);
         }
     }
 
     static final class EntityCombatSlot {
         final EntityCombatResolver runtime;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        EnemyCombatInputs inputs;
-        java.util.List<linksawakening.world.entity.event.EntityCombatEvent> events;
+        private EnemyCombatInputs inputs;
+        private java.util.List<linksawakening.world.entity.event.EntityCombatEvent> events;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        linksawakening.world.entity.RoomEntity entity;
-        boolean booBuddyAllowsLinkCollision;
-        boolean booBuddyAllowsSwordCollision;
-        boolean peaHatGrounded;
-        boolean hidingZolSwordCollision;
-        boolean hidingZolLinkCollision;
-        int collisionFlashCountdown;
-        boolean goombaStomp;
-        boolean linkCollision;
-        boolean swordHit;
-        boolean moldormTailSwordHit;
+        private linksawakening.world.entity.RoomEntity entity;
+        private boolean booBuddyAllowsLinkCollision;
+        private boolean booBuddyAllowsSwordCollision;
+        private boolean peaHatGrounded;
+        private boolean hidingZolSwordCollision;
+        private boolean hidingZolLinkCollision;
+        private int collisionFlashCountdown;
+        private boolean goombaStomp;
+        private boolean linkCollision;
+        private boolean swordHit;
+        private boolean moldormTailSwordHit;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        linksawakening.world.entity.event.EntityCombatEvent.SoundChannel soundChannel;
-        int soundId;
+        private linksawakening.world.entity.event.EntityCombatEvent.SoundChannel soundChannel;
+        private int soundId;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        linksawakening.world.entity.event.EntityCombatEvent.SoundChannel secondarySoundChannel;
-        int secondarySoundId;
-        int enemyDamage;
-        int enemySpecialAction;
+        private linksawakening.world.entity.event.EntityCombatEvent.SoundChannel secondarySoundChannel;
+        private int secondarySoundId;
+        private int enemyDamage;
+        private int enemySpecialAction;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        linksawakening.world.entity.event.EntityCombatEvent.SwordPokeVfx swordPokeVfx;
-        boolean peaHatSwordClink;
-        boolean spikedBeetleSwordClink;
-        boolean maskedMimicSwordClink;
-        boolean rollingBonesBarSwordClink;
-        boolean moblinKingSwordClink;
-        int linkDamage;
+        private linksawakening.world.entity.event.EntityCombatEvent.SwordPokeVfx swordPokeVfx;
+        private boolean peaHatSwordClink;
+        private boolean spikedBeetleSwordClink;
+        private boolean maskedMimicSwordClink;
+        private boolean rollingBonesBarSwordClink;
+        private boolean moblinKingSwordClink;
+        private int linkDamage;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        linksawakening.world.entity.event.EntityCombatEvent.LinkCollisionResponse linkCollisionResponse;
-        boolean bodyRecoilBeforeSword;
+        private linksawakening.world.entity.event.EntityCombatEvent.LinkCollisionResponse linkCollisionResponse;
+        private boolean bodyRecoilBeforeSword;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        linksawakening.world.entity.RomEnemyCombatTables.SwordDamageResult swordResult;
-        int swordDamage;
-        boolean swordResultApplied;
+        private linksawakening.world.entity.RomEnemyCombatTables.SwordDamageResult swordResult;
+        private int swordDamage;
+        private boolean swordResultApplied;
 
         EntityCombatSlot(EntityCombatResolver runtime) {
             this.runtime = java.util.Objects.requireNonNull(runtime, "runtime");
@@ -1007,5 +1012,85 @@ final class EntityCombatResolver {
                         .linkCollisionResponse(slot.linkCollisionResponse)
                         .build());
         return true;
+    }
+
+    public List<EntityCombatEvent> resolveCombat(EntityAttackContactFrame inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        boolean linkAirborne = inputs.linkAirborne();
+        int linkVerticalVelocity = inputs.linkVerticalVelocity();
+        boolean linkInteractive = inputs.linkInteractive();
+        boolean swordCollisionActive = inputs.swordCollisionActive();
+        int swordX = inputs.swordX();
+        int swordWidth = inputs.swordWidth();
+        int swordY = inputs.swordY();
+        int swordHeight = inputs.swordHeight();
+        return resolveCombat(new EnemyCombatFrame(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkAirborne,
+                linkVerticalVelocity,
+                linkInteractive,
+                swordCollisionActive,
+                swordX,
+                swordWidth,
+                swordY,
+                swordHeight,
+                EnemyAttackContext.standard()));
+    }
+
+    public List<EntityCombatEvent> resolveCombat(EntitySwordContactFrame inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        boolean linkAirborne = inputs.linkAirborne();
+        boolean linkInteractive = inputs.linkInteractive();
+        boolean swordCollisionActive = inputs.swordCollisionActive();
+        int swordX = inputs.swordX();
+        int swordWidth = inputs.swordWidth();
+        int swordY = inputs.swordY();
+        int swordHeight = inputs.swordHeight();
+        return resolveCombat(new EnemyCombatFrame(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkAirborne,
+                0,
+                linkInteractive,
+                swordCollisionActive,
+                swordX,
+                swordWidth,
+                swordY,
+                swordHeight,
+                EnemyAttackContext.standard()));
+    }
+
+    public List<EntityCombatEvent> resolveCombat(EntityVerticalContactFrame inputs) {
+        int frameCounter = inputs.frameCounter();
+        int linkEntityX = inputs.linkEntityX();
+        int linkEntityY = inputs.linkEntityY();
+        boolean linkAirborne = inputs.linkAirborne();
+        boolean linkInteractive = inputs.linkInteractive();
+        boolean swordCollisionActive = inputs.swordCollisionActive();
+        int swordX = inputs.swordX();
+        int swordWidth = inputs.swordWidth();
+        int swordY = inputs.swordY();
+        int swordHeight = inputs.swordHeight();
+        EnemyAttackContext attackContext = inputs.attackContext();
+        return resolveCombat(new EnemyCombatFrame(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkAirborne,
+                0,
+                linkInteractive,
+                swordCollisionActive,
+                swordX,
+                swordWidth,
+                swordY,
+                swordHeight,
+                attackContext));
     }
 }

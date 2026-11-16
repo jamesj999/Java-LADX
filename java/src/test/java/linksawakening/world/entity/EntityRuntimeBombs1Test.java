@@ -29,7 +29,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
                 .spriteHandlers(catalog)
                 .build();
 
-        int slot = runtime.spawnBomb(0x40, 0x50, 0x07, 3);
+        int slot = runtime.spawns().spawnBomb(0x40, 0x50, 0x07, 3);
 
         assertEquals(EntityRoomLoader.MAX_ENTITIES - 1, slot);
         RoomEntity bomb = runtime.inspection().snapshot().slots().get(slot);
@@ -46,7 +46,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
         assertEquals(0, bomb.spriteVariant());
         assertEquals(0xA0, runtime.enemies().transitionCountdown(slot));
         assertEquals(0xD2, runtime.enemies().physicsFlags(slot));
-        assertEquals(0x0A, runtime.options1(slot));
+        assertEquals(0x0A, runtime.execution().slotProperties().options1(slot));
         assertEquals(3, runtime.inspection().bombDirection(slot));
         assertTrue(runtime.inspection().bombActive());
         assertTrue(runtime.inspection().lastBombPlacementPlayedBump());
@@ -71,7 +71,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
                 .spriteHandlers(catalog)
                 .build();
 
-        assertTrue(runtime.spawnBomb(0x40, 0x50, 0x07, 3) >= 0);
+        assertTrue(runtime.spawns().spawnBomb(0x40, 0x50, 0x07, 3) >= 0);
 
         assertFalse(runtime.inspection().lastBombPlacementPlayedBump());
         assertEquals(0, runtime.inspection().snapshot().loadedEntities().get(0).z());
@@ -81,15 +81,15 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
     void bombSpawnRejectsASecondLoadedBombAndReusesTheSlotAfterClear() {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot()).build();
 
-        int firstSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        int firstSlot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
 
         assertEquals(EntityRoomLoader.MAX_ENTITIES - 1, firstSlot);
-        assertEquals(-1, runtime.spawnBomb(0x42, 0x52, 0, 1));
+        assertEquals(-1, runtime.spawns().spawnBomb(0x42, 0x52, 0, 1));
 
-        runtime.clearEntity(firstSlot);
+        runtime.lifecycle().clearEntity(firstSlot);
 
         assertFalse(runtime.inspection().bombActive());
-        assertEquals(EntityRoomLoader.MAX_ENTITIES - 1, runtime.spawnBomb(0x42, 0x52, 0, 1));
+        assertEquals(EntityRoomLoader.MAX_ENTITIES - 1, runtime.spawns().spawnBomb(0x42, 0x52, 0, 1));
     }
 
     @Test
@@ -109,7 +109,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
         RoomEntityRuntime runtime =
                 RoomEntityRuntime.builder(new RoomEntitySnapshot(slots)).build();
 
-        assertEquals(-1, runtime.spawnBomb(0x40, 0x50, 0, 0));
+        assertEquals(-1, runtime.spawns().spawnBomb(0x40, 0x50, 0, 0));
         assertFalse(runtime.inspection().bombActive());
         assertEquals(0xFF, runtime.inspection().snapshot().slots().get(15).type());
     }
@@ -124,7 +124,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)
                 .build();
-        int slot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        int slot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
 
         EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(slot, 0x22);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
@@ -133,7 +133,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
         assertEquals(0x5484, warning.spriteDefinition().address());
         assertEquals(0, warning.spriteVariant());
         assertEquals(0x21, runtime.enemies().transitionCountdown(slot));
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
 
         // UpdateEntityTimers decrements before BombEntityHandler sees $18.
         EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(slot, 0x19);
@@ -145,7 +145,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
         assertEquals(0x17, runtime.enemies().transitionCountdown(slot));
         assertEquals(
                 List.of(new EntityCombatEvent(slot, 0x02, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x0C)),
-                runtime.consumePendingEntityEvents());
+                runtime.outbox().consumePendingEntityEvents());
 
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0x40, 0x50, () -> 0));
         RoomEntity explosionVariantThree =
@@ -155,7 +155,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
         assertEquals(0x6530, explosionVariantThree.spriteDefinition().address());
         assertEquals(3, explosionVariantThree.spriteVariant());
         assertEquals(0xD8, runtime.enemies().physicsFlags(slot));
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
 
         EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(slot, 0x14);
         runtime.tick(EntityTestFrames.frame(runtime, 3, 0x40, 0x50, () -> 0));
@@ -198,7 +198,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
                 runtime.inspection().snapshot().slots().get(slot).status());
         assertFalse(runtime.inspection().bombActive());
         assertEquals(0, runtime.enemies().physicsFlags(slot));
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
     }
 
     @Test
@@ -211,13 +211,13 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)
                 .build();
-        int slot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        int slot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
 
         EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(slot, 0x01);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
         assertFalse(runtime.inspection().bombActive());
-        assertEquals(slot, runtime.spawnBomb(0x44, 0x54, 0, 1));
+        assertEquals(slot, runtime.spawns().spawnBomb(0x44, 0x54, 0, 1));
         RoomEntity replacement = runtime.inspection().snapshot().slots().get(slot);
         assertEquals(EntityStatus.ACTIVE, replacement.status());
         assertEquals(0x02, replacement.type());
@@ -237,23 +237,23 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
                 .randomByteSupplier(null)
                 .spriteHandlers(catalog)
                 .build();
-        int slot = runtime.spawnBomb(0x40, 0x50, 0, 3);
+        int slot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 3);
 
         EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(slot, 0x01);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
-        assertTrue(runtime.bombInteractions.state.bombFinalPresentationPending(slot));
+        assertTrue(runtime.execution().bombInteractions().state.bombFinalPresentationPending(slot));
 
         EntityRuntimeFixture.disableWithoutPersistence(runtime, slot);
 
-        assertFalse(runtime.bombInteractions.state.bombFinalPresentationPending(slot));
+        assertFalse(runtime.execution().bombInteractions().state.bombFinalPresentationPending(slot));
         assertEquals(0xFF, runtime.inspection().bombDirection(slot));
         assertEquals(
                 EntityStatus.DISABLED,
                 runtime.inspection().snapshot().slots().get(slot).status());
-        assertEquals(slot, runtime.spawnBomb(0x44, 0x54, 0, 1));
+        assertEquals(slot, runtime.spawns().spawnBomb(0x44, 0x54, 0, 1));
         assertEquals(1, runtime.inspection().bombDirection(slot));
-        assertFalse(runtime.bombInteractions.state.bombFinalPresentationPending(slot));
+        assertFalse(runtime.execution().bombInteractions().state.bombFinalPresentationPending(slot));
     }
 
     @Test
@@ -288,12 +288,12 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
                                 .spriteDefinition(pairDefinition(0x4D, 1))
                                 .build()))
                 .build();
-        int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        int bombSlot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
         EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(bombSlot, 0x13);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
-        List<BombExplosionEvent> events = runtime.consumeBombExplosionEvents();
+        List<BombExplosionEvent> events = runtime.outbox().consumeBombExplosionEvents();
         assertEquals(
                 List.of(13, 12),
                 events.stream()
@@ -308,10 +308,10 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
             assertEquals(0x12, event.countdown());
             assertEquals(0x07, event.damageType());
         }
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
-        List<BombExplosionEvent> nextFrame = runtime.consumeBombExplosionEvents();
+        List<BombExplosionEvent> nextFrame = runtime.outbox().consumeBombExplosionEvents();
         assertEquals(
                 List.of(BombExplosionEvent.OBJECT_TARGET),
                 nextFrame.stream().map(BombExplosionEvent::targetSlot).toList());
@@ -359,12 +359,12 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
         setPhysicsFlags(runtime, 14, 0x40);
         EntityRuntimeFixture.debug(runtime).setHitboxFlagsForTest(12, 0x80);
         EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(11, 0x02);
-        int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        int bombSlot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
         EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(bombSlot, 0x13);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
 
-        List<BombExplosionEvent> events = runtime.consumeBombExplosionEvents();
+        List<BombExplosionEvent> events = runtime.outbox().consumeBombExplosionEvents();
         List<BombExplosionEvent> targetEvents =
                 events.stream().filter(event -> !event.targetsRoomObjects()).toList();
         assertEquals(2, targetEvents.size());
@@ -372,7 +372,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
                 List.of(11, 10),
                 targetEvents.stream().map(BombExplosionEvent::targetSlot).toList());
         assertEquals(0x12, targetEvents.getFirst().countdown());
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
     }
 
     @Test
@@ -393,7 +393,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
                 .enemyCombatTables(tables)
                 .build();
 
-        int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        int bombSlot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
         EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(bombSlot, 0x13);
 
         // The bomb candidate is placed at ($48,$50,$01), so the target's
@@ -427,11 +427,11 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
                                 .swordPokeVfx(null)
                                 .build(),
                         new EntityCombatEvent(14, 0x09, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13)),
-                runtime.consumePendingEntityEvents());
+                runtime.outbox().consumePendingEntityEvents());
 
         assertEquals(
                 List.of(14),
-                runtime.consumeBombExplosionEvents().stream()
+                runtime.outbox().consumeBombExplosionEvents().stream()
                         .filter(event -> !event.targetsRoomObjects())
                         .map(BombExplosionEvent::targetSlot)
                         .toList());
@@ -449,7 +449,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
                 .enemyCombatTables(tables)
                 .build();
 
-        int bombSlot = runtime.spawnEnemyBomb(0x48, 0x50, 0x00, 0x13);
+        int bombSlot = runtime.enemySpawns().spawnEnemyBomb(0x48, 0x50, 0x00, 0x13);
         List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(
                 runtime,
                 0,
@@ -481,7 +481,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
         assertEquals(0x04, new EntityEnemyInspectionQueries(runtime.enemies()).swordMoblinAlertingSoundCounter());
         assertEquals(
                 List.of(BombExplosionEvent.OBJECT_TARGET),
-                runtime.consumeBombExplosionEvents().stream()
+                runtime.outbox().consumeBombExplosionEvents().stream()
                         .map(BombExplosionEvent::targetSlot)
                         .toList());
     }
@@ -496,7 +496,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
-        int bombSlot = runtime.spawnEnemyBomb(0x48, 0x68, 0x18, 0x13);
+        int bombSlot = runtime.enemySpawns().spawnEnemyBomb(0x48, 0x68, 0x18, 0x13);
         List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(
                 runtime,
                 0,
@@ -510,7 +510,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
 
         assertEquals(List.of(), events);
         assertEquals(0x04, new EntityEnemyInspectionQueries(runtime.enemies()).swordMoblinAlertingSoundCounter());
-        List<BombExplosionEvent> explosionEvents = runtime.consumeBombExplosionEvents();
+        List<BombExplosionEvent> explosionEvents = runtime.outbox().consumeBombExplosionEvents();
         assertEquals(
                 List.of(BombExplosionEvent.OBJECT_TARGET),
                 explosionEvents.stream().map(BombExplosionEvent::targetSlot).toList());
@@ -549,7 +549,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
         assertEquals(0x01, runtime.enemies().enemyIgnoreHitsCountdown(15));
         assertEquals(
                 List.of(new EntityCombatEvent(15, 0x02, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x08)),
-                runtime.consumePendingEntityEvents());
+                runtime.outbox().consumePendingEntityEvents());
     }
 
     @Test
@@ -570,7 +570,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
                 .build();
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x70, 0x50, () -> 0));
-        runtime.consumePendingEntityEvents();
+        runtime.outbox().consumePendingEntityEvents();
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x70, 0x50, () -> 0));
 
         RoomEntity bomb = runtime.inspection().snapshot().slots().get(15);
@@ -578,7 +578,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
         assertEquals(0x50, bomb.y());
         assertEquals(0x10, bomb.z());
         assertEquals(0x3F, runtime.enemies().transitionCountdown(15));
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
     }
 
     @Test
@@ -620,7 +620,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
         assertEquals(0x01, runtime.enemies().enemyIgnoreHitsCountdown(15));
         assertEquals(
                 List.of(new EntityCombatEvent(15, 0x02, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x08)),
-                runtime.consumePendingEntityEvents());
+                runtime.outbox().consumePendingEntityEvents());
     }
 
     @Test
@@ -652,7 +652,7 @@ final class EntityRuntimeBombs1Test extends EntityRuntimeTestSupport {
         boolean sourceCleared = false;
         for (int frame = 0; frame < 520; frame++) {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0xC0, 0xC0, () -> 0));
-            explosionSound |= runtime.consumePendingEntityEvents().stream()
+            explosionSound |= runtime.outbox().consumePendingEntityEvents().stream()
                     .anyMatch(event ->
                             event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x0C);
             sourceCleared = !runtime.inspection().snapshot().slots().get(0).loaded();

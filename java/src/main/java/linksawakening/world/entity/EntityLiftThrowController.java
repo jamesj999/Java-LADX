@@ -36,7 +36,7 @@ public final class EntityLiftThrowController {
     final EntityProjectileController projectiles;
     final EntitySlotProperties slotProperties;
     final GenieEntityController genie;
-    final RoomEntity[] slots;
+    final EntitySlots slots;
     final EntitySlotLifecycle lifecycle;
     final EntityPlayerCommands playerCommands;
     final EntityPlayerSpawns playerSpawns;
@@ -46,20 +46,20 @@ public final class EntityLiftThrowController {
             boolean indoorRoom,
             linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBombState bombInteractions,
-            EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityLinkState linkState,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityPickupState pickups,
             EntityPresentationState presentationState,
             EntityProjectileController projectiles,
             EntitySlotProperties slotProperties,
             GenieEntityController genie,
-            RoomEntity[] slots,
+            EntitySlots slots,
             EntitySlotLifecycle lifecycle,
             EntityPlayerCommands playerCommands,
             EntityPlayerSpawns playerSpawns) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
         this.state = java.util.Objects.requireNonNull(state, "state");
         this.indoorRoom = indoorRoom;
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
@@ -102,7 +102,7 @@ public final class EntityLiftThrowController {
                 this.state.readLiftedLinkC13B(),
                 entity.type(),
                 this.physicsTables.readGroundInteractionSideScrolling(),
-                this.pickups.readChestPowerBraceletLevel() >= 2 || this.linkState.fastLiftTransition,
+                this.pickups.readChestPowerBraceletLevel() >= 2 || this.linkState.readFastLiftTransition(),
                 entity.z()));
         this.state.writeLiftedPhase(slot, update.phase());
         this.physicsTables.writeEnemyTransitionCountdown(slot, update.transitionCountdown());
@@ -131,7 +131,8 @@ public final class EntityLiftThrowController {
         var update = this.motions
                 .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
                 .advance(entity, false, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
-        this.slots[entity.slot()] = update.entity().z() == 0 ? RoomEntity.disabled(entity.slot()) : update.entity();
+        this.slots.replace(
+                entity.slot(), update.entity().z() == 0 ? RoomEntity.disabled(entity.slot()) : update.entity());
         return true;
     }
 
@@ -146,23 +147,24 @@ public final class EntityLiftThrowController {
         if (runtime.spriteHandlers.supportsPresentation()) {
             var definition = runtime.spriteHandlers.decodeSingle(0x9D, 0x19, 0x4020, 1, 0);
             for (int piece = 0; piece < 6; piece++) {
-                int slot =
-                        EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
+                int slot = runtime.slots.findFree(runtime.slots.size() - 1);
                 if (slot < 0) break;
-                runtime.slots[slot] = new RoomEntity(
+                runtime.slots.replace(
                         slot,
-                        -1,
-                        0x9D,
-                        (entity.x() + xs[piece]) & 255,
-                        (entity.y() + ys[piece]) & 255,
-                        EntityStatus.ACTIVE,
-                        definition,
-                        0,
-                        0,
-                        0,
-                        entity.z(),
-                        -1,
-                        false);
+                        new RoomEntity(
+                                slot,
+                                -1,
+                                0x9D,
+                                (entity.x() + xs[piece]) & 255,
+                                (entity.y() + ys[piece]) & 255,
+                                EntityStatus.ACTIVE,
+                                definition,
+                                0,
+                                0,
+                                0,
+                                entity.z(),
+                                -1,
+                                false));
                 runtime.lifecycle.initializeHealthGroup(slot);
                 runtime.physicsTables.writeEnemyPhysicsFlags(slot, 0xC1);
                 runtime.combatTables.writeEnemyHitboxFlags(slot, 0);
@@ -212,24 +214,24 @@ public final class EntityLiftThrowController {
             }
         }
         if (entity.type() == 0x9D && (update.blockedX() || update.blockedY() || updated.z() == 0)) {
-            runtime.slots[slot] = RoomEntity.disabled(slot);
+            runtime.slots.clear(slot);
             runtime.motions
                     .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
                     .clear(slot);
             this.state.writeThrownMotionInitialized(slot, false);
             this.smashStatue(updated);
-            return runtime.slots[slot];
+            return runtime.slots.get(slot);
         }
         if (entity.type() == EntityRomConstants.ENTITY_LIFTABLE_ROCK
                 && (update.blockedX() || update.blockedY() || updated.z() == 0)) {
             this.collideThrownEntityWithEntities(updated, frame);
-            runtime.slots[slot] = RoomEntity.disabled(slot);
+            runtime.slots.clear(slot);
             runtime.motions
                     .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
                     .clear(slot);
             this.state.writeThrownMotionInitialized(slot, false);
             runtime.playerSpawns.spawnLiftableRockSmash(updated.x(), updated.y(), entity.spriteVariant());
-            return runtime.slots[slot];
+            return runtime.slots.get(slot);
         }
         if (runtime.motions
                                 .get(ThrownEntityMotion.class, ThrownEntityMotion::new)
@@ -308,11 +310,11 @@ public final class EntityLiftThrowController {
         var runtime = this;
         int sourceSlot = thrown.slot();
         int sourceVisualY = (thrown.y() - thrown.z()) & 0xFF;
-        for (int targetSlot = runtime.slots.length - 1; targetSlot >= 0; targetSlot--) {
+        for (int targetSlot = runtime.slots.size() - 1; targetSlot >= 0; targetSlot--) {
             if (targetSlot == sourceSlot || ((frame ^ targetSlot) & 0x01) != 0) {
                 continue;
             }
-            RoomEntity target = runtime.slots[targetSlot];
+            RoomEntity target = runtime.slots.get(targetSlot);
             if (!target.loaded()
                     || target.status().value() < EntityStatus.ACTIVE.value()
                     || (runtime.physicsTables.readEnemyPhysicsFlags(targetSlot)
@@ -386,10 +388,10 @@ public final class EntityLiftThrowController {
     }
 
     public boolean cuccoPowerBraceletHeld() {
-        if (this.linkState.linkItemB == 0x03) {
-            return this.linkState.actionButtonBHeld;
+        if (this.linkState.readLinkItemB() == 0x03) {
+            return this.linkState.readActionButtonBHeld();
         }
-        return this.linkState.linkItemA == 0x03 && this.linkState.actionButtonAHeld;
+        return this.linkState.readLinkItemA() == 0x03 && this.linkState.readActionButtonAHeld();
     }
 
     public boolean beginBushCrawlerLift(int index, RoomEntity source, int privateState4, int romLinkDirection) {
@@ -397,24 +399,24 @@ public final class EntityLiftThrowController {
         if (source.type() != EntityRomConstants.ENTITY_BUSH_CRAWLER) {
             return false;
         }
-        runtime.slots[index] = source;
+        runtime.slots.replace(index, source);
         if (!runtime.playerCommands.beginLift(source.slot(), romLinkDirection)) {
             return false;
         }
 
         int slot = source.slot();
-        RoomEntity carried = runtime.slots[slot];
+        RoomEntity carried = runtime.slots.get(slot);
         EntitySpriteDefinition rockDefinition =
                 runtime.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_LIFTABLE_ROCK);
         carried = withType(carried, EntityRomConstants.ENTITY_LIFTABLE_ROCK, rockDefinition);
         carried = withVariant(carried, rockDefinition.supported() ? (privateState4 ^ 0x01) & 0x01 : -1);
-        runtime.slots[slot] = carried;
+        runtime.slots.replace(slot, carried);
         runtime.physicsTables.writeFallingVisualYOffset(slot, 0);
         runtime.motions.get(BushCrawlerMotion.class, BushCrawlerMotion::new).clear(slot);
         runtime.events.pendingEntityEvents.add(new EntityCombatEvent(
                 slot, EntityRomConstants.ENTITY_BUSH_CRAWLER, 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x02));
 
-        int freeSlot = EntitySlotAllocator.findFreeSlot(runtime.slots, runtime.combatTables, runtime.slots.length - 1);
+        int freeSlot = runtime.slots.findFree(runtime.slots.size() - 1);
         if (freeSlot < 0) {
             return true;
         }
@@ -435,7 +437,7 @@ public final class EntityLiftThrowController {
                 carried.z(),
                 -1,
                 false);
-        runtime.slots[freeSlot] = replacement;
+        runtime.slots.replace(freeSlot, replacement);
         runtime.lifecycle.initializeHealthGroup(freeSlot);
         runtime.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
         runtime.physicsTables.writeEntityOptions1Override(freeSlot, -1);
@@ -477,7 +479,7 @@ public final class EntityLiftThrowController {
             // consumed by RenderActiveEntitySpritesRect.
             variant = -1;
         }
-        this.slots[index] = withVariant(entity, variant);
+        this.slots.replace(index, withVariant(entity, variant));
     }
 
     public RoomEntity renderLiftedEntity(RoomEntity entity, int frameCounter) {
@@ -501,10 +503,10 @@ public final class EntityLiftThrowController {
             int linkEntityY,
             int linkZ,
             int romLinkDirection) {
-        if (decision.phase() != BombMotion.Phase.NORMAL || !this.linkState.bombButtonHeld) {
+        if (decision.phase() != BombMotion.Phase.NORMAL || !this.linkState.readBombButtonHeld()) {
             return false;
         }
-        RoomEntity entity = this.slots[index];
+        RoomEntity entity = this.slots.get(index);
         if (!entity.loaded()
                 || entity.type() != EntityRomConstants.ENTITY_BOMB
                 || this.bombInteractions.readBombPrivateState4(entity.slot()) != 0
@@ -515,8 +517,14 @@ public final class EntityLiftThrowController {
         if (!this.playerCommands.beginLift(entity.slot(), romLinkDirection)) {
             return false;
         }
-        this.slots[index] = this.advanceLiftedEntity(
-                this.renderLiftedBomb(this.slots[index]), linkEntityX, linkEntityY, linkZ, romLinkDirection);
+        this.slots.replace(
+                index,
+                this.advanceLiftedEntity(
+                        this.renderLiftedBomb(this.slots.get(index)),
+                        linkEntityX,
+                        linkEntityY,
+                        linkZ,
+                        romLinkDirection));
         return true;
     }
 
@@ -525,15 +533,15 @@ public final class EntityLiftThrowController {
     }
 
     public boolean sideViewPotPowerBraceletHeld() {
-        if (!this.linkState.linkInventoryConfigured) {
-            return this.linkState.powerBraceletButtonHeld;
+        if (!this.linkState.readLinkInventoryConfigured()) {
+            return this.linkState.readPowerBraceletButtonHeld();
         }
         // EntityGetLiftedUp checks the B slot first. An equipped bracelet in
         // B suppresses the A-slot branch even when A also contains one.
-        if (this.linkState.linkItemB == 0x03) {
-            return this.linkState.actionButtonBHeld;
+        if (this.linkState.readLinkItemB() == 0x03) {
+            return this.linkState.readActionButtonBHeld();
         }
-        return this.linkState.linkItemA == 0x03 && this.linkState.actionButtonAHeld;
+        return this.linkState.readLinkItemA() == 0x03 && this.linkState.readActionButtonAHeld();
     }
 
     public void pendingLinkPotContact(int sourceSlot, SideViewPotContact.Result contact) {

@@ -4,9 +4,9 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_HIDING_SLIME
 
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.EntityPickupController.SlimeKeyTransitionUpdate;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
-import linksawakening.world.entity.RoomEntityRuntime.SlimeKeyTransitionUpdate;
 import linksawakening.world.entity.event.DialogRequest;
 
 /** ROM handler stages for HidingSlimeKey. */

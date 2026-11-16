@@ -72,8 +72,8 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 0));
 
         assertEquals(1, runtime.inspection().bowWowState());
-        assertEquals(0x10, runtime.consumePendingMusicTrack());
-        assertEquals(List.of(new DialogRequest(1, 0x6C)), runtime.consumePendingDialogRequests());
+        assertEquals(0x10, runtime.outbox().consumePendingMusicTrack());
+        assertEquals(List.of(new DialogRequest(1, 0x6C)), runtime.outbox().consumePendingDialogRequests());
     }
 
     @Test
@@ -140,7 +140,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                         .get(0)
                         .spriteDefinition()
                         .address());
-        assertTrue(runtime.consumePendingDialogRequests().isEmpty());
+        assertTrue(runtime.outbox().consumePendingDialogRequests().isEmpty());
 
         runtime.configuration().setBowWowState(0);
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x20, 0x40, () -> 0));
@@ -169,10 +169,10 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
         runtime.configuration().setBowWowState(0x80);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x50, () -> 0));
-        assertEquals(1, runtime.consumePendingDialogRequests().size());
+        assertEquals(1, runtime.outbox().consumePendingDialogRequests().size());
         for (int frame = 2; frame < 64; frame++)
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x40, 0x50, () -> 0));
-        assertTrue(runtime.consumePendingDialogRequests().isEmpty());
+        assertTrue(runtime.outbox().consumePendingDialogRequests().isEmpty());
     }
 
     @Test
@@ -192,8 +192,8 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x20, () -> 0, true));
 
         assertEquals(0x80, runtime.inspection().bowWowState());
-        assertEquals(-1, runtime.consumePendingMusicTrack());
-        assertTrue(runtime.consumePendingDialogRequests().isEmpty());
+        assertEquals(-1, runtime.outbox().consumePendingMusicTrack());
+        assertTrue(runtime.outbox().consumePendingDialogRequests().isEmpty());
     }
 
     @Test
@@ -224,8 +224,8 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 0));
 
         assertEquals(0x80, runtime.inspection().bowWowState());
-        assertEquals(-1, runtime.consumePendingMusicTrack());
-        assertTrue(runtime.consumePendingDialogRequests().isEmpty());
+        assertEquals(-1, runtime.outbox().consumePendingMusicTrack());
+        assertTrue(runtime.outbox().consumePendingDialogRequests().isEmpty());
     }
 
     @Test
@@ -299,7 +299,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
 
         assertFalse(runtime.inspection().snapshot().slots().get(6).loaded());
         assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).killCount());
-        assertEquals(1, runtime.consumePendingClearedEntityMask());
+        assertEquals(1, runtime.outbox().consumePendingClearedEntityMask());
         assertEquals(
                 List.of(new EntityCombatEvent(
                         5,
@@ -308,7 +308,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                         false,
                         EntityCombatEvent.SoundChannel.JINGLE,
                         0x03)),
-                runtime.consumePendingEntityEvents());
+                runtime.outbox().consumePendingEntityEvents());
     }
 
     @Test
@@ -356,7 +356,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                         false,
                         EntityCombatEvent.SoundChannel.JINGLE,
                         0x03)),
-                runtime.consumePendingEntityEvents());
+                runtime.outbox().consumePendingEntityEvents());
     }
 
     @Test
@@ -397,7 +397,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 runtime.inspection().snapshot().slots().get(6).status());
         assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).bowWowTransitionCountdown(5));
         assertEquals(0x80, new EntityRoomInspectionQueries(runtime.inspection()).bowWowPrivateCountdown2(5));
-        assertEquals(List.of(new DialogRequest(1, 0x15)), runtime.consumePendingDialogRequests());
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertEquals(List.of(new DialogRequest(1, 0x15)), runtime.outbox().consumePendingDialogRequests());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
     }
 }

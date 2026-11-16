@@ -80,7 +80,7 @@ final class ZombieRuntimeTest {
         assertEquals(0x04, RoomEntityCombatRules.contactDamage(ENTITY_ZOMBIE));
         assertEquals(0x01, RoomEntityCombatRules.initialHealth(ENTITY_ZOMBIE));
         assertEquals(0x52, runtime.enemies().physicsFlags(0));
-        assertEquals(0x00, runtime.options1(0));
+        assertEquals(0x00, runtime.execution().slotProperties().options1(0));
         assertEquals(0x01, runtime.enemies().enemyHealth(0));
     }
 
@@ -421,7 +421,8 @@ final class ZombieRuntimeTest {
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
-        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x40, false, true, false, 0, 0, 0, 0))
+        assertTrue(runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x40, false, true, false, 0, 0, 0, 0))
                 .isEmpty());
     }
 

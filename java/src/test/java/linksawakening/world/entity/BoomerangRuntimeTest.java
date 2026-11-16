@@ -34,7 +34,7 @@ final class BoomerangRuntimeTest {
                 .chestContentsTable(new ChestContentsTable((rom == null ? (Rom) null : TestRoms.partial(rom))))
                 .build();
 
-        int slot = runtime.spawnBoomerang(0x40, 0x40, 0, 0, 0);
+        int slot = runtime.spawns().spawnBoomerang(0x40, 0x40, 0, 0, 0);
 
         assertEquals(0x0F, slot);
         assertTrue(runtime.inspection().boomerangActive());
@@ -62,7 +62,7 @@ final class BoomerangRuntimeTest {
         assertEquals(0x42, outbound.x());
         assertEquals(0x27, new EntityRoomInspectionQueries(runtime.inspection()).boomerangTransitionCountdown(slot));
         assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).boomerangState(slot));
-        assertFalse(runtime.consumePendingEntityEvents().stream()
+        assertFalse(runtime.outbox().consumePendingEntityEvents().stream()
                 .anyMatch(event ->
                         event.soundChannel() == EntityCombatEvent.SoundChannel.NOISE && event.soundId() == 0x2D));
 
@@ -85,7 +85,7 @@ final class BoomerangRuntimeTest {
     void airborneReturnSteeringDoesNotFollowLinksJumpHeight() throws IOException {
         for (int linkZ : new int[] {0, 24}) {
             RoomEntityRuntime runtime = runtime(false);
-            int slot = runtime.spawnBoomerang(0x10, 0x50, 7, 0, 0);
+            int slot = runtime.spawns().spawnBoomerang(0x10, 0x50, 7, 0, 0);
             for (int frame = 0; frame < 40; frame++) {
                 runtime.tick(EntityTestFrames.projectileFrame(
                         runtime,
@@ -124,7 +124,7 @@ final class BoomerangRuntimeTest {
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .chestContentsTable(new ChestContentsTable((rom == null ? (Rom) null : TestRoms.partial(rom))))
                 .build();
-        int slot = runtime.spawnBoomerang(0x20, 0x40, 0, 0, 0);
+        int slot = runtime.spawns().spawnBoomerang(0x20, 0x40, 0, 0, 0);
         runtime.configuration()
                 .setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(0x5C, 0x10, 0x30, 0x40));
 
@@ -157,15 +157,15 @@ final class BoomerangRuntimeTest {
                 .chestContentsTable(new ChestContentsTable((rom == null ? (Rom) null : TestRoms.partial(rom))))
                 .build();
 
-        int boomerangSlot = runtime.spawnBoomerang(0x40, 0x40, 0, 0, 0);
+        int boomerangSlot = runtime.spawns().spawnBoomerang(0x40, 0x40, 0, 0, 0);
 
         assertEquals(1, runtime.inspection().activeProjectileCount());
-        assertEquals(0x0E, runtime.spawnArrow(0x40, 0x40, 0, 0));
-        assertEquals(-1, runtime.spawnBoomerang(0x40, 0x40, 0, 0, 0));
+        assertEquals(0x0E, runtime.spawns().spawnArrow(0x40, 0x40, 0, 0));
+        assertEquals(-1, runtime.spawns().spawnBoomerang(0x40, 0x40, 0, 0, 0));
 
-        runtime.clearEntity(boomerangSlot);
+        runtime.lifecycle().clearEntity(boomerangSlot);
         assertEquals(1, runtime.inspection().activeProjectileCount());
-        assertEquals(-1, runtime.spawnBoomerang(0x40, 0x40, 0, 0, 0));
+        assertEquals(-1, runtime.spawns().spawnBoomerang(0x40, 0x40, 0, 0, 0));
     }
 
     @ParameterizedTest
@@ -181,7 +181,7 @@ final class BoomerangRuntimeTest {
     })
     void solidObjectsStopTheOutboundBoomerangImmediatelyAfterLaunch(boolean indoor, int physics) throws IOException {
         RoomEntityRuntime runtime = runtime(indoor);
-        int slot = runtime.spawnBoomerang(0x40, 0x50, 0, 0, 0);
+        int slot = runtime.spawns().spawnBoomerang(0x40, 0x50, 0, 0, 0);
         runtime.configuration()
                 .setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(1, physics, 0x40, 0x40));
         tickInteractive(runtime, 0, 0, 0);
@@ -189,7 +189,7 @@ final class BoomerangRuntimeTest {
         assertTrue(runtime.inspection().snapshot().slots().get(slot).loaded());
         assertEquals(0x40, runtime.inspection().snapshot().slots().get(slot).x());
         assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).boomerangTransitionCountdown(slot));
-        assertTrue(runtime.consumePendingEntityEvents().stream().anyMatch(event -> event.soundId() == 7));
+        assertTrue(runtime.outbox().consumePendingEntityEvents().stream().anyMatch(event -> event.soundId() == 7));
         // A zero outbound countdown permits the next pass through the same
         // object, and the going handler then starts the return state.
         tickInteractive(runtime, 1, 0, 0);
@@ -202,7 +202,7 @@ final class BoomerangRuntimeTest {
     void matchingDirectionalBarrierRequiresTheBoomerangToBeAboveGround(int direction, int physics) throws IOException {
         RoomEntityRuntime grounded = runtime(false);
         // SpawnPlayerProjectile increments Link's Z byte, so $FF yields Z=0.
-        int slot = grounded.spawnBoomerang(0x40, 0x50, 0xFF, direction, 0);
+        int slot = grounded.spawns().spawnBoomerang(0x40, 0x50, 0xFF, direction, 0);
         grounded.configuration()
                 .setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(1, physics, 0x40, 0x40));
         tickInteractive(grounded, 0, 0, 0);
@@ -211,7 +211,7 @@ final class BoomerangRuntimeTest {
         assertEquals(0x50, grounded.inspection().snapshot().slots().get(slot).y());
 
         RoomEntityRuntime airborne = runtime(false);
-        slot = airborne.spawnBoomerang(0x40, 0x50, 0, direction, 0);
+        slot = airborne.spawns().spawnBoomerang(0x40, 0x50, 0, direction, 0);
         airborne.configuration()
                 .setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(1, physics, 0x40, 0x40));
         tickInteractive(airborne, 0, 0, 0);
@@ -223,7 +223,7 @@ final class BoomerangRuntimeTest {
     void directionalCrossingCounterAccumulatesAndDecaysOnTheRoomCadence(boolean indoor, int blockingFrame)
             throws IOException {
         RoomEntityRuntime runtime = runtime(indoor);
-        int slot = runtime.spawnBoomerang(0x40, 0x50, 0, 0, 0);
+        int slot = runtime.spawns().spawnBoomerang(0x40, 0x50, 0, 0, 0);
         runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(1, 0xD0, 0x40, 0x40));
         tickInteractive(runtime, 0, 0, 0); // Matching direction raises counter 1 to 2.
         runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(1, 0xD1, 0x40, 0x40));
@@ -243,16 +243,16 @@ final class BoomerangRuntimeTest {
     @CsvSource({"0", "1", "2", "3"})
     void spinDisplaysTheStoredVariantBeforeEachFourFrameUpdate(int direction) throws IOException {
         RoomEntityRuntime runtime = runtime(false);
-        int slot = runtime.spawnBoomerang(0x60, 0x60, 0, direction, 0);
+        int slot = runtime.spawns().spawnBoomerang(0x60, 0x60, 0, direction, 0);
         for (int frame = 0; frame <= 17; frame++) {
             tickInteractive(runtime, frame, 0, 0);
             int expected = (direction + (frame + 3) / 4) & 3;
             assertEquals(
                     expected, runtime.inspection().snapshot().slots().get(slot).spriteVariant(), "frame " + frame);
         }
-        runtime.clearEntity(slot);
+        runtime.lifecycle().clearEntity(slot);
         int newDirection = (direction + 1) & 3;
-        assertEquals(slot, runtime.spawnBoomerang(0x60, 0x60, 0, newDirection, 0));
+        assertEquals(slot, runtime.spawns().spawnBoomerang(0x60, 0x60, 0, newDirection, 0));
         tickInteractive(runtime, 20, 0, 0);
         assertEquals(
                 newDirection, runtime.inspection().snapshot().slots().get(slot).spriteVariant());
@@ -262,7 +262,7 @@ final class BoomerangRuntimeTest {
     @CsvSource({"8, false", "-9, true"})
     void returningCatchUsesThePositionCachedBeforeMovement(int linkOffsetX, boolean remainsActive) throws IOException {
         RoomEntityRuntime runtime = runtime(false);
-        int slot = runtime.spawnBoomerang(0x10, 0x50, 0, 0, 0);
+        int slot = runtime.spawns().spawnBoomerang(0x10, 0x50, 0, 0, 0);
         for (int frame = 0; frame < 40; frame++) {
             tickInteractive(runtime, frame, 0x20, 0x20);
         }
@@ -287,21 +287,21 @@ final class BoomerangRuntimeTest {
         for (int frame = 0; frame < 25; frame++) {
             tickInteractive(runtime, 0x80 + frame, 0, 0);
         }
-        int slot = runtime.spawnBoomerang(0x40, 0x50, 0, 0, 0);
+        int slot = runtime.spawns().spawnBoomerang(0x40, 0x50, 0, 0, 0);
         tickInteractive(runtime, 0, 0, 0);
-        assertTrue(hasBoomerangSound(runtime.consumePendingEntityEvents()));
+        assertTrue(hasBoomerangSound(runtime.outbox().consumePendingEntityEvents()));
         runtime.configuration().setDialogActive(true);
         int beforeX = runtime.inspection().snapshot().slots().get(slot).x();
         for (int frame = 1; frame < 26; frame++) {
             tickInteractive(runtime, frame, 0, 0);
-            assertFalse(hasBoomerangSound(runtime.consumePendingEntityEvents()));
+            assertFalse(hasBoomerangSound(runtime.outbox().consumePendingEntityEvents()));
         }
         assertEquals(beforeX, runtime.inspection().snapshot().slots().get(slot).x());
         runtime.configuration().setDialogActive(false);
         tickInteractive(runtime, 26, 0, 0);
-        assertTrue(hasBoomerangSound(runtime.consumePendingEntityEvents()));
+        assertTrue(hasBoomerangSound(runtime.outbox().consumePendingEntityEvents()));
         tickInteractive(runtime, 27, 0, 0);
-        assertFalse(hasBoomerangSound(runtime.consumePendingEntityEvents()));
+        assertFalse(hasBoomerangSound(runtime.outbox().consumePendingEntityEvents()));
     }
 
     @Test
@@ -310,15 +310,15 @@ final class BoomerangRuntimeTest {
         for (int frame = 0; frame < 25; frame++) {
             tickInteractive(runtime, frame, 0, 0);
         }
-        runtime.spawnBoomerang(0x40, 0x50, 0, 0, 0);
+        runtime.spawns().spawnBoomerang(0x40, 0x50, 0, 0, 0);
         EntityRuntimeFixture.debug(runtime).setGameplayWorldForTest(false);
         for (int frame = 25; frame < 30; frame++) {
             tickInteractive(runtime, frame, 0, 0);
         }
-        assertFalse(hasBoomerangSound(runtime.consumePendingEntityEvents()));
+        assertFalse(hasBoomerangSound(runtime.outbox().consumePendingEntityEvents()));
         EntityRuntimeFixture.debug(runtime).setGameplayWorldForTest(true);
         tickInteractive(runtime, 30, 0, 0);
-        assertTrue(hasBoomerangSound(runtime.consumePendingEntityEvents()));
+        assertTrue(hasBoomerangSound(runtime.outbox().consumePendingEntityEvents()));
     }
 
     private static boolean hasBoomerangSound(List<EntityCombatEvent> events) {

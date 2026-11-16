@@ -56,7 +56,7 @@ final class EntityRoomInitialization {
     final EntitySlotProperties slotProperties;
     final EntityStoryState story;
     final GenieEntityController genie;
-    final RoomEntity[] slots;
+    final EntitySlots slots;
     final EntitySlotLifecycle lifecycle;
 
     EntityRoomInitialization(
@@ -64,17 +64,17 @@ final class EntityRoomInitialization {
             boolean indoorRoom,
             EntityBombState bombInteractions,
             EntityBossState bossRewards,
-            EntityCombatTables combatTables,
             EntityLiftState liftThrow,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityPickupState pickups,
             EntityRewardState rewards,
             EntitySlotProperties slotProperties,
             EntityStoryState story,
             GenieEntityController genie,
-            RoomEntity[] slots,
+            EntitySlots slots,
             EntitySlotLifecycle lifecycle) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
         this.warpState = java.util.Objects.requireNonNull(warpState, "warpState");
         this.indoorRoom = indoorRoom;
         this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
@@ -143,7 +143,9 @@ final class EntityRoomInitialization {
         Arrays.fill(this.bombInteractions.storageBombDirection(), 0xFF);
         this.bombInteractions.clearBombFinalPresentations();
         Arrays.fill(this.liftThrow.storageThrownDirection(), 0xFF);
-        for (RoomEntity entity : this.slots) {
+        for (int entitySlotIndex = 0; entitySlotIndex < this.slots.size(); entitySlotIndex++) {
+            RoomEntity entity = this.slots.get(entitySlotIndex);
+
             initializeSlotTables(entity, initial);
             initializeSpecialEntities(entity);
             initializeRoamingEntities(entity);
@@ -168,7 +170,7 @@ final class EntityRoomInitialization {
         // State 0 is reserved for dynamically spawned warps.
         if (entity.loaded() && this.indoorRoom && entity.type() == WarpMotion.ENTITY_TYPE) {
             this.warpState.writeWarpState(entity.slot(), WarpMotion.STATE_APPROACH);
-            this.slots[entity.slot()] = withPositionAndVariant(entity, entity.x(), entity.y(), -1);
+            this.slots.replace(entity.slot(), withPositionAndVariant(entity, entity.x(), entity.y(), -1));
         }
     }
 
@@ -184,8 +186,9 @@ final class EntityRoomInitialization {
             this.combatTables.writeEnemyHitboxFlags(entity.slot(), jar.hitboxFlags());
             this.physicsTables.writeEntityOptions1Override(entity.slot(), EntityRomConstants.GENIE_OPTIONS1);
             if (entity.status() == EntityStatus.INIT) {
-                this.slots[entity.slot()] =
-                        withPositionAndVariant(entity, entity.x() + 0x08, entity.y(), entity.spriteVariant());
+                this.slots.replace(
+                        entity.slot(),
+                        withPositionAndVariant(entity, entity.x() + 0x08, entity.y(), entity.spriteVariant()));
             }
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_CHEST_WITH_ITEM) {

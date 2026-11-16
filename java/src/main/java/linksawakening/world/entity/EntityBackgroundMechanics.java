@@ -49,23 +49,23 @@ public final class EntityBackgroundMechanics {
     final EntityPhysicsTables physicsTables;
     final EntityRoomInspection roomInspection;
     final EntityRoomVariables roomVariables;
-    final RoomEntity[] slots;
+    final EntitySlots slots;
     final EntitySpriteViews spriteViews;
     final EntitySlotLifecycle lifecycle;
 
     EntityBackgroundMechanics(
             linksawakening.world.entity.EntitySpriteViews spriteHandlers,
             EntityBossState bossRewards,
-            EntityCombatTables combatTables,
             EntityEnemyInspection enemyInspection,
             EntityEventChannels events,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityRoomInspection roomInspection,
             EntityRoomVariables roomVariables,
-            RoomEntity[] slots,
-            EntitySpriteViews spriteViews,
+            EntitySlots slots,
             EntitySlotLifecycle lifecycle) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
+        EntitySpriteViews spriteViews = spriteHandlers;
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
@@ -126,17 +126,17 @@ public final class EntityBackgroundMechanics {
         if (clear) {
             runtime.lifecycle.clearEntity(entity.slot());
         } else {
-            runtime.slots[index] = moved;
+            runtime.slots.replace(index, moved);
         }
     }
 
-    void resolvePushedBlockLinkContact(int slot, int linkEntityX, int linkEntityY) {
+    public void resolvePushedBlockLinkContact(int slot, int linkEntityX, int linkEntityY) {
         if (slot >= 0
-                && slot < this.slots.length
-                && this.slots[slot].type() == EntityRomConstants.ENTITY_PUSHED_BLOCK
-                && this.slots[slot].status() == EntityStatus.ACTIVE
-                && RoomEntityCombatRules.overlapsLink(this.slots[slot], linkEntityX, linkEntityY)) {
-            requestLinkPush(this.slots[slot], EntityLinkCollisionRules.PUSHED_BLOCK);
+                && slot < this.slots.size()
+                && this.slots.get(slot).type() == EntityRomConstants.ENTITY_PUSHED_BLOCK
+                && this.slots.get(slot).status() == EntityStatus.ACTIVE
+                && RoomEntityCombatRules.overlapsLink(this.slots.get(slot), linkEntityX, linkEntityY)) {
+            requestLinkPush(this.slots.get(slot), EntityLinkCollisionRules.PUSHED_BLOCK);
         }
     }
 
@@ -365,9 +365,9 @@ public final class EntityBackgroundMechanics {
 
     void resetHookshotChainAfterLinkPush() {
         var runtime = this;
-        for (int slot = 0; slot < runtime.slots.length; slot++) {
-            if (!runtime.slots[slot].loaded()
-                    || runtime.slots[slot].type() != EntityRomConstants.ENTITY_HOOKSHOT_CHAIN
+        for (int slot = 0; slot < runtime.slots.size(); slot++) {
+            if (!runtime.slots.get(slot).loaded()
+                    || runtime.slots.get(slot).type() != EntityRomConstants.ENTITY_HOOKSHOT_CHAIN
                     || !runtime.motions
                             .get(HookshotChainMotion.class, HookshotChainMotion::new)
                             .active(slot)) {

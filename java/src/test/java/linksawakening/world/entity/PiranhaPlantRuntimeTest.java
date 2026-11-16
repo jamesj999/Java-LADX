@@ -62,7 +62,7 @@ final class PiranhaPlantRuntimeTest {
                 .build();
 
         assertEquals(0x14, runtime.enemies().physicsFlags(0));
-        assertEquals(0x00, runtime.options1(0));
+        assertEquals(0x00, runtime.execution().slotProperties().options1(0));
         assertEquals(0x01, runtime.enemies().enemyHealth(0));
     }
 
@@ -85,7 +85,8 @@ final class PiranhaPlantRuntimeTest {
 
         EnemyAttackContext nonDamaging = new EnemyAttackContext(0, false, false, false, false);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x78, () -> 0));
-        assertTrue(runtime.resolveCombat(
+        assertTrue(runtime.combat()
+                .resolveCombat(
                         new EntityVerticalContactFrame(1, 0x78, 0x78, false, true, true, 0x48, 1, 0x48, 1, nonDamaging))
                 .get(0)
                 .swordHit());
@@ -153,7 +154,8 @@ final class PiranhaPlantRuntimeTest {
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
-        assertTrue(runtime.resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x40, false, true, false, 0, 0, 0, 0))
+        assertTrue(runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(1, 0x40, 0x40, false, true, false, 0, 0, 0, 0))
                 .isEmpty());
     }
 

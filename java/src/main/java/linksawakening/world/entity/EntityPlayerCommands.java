@@ -16,7 +16,7 @@ import linksawakening.world.entity.motion.SideViewPotMotion;
 import linksawakening.world.entity.motion.ThrownEntityMotion;
 
 /** Player lift, throw, block movement and held-item presentation commands. */
-final class EntityPlayerCommands {
+public final class EntityPlayerCommands {
     final EntityBombState bombInteractions;
     final EntityCombatTables combatTables;
     final EntityEventChannels events;
@@ -27,7 +27,7 @@ final class EntityPlayerCommands {
     final EntityRewardState rewards;
     final EntityRoomInspection inspection;
     final EntitySlotProperties slotProperties;
-    final RoomEntity[] slots;
+    final EntitySlots slots;
     // Marin's eight direction/walk variants repeat during the opening dialog.
     // Cache complete immutable values only while every source field still matches.
     private static final RoomEntity UNREAD_PRESENTATION = RoomEntity.disabled(0);
@@ -39,16 +39,16 @@ final class EntityPlayerCommands {
 
     EntityPlayerCommands(
             EntityBombState bombInteractions,
-            EntityCombatTables combatTables,
             EntityEventChannels events,
             EntityLiftState liftThrow,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityPresentationState presentationState,
             EntityRewardState rewards,
             EntityRoomInspection inspection,
             EntitySlotProperties slotProperties,
-            RoomEntity[] slots) {
+            EntitySlots slots) {
+        EntityCombatTables combatTables = slots.combat();
+        EntityPhysicsTables physicsTables = slots.physics();
         this.bombInteractions = java.util.Objects.requireNonNull(bombInteractions, "bombInteractions");
         this.combatTables = java.util.Objects.requireNonNull(combatTables, "combatTables");
         this.events = java.util.Objects.requireNonNull(events, "events");
@@ -62,10 +62,10 @@ final class EntityPlayerCommands {
         this.slots = java.util.Objects.requireNonNull(slots, "slots");
     }
 
-    boolean beginLift(int slot, int romDirection) {
+    public boolean beginLift(int slot, int romDirection) {
         EntitySlotValidation.validateEntitySlot(slot);
         EntitySlotValidation.validateRomDirection(romDirection);
-        RoomEntity entity = this.slots[slot];
+        RoomEntity entity = this.slots.get(slot);
         if (!entity.loaded()) {
             return false;
         }
@@ -75,7 +75,7 @@ final class EntityPlayerCommands {
         }
         if (this.liftThrow.readLiftedEntitySlot() >= 0
                 && this.liftThrow.readLiftedEntitySlot() != slot
-                && this.slots[this.liftThrow.readLiftedEntitySlot()].status() == EntityStatus.LIFTED) {
+                && this.slots.get(this.liftThrow.readLiftedEntitySlot()).status() == EntityStatus.LIFTED) {
             return false;
         }
 
@@ -97,11 +97,11 @@ final class EntityPlayerCommands {
             this.combatTables.writeEnemyFlashCountdown(slot, 0);
             entity = withDefinition(entity, this.slotProperties.spriteDefinitionFor(EntityRomConstants.ENTITY_BOMB), 0);
         }
-        this.slots[slot] = withStatus(entity, EntityStatus.LIFTED);
+        this.slots.replace(slot, withStatus(entity, EntityStatus.LIFTED));
         return true;
     }
 
-    boolean throwLiftedEntity(int romDirection) {
+    public boolean throwLiftedEntity(int romDirection) {
         EntitySlotValidation.validateRomDirection(romDirection);
         LiftedEntityState state = this.inspection.liftedEntityState();
         if (!state.active() || state.carryState() != 0x01) {
@@ -109,7 +109,7 @@ final class EntityPlayerCommands {
         }
 
         int slot = state.slot();
-        RoomEntity entity = this.slots[slot];
+        RoomEntity entity = this.slots.get(slot);
         this.events.pendingPreTickLinkAttackStepRequests.add(new LinkAttackStepRequest(slot));
         this.events.pendingPreTickEntityEvents.add(new EntityCombatEvent(
                 slot,
@@ -129,7 +129,7 @@ final class EntityPlayerCommands {
             this.liftThrow.writeLiftedEffectiveDirection(0);
             this.liftThrow.writeLiftedEntitySlot(-1);
             this.physicsTables.writeEnemyTransitionCountdown(slot, 0);
-            this.slots[slot] = withStatus(entity, EntityStatus.ACTIVE);
+            this.slots.replace(slot, withStatus(entity, EntityStatus.ACTIVE));
             return true;
         }
         this.liftThrow.writeThrownDirection(slot, romDirection);
@@ -144,47 +144,49 @@ final class EntityPlayerCommands {
         this.liftThrow.writeLiftedEntitySlot(-1);
         this.physicsTables.writeEnemyTransitionCountdown(
                 slot, entity.type() == EntityRomConstants.ENTITY_BOMB ? BombMotion.INITIAL_COUNTDOWN : 0);
-        this.slots[slot] = withStatus(entity, EntityStatus.THROWN);
+        this.slots.replace(slot, withStatus(entity, EntityStatus.THROWN));
         return true;
     }
 
-    void movePushedBlock(int slot, int x, int y) {
+    public void movePushedBlock(int slot, int x, int y) {
         if (slot < 0
-                || slot >= this.slots.length
-                || this.slots[slot].type() != EntityRomConstants.ENTITY_PUSHED_BLOCK
-                || this.slots[slot].status() == EntityStatus.DISABLED) {
+                || slot >= this.slots.size()
+                || this.slots.get(slot).type() != EntityRomConstants.ENTITY_PUSHED_BLOCK
+                || this.slots.get(slot).status() == EntityStatus.DISABLED) {
             return;
         }
-        RoomEntity entity = this.slots[slot];
-        this.slots[slot] = new RoomEntity(
+        RoomEntity entity = this.slots.get(slot);
+        this.slots.replace(
                 slot,
-                entity.sourceLoadOrder(),
-                entity.type(),
-                x & 0xFF,
-                y & 0xFF,
-                entity.status(),
-                entity.spriteDefinition(),
-                entity.spriteVariant(),
-                entity.entityFlipAttribute(),
-                entity.spriteTileOffset(),
-                entity.z(),
-                -1,
-                false);
+                new RoomEntity(
+                        slot,
+                        entity.sourceLoadOrder(),
+                        entity.type(),
+                        x & 0xFF,
+                        y & 0xFF,
+                        entity.status(),
+                        entity.spriteDefinition(),
+                        entity.spriteVariant(),
+                        entity.entityFlipAttribute(),
+                        entity.spriteTileOffset(),
+                        entity.z(),
+                        -1,
+                        false));
     }
 
-    void removePushedBlock(int slot) {
+    public void removePushedBlock(int slot) {
         if (slot >= 0
-                && slot < this.slots.length
-                && this.slots[slot].type() == EntityRomConstants.ENTITY_PUSHED_BLOCK) {
-            this.slots[slot] = RoomEntity.disabled(slot);
+                && slot < this.slots.size()
+                && this.slots.get(slot).type() == EntityRomConstants.ENTITY_PUSHED_BLOCK) {
+            this.slots.clear(slot);
         }
     }
 
-    boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
-        for (int slot = 0; slot < this.slots.length; slot++) {
-            RoomEntity entity = this.slots[slot];
+    public boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
+        for (int slot = 0; slot < this.slots.size(); slot++) {
+            RoomEntity entity = this.slots.get(slot);
             if (entity.loaded() && entity.type() == 0x3E) {
-                this.slots[slot] = marinPresentation(entity, x & 0xFF, y & 0xFF, spriteVariant);
+                this.slots.replace(slot, marinPresentation(entity, x & 0xFF, y & 0xFF, spriteVariant));
                 return true;
             }
         }
@@ -220,14 +222,14 @@ final class EntityPlayerCommands {
         return value;
     }
 
-    void updateHouseTarinPresentation(int linkX, int linkY) {
-        for (int slot = 0; slot < this.slots.length; slot++) {
-            RoomEntity entity = this.slots[slot];
+    public void updateHouseTarinPresentation(int linkX, int linkY) {
+        for (int slot = 0; slot < this.slots.size(); slot++) {
+            RoomEntity entity = this.slots.get(slot);
             if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_TARIN) {
                 int dx = (byte) (linkX - entity.x());
                 int dy = (byte) (linkY - entity.y());
                 int direction = Math.abs(dy) >= Math.abs(dx) ? (dy < 0 ? 2 : 3) : (dx < 0 ? 1 : 0);
-                this.slots[slot] = withVariant(entity, direction);
+                this.slots.replace(slot, withVariant(entity, direction));
             }
         }
     }
@@ -257,6 +259,11 @@ final class EntityPlayerCommands {
         this.events.pendingLinkHeldItemPoseRequests.add(new LinkHeldItemPoseRequest(slot));
         int x = finalPose ? (linkEntityX - 4) & 0xFF : linkEntityX;
         RoomEntity held = withPositionAndVariant(entity, x, (linkEntityY - 0x0C) & 0xFF, entity.spriteVariant());
-        this.slots[slot] = withZ(held, linkZ & 0xFF);
+        this.slots.replace(slot, withZ(held, linkZ & 0xFF));
+    }
+
+    public int thrownDirection(int slot) {
+        EntitySlotValidation.validateEntitySlot(slot);
+        return liftThrow.readThrownDirection(slot) & 0xFF;
     }
 }

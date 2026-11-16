@@ -44,8 +44,8 @@ final class EntityRuntimeWitchTest extends EntityRuntimeTestSupport {
                 .enemyCombatTables(tables)
                 .build();
 
-        List<EntityCombatEvent> hit =
-                runtime.resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
+        List<EntityCombatEvent> hit = runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
 
         assertEquals(1, hit.size());
         assertTrue(hit.get(0).swordHit());
@@ -61,11 +61,11 @@ final class EntityRuntimeWitchTest extends EntityRuntimeTestSupport {
 
         assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(0));
         assertEquals(0x18, runtime.enemies().transitionCountdown(0));
-        assertTrue(runtime.consumePendingSwitchBlockAnimationRequest());
+        assertTrue(runtime.outbox().consumePendingSwitchBlockAnimationRequest());
         assertEquals(
                 List.of(new EntityCombatEvent(0, 0x66, 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x0E)),
-                runtime.consumePendingEntityEvents());
-        assertFalse(runtime.consumePendingSwitchBlockAnimationRequest());
+                runtime.outbox().consumePendingEntityEvents());
+        assertFalse(runtime.outbox().consumePendingSwitchBlockAnimationRequest());
     }
 
     @Test
@@ -90,7 +90,7 @@ final class EntityRuntimeWitchTest extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
 
         assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(0));
-        assertFalse(runtime.consumePendingSwitchBlockAnimationRequest());
-        assertTrue(runtime.consumePendingEntityEvents().isEmpty());
+        assertFalse(runtime.outbox().consumePendingSwitchBlockAnimationRequest());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
     }
 }

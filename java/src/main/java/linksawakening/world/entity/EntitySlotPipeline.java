@@ -16,6 +16,7 @@ import static linksawakening.world.entity.EntityTypeRules.usesSharedRecoil;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
@@ -37,9 +38,40 @@ import linksawakening.world.entity.motion.ZolGelMotion;
 
 /** ExecuteEntities: prepare one frame, visit slots in descending order, then commit room presentation. */
 final class EntitySlotPipeline {
+    private final EntityFrameExecution frameExecution;
+    private final EntityFrameRandom frameRandom;
 
-    static List<EntityProjectileEvent> advanceFrame(RoomEntityRuntime runtime, EntityFrameContext context) {
-        EntityFrameExecution state = runtime.frameExecution.acquire(context);
+    EntitySlotPipeline(EntityFrameExecution frameExecution, EntityFrameRandom frameRandom) {
+        this.frameExecution = java.util.Objects.requireNonNull(frameExecution);
+        this.frameRandom = java.util.Objects.requireNonNull(frameRandom);
+    }
+
+    EntityFrameContext frameContext(int frameCounter) {
+        IntSupplier randomByteSupplier = frameRandom.forFrame(frameCounter);
+        return EntityFrameContext.builder()
+                .frameCounter(frameCounter)
+                .randomByteSupplier(randomByteSupplier)
+                .projectileLinkState(EnemyProjectileCollision.LinkState.nonInteractive())
+                .handlerLinkCollisionEnabled(true)
+                .build();
+    }
+
+    List<EntityProjectileEvent> tick(EntityFrameContext context) {
+        EntitySlotValidation.validateByte(context.linkSpeedX(), "Link X speed");
+        EntitySlotValidation.validateByte(context.linkSpeedY(), "Link Y speed");
+        frameExecution.linkState().writeCurrentLinkSpeedX(context.linkSpeedX());
+        frameExecution.linkState().writeCurrentLinkSpeedY(context.linkSpeedY());
+        try {
+            return advanceFrame(frameExecution, context);
+        } finally {
+            frameExecution.combat().clearDeferredContactRecoil();
+            frameExecution.linkState().writeCurrentLinkSpeedX(0);
+            frameExecution.linkState().writeCurrentLinkSpeedY(0);
+        }
+    }
+
+    static List<EntityProjectileEvent> advanceFrame(EntityFrameExecution frameExecution, EntityFrameContext context) {
+        EntityFrameExecution state = frameExecution.acquire(context);
         try {
             return advancePreparedFrame(state);
         } finally {
@@ -57,7 +89,7 @@ final class EntitySlotPipeline {
         prepareLateFrameEvents(state);
         prepareFollowerState(state);
 
-        for (state.slotFrame().index(state.runtime().slots.length - 1);
+        for (state.slotFrame().index(state.slots().size() - 1);
                 state.slotFrame().index() >= 0;
                 state.slotFrame().postIndex(-1)) {
             if (!prepareSlotAndTimers(state)) continue;
@@ -111,11 +143,11 @@ final class EntitySlotPipeline {
         state.motion(ZolGelMotion.class, ZolGelMotion::new)
                 .writeGelClingingToLink(false); // AnimateEntities clears wIsGelClingingToLink each pass.
         state.gates().countdownBlocksInteraction(state.roomVariables().readEntityInteractionCountdown() != 0);
-        if (!state.linkState().dialogActive && state.roomVariables().readEntityInteractionCountdown() > 0)
+        if (!state.linkState().readDialogActive() && state.roomVariables().readEntityInteractionCountdown() > 0)
             state.roomVariables().postEntityInteractionCountdown(-1);
         state.gates()
                 .handlerLinkCollisionEnabled(state.gates().handlerLinkCollisionEnabled()
-                        && !state.linkState().inventoryAppearing
+                        && !state.linkState().readInventoryAppearing()
                         && !state.gates().countdownBlocksInteraction());
         state.gates()
                 .threeOfAKindInteractive(state.gates().handlerLinkCollisionEnabled()
@@ -126,8 +158,8 @@ final class EntitySlotPipeline {
         state.gates()
                 .bowWowHandlerInteractive(state.roomVariables().readTransitionSequenceCounter() == 0x04
                         && !state.roomVariables().readRoomTransitionActive()
-                        && !state.linkState().dialogActive
-                        && !state.linkState().inventoryAppearing
+                        && !state.linkState().readDialogActive()
+                        && !state.linkState().readInventoryAppearing()
                         && !state.roomInspection().witchGotItemPresentationActive());
         state.gates()
                 .projectileTimersInteractive(state.background()
@@ -253,13 +285,13 @@ final class EntitySlotPipeline {
         state.events().pendingBombExplosionEvents.clear();
         state.events().hookshotBridgeUpdates.clear();
         state.roomVariables().writePendingSwitchBlockAnimationRequest(false);
-        if (state.linkState().linkPlayingOcarinaCountdown >= 0x10
-                && state.linkState().ocarinaAnimationCounter == 0x14) {
+        if (state.linkState().readLinkPlayingOcarinaCountdown() >= 0x10
+                && state.linkState().readOcarinaAnimationCounter() == 0x14) {
             state.playerSpawns()
                     .spawnMusicalNote(
                             state.inputs().linkEntityX(),
                             state.inputs().linkEntityY(),
-                            state.linkState().ocarinaAnimationPhase);
+                            state.linkState().readOcarinaAnimationPhase());
         }
         state.inputs().projectileEvents(state.events().outbox.channel(EntityProjectileEvent.class, "projectileEvents"));
         state.inputs().projectileEvents().clear();
@@ -271,14 +303,14 @@ final class EntitySlotPipeline {
             state.motion(FollowingNpcMotion.class, FollowingNpcMotion::new)
                     .writeFollowingLinkPositionHistory(state.inputs().linkPositionHistory());
         }
-        state.linkState().followingLinkZ = state.inputs().linkZ() & 0xFF;
-        state.linkState().followingLinkDirection = state.inputs().linkDirection() & 0xFF;
-        state.linkState().followingEntityYOffset = state.inputs().entityYOffset() & 0xFF;
+        state.linkState().writeFollowingLinkZ(state.inputs().linkZ() & 0xFF);
+        state.linkState().writeFollowingLinkDirection(state.inputs().linkDirection() & 0xFF);
+        state.linkState().writeFollowingEntityYOffset(state.inputs().entityYOffset() & 0xFF);
         state.slotFrame()
                 .carryingEntity(state.roomInspection().liftedEntityState().carryState() != 0);
         state.inputs()
                 .romLinkDirection(romDirectionForJavaDirection(state.inputs().linkDirection()));
-        state.linkState().lastRomLinkDirection = state.inputs().romLinkDirection();
+        state.linkState().writeLastRomLinkDirection(state.inputs().romLinkDirection());
     }
 
     private static boolean prepareSlotAndTimers(EntityFrameExecution state) {
@@ -295,7 +327,7 @@ final class EntitySlotPipeline {
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         var timerGates = state.gates();
-        slotState.entity(state.runtime().slots[slotState.index()]);
+        slotState.entity(state.slots().get(slotState.index()));
         if (state.liftThrow().advanceStatueRubble(slotState.entity(), timerGates.sideViewPotInteractive()))
             return false;
         slotState.moldormIntroOpenedThisFrame(false);
@@ -316,7 +348,7 @@ final class EntitySlotPipeline {
         }
         if (!state.handlers().tick(EntityTickStage.PHASE_1_AFTER_SPAWN_GUARD, state)) return false;
         slotState.kanaletLeafProducer((slotState.entity().type() == EntityRomConstants.ENTITY_CROW
-                        && !state.runtime().indoorRoom
+                        && !state.indoorRoom()
                         && state.roomVariables().readEntityRoomId() == 0x58)
                 || slotState.entity().type() == EntityRomConstants.ENTITY_MAD_BOMBER
                 || (slotState.entity().type() == EntityRomConstants.ENTITY_KNIGHT
@@ -333,7 +365,7 @@ final class EntitySlotPipeline {
                     .writeDroppedItemBySlot(slotState.entity().slot(), EntityRomConstants.ENTITY_HIDING_SLIME_KEY);
             if (slotState.entity().sourceLoadOrder() != 0xFF) {
                 slotState.entity(withSourceLoadOrder(slotState.entity(), 0xFF));
-                state.runtime().slots[slotState.index()] = slotState.entity();
+                state.slots().replace(slotState.index(), slotState.entity());
             }
         }
         if (!state.handlers().tick(EntityTickStage.PHASE_1_BEFORE_STATUS_TIMERS, state)) return false;
@@ -347,7 +379,7 @@ final class EntitySlotPipeline {
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         var timerGates = state.gates();
-        timerGates.freezeTarinTimers(!state.runtime().indoorRoom
+        timerGates.freezeTarinTimers(!state.indoorRoom()
                 && slotState.entity().type() == EntityRomConstants.ENTITY_TARIN
                 && state.motion(TarinRaccoonMotion.class, TarinRaccoonMotion::new)
                                 .state(slotState.entity().slot())
@@ -411,10 +443,8 @@ final class EntitySlotPipeline {
         }
         if (!state.handlers().tick(EntityTickStage.PHASE_1_BEFORE_BOSS_INTRO, state)) return false;
         if (slotState.entity().sourceLoadOrder() == -1
-                && state.runtime()
-                        .enemyInspection
-                        .isDisabledFollower(slotState.entity().type())) {
-            state.runtime().clearEntity(slotState.entity().slot());
+                && state.enemyInspection().isDisabledFollower(slotState.entity().type())) {
+            state.lifecycle().clearEntity(slotState.entity().slot());
             return false;
         }
 
@@ -526,7 +556,7 @@ final class EntitySlotPipeline {
             if (slotState.entity().type() == EntityRomConstants.ENTITY_LEEVER
                     && timerGates.handlerInteractive()
                     && timerGates.handlerLinkCollisionEnabled()) {
-                state.runtime().finishLeeverContactRecoil(slotState.updated());
+                state.combat().finishLeeverContactRecoil(slotState.updated());
             }
         }
 
@@ -548,13 +578,16 @@ final class EntitySlotPipeline {
         if (!state.handlers().tick(EntityTickStage.PHASE_2_LIFTED, state)) return false;
         slotState.liftedRomDirection(frameInput.romLinkDirection());
         if (!state.handlers().tick(EntityTickStage.PHASE_2_LIFTED_FOLLOWER, state)) return false;
-        state.runtime().slots[slotState.index()] = state.liftThrow()
-                .advanceLiftedEntity(
-                        slotState.lifted(),
-                        frameInput.linkEntityX(),
-                        frameInput.linkEntityY(),
-                        frameInput.linkZ(),
-                        slotState.liftedRomDirection());
+        state.slots()
+                .replace(
+                        slotState.index(),
+                        state.liftThrow()
+                                .advanceLiftedEntity(
+                                        slotState.lifted(),
+                                        frameInput.linkEntityX(),
+                                        frameInput.linkEntityY(),
+                                        frameInput.linkZ(),
+                                        slotState.liftedRomDirection()));
         return false;
     }
 
@@ -570,7 +603,7 @@ final class EntitySlotPipeline {
                         state.physicsTables().readGroundInteractionSideScrolling(),
                         frameInput.romLinkDirection(),
                         frameInput.frame());
-        state.runtime().slots[slotState.index()] = thrown;
+        state.slots().replace(slotState.index(), thrown);
         if (thrown.status() == EntityStatus.THROWN) {
             state.liftThrow().collideThrownEntityWithEntities(thrown, frameInput.frame());
         }
@@ -594,20 +627,23 @@ final class EntitySlotPipeline {
                             << 2)
                     & 0x10;
         }
-        state.runtime().slots[slotState.index()] = new RoomEntity(
-                falling.slot(),
-                falling.sourceLoadOrder(),
-                falling.type(),
-                falling.x(),
-                falling.y(),
-                EntityStatus.FALLING,
-                falling.spriteDefinition(),
-                falling.spriteVariant(),
-                renderFlipAttribute,
-                falling.spriteTileOffset(),
-                falling.z(),
-                -1,
-                false);
+        state.slots()
+                .replace(
+                        slotState.index(),
+                        new RoomEntity(
+                                falling.slot(),
+                                falling.sourceLoadOrder(),
+                                falling.type(),
+                                falling.x(),
+                                falling.y(),
+                                EntityStatus.FALLING,
+                                falling.spriteDefinition(),
+                                falling.spriteVariant(),
+                                renderFlipAttribute,
+                                falling.spriteTileOffset(),
+                                falling.z(),
+                                -1,
+                                false));
         return false;
     }
 
@@ -641,10 +677,13 @@ final class EntitySlotPipeline {
                             .entity()
                     : slotState.entity();
             updated = state.slotProperties().refreshColorShellDisplay(updated, slotState.status());
-            state.runtime().slots[slotState.index()] = withDeathPresentation(
-                    updated,
-                    EntityMotionMath.deathSpriteVariantForCountdown(presentationCountdown),
-                    state.combatTables().readPowerRecoilDeath(slot));
+            state.slots()
+                    .replace(
+                            slotState.index(),
+                            withDeathPresentation(
+                                    updated,
+                                    EntityMotionMath.deathSpriteVariantForCountdown(presentationCountdown),
+                                    state.combatTables().readPowerRecoilDeath(slot)));
         }
         return false;
     }
@@ -657,8 +696,10 @@ final class EntitySlotPipeline {
                 == 0) {
             state.lifecycle().finishBurning(slotState.entity());
         } else {
-            state.runtime().slots[slotState.index()] =
-                    state.slotProperties().refreshColorShellDisplay(slotState.entity(), slotState.status());
+            state.slots()
+                    .replace(
+                            slotState.index(),
+                            state.slotProperties().refreshColorShellDisplay(slotState.entity(), slotState.status()));
         }
         return false;
     }
@@ -668,7 +709,7 @@ final class EntitySlotPipeline {
         var frameInput = state.inputs();
 
         if (!state.handlers().tick(EntityTickStage.PHASE_2_STUNNED, state)) return false;
-        if (state.linkState().powerBraceletButtonHeld
+        if (state.linkState().readPowerBraceletButtonHeld()
                 && isLiftableEntity(slotState.entity())
                 && (slotState.entity().type() == EntityRomConstants.ENTITY_BOMB
                         || (state.physicsTables()
@@ -678,23 +719,34 @@ final class EntitySlotPipeline {
                                 != 0)
                 && RoomEntityPickupRules.overlapsLink(
                         slotState.entity(), frameInput.linkEntityX(), frameInput.linkEntityY())) {
-            if (state.runtime().beginLift(slotState.entity().slot(), frameInput.romLinkDirection())) {
-                state.runtime().slots[slotState.index()] = state.liftThrow()
-                        .advanceLiftedEntity(
-                                state.liftThrow().renderLiftedBomb(state.runtime().slots[slotState.index()]),
-                                frameInput.linkEntityX(),
-                                frameInput.linkEntityY(),
-                                frameInput.linkZ(),
-                                frameInput.romLinkDirection());
+            if (state.playerCommands().beginLift(slotState.entity().slot(), frameInput.romLinkDirection())) {
+                state.slots()
+                        .replace(
+                                slotState.index(),
+                                state.liftThrow()
+                                        .advanceLiftedEntity(
+                                                state.liftThrow()
+                                                        .renderLiftedBomb(
+                                                                state.slots().get(slotState.index())),
+                                                frameInput.linkEntityX(),
+                                                frameInput.linkEntityY(),
+                                                frameInput.linkZ(),
+                                                frameInput.romLinkDirection()));
             }
             return false;
         }
         if (state.combatTables().readEnemyStunnedCountdown(slotState.entity().slot()) == 0) {
-            state.runtime().slots[slotState.index()] = state.slotProperties()
-                    .refreshColorShellDisplay(withStatus(slotState.entity(), EntityStatus.ACTIVE), EntityStatus.ACTIVE);
+            state.slots()
+                    .replace(
+                            slotState.index(),
+                            state.slotProperties()
+                                    .refreshColorShellDisplay(
+                                            withStatus(slotState.entity(), EntityStatus.ACTIVE), EntityStatus.ACTIVE));
         } else {
-            state.runtime().slots[slotState.index()] =
-                    state.slotProperties().refreshColorShellDisplay(slotState.entity(), slotState.status());
+            state.slots()
+                    .replace(
+                            slotState.index(),
+                            state.slotProperties().refreshColorShellDisplay(slotState.entity(), slotState.status()));
         }
         return false;
     }
@@ -704,7 +756,7 @@ final class EntitySlotPipeline {
         var frameInput = state.inputs();
 
         if (!state.handlers().tick(EntityTickStage.PHASE_2_BEFORE_INITIALIZE, state)) return false;
-        if (!state.runtime().initializeBossBattle(slotState.entity())) return false;
+        if (!state.lifecycle().initializeBossBattle(slotState.entity())) return false;
         slotState.status(EntityStatus.ACTIVE);
         state.pickups().initializeEntityTimers(slotState.entity());
         state.handlers().initialize(slotState.entity(), frameInput.randomByteSupplier());
@@ -727,7 +779,7 @@ final class EntitySlotPipeline {
             if (state.physicsTables()
                             .readSlowTransitionCountdown(slotState.entity().slot())
                     == 0) {
-                state.runtime().clearEntity(slotState.entity().slot());
+                state.lifecycle().clearEntity(slotState.entity().slot());
                 return false;
             }
         }
@@ -805,8 +857,8 @@ final class EntitySlotPipeline {
                         .isSensor(slotState.entity().slot())) {
             int ownerSlot = state.motion(LaserMotion.class, LaserMotion::new)
                     .parentSlot(slotState.entity().slot());
-            RoomEntity owner = ownerSlot >= 0 && ownerSlot < state.runtime().slots.length
-                    ? state.runtime().slots[ownerSlot]
+            RoomEntity owner = ownerSlot >= 0 && ownerSlot < state.slots().size()
+                    ? state.slots().get(ownerSlot)
                     : null;
             LaserMotion.SensorUpdate sensorUpdate = state.motion(LaserMotion.class, LaserMotion::new)
                     .advanceSensor(
@@ -815,7 +867,9 @@ final class EntitySlotPipeline {
                             frameInput.linkEntityX(),
                             frameInput.linkEntityY(),
                             frameInput.projectileLinkState().invincibilityCounter());
-            if (sensorUpdate.triggeredParent() && ownerSlot >= 0 && ownerSlot < state.runtime().slots.length) {
+            if (sensorUpdate.triggeredParent()
+                    && ownerSlot >= 0
+                    && ownerSlot < state.slots().size()) {
                 // LaserLinkSensorHandler starts the parent's visible
                 // pre-fire flash at the same time as its $20 countdown.
                 state.combatTables().writeEnemyFlashCountdown(ownerSlot, 0x10);
@@ -909,11 +963,11 @@ final class EntitySlotPipeline {
                                 frameInput.frame(),
                                 frameInput.linkEntityX(),
                                 frameInput.linkEntityY(),
-                                state.linkState().followingLinkZ,
+                                state.linkState().readFollowingLinkZ(),
                                 frameInput.randomByteSupplier(),
                                 frameInput.backgroundCollision(),
-                                Arrays.asList(state.runtime().slots),
-                                state.runtime().enemyCombatTables::canBowWowEatEntity,
+                                state.slots().view(),
+                                state.enemyCombatTables()::canBowWowEatEntity,
                                 state.motion(BowWowMotion.class, BowWowMotion::new)
                                         .readBowWowState()));
                 slotState.updated(bowWowUpdate.entity());
@@ -929,9 +983,9 @@ final class EntitySlotPipeline {
                                 frameInput.frame(),
                                 frameInput.linkEntityX(),
                                 frameInput.linkEntityY(),
-                                state.linkState().followingLinkZ,
-                                state.linkState().followingLinkDirection,
-                                state.linkState().followingEntityYOffset,
+                                state.linkState().readFollowingLinkZ(),
+                                state.linkState().readFollowingLinkDirection(),
+                                state.linkState().readFollowingEntityYOffset(),
                                 state.motion(FollowingNpcMotion.class, FollowingNpcMotion::new)
                                         .readFollowingLinkPositionHistory(),
                                 frameInput.backgroundCollision())));
@@ -1160,8 +1214,14 @@ final class EntitySlotPipeline {
                 || slotState.updated().y() != slotState.originalEntity().y()
                 || slotState.renderFlipAttribute() != slotState.originalEntity().entityFlipAttribute()
                 || slotState.updated().z() != slotState.originalEntity().z()) {
-            state.runtime().slots[slotState.index()] = withPresentation(
-                    slotState.updated(), slotState.status(), slotState.variant(), slotState.renderFlipAttribute());
+            state.slots()
+                    .replace(
+                            slotState.index(),
+                            withPresentation(
+                                    slotState.updated(),
+                                    slotState.status(),
+                                    slotState.variant(),
+                                    slotState.renderFlipAttribute()));
         }
     }
 }

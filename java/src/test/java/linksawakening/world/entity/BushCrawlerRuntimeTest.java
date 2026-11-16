@@ -133,7 +133,7 @@ final class BushCrawlerRuntimeTest {
         assertEquals(0x40, runtime.enemies().transitionCountdown(replacement.slot()));
         assertEquals(0, runtime.inspection().liftedEntityState().carryState());
 
-        List<EntityCombatEvent> events = runtime.consumePendingEntityEvents();
+        List<EntityCombatEvent> events = runtime.outbox().consumePendingEntityEvents();
         assertEquals(1, events.size());
         assertEquals(EntityCombatEvent.SoundChannel.WAVE, events.get(0).soundChannel());
         assertEquals(0x02, events.get(0).soundId());

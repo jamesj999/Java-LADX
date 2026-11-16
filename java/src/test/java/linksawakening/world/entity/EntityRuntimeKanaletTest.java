@@ -49,7 +49,7 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
                 RoomEntityRuntime.builder(snapshot()).indoorRoom(true).build();
         EntityRuntimeFixture.debug(runtime).setEntityMapIdForTest(0x14);
 
-        int slot = runtime.spawnRoomEventKeyDrop();
+        int slot = runtime.spawns().spawnRoomEventKeyDrop();
 
         RoomEntity leaf = runtime.inspection().snapshot().slots().get(slot);
         assertEquals(0x3C, leaf.type());
@@ -90,7 +90,7 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
                 .orElseThrow();
         assertEquals(0x44, leaf.x());
         assertEquals(0x58, leaf.y());
-        assertEquals(0, runtime.consumePendingClearedEntityMask());
+        assertEquals(0, runtime.outbox().consumePendingClearedEntityMask());
     }
 
     @Test
@@ -215,7 +215,7 @@ final class EntityRuntimeKanaletTest extends EntityRuntimeTestSupport {
                 .enemyCombatTables(tables)
                 .build();
         EntityRuntimeFixture.debug(runtime).setEntityMapIdForTest(0x14);
-        int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        int bombSlot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
         EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(bombSlot, 0x13);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));

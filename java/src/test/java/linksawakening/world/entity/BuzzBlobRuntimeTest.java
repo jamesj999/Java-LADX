@@ -71,7 +71,7 @@ final class BuzzBlobRuntimeTest {
         assertEquals(0x08, RoomEntityCombatRules.contactDamage(ENTITY_BUZZ_BLOB));
         assertEquals(0x04, RoomEntityCombatRules.initialHealth(ENTITY_BUZZ_BLOB));
         assertEquals(0x12, runtime.enemies().physicsFlags(0));
-        assertEquals(0x00, runtime.options1(0));
+        assertEquals(0x00, runtime.execution().slotProperties().options1(0));
         assertEquals(0x04, runtime.enemies().enemyHealth(0));
     }
 
@@ -261,9 +261,9 @@ final class BuzzBlobRuntimeTest {
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
-        assertTrue(
-                runtime.resolveCombat(new EntitySwordContactFrame(0, 0x40, 0x40, false, false, true, 0x40, 1, 0x40, 1))
-                        .isEmpty());
+        assertTrue(runtime.combat()
+                .resolveCombat(new EntitySwordContactFrame(0, 0x40, 0x40, false, false, true, 0x40, 1, 0x40, 1))
+                .isEmpty());
     }
 
     private static RoomEntitySnapshot snapshot(RoomEntity entity) {

@@ -34,7 +34,7 @@ final class EntityRuntimeHookshotTest extends EntityRuntimeTestSupport {
                 .enemyCombatTables(tables)
                 .build();
 
-        int hookshotSlot = runtime.spawnHookshotChain(0x50, 0x50, 0, 1);
+        int hookshotSlot = runtime.spawns().spawnHookshotChain(0x50, 0x50, 0, 1);
         assertEquals(15, hookshotSlot);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 0xC0, () -> 0));
@@ -85,9 +85,9 @@ final class EntityRuntimeHookshotTest extends EntityRuntimeTestSupport {
         assertEquals(EntitySpriteDefinition.Shape.PAIR, held.spriteDefinition().shape());
         assertEquals(0x36, held.spriteDefinition().variant(0).first().tile());
         assertEquals(0x0F, runtime.pickupState().keyDropTransitionCountdown(0));
-        assertEquals(List.of(new DialogRequest(0, 0x93)), runtime.consumePendingDialogRequests());
+        assertEquals(List.of(new DialogRequest(0, 0x93)), runtime.outbox().consumePendingDialogRequests());
         assertEquals(
                 List.of(new KeyRewardEvent(0, ChestContentsTable.CHEST_HOOKSHOT)),
-                runtime.consumePendingKeyRewardEvents());
+                runtime.outbox().consumePendingKeyRewardEvents());
     }
 }

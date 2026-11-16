@@ -26,7 +26,7 @@ public final class EntityRuntimeConfiguration {
     private final EntityProjectileState projectiles;
     private final EntityRoomVariables roomVariables;
     private final EntityStoryState story;
-    private final RoomEntity[] slots;
+    private final EntitySlots slots;
     private final SlimeEyeController slimeEye;
     private final EntitySpriteViews spriteViews;
 
@@ -36,15 +36,15 @@ public final class EntityRuntimeConfiguration {
             EntityLiftState liftThrow,
             EntityLinkState linkState,
             EntityMotionRegistry motions,
-            EntityPhysicsTables physicsTables,
             EntityPickupState pickups,
             EntityPresentationState presentationState,
             EntityProjectileState projectiles,
             EntityRoomVariables roomVariables,
             EntityStoryState story,
-            RoomEntity[] slots,
-            SlimeEyeController slimeEye,
-            EntitySpriteViews spriteViews) {
+            EntitySlots slots,
+            SlimeEyeController slimeEye) {
+        EntityPhysicsTables physicsTables = slots.physics();
+        EntitySpriteViews spriteViews = spriteHandlers;
         this.spriteHandlers = java.util.Objects.requireNonNull(spriteHandlers, "sprite source");
         this.bossRewards = java.util.Objects.requireNonNull(bossRewards, "bossRewards");
         this.liftThrow = java.util.Objects.requireNonNull(liftThrow, "liftThrow");
@@ -76,7 +76,7 @@ public final class EntityRuntimeConfiguration {
     }
 
     public void setLinkVelocityZ(int velocity) {
-        this.linkState.currentLinkVelocityZ = velocity & 0xFF;
+        this.linkState.writeCurrentLinkVelocityZ(velocity & 0xFF);
     }
 
     public void setSpriteSelection(
@@ -106,37 +106,37 @@ public final class EntityRuntimeConfiguration {
     }
 
     public void setActionButtonsHeld(boolean actionButtonAHeld, boolean actionButtonBHeld) {
-        this.linkState.actionButtonAHeld = actionButtonAHeld;
-        this.linkState.actionButtonBHeld = actionButtonBHeld;
-        this.linkState.actionButtonsHeld = actionButtonAHeld || actionButtonBHeld;
+        this.linkState.writeActionButtonAHeld(actionButtonAHeld);
+        this.linkState.writeActionButtonBHeld(actionButtonBHeld);
+        this.linkState.writeActionButtonsHeld(actionButtonAHeld || actionButtonBHeld);
     }
 
     public void setJoypadHeld(boolean joypadHeld) {
-        this.linkState.joypadHeld = joypadHeld;
+        this.linkState.writeJoypadHeld(joypadHeld);
     }
 
     public void setPressedButtonsMask(int pressedButtonsMask) {
         EntitySlotValidation.validateByte(pressedButtonsMask, "Pressed buttons mask");
-        this.linkState.linkPressedButtonsMask = pressedButtonsMask;
+        this.linkState.writeLinkPressedButtonsMask(pressedButtonsMask);
     }
 
     public void setDialogActive(boolean dialogActive) {
-        this.linkState.dialogActive = dialogActive;
+        this.linkState.writeDialogActive(dialogActive);
     }
 
     public void setTalkState(boolean inventoryAppearing, int dialogCooldown, int windowY) {
         EntitySlotValidation.validateByte(dialogCooldown, "Dialog cooldown");
         EntitySlotValidation.validateByte(windowY, "Window Y");
-        this.linkState.inventoryAppearing = inventoryAppearing;
-        this.linkState.dialogCooldown = dialogCooldown;
-        this.linkState.windowY = windowY;
+        this.linkState.writeInventoryAppearing(inventoryAppearing);
+        this.linkState.writeDialogCooldown(dialogCooldown);
+        this.linkState.writeWindowY(windowY);
     }
 
     public void setDialogAskSelectionIndex(int selectionIndex) {
         if (selectionIndex < 0 || selectionIndex > 1) {
             throw new IllegalArgumentException("Dialog selection must be 0 or 1");
         }
-        this.linkState.dialogAskSelectionIndex = selectionIndex;
+        this.linkState.writeDialogAskSelectionIndex(selectionIndex);
     }
 
     public void setActiveMusic(boolean activeMusic) {
@@ -150,32 +150,32 @@ public final class EntityRuntimeConfiguration {
     public void setLikeLikeLinkInventory(int itemA, int itemB) {
         EntitySlotValidation.validateByte(itemA, "Link A inventory slot");
         EntitySlotValidation.validateByte(itemB, "Link B inventory slot");
-        this.linkState.linkItemA = itemA;
-        this.linkState.linkItemB = itemB;
-        this.linkState.linkInventoryConfigured = true;
+        this.linkState.writeLinkItemA(itemA);
+        this.linkState.writeLinkItemB(itemB);
+        this.linkState.writeLinkInventoryConfigured(true);
     }
 
     public void setPowerBraceletButtonHeld(boolean powerBraceletButtonHeld) {
-        this.linkState.powerBraceletButtonHeld = powerBraceletButtonHeld;
+        this.linkState.writePowerBraceletButtonHeld(powerBraceletButtonHeld);
     }
 
     public void setBombButtonHeld(boolean bombButtonHeld) {
-        this.linkState.bombButtonHeld = bombButtonHeld;
+        this.linkState.writeBombButtonHeld(bombButtonHeld);
     }
 
     public void setLinkAttackStepAnimationCountdown(int countdown) {
         EntitySlotValidation.validateByte(countdown, "Link attack-step animation countdown");
-        this.linkState.linkAttackStepAnimationCountdown = countdown;
+        this.linkState.writeLinkAttackStepAnimationCountdown(countdown);
     }
 
     public void setLinkFinalPositionX(int positionX) {
         EntitySlotValidation.validateByte(positionX, "Link final position X");
-        this.linkState.currentLinkFinalPositionX = positionX;
-        this.linkState.currentLinkFinalPositionXConfigured = true;
+        this.linkState.writeCurrentLinkFinalPositionX(positionX);
+        this.linkState.writeCurrentLinkFinalPositionXConfigured(true);
     }
 
     public void setLiftStrengthBoost(boolean redTunic, boolean pieceOfPower) {
-        this.linkState.fastLiftTransition = redTunic || pieceOfPower;
+        this.linkState.writeFastLiftTransition(redTunic || pieceOfPower);
     }
 
     public void setLiftedLinkC13B(int linkC13B) {
@@ -223,7 +223,9 @@ public final class EntityRuntimeConfiguration {
     public void setEntityRoomId(int roomId) {
         EntitySlotValidation.validateByte(roomId, "Entity room id");
         this.roomVariables.writeEntityRoomId(roomId);
-        for (RoomEntity entity : this.slots) {
+        for (int entitySlotIndex = 0; entitySlotIndex < this.slots.size(); entitySlotIndex++) {
+            RoomEntity entity = this.slots.get(entitySlotIndex);
+
             if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) continue;
             SecretSeashellMotion seashell = this.motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
             seashell.ensureInitialized(entity.slot(), roomId);
@@ -291,10 +293,14 @@ public final class EntityRuntimeConfiguration {
         this.pickups.writeChestPlayerLevelsKnown(true);
         if (this.spriteHandlers.supportsPresentation()) {
             EntitySpriteDefinition pickupDefinition = this.spriteViews.forSwordShieldPickup(swordLevel == 0);
-            for (int index = 0; index < this.slots.length; index++) {
-                if (this.slots[index].type() == EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP) {
-                    this.slots[index] =
-                            withDefinition(this.slots[index], pickupDefinition, this.slots[index].spriteVariant());
+            for (int index = 0; index < this.slots.size(); index++) {
+                if (this.slots.get(index).type() == EntityRomConstants.ENTITY_SWORD_SHIELD_PICKUP) {
+                    this.slots.replace(
+                            index,
+                            withDefinition(
+                                    this.slots.get(index),
+                                    pickupDefinition,
+                                    this.slots.get(index).spriteVariant()));
                 }
             }
         }
@@ -363,11 +369,11 @@ public final class EntityRuntimeConfiguration {
         if (animationPhase < 0 || animationPhase > 1) {
             throw new IllegalArgumentException("Ocarina animation phase must be 0 or 1");
         }
-        this.linkState.linkPlayingOcarinaCountdown = countdown;
-        this.linkState.ocarinaSongFlags = songFlags;
-        this.linkState.selectedSongIndex = selectedSong;
-        this.linkState.ocarinaAnimationCounter = animationCounter;
-        this.linkState.ocarinaAnimationPhase = animationPhase;
+        this.linkState.writeLinkPlayingOcarinaCountdown(countdown);
+        this.linkState.writeOcarinaSongFlags(songFlags);
+        this.linkState.writeSelectedSongIndex(selectedSong);
+        this.linkState.writeOcarinaAnimationCounter(animationCounter);
+        this.linkState.writeOcarinaAnimationPhase(animationPhase);
     }
 
     public void setThrownDirection(int slot, int value) {
@@ -397,5 +403,13 @@ public final class EntityRuntimeConfiguration {
         this.presentationState.writeBgPaletteEffectAddress(bgPaletteEffectAddress);
         this.presentationState.writePaletteDataFlags(paletteDataFlags);
         this.presentationState.writeDefaultMusicTrack(defaultMusicTrack);
+    }
+
+    public void setFreeMovementMode(boolean enabled) {
+        roomVariables.writeFreeMovementMode(enabled);
+    }
+
+    public void setHeartPiecesCount(int count) {
+        pickups.writeHeartPiecesCount(count);
     }
 }

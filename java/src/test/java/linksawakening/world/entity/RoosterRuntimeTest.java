@@ -43,7 +43,8 @@ final class RoosterRuntimeTest {
         assertEquals(
                 MotionTestAccess.RoosterMotion_ENTITY_TYPE,
                 runtime.inspection().liftedEntityState().type());
-        assertTrue(runtime.consumePendingEntityEvents()
+        assertTrue(runtime.outbox()
+                .consumePendingEntityEvents()
                 .contains(new EntityCombatEvent(
                         0,
                         MotionTestAccess.RoosterMotion_ENTITY_TYPE,

@@ -41,8 +41,9 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
                 .enemyCombatTables(tables)
                 .build();
 
-        List<EntityCombatEvent> events = runtime.resolveCombat(new EntityVerticalContactFrame(
-                0, 0xC0, 0xC0, false, true, true, 0x58, 1, 0x58, 1, EnemyAttackContext.standard()));
+        List<EntityCombatEvent> events = runtime.combat()
+                .resolveCombat(new EntityVerticalContactFrame(
+                        0, 0xC0, 0xC0, false, true, true, 0x58, 1, 0x58, 1, EnemyAttackContext.standard()));
 
         assertEquals(
                 List.of(new EntityCombatEvent(0, 0x55, 0, true, 0, -1, EntityCombatEvent.SoundChannel.NONE, -1)),
@@ -84,8 +85,9 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
                 .enemyCombatTables(tables)
                 .build();
 
-        List<EntityCombatEvent> swordEvents = runtime.resolveCombat(new EntityVerticalContactFrame(
-                0, 0xC0, 0xC0, false, true, true, 0x58, 1, 0x58, 1, EnemyAttackContext.standard()));
+        List<EntityCombatEvent> swordEvents = runtime.combat()
+                .resolveCombat(new EntityVerticalContactFrame(
+                        0, 0xC0, 0xC0, false, true, true, 0x58, 1, 0x58, 1, EnemyAttackContext.standard()));
         assertEquals(
                 List.of(new EntityCombatEvent(0, 0x55, 0, true, 0, -1, EntityCombatEvent.SoundChannel.NONE, -1)),
                 swordEvents);
@@ -116,7 +118,7 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
         assertEquals(0x01, runtime.enemies().enemyIgnoreHitsCountdown(15));
         assertEquals(
                 List.of(new EntityCombatEvent(15, 0x02, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x0C)),
-                runtime.consumePendingEntityEvents());
+                runtime.outbox().consumePendingEntityEvents());
     }
 
     @Test
@@ -129,7 +131,7 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
                 .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
                 .build();
 
-        int bombSlot = runtime.spawnEnemyBomb(0x48, 0x50, 0x00, 0x13);
+        int bombSlot = runtime.enemySpawns().spawnEnemyBomb(0x48, 0x50, 0x00, 0x13);
         List<EntityProjectileEvent> events = runtime.tick(EntityTestFrames.projectileFrame(
                 runtime,
                 0,
@@ -159,7 +161,7 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
                         0x00)),
                 events);
         assertEquals(0x04, new EntityEnemyInspectionQueries(runtime.enemies()).swordMoblinAlertingSoundCounter());
-        List<BombExplosionEvent> explosionEvents = runtime.consumeBombExplosionEvents();
+        List<BombExplosionEvent> explosionEvents = runtime.outbox().consumeBombExplosionEvents();
         assertEquals(
                 List.of(BombExplosionEvent.OBJECT_TARGET),
                 explosionEvents.stream().map(BombExplosionEvent::targetSlot).toList());
@@ -185,7 +187,7 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
                 .enemyCombatTables(tables)
                 .build();
 
-        int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        int bombSlot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
         EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(bombSlot, 0x13);
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
@@ -212,23 +214,23 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
                         .secondarySoundId(-1)
                         .swordPokeVfx(null)
                         .build()),
-                runtime.consumePendingEntityEvents());
+                runtime.outbox().consumePendingEntityEvents());
     }
 
     @Test
     void bombExplosionObjectWindowIsInclusiveAndSilentOutsideIt() {
         RoomEntityRuntime runtime = RoomEntityRuntime.builder(snapshot()).build();
-        int bombSlot = runtime.spawnBomb(0x40, 0x50, 0, 0);
+        int bombSlot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
 
         EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(bombSlot, 0x18);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
-        assertTrue(runtime.consumeBombExplosionEvents().isEmpty());
+        assertTrue(runtime.outbox().consumeBombExplosionEvents().isEmpty());
 
         EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(bombSlot, 0x17);
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
         assertEquals(
                 List.of(0x16),
-                runtime.consumeBombExplosionEvents().stream()
+                runtime.outbox().consumeBombExplosionEvents().stream()
                         .map(BombExplosionEvent::countdown)
                         .toList());
 
@@ -236,12 +238,12 @@ final class EntityRuntimeBombs2Test extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 2, 0, 0, () -> 0));
         assertEquals(
                 List.of(0x0E),
-                runtime.consumeBombExplosionEvents().stream()
+                runtime.outbox().consumeBombExplosionEvents().stream()
                         .map(BombExplosionEvent::countdown)
                         .toList());
 
         EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(bombSlot, 0x0E);
         runtime.tick(EntityTestFrames.frame(runtime, 3, 0, 0, () -> 0));
-        assertTrue(runtime.consumeBombExplosionEvents().isEmpty());
+        assertTrue(runtime.outbox().consumeBombExplosionEvents().isEmpty());
     }
 }
