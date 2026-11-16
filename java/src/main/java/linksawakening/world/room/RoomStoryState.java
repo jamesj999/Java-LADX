@@ -42,9 +42,8 @@ final class RoomStoryState implements RoomStory {
 
     @Override
     public void setTailKeyOwned(boolean owned) {
-        RoomRuntime loaded = rooms.currentOrNull();
         rememberTailKeyOwned(owned);
-        if (loaded != null) applyTailKeyOwned(loaded, owned);
+        rooms.update(this, (room, story) -> story.applyTailKeyOwned(room, story.dependencies.followers().hasTailKey));
     }
 
     @Override
@@ -59,45 +58,47 @@ final class RoomStoryState implements RoomStory {
     @Override
     public void setFollowingNpcState(
             FollowingNpcState state, int linkX, int linkY, int linkZ, int entityYOffset, int linkDirection) {
-        RoomRuntime loaded = rooms.currentOrNull();
         rememberFollowingNpcState(state, linkX, linkY, linkZ, entityYOffset, linkDirection);
-        if (loaded != null) synchronizeFollowingNpcEntitiesIfNeeded(loaded);
+        rooms.update(this, (room, story) -> story.synchronizeFollowingNpcEntitiesIfNeeded(room));
     }
 
     @Override
     public void setBowWowState(int state) {
-        RoomRuntime loaded = rooms.currentOrNull();
         rememberBowWowState(state);
-        if (loaded != null) applyBowWowState(loaded, state);
+        rooms.update(this, (room, story) -> story.applyBowWowState(room, story.dependencies.followers().bowWowState));
     }
 
     @Override
     public void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) {
-        RoomRuntime loaded = rooms.currentOrNull();
         rememberChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
-        if (loaded != null) applyChestPlayerLevels(loaded, shieldLevel, swordLevel, powerBraceletLevel);
+        rooms.update(
+                this,
+                (room, story) -> story.applyChestPlayerLevels(
+                        room,
+                        story.dependencies.followers().playerShieldLevel,
+                        story.dependencies.followers().playerSwordLevel,
+                        story.dependencies.followers().playerBraceletLevel));
     }
 
     @Override
     public void setHouseNpcTradeItem(int tradeItem) {
-        RoomRuntime loaded = rooms.currentOrNull();
         rememberHouseNpcTradeItem(tradeItem);
-        if (loaded != null) configureHouseNpcStoryState(loaded);
+        rooms.update(this, (room, story) -> story.configureHouseNpcStoryState(room));
     }
 
     @Override
     public void setEntityDefaultMusicTrack(int trackId) {
-        RoomRuntime loaded = rooms.currentOrNull();
         rememberEntityDefaultMusicTrack(trackId);
-        if (loaded != null) updateWitchEnvironment(loaded);
+        rooms.update(this, (room, story) -> story.updateWitchEnvironment(room));
     }
 
     @Override
     public void initializeNewGameWorldState() {
-        RoomRuntime loaded = rooms.currentOrNull();
         resetWorldStoryState();
-        if (loaded != null) transients.clearTransientRoomState(loaded.contents);
-        else transients.clearTransientRoomState();
+        rooms.updateOr(
+                transients,
+                RoomTransientState::clearTransientRoomState,
+                (room, state) -> state.clearTransientRoomState(room.contents));
     }
 
     private final Dependencies dependencies;

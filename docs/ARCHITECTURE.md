@@ -887,8 +887,14 @@ within the entity boundary.
 `world.room.RoomSession` owns the loaded-room lifecycle through one
 `LoadedRoomHandle`. Its optional `RoomRuntime` is absent before the first room
 load; absence is never represented by a fake room or empty entity runtime.
-Behavior owners resolve the current generation at their operation boundary and
-preserve the no-room policy: cached/persistent writes still run, loaded effects
+The handle provides synchronous empty-drain, query-default and skipped-update
+operations. They borrow one generation, invoke no loaded callback while absent,
+and use noncapturing callbacks with existing inputs/state or primitive arguments
+on frame paths. Fresh owned absent results are constructed only on the absent
+path. These are lifecycle policies, not deferred collaborator suppliers or a
+behavior-dispatch hub. Parameter-heavy commands retain a single explicit borrow
+at their entry boundary rather than allocating captured argument closures or
+adding artificial input holders. Behavior owners preserve the no-room policy: cached/persistent writes still run, loaded effects
 may be skipped, queries keep their original default or required-room exception.
 The [operation matrix](archive/history/room-lifecycle.md#final-no-room-operation-matrix)
 and [null audit](archive/history/room-null-audit.md) record those contracts.

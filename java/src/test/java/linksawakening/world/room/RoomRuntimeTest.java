@@ -5,10 +5,59 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.List;
 import linksawakening.vfx.TransientVfxSystem;
 import org.junit.jupiter.api.Test;
 
 class RoomRuntimeTest {
+    @Test
+    void handleDefaultsDoNotEvaluateLoadedOperations() {
+        var handle = new LoadedRoomHandle();
+        assertEquals(List.of(), handle.drain(room -> {
+            throw new AssertionError("unloaded drain");
+        }));
+        org.junit.jupiter.api.Assertions.assertFalse(handle.test(room -> {
+            throw new AssertionError("unloaded query");
+        }));
+        assertEquals(-1, handle.intOr(-1, room -> {
+            throw new AssertionError("unloaded integer query");
+        }));
+        var absent = new Object();
+        assertSame(absent, handle.readOr(absent, room -> {
+            throw new AssertionError("unloaded value query");
+        }));
+        handle.updateInt(255, (room, value) -> {
+            throw new AssertionError("unloaded update");
+        });
+        handle.updateInts(255, 254, (room, first, second) -> {
+            throw new AssertionError("unloaded pair update");
+        });
+        handle.updateFlagInt(true, 255, (room, flag, value) -> {
+            throw new AssertionError("unloaded item update");
+        });
+    }
+
+    @Test
+    void loadedOperationBorrowsOneGenerationAndDoesNotConstructAnAbsentResult() {
+        var session = RoomRenderAllocationTest.room();
+        var room = RoomSessionInspection.loadedRoom(session);
+        var handle = RoomSessionInspection.component(session, LoadedRoomHandle.class);
+        var result = handle.readOrGet(
+                () -> {
+                    throw new AssertionError("loaded fallback");
+                },
+                loaded -> {
+                    assertSame(room, loaded);
+                    handle.clear();
+                    return loaded;
+                });
+        assertSame(room, result);
+        org.junit.jupiter.api.Assertions.assertFalse(handle.hasRoom());
+        var first = handle.readOrGet(Object::new, loaded -> loaded);
+        var second = handle.readOrGet(Object::new, loaded -> loaded);
+        assertNotSame(first, second);
+    }
+
     @Test
     void aLoadedGenerationOwnsItsRoomRuntimeAndFreshCollisionScratch() {
         var session = RoomRenderAllocationTest.room();

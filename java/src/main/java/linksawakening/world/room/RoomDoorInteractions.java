@@ -202,20 +202,12 @@ final class RoomDoorInteractions implements RoomDoors {
 
     @Override
     public int tickTailCaveKeyholeSequence() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        if (loaded == null) {
-            return 0;
-        }
-        return tickTailCaveKeyholeSequence(loaded.contents);
+        return rooms.intOr(this, 0, (room, doors) -> doors.tickTailCaveKeyholeSequence(room.contents));
     }
 
     @Override
     public boolean tailCaveKeyholeSequenceActive() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        if (loaded == null) {
-            return false;
-        }
-        return tailCaveKeyholeSequenceActive(loaded.contents);
+        return rooms.test(this, (room, doors) -> doors.tailCaveKeyholeSequenceActive(room.contents));
     }
 
     ChestOpenResult tryOpenChest(

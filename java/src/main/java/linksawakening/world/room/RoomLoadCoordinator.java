@@ -82,8 +82,7 @@ final class RoomLoadCoordinator implements RoomRooms {
     private final Dependencies dependencies;
 
     PreviousPalettes previousPalettes() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded == null ? PreviousPalettes.NONE : PreviousPalettes.from(loaded);
+        return rooms.readOr(PreviousPalettes.NONE, PreviousPalettes::from);
     }
 
     @Override
@@ -124,46 +123,39 @@ final class RoomLoadCoordinator implements RoomRooms {
 
     @Override
     public LiftedEntityState liftedEntityState() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded == null
-                ? LiftedEntityState.none()
-                : loaded.entities.inspection().liftedEntityState();
+        return rooms.readOrGet(
+                linksawakening.world.entity.event.LiftedEntityState::none,
+                room -> room.entities.inspection().liftedEntityState());
     }
 
     @Override
     public RoomRenderSnapshot renderSnapshotOrNull() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null ? loaded.renderSnapshot() : null;
+        return rooms.readOr(null, room -> room.renderSnapshot());
     }
 
     @Override
     public RoomRenderSnapshot.View renderViewOrNull() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null ? loaded.renderView : null;
+        return rooms.readOr(null, room -> room.renderView);
     }
 
     @Override
     public String moblinKingTrace() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded == null ? "-1" : loaded.entities.inspection().moblinKingTrace();
+        return rooms.readOr("-1", room -> room.entities.inspection().moblinKingTrace());
     }
 
     @Override
     public String instrumentTrace() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded == null ? "" : loaded.entities.inspection().instrumentTrace();
+        return rooms.readOr("", room -> room.entities.inspection().instrumentTrace());
     }
 
     @Override
     public boolean heartPiecePickupActive() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null && loaded.entities.inspection().heartPiecePickupActive();
+        return rooms.test(room -> room.entities.inspection().heartPiecePickupActive());
     }
 
     @Override
     public int[][] palettesOrNull() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded == null ? null : loaded.room.palettes();
+        return rooms.readOr(null, room -> room.room.palettes());
     }
 
     @Override
@@ -195,14 +187,12 @@ final class RoomLoadCoordinator implements RoomRooms {
 
     @Override
     public boolean hasActiveRoom() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null;
+        return rooms.hasRoom();
     }
 
     @Override
     public ActiveRoom activeRoomOrNull() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null ? loaded.room : null;
+        return rooms.readOr(null, room -> room.room);
     }
 
     boolean musicSelectionIsScroll;

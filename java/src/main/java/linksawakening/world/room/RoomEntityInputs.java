@@ -17,23 +17,22 @@ final class RoomEntityInputs {
     }
 
     void updateLiftStrengthBoost(boolean redTunic, boolean power) {
-        RoomRuntime loaded = rooms.currentOrNull();
-        if (loaded != null) loaded.entities.configuration().setLiftStrengthBoost(redTunic, power);
+        rooms.updateFlags(redTunic, power, (room, redTunicActive, powerActive) -> room.entities
+                .configuration()
+                .setLiftStrengthBoost(redTunicActive, powerActive));
     }
 
     void updateEntityScreenShakeCountdown(int countdown) {
-        RoomRuntime loaded = rooms.currentOrNull();
-        if (loaded != null) loaded.entities.configuration().setScreenShakeCountdown(countdown);
+        rooms.updateInt(
+                countdown, (room, value) -> room.entities.configuration().setScreenShakeCountdown(value));
     }
 
     void updateHeartPiecesCount(int count) {
-        RoomRuntime loaded = rooms.currentOrNull();
-        if (loaded != null) loaded.entities.configuration().setHeartPiecesCount(count);
+        rooms.updateInt(count, (room, value) -> room.entities.configuration().setHeartPiecesCount(value));
     }
 
     void updateFreeMovementMode(boolean enabled) {
-        RoomRuntime loaded = rooms.currentOrNull();
-        if (loaded != null) loaded.entities.configuration().setFreeMovementMode(enabled);
+        rooms.update(enabled, (room, value) -> room.entities.configuration().setFreeMovementMode(value));
     }
 
     void updateEntityActionButtonsHeld(boolean held) {
@@ -41,96 +40,103 @@ final class RoomEntityInputs {
     }
 
     void updateEntityFinalPositionX(int positionX) {
-        RoomRuntime loaded = rooms.currentOrNull();
         setEntityFinalPositionX(positionX);
-        if (loaded != null) applyFinalPositionX(loaded, positionX);
+        rooms.updateInt(
+                positionX, (room, value) -> room.entities.configuration().setLinkFinalPositionX(value));
     }
 
     void updateEntityAttackStepAnimationCountdown(int countdown) {
-        RoomRuntime loaded = rooms.currentOrNull();
         setEntityAttackStepAnimationCountdown(countdown);
-        if (loaded != null) applyAttackStepAnimationCountdown(loaded, countdown);
+        rooms.updateInt(
+                countdown, (room, value) -> room.entities.configuration().setLinkAttackStepAnimationCountdown(value));
     }
 
     void updateEntityBombButtonHeld(boolean buttonHeld) {
-        RoomRuntime loaded = rooms.currentOrNull();
         setEntityBombButtonHeld(buttonHeld);
-        if (loaded != null) applyBombButtonHeld(loaded, buttonHeld);
+        rooms.update(buttonHeld, (room, value) -> room.entities.configuration().setBombButtonHeld(value));
     }
 
     void updateEntityPowerBraceletButtonHeld(boolean buttonHeld) {
-        RoomRuntime loaded = rooms.currentOrNull();
         setEntityPowerBraceletButtonHeld(buttonHeld);
-        if (loaded != null) applyPowerBraceletButtonHeld(loaded, buttonHeld);
+        rooms.update(buttonHeld, (room, value) -> room.entities.configuration().setPowerBraceletButtonHeld(value));
     }
 
     void updateSecretSeashellPegasusCollisionState(
             boolean screenShakeActive, boolean collisionActive, int collisionX, int collisionY) {
-        RoomRuntime loaded = rooms.currentOrNull();
         setSecretSeashellPegasusCollisionState(screenShakeActive, collisionActive, collisionX, collisionY);
-        if (loaded != null)
-            applySecretSeashellPegasusCollisionState(
-                    loaded, screenShakeActive, collisionActive, collisionX, collisionY);
+        rooms.update(
+                this,
+                (room, inputs) -> inputs.applySecretSeashellPegasusCollisionState(
+                        room,
+                        inputs.secretSeashellScreenShakeActive,
+                        inputs.secretSeashellPegasusCollisionActive,
+                        inputs.secretSeashellPegasusCollisionX,
+                        inputs.secretSeashellPegasusCollisionY));
     }
 
     void updateEntityGoldenLeavesCount(int goldenLeavesCount) {
-        RoomRuntime loaded = rooms.currentOrNull();
         setEntityGoldenLeavesCount(goldenLeavesCount);
-        if (loaded != null) applyGoldenLeavesCount(loaded, goldenLeavesCount);
+        rooms.updateInt(
+                goldenLeavesCount,
+                (room, value) -> room.entities.configuration().setGoldenLeavesCount(value));
     }
 
     void updateToadstoolPlayerState(boolean hasToadstool, int magicPowderCount) {
-        RoomRuntime loaded = rooms.currentOrNull();
         setToadstoolPlayerState(hasToadstool, magicPowderCount);
-        if (loaded != null) applyToadstoolPlayerState(loaded, hasToadstool, magicPowderCount);
+        rooms.updateFlagInt(hasToadstool, magicPowderCount, (room, owned, count) -> room.entities
+                .configuration()
+                .setToadstoolPlayerState(owned, count));
     }
 
     void updateEntityInventorySlots(int itemA, int itemB) {
-        RoomRuntime loaded = rooms.currentOrNull();
         setEntityInventorySlots(itemA, itemB);
-        if (loaded != null) applyInventorySlots(loaded, itemA, itemB);
+        rooms.updateInts(itemA, itemB, (room, first, second) -> room.entities
+                .configuration()
+                .setLikeLikeLinkInventory(first, second));
     }
 
     void updateEntityPressedButtonsMask(int pressedButtonsMask) {
-        RoomRuntime loaded = rooms.currentOrNull();
         setEntityPressedButtonsMask(pressedButtonsMask);
-        if (loaded != null) applyPressedButtonsMask(loaded, pressedButtonsMask);
+        rooms.updateInt(
+                pressedButtonsMask,
+                (room, value) -> room.entities.configuration().setPressedButtonsMask(value));
     }
 
     void updateEntityJoypadHeld(boolean joypadHeld) {
-        RoomRuntime loaded = rooms.currentOrNull();
         setEntityJoypadHeld(joypadHeld);
-        if (loaded != null) applyJoypadHeld(loaded, joypadHeld);
+        rooms.update(joypadHeld, (room, value) -> room.entities.configuration().setJoypadHeld(value));
     }
 
     void updateEntityActionButtonsHeld(boolean actionButtonAHeld, boolean actionButtonBHeld) {
-        RoomRuntime loaded = rooms.currentOrNull();
         setEntityActionButtonsHeld(actionButtonAHeld, actionButtonBHeld);
-        if (loaded != null) applyActionButtonsHeld(loaded, actionButtonAHeld, actionButtonBHeld);
+        rooms.update(
+                this,
+                (room, inputs) ->
+                        inputs.applyActionButtonsHeld(room, inputs.actionButtonAHeld, inputs.actionButtonBHeld));
     }
 
     void updateEntityMusicActive(boolean active) {
-        RoomRuntime loaded = rooms.currentOrNull();
         setEntityMusicActive(active);
-        if (loaded != null) applyMusicActive(loaded, active);
+        rooms.update(active, (room, value) -> room.entities.configuration().setActiveMusic(value));
     }
 
     void updateEntityDialogAskSelectionIndex(int selectionIndex) {
-        RoomRuntime loaded = rooms.currentOrNull();
         setEntityDialogAskSelectionIndex(selectionIndex);
-        if (loaded != null) applyDialogAskSelectionIndex(loaded, selectionIndex);
+        rooms.updateInt(
+                selectionIndex, (room, value) -> room.entities.configuration().setDialogAskSelectionIndex(value));
     }
 
     void updateEntityTalkState(boolean inventoryAppearing, int dialogCooldown, int windowY) {
-        RoomRuntime loaded = rooms.currentOrNull();
         setEntityTalkState(inventoryAppearing, dialogCooldown, windowY);
-        if (loaded != null) applyTalkState(loaded, inventoryAppearing, dialogCooldown, windowY);
+        rooms.update(
+                this,
+                (room, inputs) -> inputs.applyTalkState(
+                        room, inputs.entityInventoryAppearing, inputs.entityDialogCooldown, inputs.entityWindowY));
     }
 
     void updateEntityDialogActive(boolean active) {
-        RoomRuntime loaded = rooms.currentOrNull();
         setEntityDialogActive(active);
-        if (loaded != null) applyDialogActive(loaded, active);
+        rooms.update(active, (room, value) -> room.entities.configuration().setDialogActive(value));
     }
 
     int entityGoldenLeavesCount;

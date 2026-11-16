@@ -68,14 +68,12 @@ final class RoomTransitionController implements RoomTransitions, RoomBoundaryOpe
 
     @Override
     public Warp consumeInstrumentTransitionRequest() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null ? consumeInstrumentTransitionRequest(loaded) : null;
+        return rooms.readOr(this, null, (room, transitions) -> transitions.consumeInstrumentTransitionRequest(room));
     }
 
     @Override
     public Warp consumeManboPondTransitionRequest() {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null ? consumeManboPondTransitionRequest(loaded) : null;
+        return rooms.readOr(this, null, (room, transitions) -> transitions.consumeManboPondTransitionRequest(room));
     }
 
     @Override

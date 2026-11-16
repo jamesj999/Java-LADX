@@ -35,8 +35,7 @@ final class RoomProgression implements RoomProgress {
     @Override
     public void clearGameOverPowerCounter() {
         dependencies.entityFrame().clearGameOverPowerCounter();
-        RoomRuntime loaded = rooms.currentOrNull();
-        if (loaded != null) dependencies.loads().configureEnemyDropRuntime(loaded);
+        rooms.update(dependencies, (room, state) -> state.loads().configureEnemyDropRuntime(room));
     }
 
     @Override

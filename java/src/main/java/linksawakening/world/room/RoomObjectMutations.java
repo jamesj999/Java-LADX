@@ -39,20 +39,29 @@ import linksawakening.world.transition.Warp;
 final class RoomObjectMutations implements RoomTerrain {
     @Override
     public boolean tickCrackedFloor(LinkGroundInputs frame, boolean dialogGotItemActive) {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null && tickCrackedFloor(loaded, frame, dialogGotItemActive);
+        return rooms.testFrame(
+                this,
+                frame,
+                dialogGotItemActive,
+                (room, terrain, inputs, gotItem) -> terrain.tickCrackedFloor(room, inputs, gotItem));
     }
 
     @Override
     public boolean tickCrackedFloorOnLanding(LinkGroundInputs frame, boolean dialogGotItemActive) {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null && applyCrackedFloorGroundPhysics(loaded.contents, frame, dialogGotItemActive);
+        return rooms.testFrame(
+                this,
+                frame,
+                dialogGotItemActive,
+                (room, terrain, inputs, gotItem) ->
+                        terrain.applyCrackedFloorGroundPhysics(room.contents, inputs, gotItem));
     }
 
     @Override
     public boolean breakIndoorSwordCrystal(int location) {
-        RoomRuntime loaded = rooms.currentOrNull();
-        return loaded != null && breakIndoorSwordCrystal(loaded, location);
+        return rooms.testInt(
+                this,
+                location,
+                (room, terrain, objectLocation) -> terrain.breakIndoorSwordCrystal(room, objectLocation));
     }
 
     private final LoadedRoomHandle rooms;
