@@ -154,7 +154,7 @@ Identity comparisons below are cache generation or explicit sentinel identity. E
 
 ## Suspected defects (behavior retained)
 
-* `input/InputConfig.java:131`: key-name uppercasing uses the ambient locale. Under Turkish, `right` can fail to match the ASCII key table. Proposed separate behavior fix: `Locale.ROOT` plus a Turkish-locale regression test. This round leaves parsing unchanged with a scoped suppression and `Suspected defect` comment.
+* `input/InputConfig.java:134`: key-name uppercasing uses the ambient locale. Under Turkish, `right` can fail to match the ASCII key table. Proposed separate behavior fix: `Locale.ROOT` plus a Turkish-locale regression test. This round leaves parsing unchanged with a scoped suppression and `Suspected defect` comment.
 
 ## Array-record audit
 

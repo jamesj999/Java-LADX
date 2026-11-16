@@ -24,5 +24,7 @@ check reconstruction status before making fidelity claims.
 [Focused evidence](evidence/) and the dated [intro audio milestone](intro-audio-validation.md)
 record narrow observations, not current implementation requirements.
 [Tools](../tools/README.md) describes local headless capture and comparison commands.
+[Quality-effort index](archive/history/quality-effort-2026-11.md) summarizes the
+composition, lifecycle, allocation and build-hardening reports.
 [Archive](archive/README.md) preserves all historical plans, diaries and dated HTML
 validation reports. Historical success does not establish current game-wide parity.
