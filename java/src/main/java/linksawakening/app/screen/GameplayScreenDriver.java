@@ -1,6 +1,6 @@
 package linksawakening.app.screen;
 
-import linksawakening.ui.FileMenuFrameSnapshot;
+import linksawakening.render.GameFrameState;
 
 /**
  * Gameplay lifecycle operations consumed by the input-queue screen. Implementations are connected when the
@@ -13,5 +13,5 @@ public interface GameplayScreenDriver {
 
     void tick();
 
-    FileMenuFrameSnapshot gameOver();
+    GameFrameState renderState(GameFrameState state);
 }

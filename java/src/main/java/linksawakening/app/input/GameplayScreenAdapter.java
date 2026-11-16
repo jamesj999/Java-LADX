@@ -4,7 +4,7 @@ import java.util.Objects;
 import linksawakening.app.gameplay.GameplayFrame;
 import linksawakening.app.gameplay.recovery.PassOutController;
 import linksawakening.app.screen.GameplayScreenDriver;
-import linksawakening.ui.FileMenuFrameSnapshot;
+import linksawakening.render.GameFrameState;
 
 /** Connects the gameplay screen directly to its retained input, frame and recovery components. */
 public final class GameplayScreenAdapter implements GameplayScreenDriver {
@@ -34,7 +34,7 @@ public final class GameplayScreenAdapter implements GameplayScreenDriver {
     }
 
     @Override
-    public FileMenuFrameSnapshot gameOver() {
-        return passOut.snapshot();
+    public GameFrameState renderState(GameFrameState state) {
+        return passOut.renderState(state);
     }
 }

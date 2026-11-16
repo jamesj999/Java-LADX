@@ -68,10 +68,7 @@ public final class GameplayScreen implements Screen {
 
     @Override
     public GameFrameState renderState(GameFrameState state) {
-        var snapshot = driver.gameOver();
-        return snapshot == null
-                ? state
-                : state.reset().withScreen(RenderScreen.FILE_SAVE).withFileMenuFrame(snapshot);
+        return driver.renderState(state);
     }
 
     @Override

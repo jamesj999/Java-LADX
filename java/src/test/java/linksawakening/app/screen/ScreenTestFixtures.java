@@ -7,9 +7,9 @@ import linksawakening.cutscene.CutsceneManager;
 import linksawakening.dialog.DialogController;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
+import linksawakening.render.GameFrameState;
 import linksawakening.save.SaveRamStore;
 import linksawakening.save.SaveSlotState;
-import linksawakening.ui.FileMenuFrameSnapshot;
 
 /** ROM-free screen instances for boundary/type assertions. Unexpected lifecycle work fails. */
 public final class ScreenTestFixtures {
@@ -40,8 +40,8 @@ public final class ScreenTestFixtures {
             }
 
             @Override
-            public FileMenuFrameSnapshot gameOver() {
-                return null;
+            public GameFrameState renderState(GameFrameState state) {
+                return state;
             }
         });
     }
