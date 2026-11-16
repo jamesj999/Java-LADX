@@ -9,19 +9,23 @@ import linksawakening.gameplay.GameplaySoundEvent;
  */
 interface EntityDialogRouting {
     EntityDialogRouting DIRECT = new EntityDialogRouting() {
+        @Override
         public void music(GameplaySimulation c, int track) {
             c.musicDirector().playDirectMusic(track);
         }
 
+        @Override
         public void dialogs(GameplaySimulation c) {
             c.dialogInteractions().openEntityDialogRequests();
         }
 
+        @Override
         public void manbo(GameplaySimulation c) {
             if (c.roomTransitionCoordinator().handlePendingManboTransition(c.link()))
                 c.gameplaySoundSink().play(GameplaySoundEvent.MANBO_WARP);
         }
 
+        @Override
         public void instrument(GameplaySimulation c) {
             c.roomTransitionCoordinator().handlePendingInstrumentTransition(c.link());
         }

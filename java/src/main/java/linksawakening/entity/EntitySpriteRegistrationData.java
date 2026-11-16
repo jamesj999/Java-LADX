@@ -130,7 +130,7 @@ final class EntitySpriteRegistrationData {
     /** WaterTektiteSpriteVariants at $07:$752D. */
     private static final RomAddress AQUATIC_WATER_TEKTITE_SPRITE_VARIANTS = new RomAddress(0x07, 0x752D);
 
-    private static EntitySpriteRecipe aquaticLookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    private static EntitySpriteRecipe aquaticLookup(int entityType) {
         if (entityType == ENTITY_ZORA) {
             return EntitySpriteRecipe.pair(
                     entityType, AQUATIC_ZORA_SPRITE_VARIANTS.bank(), AQUATIC_ZORA_SPRITE_VARIANTS.address(), 5, 0);
@@ -190,8 +190,7 @@ final class EntitySpriteRegistrationData {
     /** IronMasksMaskSpriteVariants at $03:$5B80. */
     private static final RomAddress ARMOREDENEMY_IRON_MASKS_MASK_SPRITE_VARIANTS = new RomAddress(0x03, 0x5B80);
 
-    private static EntitySpriteRecipe armoredEnemyLookup(
-            int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    private static EntitySpriteRecipe armoredEnemyLookup(int entityType, int mapId) {
         if (entityType == ENTITY_MOBLIN) {
             return EntitySpriteRecipe.pair(
                     entityType,
@@ -280,7 +279,7 @@ final class EntitySpriteRegistrationData {
     /** Data_006_5523 at $06:$5523. */
     private static final RomAddress BOSS_DATA_006_5523 = new RomAddress(0x06, 0x5523);
 
-    private static EntitySpriteRecipe bossLookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    private static EntitySpriteRecipe bossLookup(int entityType, int mapId) {
         if (entityType == 0x5B) return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.SLIME_EYE, entityType);
         if (entityType == ENTITY_MOLDORM) {
             return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.MOLDORM, entityType);
@@ -322,7 +321,7 @@ final class EntitySpriteRegistrationData {
     /** ButterflyOAMAttributes at $06:$6BBD. */
     private static final RomAddress COMPANION_BUTTERFLY_OAMATTRIBUTES = new RomAddress(0x06, 0x6BBD);
 
-    private static EntitySpriteRecipe companionLookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    private static EntitySpriteRecipe companionLookup(int entityType) {
         if (entityType == ENTITY_CUCCO) {
             return EntitySpriteRecipe.pair(
                     entityType,
@@ -432,8 +431,7 @@ final class EntitySpriteRegistrationData {
     /** PairoddProjectileSpriteVariants at $04:$5EF4. */
     private static final RomAddress DUNGEONCREATURE_PAIRODD_PROJECTILE_SPRITE_VARIANTS = new RomAddress(0x04, 0x5EF4);
 
-    private static EntitySpriteRecipe dungeonCreatureLookup(
-            int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    private static EntitySpriteRecipe dungeonCreatureLookup(int entityType, int mapId) {
         if (entityType == ENTITY_KEESE) {
             return EntitySpriteRecipe.pair(
                     entityType,
@@ -554,7 +552,7 @@ final class EntitySpriteRegistrationData {
     /** SpikeTrapSpriteVariants at $06:$74FA. */
     private static final RomAddress HAZARD_SPIKE_TRAP_SPRITE_VARIANTS = new RomAddress(0x06, 0x74FA);
 
-    private static EntitySpriteRecipe hazardLookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    private static EntitySpriteRecipe hazardLookup(int entityType, int mapId) {
         if (entityType == 0xE4) {
             // func_015_4AC9 indexes fourteen three-sprite body variants at
             // Data_015_4A15. Its separate weapon layer is handler-generated.
@@ -620,8 +618,7 @@ final class EntitySpriteRegistrationData {
     /** PeaHatSpriteVariants at $07:$6701. */
     private static final RomAddress OVERWORLDCREATURE_PEA_HAT_SPRITE_VARIANTS = new RomAddress(0x07, 0x6701);
 
-    private static EntitySpriteRecipe overworldCreatureLookup(
-            int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    private static EntitySpriteRecipe overworldCreatureLookup(int entityType) {
         if (entityType == ENTITY_CROW) {
             return EntitySpriteRecipe.pair(
                     entityType,
@@ -730,7 +727,7 @@ final class EntitySpriteRegistrationData {
     /** DroppableSeashellSprite at $03:$5FD1. */
     private static final RomAddress PICKUP_DROPPABLE_SEASHELL_SPRITE = new RomAddress(0x03, 0x5FD1);
 
-    private static EntitySpriteRecipe pickupLookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    private static EntitySpriteRecipe pickupLookup(int entityType, int mapId) {
         if (entityType == ENTITY_INSTRUMENT_OF_THE_SIRENS) {
             return EntitySpriteRecipe.pair(
                     entityType,
@@ -832,7 +829,7 @@ final class EntitySpriteRegistrationData {
     /** Data_036_6FC2 at $36:$6FC2. */
     private static final RomAddress PLANT_DATA_036_6FC2 = new RomAddress(0x36, 0x6FC2);
 
-    private static EntitySpriteRecipe plantLookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    private static EntitySpriteRecipe plantLookup(int entityType, EntityRoomLoader.RoomTable roomTable) {
         if (entityType == ENTITY_GOPONGA_FLOWER) {
             return EntitySpriteRecipe.pair(
                     entityType,
@@ -887,8 +884,7 @@ final class EntitySpriteRegistrationData {
     /** Data_019_44FC at $19:$44FC. */
     private static final RomAddress PLAYERPROJECTILE_DATA_019_44FC = new RomAddress(0x19, 0x44FC);
 
-    private static EntitySpriteRecipe playerProjectileLookup(
-            int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    private static EntitySpriteRecipe playerProjectileLookup(int entityType) {
         if (entityType == ENTITY_ARROW) {
             return EntitySpriteRecipe.pair(
                     entityType,
@@ -1000,7 +996,7 @@ final class EntitySpriteRegistrationData {
     /** GoombaSpriteVariants at $07:$65CE. */
     private static final RomAddress SIDEVIEW_GOOMBA_SPRITE_VARIANTS = new RomAddress(0x07, 0x65CE);
 
-    private static EntitySpriteRecipe sideViewLookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    private static EntitySpriteRecipe sideViewLookup(int entityType) {
         if (entityType == ENTITY_GOOMBA) {
             return EntitySpriteRecipe.pair(
                     entityType,
@@ -1019,8 +1015,7 @@ final class EntitySpriteRegistrationData {
     /** StarSpriteVariants at $07:$7247. */
     private static final RomAddress SLIMEENEMY_STAR_SPRITE_VARIANTS = new RomAddress(0x07, 0x7247);
 
-    private static EntitySpriteRecipe slimeEnemyLookup(
-            int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    private static EntitySpriteRecipe slimeEnemyLookup(int entityType) {
         if (entityType == ENTITY_ZOL) {
             return EntitySpriteRecipe.pair(
                     entityType, SLIMEENEMY_ZOL_SPRITE_VARIANTS.bank(), SLIMEENEMY_ZOL_SPRITE_VARIANTS.address(), 2, 0);
@@ -1061,8 +1056,7 @@ final class EntitySpriteRegistrationData {
     /** GiantGhiniSpriteRectVariants at $04:$5D26. */
     private static final RomAddress UNDEADENEMY_GIANT_GHINI_SPRITE_RECT_VARIANTS = new RomAddress(0x04, 0x5D26);
 
-    private static EntitySpriteRecipe undeadEnemyLookup(
-            int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    private static EntitySpriteRecipe undeadEnemyLookup(int entityType, int mapId) {
         if (entityType == ENTITY_ZOMBIE) {
             return EntitySpriteRecipe.pair(
                     entityType,
@@ -1150,8 +1144,7 @@ final class EntitySpriteRegistrationData {
     /** Data_006_5C51 at $06:$5C51. */
     private static final RomAddress VILLAGENPC_DATA_006_5C51 = new RomAddress(0x06, 0x5C51);
 
-    private static EntitySpriteRecipe villageNpcLookup(
-            int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+    private static EntitySpriteRecipe villageNpcLookup(int entityType, EntityRoomLoader.RoomTable roomTable) {
         if (entityType == ENTITY_WITCH_RAT) {
             return EntitySpriteRecipe.pair(
                     entityType,
@@ -1255,6 +1248,8 @@ final class EntitySpriteRegistrationData {
     private static final EntitySpriteRegistrationData INSTANCE = new EntitySpriteRegistrationData();
     private final EntitySpriteRecipe[][][] recipes;
 
+    // Indexes private tables built from the same enum; ordinals are never persisted or used as ROM bytes.
+    @SuppressWarnings("EnumOrdinal")
     private EntitySpriteRegistrationData() {
         var rooms = EntityRoomLoader.RoomTable.values();
         recipes = new EntitySpriteRecipe[rooms.length][MAPS.length][256];
@@ -1268,6 +1263,8 @@ final class EntitySpriteRegistrationData {
         return INSTANCE;
     }
 
+    // Indexes private tables built from the same enum; ordinals are never persisted or used as ROM bytes.
+    @SuppressWarnings("EnumOrdinal")
     EntitySpriteRecipe lookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         if ((entityType & ~255) != 0)
             throw new IllegalArgumentException("Entity type must be an unsigned byte: " + entityType);
@@ -1293,33 +1290,33 @@ final class EntitySpriteRegistrationData {
         if (result.matched()) return result;
         result = roomObjectLookup(entityType, roomTable, mapId);
         if (result.matched()) return result;
-        result = pickupLookup(entityType, roomTable, mapId);
+        result = pickupLookup(entityType, mapId);
         if (result.matched()) return result;
-        result = bossLookup(entityType, roomTable, mapId);
+        result = bossLookup(entityType, mapId);
         if (result.matched()) return result;
-        result = playerProjectileLookup(entityType, roomTable, mapId);
+        result = playerProjectileLookup(entityType);
         if (result.matched()) return result;
-        result = overworldCreatureLookup(entityType, roomTable, mapId);
+        result = overworldCreatureLookup(entityType);
         if (result.matched()) return result;
-        result = companionLookup(entityType, roomTable, mapId);
+        result = companionLookup(entityType);
         if (result.matched()) return result;
-        result = plantLookup(entityType, roomTable, mapId);
+        result = plantLookup(entityType, roomTable);
         if (result.matched()) return result;
-        result = aquaticLookup(entityType, roomTable, mapId);
+        result = aquaticLookup(entityType);
         if (result.matched()) return result;
-        result = undeadEnemyLookup(entityType, roomTable, mapId);
+        result = undeadEnemyLookup(entityType, mapId);
         if (result.matched()) return result;
-        result = villageNpcLookup(entityType, roomTable, mapId);
+        result = villageNpcLookup(entityType, roomTable);
         if (result.matched()) return result;
-        result = dungeonCreatureLookup(entityType, roomTable, mapId);
+        result = dungeonCreatureLookup(entityType, mapId);
         if (result.matched()) return result;
-        result = sideViewLookup(entityType, roomTable, mapId);
+        result = sideViewLookup(entityType);
         if (result.matched()) return result;
-        result = armoredEnemyLookup(entityType, roomTable, mapId);
+        result = armoredEnemyLookup(entityType, mapId);
         if (result.matched()) return result;
-        result = hazardLookup(entityType, roomTable, mapId);
+        result = hazardLookup(entityType, mapId);
         if (result.matched()) return result;
-        result = slimeEnemyLookup(entityType, roomTable, mapId);
+        result = slimeEnemyLookup(entityType);
         if (result.matched()) return result;
 
         return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.UNSUPPORTED, entityType);

@@ -30,9 +30,9 @@ final class RoomChestInteractions {
             return new ChestOpenResult(false, -1, -1, -1);
         }
         int column = Math.floorDiv(
-                linkPixelX + (dependencies.romData().u8(linksawakening.rom.RomAddress.fromOffset(0x1F4B))), 0x10);
+                linkPixelX + dependencies.romData().u8(linksawakening.rom.RomAddress.fromOffset(0x1F4B)), 0x10);
         int row = Math.floorDiv(
-                linkPixelY + (dependencies.romData().u8(linksawakening.rom.RomAddress.fromOffset(0x1F4F))), 0x10);
+                linkPixelY + dependencies.romData().u8(linksawakening.rom.RomAddress.fromOffset(0x1F4F)), 0x10);
         if (column < 0
                 || column >= RoomConstants.OBJECTS_PER_ROW
                 || row < 0

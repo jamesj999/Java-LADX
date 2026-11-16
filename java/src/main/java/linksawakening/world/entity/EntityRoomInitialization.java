@@ -145,9 +145,9 @@ final class EntityRoomInitialization {
         Arrays.fill(this.liftThrow.storageThrownDirection(), 0xFF);
         for (RoomEntity entity : this.slots) {
             initializeSlotTables(entity, initial);
-            initializeSpecialEntities(entity, initial);
-            initializeRoamingEntities(entity, initial);
-            initializeBossAndFollowerEntities(entity, initial);
+            initializeSpecialEntities(entity);
+            initializeRoamingEntities(entity);
+            initializeBossAndFollowerEntities(entity);
         }
     }
 
@@ -172,7 +172,7 @@ final class EntityRoomInitialization {
         }
     }
 
-    private void initializeSpecialEntities(RoomEntity entity, RoomEntitySnapshot initial) {
+    private void initializeSpecialEntities(RoomEntity entity) {
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_GENIE) {
             GenieMotion.JarState jar =
                     this.motions.get(GenieMotion.class, GenieMotion::new).initialize(entity.slot());
@@ -209,7 +209,7 @@ final class EntityRoomInitialization {
         }
     }
 
-    private void initializeRoamingEntities(RoomEntity entity, RoomEntitySnapshot initial) {
+    private void initializeRoamingEntities(RoomEntity entity) {
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_FISH) {
             this.motions.get(FishMotion.class, FishMotion::new).initialize(entity.slot());
         }
@@ -254,7 +254,7 @@ final class EntityRoomInitialization {
         }
     }
 
-    private void initializeBossAndFollowerEntities(RoomEntity entity, RoomEntitySnapshot initial) {
+    private void initializeBossAndFollowerEntities(RoomEntity entity) {
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_MINI_MOLDORM) {
             this.motions.get(MiniMoldormMotion.class, MiniMoldormMotion::new).initialize(entity);
         }

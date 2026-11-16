@@ -34,7 +34,8 @@ final class EntityRewardState {
     }
 
     int writeSwordPickupState(int slot, int value) {
-        return swordPickupState[slot] = value;
+        swordPickupState[slot] = value;
+        return swordPickupState[slot];
     }
 
     boolean readSwordPickupSequenceActive(int slot) {
@@ -42,7 +43,8 @@ final class EntityRewardState {
     }
 
     boolean writeSwordPickupSequenceActive(int slot, boolean value) {
-        return swordPickupSequenceActive[slot] = value;
+        swordPickupSequenceActive[slot] = value;
+        return swordPickupSequenceActive[slot];
     }
 
     boolean[] storageSwordPickupSequenceActive() {
@@ -54,7 +56,8 @@ final class EntityRewardState {
     }
 
     int writePowerUpPickupCountdown(int slot, int value) {
-        return powerUpPickupCountdown[slot] = value;
+        powerUpPickupCountdown[slot] = value;
+        return powerUpPickupCountdown[slot];
     }
 
     int[] storagePowerUpPickupCountdown() {
@@ -70,7 +73,8 @@ final class EntityRewardState {
     }
 
     boolean writeToadstoolPickupSequenceActive(int slot, boolean value) {
-        return toadstoolPickupSequenceActive[slot] = value;
+        toadstoolPickupSequenceActive[slot] = value;
+        return toadstoolPickupSequenceActive[slot];
     }
 
     boolean readInstrumentPickupSequenceActive(int slot) {
@@ -78,7 +82,8 @@ final class EntityRewardState {
     }
 
     boolean writeInstrumentPickupSequenceActive(int slot, boolean value) {
-        return instrumentPickupSequenceActive[slot] = value;
+        instrumentPickupSequenceActive[slot] = value;
+        return instrumentPickupSequenceActive[slot];
     }
 
     int readInstrumentPickupState(int slot) {
@@ -86,7 +91,8 @@ final class EntityRewardState {
     }
 
     int writeInstrumentPickupState(int slot, int value) {
-        return instrumentPickupState[slot] = value;
+        instrumentPickupState[slot] = value;
+        return instrumentPickupState[slot];
     }
 
     int[] storageInstrumentPickupState() {
@@ -98,7 +104,8 @@ final class EntityRewardState {
     }
 
     int writeInstrumentBackgroundFade(int slot, int value) {
-        return instrumentBackgroundFade[slot] = value;
+        instrumentBackgroundFade[slot] = value;
+        return instrumentBackgroundFade[slot];
     }
 
     int readInstrumentObjectFade(int slot) {
@@ -106,7 +113,8 @@ final class EntityRewardState {
     }
 
     int writeInstrumentObjectFade(int slot, int value) {
-        return instrumentObjectFade[slot] = value;
+        instrumentObjectFade[slot] = value;
+        return instrumentObjectFade[slot];
     }
 
     int readInstrumentHintBatches(int slot) {
@@ -114,7 +122,8 @@ final class EntityRewardState {
     }
 
     int writeInstrumentHintBatches(int slot, int value) {
-        return instrumentHintBatches[slot] = value;
+        instrumentHintBatches[slot] = value;
+        return instrumentHintBatches[slot];
     }
 
     int readInstrumentWarpX(int slot) {
@@ -122,7 +131,8 @@ final class EntityRewardState {
     }
 
     int writeInstrumentWarpX(int slot, int value) {
-        return instrumentWarpX[slot] = value;
+        instrumentWarpX[slot] = value;
+        return instrumentWarpX[slot];
     }
 
     int readInstrumentWarpY(int slot) {
@@ -130,7 +140,8 @@ final class EntityRewardState {
     }
 
     int writeInstrumentWarpY(int slot, int value) {
-        return instrumentWarpY[slot] = value;
+        instrumentWarpY[slot] = value;
+        return instrumentWarpY[slot];
     }
 
     int readInstrumentPaletteCycle(int slot) {
@@ -138,7 +149,8 @@ final class EntityRewardState {
     }
 
     int writeInstrumentPaletteCycle(int slot, int value) {
-        return instrumentPaletteCycle[slot] = value;
+        instrumentPaletteCycle[slot] = value;
+        return instrumentPaletteCycle[slot];
     }
 
     int[] storageInstrumentPaletteCycle() {
@@ -146,7 +158,8 @@ final class EntityRewardState {
     }
 
     int writeInstrumentWarpSprites(int slot, int value) {
-        return instrumentWarpSprites[slot] = value;
+        instrumentWarpSprites[slot] = value;
+        return instrumentWarpSprites[slot];
     }
 
     int[] storageInstrumentWarpSprites() {
@@ -166,7 +179,8 @@ final class EntityRewardState {
     }
 
     int writeInstrumentWarpFadeStep(int slot, int value) {
-        return instrumentWarpFadeStep[slot] = value;
+        instrumentWarpFadeStep[slot] = value;
+        return instrumentWarpFadeStep[slot];
     }
 
     int postInstrumentWarpFadeStep(int slot, int delta) {
@@ -180,7 +194,8 @@ final class EntityRewardState {
     }
 
     int writeInstrumentHintCountdown(int slot, int value) {
-        return instrumentHintCountdown[slot] = value;
+        instrumentHintCountdown[slot] = value;
+        return instrumentHintCountdown[slot];
     }
 
     int preInstrumentHintCountdown(int slot, int delta) {
@@ -192,7 +207,8 @@ final class EntityRewardState {
     }
 
     boolean writeInstrumentHintOpened(int slot, boolean value) {
-        return instrumentHintOpened[slot] = value;
+        instrumentHintOpened[slot] = value;
+        return instrumentHintOpened[slot];
     }
 
     boolean readInstrumentPickupSparklesPending(int slot) {
@@ -200,7 +216,8 @@ final class EntityRewardState {
     }
 
     boolean writeInstrumentPickupSparklesPending(int slot, boolean value) {
-        return instrumentPickupSparklesPending[slot] = value;
+        instrumentPickupSparklesPending[slot] = value;
+        return instrumentPickupSparklesPending[slot];
     }
 
     int readInstrumentParticleKind(int slot) {
@@ -208,7 +225,8 @@ final class EntityRewardState {
     }
 
     int writeInstrumentParticleKind(int slot, int value) {
-        return instrumentParticleKind[slot] = value;
+        instrumentParticleKind[slot] = value;
+        return instrumentParticleKind[slot];
     }
 
     int readInstrumentParticleSpawnCountdown(int slot) {
@@ -216,7 +234,8 @@ final class EntityRewardState {
     }
 
     int writeInstrumentParticleSpawnCountdown(int slot, int value) {
-        return instrumentParticleSpawnCountdown[slot] = value;
+        instrumentParticleSpawnCountdown[slot] = value;
+        return instrumentParticleSpawnCountdown[slot];
     }
 
     int readInstrumentParticleSpawnCounter(int slot) {
@@ -224,7 +243,8 @@ final class EntityRewardState {
     }
 
     int writeInstrumentParticleSpawnCounter(int slot, int value) {
-        return instrumentParticleSpawnCounter[slot] = value;
+        instrumentParticleSpawnCounter[slot] = value;
+        return instrumentParticleSpawnCounter[slot];
     }
 
     int readInstrumentParticleSpeedX(int slot) {
@@ -232,7 +252,8 @@ final class EntityRewardState {
     }
 
     int writeInstrumentParticleSpeedX(int slot, int value) {
-        return instrumentParticleSpeedX[slot] = value;
+        instrumentParticleSpeedX[slot] = value;
+        return instrumentParticleSpeedX[slot];
     }
 
     int readInstrumentParticleSpeedY(int slot) {
@@ -240,11 +261,13 @@ final class EntityRewardState {
     }
 
     int writeInstrumentParticleSpeedY(int slot, int value) {
-        return instrumentParticleSpeedY[slot] = value;
+        instrumentParticleSpeedY[slot] = value;
+        return instrumentParticleSpeedY[slot];
     }
 
     int writeInstrumentParticleXAccumulator(int slot, int value) {
-        return instrumentParticleXAccumulator[slot] = value;
+        instrumentParticleXAccumulator[slot] = value;
+        return instrumentParticleXAccumulator[slot];
     }
 
     int[] storageInstrumentParticleXAccumulator() {
@@ -252,7 +275,8 @@ final class EntityRewardState {
     }
 
     int writeInstrumentParticleYAccumulator(int slot, int value) {
-        return instrumentParticleYAccumulator[slot] = value;
+        instrumentParticleYAccumulator[slot] = value;
+        return instrumentParticleYAccumulator[slot];
     }
 
     int[] storageInstrumentParticleYAccumulator() {

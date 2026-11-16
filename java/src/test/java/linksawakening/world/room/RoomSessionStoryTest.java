@@ -31,7 +31,7 @@ final class RoomSessionStoryTest {
             flags[2 * DungeonItemState.ITEM_FLAG_SIZE + DungeonItemState.STONE_BEAK_INDEX] = (byte) (hasBeak ? 1 : 0);
             session.dungeon().restoreDungeonItemFlags(flags, new byte[5]);
             session.rooms().loadIndoor(2, 0x54);
-            RoomEntity statue = session.rooms().activeRoom().entities().loadedEntities().stream()
+            RoomEntity statue = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                     .filter(entity -> entity.type() == 0x42)
                     .findFirst()
                     .orElseThrow();
@@ -41,7 +41,7 @@ final class RoomSessionStoryTest {
             assertEquals(
                     List.of(new DialogRequest(hasBeak ? 2 : 1, hasBeak ? 0x82 : 0x10)),
                     session.entityState().consumeEntityDialogRequests());
-            RoomEntity updated = session.rooms().activeRoom().entities().loadedEntities().stream()
+            RoomEntity updated = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                     .filter(entity -> entity.type() == 0x42)
                     .findFirst()
                     .orElseThrow();
@@ -115,7 +115,7 @@ final class RoomSessionStoryTest {
         assertEquals(0x20, RoomDebugFixture.of(session).overworldRoomStatusForTest(0x80) & 0x20);
 
         boolean restoredMusic = false;
-        while (session.rooms().activeRoom().entities().loadedEntities().stream()
+        while (session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                         .anyMatch(entity -> entity.type() == 0x41)
                 && frame < 0x500) {
             tickInteractive(session, frame++, 0x50, 0x50);
@@ -124,7 +124,7 @@ final class RoomSessionStoryTest {
         assertTrue(restoredMusic);
 
         session.rooms().loadInitialOverworld(0x80);
-        assertFalse(session.rooms().activeRoom().entities().loadedEntities().stream()
+        assertFalse(session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x41));
     }
 
@@ -137,7 +137,7 @@ final class RoomSessionStoryTest {
 
         int frame = 0;
         boolean restoredPowerMusic = false;
-        while (session.rooms().activeRoom().entities().loadedEntities().stream()
+        while (session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                         .anyMatch(entity -> entity.type() == 0x41)
                 && frame < 0x500) {
             tickInteractive(session, frame++, 0x50, 0x50);
@@ -230,7 +230,7 @@ final class RoomSessionStoryTest {
     void richardStartsGoldenLeafQuestAndPersistsHisHouseEvent() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x10, 0xC7);
-        RoomEntity richard = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity richard = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x95)
                 .findFirst()
                 .orElseThrow();
@@ -256,7 +256,7 @@ final class RoomSessionStoryTest {
     void richardInteractionRecomputesDirectionInsteadOfUsingHisPeriodicFacing() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x10, 0xC7);
-        RoomEntity richard = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity richard = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x95)
                 .findFirst()
                 .orElseThrow();
@@ -275,7 +275,7 @@ final class RoomSessionStoryTest {
     void richardUsesTheDialogChoiceIndexForHisQuestAnswer() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x10, 0xC7);
-        RoomEntity richard = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity richard = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x95)
                 .findFirst()
                 .orElseThrow();
@@ -306,7 +306,7 @@ final class RoomSessionStoryTest {
             session.rooms().loadInitialOverworld(0x00);
             session.rooms().loadIndoor(0x05, 0xB2);
             session.entities().tickEntities(0, 0x80, 0x70);
-            var statue = session.rooms().activeRoom().entities().loadedEntities().stream()
+            var statue = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                     .filter(e -> e.type() == 0x9D)
                     .findFirst()
                     .orElseThrow();

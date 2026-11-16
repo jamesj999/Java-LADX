@@ -27,8 +27,8 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 final class RoomSessionTestSupport {
     static int[] torchTiles(RoomSession session, int location) {
         int index = (location >>> 4) * 2 * RoomConstants.ROOM_TILE_WIDTH + (location & 0x0F) * 2;
-        int[] tiles = session.rooms().activeRoom().tileIds();
-        int[] attributes = session.rooms().activeRoom().tileAttrs();
+        int[] tiles = session.rooms().activeRoomOrNull().tileIds();
+        int[] attributes = session.rooms().activeRoomOrNull().tileAttrs();
         int lower = index + RoomConstants.ROOM_TILE_WIDTH;
         return new int[] {
             tiles[index],
@@ -97,7 +97,7 @@ final class RoomSessionTestSupport {
     }
 
     static void fillActiveObjects(RoomSession session, int objectId) {
-        int[] roomObjects = session.rooms().activeRoom().roomObjectsArea();
+        int[] roomObjects = session.rooms().activeRoomOrNull().roomObjectsArea();
         for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
             for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
                 roomObjects[RoomConstants.ROOM_OBJECTS_BASE + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column] =

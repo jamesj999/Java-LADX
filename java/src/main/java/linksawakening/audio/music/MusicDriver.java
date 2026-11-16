@@ -154,8 +154,8 @@ public final class MusicDriver {
                 state.programCounter++;
             } else if (MusicOpcode.isNoteLength(opcode)) {
                 state.selectedLength = readSpeed((opcode & 0x0F));
-                voice.articulationTick[state.channel - 1] =
-                        voice.articulationTickFor(state.selectedLength, voice.softwareEnvelope[state.channel - 1]);
+                voice.articulationTick[state.channel - 1] = MusicVoiceEmitter.articulationTickFor(
+                        state.selectedLength, voice.softwareEnvelope[state.channel - 1]);
             } else if (state.channel == 4 && (MusicOpcode.isPitchedNote(opcode) || MusicOpcode.isNoiseNote(opcode))) {
                 voice.writeNoiseNote(state, opcode);
                 consumeTime(state);
@@ -295,6 +295,6 @@ public final class MusicDriver {
     }
 
     static String hex(int value) {
-        return "0x" + Integer.toHexString(value).toUpperCase();
+        return "0x" + Integer.toHexString(value).toUpperCase(java.util.Locale.ROOT);
     }
 }

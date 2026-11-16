@@ -412,8 +412,8 @@ public final class StalfosEvasiveMotion {
                 owner.speedZ[slot] = 0x15;
                 StalfosEvasiveMotion.Vector vector = StalfosEvasiveMotion.vectorTowardsLink(
                         entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x12);
-                owner.speedX[slot] = (-vector.x()) & 0xFF;
-                owner.speedY[slot] = (-vector.y()) & 0xFF;
+                owner.speedX[slot] = -vector.x() & 0xFF;
+                owner.speedY[slot] = -vector.y() & 0xFF;
 
                 completedResult = new StalfosEvasiveMotion.Update(
                         StalfosEvasiveMotion.withPositionAndVariant(entity, x, y, entity.z(), 0x02),

@@ -53,7 +53,7 @@ public final class UrchinMotion {
         int linkEntityY = inputs.linkEntityY();
         int linkDirection = inputs.linkDirection();
         boolean usingShield = inputs.usingShield();
-        boolean swordCollisionActive = inputs.swordCollisionActive();
+
         boolean linkInteractive = inputs.linkInteractive();
         RoomEntityBackgroundInteraction backgroundInteraction = inputs.backgroundInteraction();
         checkType(entity);

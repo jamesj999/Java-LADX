@@ -27,7 +27,7 @@ final class GameOverPresentation {
 
     GameOverPresentation(GameplaySimulation context) {
         menu = new GameOverMenu(context.romData());
-        var room = context.roomSession().rooms().renderSnapshot();
+        var room = context.roomSession().rooms().renderSnapshotOrNull();
         background = room.palettes();
         objects = room.entities().spriteSelection().objectPalettes();
         // LoadTileset0F ($01:6CE3): only the 20 visible columns are written.

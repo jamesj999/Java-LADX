@@ -14,7 +14,8 @@ public final class BooBuddyMotion {
     }
 
     public int writeBooBuddyTriggerCount(int value) {
-        return booBuddyTriggerCount = value;
+        booBuddyTriggerCount = value;
+        return booBuddyTriggerCount;
     }
 
     public static final int ENTITY_TYPE = 0x50;
@@ -251,7 +252,7 @@ public final class BooBuddyMotion {
     }
 
     static int negate(int value) {
-        return (-signedByte(value)) & 0xFF;
+        return -signedByte(value) & 0xFF;
     }
 
     private static int signedByte(int value) {

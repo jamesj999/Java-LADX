@@ -38,20 +38,16 @@ public final class FileSaveScreen implements Screen {
 
     @Override
     public void tick() {
-        if (dependencies.screens().fileSaveController == null) {
-            throw new IllegalStateException("File save controller is not initialized");
-        }
         FileSaveAction action =
-                dependencies.screens().fileSaveController.tick(dependencies.inputState(), dependencies.inputConfig());
+                dependencies.screens().fileSave.tick(dependencies.inputState(), dependencies.inputConfig());
         if (action.type() == FileSaveAction.Type.RETURN_TO_GAME) {
-            dependencies.screens().fileSaveController = null;
+            dependencies.screens().fileSave.clear();
             dependencies.navigator().show(ScreenKind.GAMEPLAY);
         } else if (action.type() == FileSaveAction.Type.SAVE_AND_QUIT) {
             dependencies.actions().saveCurrentPlayerState();
             dependencies.navigator().startFileSelection();
         }
         dependencies.completeInput().complete();
-        return;
     }
 
     @Override
@@ -64,7 +60,7 @@ public final class FileSaveScreen implements Screen {
 
     @Override
     public GameFrameState renderState(GameFrameState state) {
-        var controller = dependencies.screens().fileSaveController;
-        return state.withFileMenuFrame(controller == null ? null : controller.snapshot());
+        var frame = dependencies.screens().fileSave.snapshotOrNull();
+        return state.withFileMenuFrame(frame);
     }
 }

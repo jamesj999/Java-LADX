@@ -12,7 +12,7 @@ public record FileSaveAction(Type type) {
     }
 
     public FileSaveAction {
-        type = Objects.requireNonNull(type, "type");
+        Objects.requireNonNull(type, "type");
     }
 
     public static FileSaveAction none() {

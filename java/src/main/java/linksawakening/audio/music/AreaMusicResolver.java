@@ -83,7 +83,7 @@ public final class AreaMusicResolver {
         }
         if (map >= HOUSE_MUSIC_TRACKS_LENGTH) {
             throw new IllegalArgumentException("Indoor map id out of music table range: 0x"
-                    + Integer.toHexString(map).toUpperCase());
+                    + Integer.toHexString(map).toUpperCase(java.util.Locale.ROOT));
         }
         return map;
     }
@@ -92,8 +92,8 @@ public final class AreaMusicResolver {
         int offset = new RomAddress(SELECT_MUSIC_BANK, address).offset();
         if (offset < 0 || offset + length > romData.size()) {
             throw new IllegalArgumentException("Music selection table out of ROM range: bank 0x"
-                    + Integer.toHexString(SELECT_MUSIC_BANK).toUpperCase()
-                    + " address 0x" + Integer.toHexString(address).toUpperCase());
+                    + Integer.toHexString(SELECT_MUSIC_BANK).toUpperCase(java.util.Locale.ROOT)
+                    + " address 0x" + Integer.toHexString(address).toUpperCase(java.util.Locale.ROOT));
         }
         return romData.u8Table(RomAddress.fromOffset(offset), length);
     }

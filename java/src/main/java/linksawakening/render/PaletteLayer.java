@@ -7,15 +7,22 @@ import linksawakening.ui.InventoryTransition;
 /** Owns synchronous submission callbacks and nested pass-out/inventory palette scopes.  Hardware analogue: BG/window and OBJ palette scopes. */
 final class PaletteLayer implements HardwareRenderLayer {
     private HardwareRenderLayer child;
-    private InventoryTransition inventory;
+    private final InventoryTransition worldPalette = new InventoryTransition();
+    private InventoryTransition inventory = worldPalette;
+    private boolean inventoryPalette;
     private int passOutFrames;
     private boolean passOut;
     private String source;
     private HardwareFrame frame;
     private GPU gpu;
     private final IntUnaryOperator passTransform = this::passColor;
-    private final IntUnaryOperator background = rgb -> inventory.color(rgb, false),
-            object = rgb -> inventory.color(rgb, true);
+    // Retain one callable instance: its identity or allocation-free reuse is part of this retained path.
+    @SuppressWarnings("UnnecessaryLambda")
+    private final IntUnaryOperator background = rgb -> inventory.color(rgb, false);
+    // Retain one callable instance: its identity or allocation-free reuse is part of this retained path.
+    @SuppressWarnings("UnnecessaryLambda")
+    private final IntUnaryOperator object = rgb -> inventory.color(rgb, true);
+
     private final Runnable draw = this::drawChild, inner = this::drawInner, sourced = this::drawSourced;
 
     void configure(RenderLayer layer, GameFrameState state) {
@@ -25,11 +32,10 @@ final class PaletteLayer implements HardwareRenderLayer {
                 && state.link().status().isPassingOut()
                 && !(layer instanceof LinkRenderLayer);
         passOutFrames = passOut ? state.link().status().passOutPaletteFrames() : 0;
-        inventory = state.screen() == RenderScreen.OVERWORLD
-                        && state.overworld.hasInventoryController()
-                        && state.inventoryController().transition().blocksWorld()
-                ? state.inventoryController().transition()
-                : null;
+        inventoryPalette = state.screen() == RenderScreen.OVERWORLD
+                && state.overworld.hasInventoryController()
+                && state.inventoryController().transition().blocksWorld();
+        inventory = inventoryPalette ? state.inventoryController().transition() : worldPalette;
         source = passOut ? "PassOutPaletteRenderLayer" : layer.getClass().getSimpleName();
     }
 
@@ -37,7 +43,7 @@ final class PaletteLayer implements HardwareRenderLayer {
     public void submit(HardwareFrame frame, GPU gpu) {
         this.frame = frame;
         this.gpu = gpu;
-        if (inventory != null) frame.withPaletteTransforms(background, object, sourced);
+        if (inventoryPalette) frame.withPaletteTransforms(background, object, sourced);
         else drawSourced();
     }
 

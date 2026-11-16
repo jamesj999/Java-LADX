@@ -17,53 +17,65 @@ class EntityFrameOrderTest {
         final List<EntityProjectileEvent> events = List.of(EntityProjectileEvent.hookshotPull(1, 16, 0));
         final Sword.CollisionBox box = new Sword.CollisionBox(true, 1, 2, 3, 4);
 
+        @Override
         public List<EntityProjectileEvent> tickEntities(GameplaySimulation c, Sword.CollisionBox b) {
             assertSame(box, b);
             calls.add("tick");
             return events;
         }
 
+        @Override
         public void positions(GameplaySimulation c) {
             calls.add("positions");
         }
 
+        @Override
         public void motion(GameplaySimulation c) {
             calls.add("motion");
         }
 
+        @Override
         public void attacks(GameplaySimulation c) {
             calls.add("attacks");
         }
 
+        @Override
         public void sword(GameplaySimulation c) {
             calls.add("sword");
         }
 
+        @Override
         public void chests(GameplaySimulation c) {
             calls.add("chests");
         }
 
+        @Override
         public void progress(GameplaySimulation c) {
             calls.add("progress");
         }
 
+        @Override
         public void witch(GameplaySimulation c) {
             calls.add("witch");
         }
 
+        @Override
         public void dialogs(GameplaySimulation c) {
             calls.add("dialogs");
         }
 
+        @Override
         public void finalEffects(GameplaySimulation c) {
             calls.add("finalEffects");
         }
 
+        @Override
         public void combat(GameplaySimulation c, List<EntityProjectileEvent> events) {
             assertSame(this.events, events);
             calls.add("combat");
         }
 
+        @Override
         public void projectiles(GameplaySimulation c, List<EntityProjectileEvent> events) {
             assertSame(this.events, events);
             calls.add("projectiles");

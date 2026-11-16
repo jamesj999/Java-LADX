@@ -15,7 +15,8 @@ public final class MoblinSwordMotion {
     }
 
     public int writeSwordMoblinAlertingSoundCounter(int value) {
-        return swordMoblinAlertingSoundCounter = value;
+        swordMoblinAlertingSoundCounter = value;
+        return swordMoblinAlertingSoundCounter;
     }
 
     public int postSwordMoblinAlertingSoundCounter(int delta) {

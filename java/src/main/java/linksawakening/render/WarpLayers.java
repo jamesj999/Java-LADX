@@ -22,6 +22,8 @@ final class WarpLayers {
     private final IntUnaryOperator transform = this::fadeColor;
     private final Runnable draw = this::drawSprites, drawChild = this::drawChild;
 
+    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+    @SuppressWarnings("ReferenceEquality")
     void configure(GameFrameState state) {
         this.state = state;
         var room = state.roomInputs;

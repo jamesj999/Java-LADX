@@ -135,7 +135,7 @@ public final class RoomTransitionCoordinator {
         int previousY = link.position().pixelY();
         RoomBoundaryDecision boundary = boundaryController.decide(dependencies
                 .roomCollisionQueries()
-                .boundaryState(loaded, previousX, previousY, link.airborne().isAirborne()));
+                .boundaryView(loaded, previousX, previousY, link.airborne().isAirborne()));
         if (boundary.type() == RoomBoundaryDecision.Type.OVERWORLD_SCROLL) {
             link.position().setRoomScrollEntryPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
             if (boundary.direction() == ScrollController.UP
@@ -241,7 +241,7 @@ public final class RoomTransitionCoordinator {
         }
         RoomBoundaryDecision boundary = boundaryController.decide(dependencies
                 .roomCollisionQueries()
-                .boundaryState(
+                .boundaryView(
                         loaded,
                         link.position().pixelX(),
                         link.position().pixelY(),

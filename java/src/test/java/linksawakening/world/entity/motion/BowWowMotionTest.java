@@ -309,7 +309,7 @@ final class BowWowMotionTest {
                 entity, 0, 0x60, 0x70, 0x00, random, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         entity = motion.advance(
                 entity, 1, 0x60, 0x70, 0x08, random, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
-        entity = motion.advance(
+        motion.advance(
                 entity, 2, 0x60, 0x70, 0x08, random, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
 
         assertEquals(0x60, motion.targetX(0));
@@ -335,7 +335,7 @@ final class BowWowMotionTest {
                 entity, 0, 0x60, 0x70, 0x00, random, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         entity = motion.advance(
                 entity, 1, 0x60, 0x70, 0x00, random, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
-        entity = motion.advance(
+        motion.advance(
                 entity, 2, 0x60, 0x70, 0x00, random, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         int beforeMovementX = entity.x();
         int beforeMovementY = entity.y();

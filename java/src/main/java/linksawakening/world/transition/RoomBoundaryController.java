@@ -12,14 +12,14 @@ public final class RoomBoundaryController {
     private static final int SIDE_VIEW_VERTICAL_TOP = -0x04;
     private static final int SIDE_VIEW_VERTICAL_BOTTOM = 0x74;
 
-    public RoomBoundaryDecision decide(RoomBoundaryState state) {
+    public RoomBoundaryDecision decide(RoomBoundaryView state) {
         if (state.mapCategory() == Warp.CATEGORY_OVERWORLD) {
             return decideOverworld(state);
         }
         return decideIndoor(state);
     }
 
-    private static RoomBoundaryDecision decideOverworld(RoomBoundaryState state) {
+    private static RoomBoundaryDecision decideOverworld(RoomBoundaryView state) {
         int x = state.linkX();
         int y = state.linkY();
         int roomCol = state.roomId() % OVERWORLD_COLUMNS;
@@ -64,7 +64,7 @@ public final class RoomBoundaryController {
         return RoomBoundaryDecision.none();
     }
 
-    private static RoomBoundaryDecision decideIndoor(RoomBoundaryState state) {
+    private static RoomBoundaryDecision decideIndoor(RoomBoundaryView state) {
         int x = state.linkX();
         int y = state.linkY();
         boolean offBottom = y + Link.SPRITE_SIZE > ROOM_PIXEL_HEIGHT;
@@ -139,7 +139,7 @@ public final class RoomBoundaryController {
         return RoomBoundaryDecision.none();
     }
 
-    private static RoomBoundaryDecision sideViewVerticalDecision(RoomBoundaryState state, boolean hasWarps) {
+    private static RoomBoundaryDecision sideViewVerticalDecision(RoomBoundaryView state, boolean hasWarps) {
         int roomId = state.roomId() & 0xFF;
         if (roomId == 0xA3 || roomId == 0xC0 || roomId == 0xC1) {
             // The source starts ApplyMapFadeOutTransitionWithNoise here.

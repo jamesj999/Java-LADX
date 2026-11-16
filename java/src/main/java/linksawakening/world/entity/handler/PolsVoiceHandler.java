@@ -3,7 +3,6 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_POLS_VOICE;
 import static linksawakening.world.entity.EntitySnapshots.withStatus;
 
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
@@ -15,7 +14,7 @@ import linksawakening.world.entity.motion.PolsVoiceMotion;
 /** ROM handler stages for PolsVoice. */
 final class PolsVoiceHandler {
     static void install(EntityHandlerRegistry registry) {
-        registry.registerInitializer(ENTITY_POLS_VOICE, (entity, random) -> initialize(registry, entity, random));
+        registry.registerInitializer(ENTITY_POLS_VOICE, (entity, random) -> initialize(registry, entity));
         registry.registerTick(
                 ENTITY_POLS_VOICE,
                 EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
@@ -81,7 +80,7 @@ final class PolsVoiceHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity) {
         registry.motion(PolsVoiceMotion.class, PolsVoiceMotion::new).initialize(entity.slot());
     }
 }

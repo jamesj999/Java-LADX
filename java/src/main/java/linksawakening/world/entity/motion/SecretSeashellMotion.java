@@ -21,7 +21,8 @@ public final class SecretSeashellMotion {
     }
 
     public boolean writeSecretSeashellScreenShakeActive(boolean value) {
-        return secretSeashellScreenShakeActive = value;
+        secretSeashellScreenShakeActive = value;
+        return secretSeashellScreenShakeActive;
     }
 
     private boolean secretSeashellPegasusCollisionActive;
@@ -31,7 +32,8 @@ public final class SecretSeashellMotion {
     }
 
     public boolean writeSecretSeashellPegasusCollisionActive(boolean value) {
-        return secretSeashellPegasusCollisionActive = value;
+        secretSeashellPegasusCollisionActive = value;
+        return secretSeashellPegasusCollisionActive;
     }
 
     private boolean secretSeashellPegasusCollisionCoordinatesKnown;
@@ -41,7 +43,8 @@ public final class SecretSeashellMotion {
     }
 
     public boolean writeSecretSeashellPegasusCollisionCoordinatesKnown(boolean value) {
-        return secretSeashellPegasusCollisionCoordinatesKnown = value;
+        secretSeashellPegasusCollisionCoordinatesKnown = value;
+        return secretSeashellPegasusCollisionCoordinatesKnown;
     }
 
     private int secretSeashellPegasusCollisionX;
@@ -51,7 +54,8 @@ public final class SecretSeashellMotion {
     }
 
     public int writeSecretSeashellPegasusCollisionX(int value) {
-        return secretSeashellPegasusCollisionX = value;
+        secretSeashellPegasusCollisionX = value;
+        return secretSeashellPegasusCollisionX;
     }
 
     private int secretSeashellPegasusCollisionY;
@@ -61,7 +65,8 @@ public final class SecretSeashellMotion {
     }
 
     public int writeSecretSeashellPegasusCollisionY(int value) {
-        return secretSeashellPegasusCollisionY = value;
+        secretSeashellPegasusCollisionY = value;
+        return secretSeashellPegasusCollisionY;
     }
 
     static final int ENTITY_TYPE = 0x3D;
@@ -220,8 +225,8 @@ public final class SecretSeashellMotion {
         privateCountdown1[slot] = REVEAL_COUNTDOWN;
         slowTransitionCountdown[slot] = REVEAL_SLOW_COUNTDOWN;
         Vector towardLink = vectorTowardsLink(entityX, entityY, linkEntityX, linkEntityY, REVEAL_VECTOR_LENGTH);
-        speedX[slot] = (-towardLink.x()) & 0xFF;
-        speedY[slot] = (-towardLink.y()) & 0xFF;
+        speedX[slot] = -towardLink.x() & 0xFF;
+        speedY[slot] = -towardLink.y() & 0xFF;
         speedZ[slot] = REVEAL_SPEED_Z;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;

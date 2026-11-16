@@ -102,7 +102,7 @@ public final class MimicMotion {
             return new Update(withPositionAndVariant(entity, x, y, entity.spriteVariant()));
         }
 
-        int index = ((~(verticalButtons >>> 2)) & 0x03);
+        int index = (~(verticalButtons >>> 2) & 0x03);
         speedY[slot] = speedForIndex(index);
         speedX[slot] = 0;
         int variant = VERTICAL_VARIANT_BASE_BY_INDEX[index] + frameBit;

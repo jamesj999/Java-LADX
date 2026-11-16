@@ -30,7 +30,7 @@ public final class LinkTunicPalette {
         return new LinkTunicPalette(new EntitySpriteCatalog(romData).loadObjectPalettes());
     }
 
-    /** Returns the exact four RGB colors selected by {@code wTunicType}. */
+    /** Returns the exact four RGB colors selected by the tunic type ROM register. */
     public int[] forTunic(int tunicType) {
         return tunicView(tunicType).clone();
     }

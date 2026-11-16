@@ -19,10 +19,9 @@ import linksawakening.world.entity.motion.WingedOctorokMotion;
 /** Test-side queries over the production inspector's exact service bindings. */
 final class EntityRoomInspectionQueries {
     private final EntityRoomInspection runtime;
-    private final EntityRoomInspection source;
 
     EntityRoomInspectionQueries(EntityRoomInspection source) {
-        this.source = source;
+
         this.runtime = source;
     }
 

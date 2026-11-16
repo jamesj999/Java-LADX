@@ -9,9 +9,10 @@ import linksawakening.vfx.TransientVfxType;
 final class VfxPoseCache {
     private final List<CutLeavesEffectRenderer.SpritePlacement>[][] poses;
 
-    @SuppressWarnings("unchecked")
+    // Indexes private tables built from the same enum; ordinals are never persisted or used as ROM bytes.
+    @SuppressWarnings({"EnumOrdinal", "unchecked"})
     VfxPoseCache(CutLeavesEffectRenderer renderer) {
-        poses = new List[TransientVfxType.values().length][];
+        poses = (List<CutLeavesEffectRenderer.SpritePlacement>[][]) new List<?>[TransientVfxType.values().length][];
         for (var type : TransientVfxType.values()) {
             int size =
                     switch (type) {
@@ -21,7 +22,7 @@ final class VfxPoseCache {
                         case SWORD_BEAM -> 16;
                         default -> 4;
                     };
-            poses[type.ordinal()] = new List[size];
+            poses[type.ordinal()] = (List<CutLeavesEffectRenderer.SpritePlacement>[]) new List<?>[size];
             for (int i = 0; i < size; i++)
                 poses[type.ordinal()][i] = switch (type) {
                     case BUSH_LEAVES -> renderer.renderBushLeaves(0, 0, i * 4);
@@ -36,7 +37,9 @@ final class VfxPoseCache {
         }
     }
 
-    List<CutLeavesEffectRenderer.SpritePlacement> pose(TransientVfxSystem.Slot slot, int frame) {
+    // Indexes private tables built from the same enum; ordinals are never persisted or used as ROM bytes.
+    @SuppressWarnings("EnumOrdinal")
+    List<CutLeavesEffectRenderer.SpritePlacement> pose(TransientVfxSystem.SlotView slot, int frame) {
         int countdown = slot.countdown();
         int index =
                 switch (slot.type()) {

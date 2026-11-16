@@ -55,20 +55,21 @@ public final class SaveCoordinator implements SaveActions {
     }
 
     private void enterGameplay() {
-        state.screens().fileMenuController = null;
-        state.screens().fileSaveController = null;
+        state.screens().fileMenu.clear();
+        state.screens().fileSave.clear();
         navigator.show(ScreenKind.GAMEPLAY);
     }
 
     private void enterFileSave() {
         navigator.show(ScreenKind.FILE_SAVE);
-        state.screens().fileMenuController = null;
+        state.screens().fileMenu.clear();
     }
 
     private void setFileSaveController(FileSaveController controller) {
-        state.screens().fileSaveController = controller;
+        state.screens().fileSave.open(controller);
     }
 
+    @Override
     public void startNewGame() {
         enterGameplay();
 
@@ -102,6 +103,7 @@ public final class SaveCoordinator implements SaveActions {
         storyActions.story().updateNewGameMarinPresentation();
     }
 
+    @Override
     public void startSavedGame(SaveSlotState saved) {
         enterGameplay();
         state.opening().clear();
@@ -163,6 +165,7 @@ public final class SaveCoordinator implements SaveActions {
     }
 
     /** $01:42D9-4335: options 0/1 save; option 2 skips the SRAM reload via wDBD1. */
+    @Override
     public void finishGameOver(int option) {
         if (player.playerState().vitals().health() == 0) {
             player.playerState()
@@ -207,6 +210,7 @@ public final class SaveCoordinator implements SaveActions {
         input.inputState().tickEdges();
     }
 
+    @Override
     public void persistFileMenuMutation(Runnable mutation) {
         mutation.run();
         try {
@@ -217,6 +221,7 @@ public final class SaveCoordinator implements SaveActions {
         navigator.startFileSelection();
     }
 
+    @Override
     public void startFileSave() {
         enterFileSave();
         rom.gpu().loadSaveMenuTiles(rom.romData());
@@ -224,6 +229,7 @@ public final class SaveCoordinator implements SaveActions {
         input.inputState().tickEdges();
     }
 
+    @Override
     public void saveCurrentPlayerState() {
         if (state.screens().currentSaveSlot < 0) {
             return;
@@ -275,7 +281,7 @@ public final class SaveCoordinator implements SaveActions {
                     world.roomSession().progress().respawnIndoorRoom());
             return;
         }
-        ActiveRoom room = world.roomSession().rooms().activeRoom();
+        ActiveRoom room = world.roomSession().rooms().activeRoomOrNull();
         boolean isIndoor = room.mapCategory() != Warp.CATEGORY_OVERWORLD;
         int indoorRoom = world.roomSession().rooms().indoorRoomPositionForSave();
         if (indoorRoom < 0) {

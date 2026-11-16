@@ -8,8 +8,6 @@ import linksawakening.state.PowerUp;
 import linksawakening.state.Tunic;
 import linksawakening.world.entity.EnemyAttackContext;
 import linksawakening.world.entity.event.EntityCombatEvent;
-import linksawakening.world.room.EntityCombatInputs;
-import linksawakening.world.transition.Warp;
 
 /** Applies sword, shield and contact combat before entity ticks. Retained for one simulation. */
 final class CombatPhase {
@@ -43,7 +41,7 @@ final class CombatPhase {
                             context.link().animation().romEntityZ());
             var combatEvents = context.roomSession()
                     .entities()
-                    .resolveEntityCombat(combatInputs(context, swordBoxForEntityTick, attackContext));
+                    .resolveEntityCombat(context.frameInputs().combat(context, swordBoxForEntityTick, attackContext));
             EnemyCombatEventConsumer.consume(combatEvents, context.gameplaySoundSink(), context.transientVfxSystem());
             for (int eventIndex = 0; eventIndex < combatEvents.size(); eventIndex++) {
                 EntityCombatEvent event = combatEvents.get(eventIndex);
@@ -55,31 +53,10 @@ final class CombatPhase {
         return swordBoxForEntityTick;
     }
 
-    private static EntityCombatInputs combatInputs(
-            GameplaySimulation context, Sword.CollisionBox swordBoxForEntityTick, EnemyAttackContext attackContext) {
-        return new EntityCombatInputs(
-                context.frameCounter(),
-                context.link().position().romEntityX(),
-                context.link().position().romEntityY(),
-                context.link().airborne().isAirborne(),
-                context.roomSession().rooms().mapCategory() == Warp.CATEGORY_SIDESCROLL
-                        ? context.link().position().romSpeedY()
-                        : context.link().airborne().zVelocity(),
-                !context.debugNoClip(),
-                context.frameInputs()
-                        .sword(
-                                swordBoxForEntityTick.active(),
-                                swordBoxForEntityTick.x(),
-                                swordBoxForEntityTick.width(),
-                                swordBoxForEntityTick.y(),
-                                swordBoxForEntityTick.height()),
-                attackContext);
-    }
-
     private static void applyEvent(GameplaySimulation context, EntityCombatEvent event) {
         if (event.linkDamage() > 0
                 && context.playerState().vitals().invincibilityCounter() == 0
-                && (!context.link().status().isCollisionDamageImmune())) {
+                && !context.link().status().isCollisionDamageImmune()) {
             int previousPowerUp = context.playerState().equipmentLevels().activePowerUp();
             context.playerState().vitals().applyRomEnemyDamage(event.linkDamage());
             if (previousPowerUp != PowerUp.NONE.romValue()

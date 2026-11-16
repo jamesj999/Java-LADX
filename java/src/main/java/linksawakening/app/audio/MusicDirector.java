@@ -21,25 +21,22 @@ public final class MusicDirector implements MusicRequests {
     }
 
     public void selectMusicForLoadedRoom(ActiveRoom room, PlayerState playerState, RoomSession roomSession) {
-        if (playerState == null || room == null) {
-            return;
-        }
+        Objects.requireNonNull(playerState, "playerState");
+        Objects.requireNonNull(room, "room");
+        Objects.requireNonNull(roomSession, "roomSession");
         RoomMusicContext context = RoomMusicContext.from(room, playerState);
-        if (roomSession != null && roomSession.rooms().musicSelectionIsScroll()) context = context.forScroll();
+        if (roomSession.rooms().musicSelectionIsScroll()) context = context.forScroll();
         gameplayMusicController.selectAfterTransition(context);
-        if (roomSession != null) {
-            roomSession.story().setEntityDefaultMusicTrack(gameplayMusicController.defaultTrackId());
-        }
+        roomSession.story().setEntityDefaultMusicTrack(gameplayMusicController.defaultTrackId());
     }
 
     public void restoreMusicAfterPowerUpEnds(RoomSession roomSession) {
-        if (roomSession != null) {
-            gameplayMusicController.restoreAfterPowerUpEnds(
-                    roomSession.entities().inBossBattle(),
-                    roomSession.entityState().entityDefaultMusicTrack());
-        }
+        Objects.requireNonNull(roomSession, "roomSession");
+        gameplayMusicController.restoreAfterPowerUpEnds(
+                roomSession.entities().inBossBattle(), roomSession.entityState().entityDefaultMusicTrack());
     }
 
+    @Override
     public void playDirectMusic(int trackId) {
         gameplayMusicController.playDirect(trackId);
     }

@@ -943,7 +943,7 @@ public final class EntityProjectileController {
                 // this pass, before RoomSession applies their object requests.
                 if (owner.roomVariables.readEntityRoomId() != 0x74
                         && owner.state.readTorchPaletteTargetAddress() < 0x0C) {
-                    owner.state.writeTorchPaletteTargetAddress(owner.state.readTorchPaletteTargetAddress() + (4));
+                    owner.state.writeTorchPaletteTargetAddress(owner.state.readTorchPaletteTargetAddress() + 4);
                     if (linkMotionState != 0x05) {
                         owner.state.writeTorchPaletteTransitionActive(true);
                     }

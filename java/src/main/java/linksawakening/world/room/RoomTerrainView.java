@@ -7,14 +7,17 @@ final class RoomTerrainView implements RoomTerrain {
         this.session = java.util.Objects.requireNonNull(session);
     }
 
-    public boolean tickCrackedFloor(LinkGroundFrame frame, boolean dialogGotItemActive) {
+    @Override
+    public boolean tickCrackedFloor(LinkGroundInputs frame, boolean dialogGotItemActive) {
         return session.tickCrackedFloor(frame, dialogGotItemActive);
     }
 
-    public boolean tickCrackedFloorOnLanding(LinkGroundFrame frame, boolean dialogGotItemActive) {
+    @Override
+    public boolean tickCrackedFloorOnLanding(LinkGroundInputs frame, boolean dialogGotItemActive) {
         return session.tickCrackedFloorOnLanding(frame, dialogGotItemActive);
     }
 
+    @Override
     public boolean breakIndoorSwordCrystal(int location) {
         return session.breakIndoorSwordCrystal(location);
     }

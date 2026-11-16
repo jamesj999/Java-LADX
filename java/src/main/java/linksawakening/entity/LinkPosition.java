@@ -10,7 +10,8 @@ final class LinkPosition {
     }
 
     int subX(int value) {
-        return subX = value;
+        subX = value;
+        return subX;
     }
 
     private int subY;
@@ -20,7 +21,8 @@ final class LinkPosition {
     }
 
     int subY(int value) {
-        return subY = value;
+        subY = value;
+        return subY;
     }
 
     private int lastRomSpeedX;
@@ -30,7 +32,8 @@ final class LinkPosition {
     }
 
     int lastRomSpeedX(int value) {
-        return lastRomSpeedX = value;
+        lastRomSpeedX = value;
+        return lastRomSpeedX;
     }
 
     private int lastRomSpeedY;
@@ -40,7 +43,8 @@ final class LinkPosition {
     }
 
     int lastRomSpeedY(int value) {
-        return lastRomSpeedY = value;
+        lastRomSpeedY = value;
+        return lastRomSpeedY;
     }
 
     private boolean forcedSpeedPending;
@@ -50,7 +54,8 @@ final class LinkPosition {
     }
 
     boolean forcedSpeedPending(boolean value) {
-        return forcedSpeedPending = value;
+        forcedSpeedPending = value;
+        return forcedSpeedPending;
     }
 
     private boolean forcedSpeedXOnly;
@@ -60,7 +65,8 @@ final class LinkPosition {
     }
 
     boolean forcedSpeedXOnly(boolean value) {
-        return forcedSpeedXOnly = value;
+        forcedSpeedXOnly = value;
+        return forcedSpeedXOnly;
     }
 
     private int forcedSpeedX;
@@ -70,7 +76,8 @@ final class LinkPosition {
     }
 
     int forcedSpeedX(int value) {
-        return forcedSpeedX = value;
+        forcedSpeedX = value;
+        return forcedSpeedX;
     }
 
     private int forcedSpeedY;
@@ -80,7 +87,8 @@ final class LinkPosition {
     }
 
     int forcedSpeedY(int value) {
-        return forcedSpeedY = value;
+        forcedSpeedY = value;
+        return forcedSpeedY;
     }
 
     private int lastSafeSubX;
@@ -90,7 +98,8 @@ final class LinkPosition {
     }
 
     int lastSafeSubX(int value) {
-        return lastSafeSubX = value;
+        lastSafeSubX = value;
+        return lastSafeSubX;
     }
 
     private int lastSafeSubY;
@@ -100,7 +109,8 @@ final class LinkPosition {
     }
 
     int lastSafeSubY(int value) {
-        return lastSafeSubY = value;
+        lastSafeSubY = value;
+        return lastSafeSubY;
     }
 
     private boolean hasLastSafePosition;
@@ -110,7 +120,8 @@ final class LinkPosition {
     }
 
     boolean hasLastSafePosition(boolean value) {
-        return hasLastSafePosition = value;
+        hasLastSafePosition = value;
+        return hasLastSafePosition;
     }
 
     private int romFinalSubX;
@@ -126,7 +137,8 @@ final class LinkPosition {
     }
 
     int roomEntrySubX(int value) {
-        return roomEntrySubX = value;
+        roomEntrySubX = value;
+        return roomEntrySubX;
     }
 
     private int roomEntrySubY;
@@ -136,7 +148,8 @@ final class LinkPosition {
     }
 
     int roomEntrySubY(int value) {
-        return roomEntrySubY = value;
+        roomEntrySubY = value;
+        return roomEntrySubY;
     }
 
     private boolean hasRoomEntryPosition;
@@ -146,7 +159,8 @@ final class LinkPosition {
     }
 
     boolean hasRoomEntryPosition(boolean value) {
-        return hasRoomEntryPosition = value;
+        hasRoomEntryPosition = value;
+        return hasRoomEntryPosition;
     }
 
     private final LinkComponentRef<LinkSideView> linkSideView;

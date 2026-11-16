@@ -50,42 +50,54 @@ final class OpenGlFailureTest {
         int fail;
         final List<Integer> deletedShaders = new ArrayList<>(), deletedPrograms = new ArrayList<>();
 
+        @Override
         public int createShader(int kind) {
             return ++next;
         }
 
+        @Override
         public void source(int shader, String source) {}
 
+        @Override
         public void compile(int shader) {}
 
+        @Override
         public boolean compiled(int shader) {
             return shader != fail;
         }
 
+        @Override
         public String shaderLog(int shader) {
             return "fake driver log";
         }
 
+        @Override
         public void deleteShader(int shader) {
             deletedShaders.add(shader);
         }
 
+        @Override
         public int createProgram() {
             return 100;
         }
 
+        @Override
         public void attach(int program, int shader) {}
 
+        @Override
         public void link(int program) {}
 
+        @Override
         public boolean linked(int program) {
             return fail != 3;
         }
 
+        @Override
         public String programLog(int program) {
             return "fake driver log";
         }
 
+        @Override
         public void deleteProgram(int program) {
             deletedPrograms.add(program);
         }

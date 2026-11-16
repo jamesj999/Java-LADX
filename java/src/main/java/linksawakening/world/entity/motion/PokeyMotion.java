@@ -280,7 +280,7 @@ public final class PokeyMotion {
     }
 
     private static int negate(int value) {
-        return (-signedByte(value)) & 0xFF;
+        return -signedByte(value) & 0xFF;
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {

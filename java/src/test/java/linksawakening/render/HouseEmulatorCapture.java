@@ -28,6 +28,8 @@ import linksawakening.world.transition.TransitionController;
 /** Offline opening scene through production room, entity, bed and HUD rendering. */
 @linksawakening.testing.RequiresRom
 public final class HouseEmulatorCapture {
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
     public static void main(String[] args) throws Exception {
         Path out = Path.of(args[0]);
         byte[] rom = CaptureImageWriter.readRom();
@@ -58,7 +60,7 @@ public final class HouseEmulatorCapture {
                 player,
                 new ItemRegistry());
         var motion = new MarinWakeUpMotion();
-        var marinSource = session.rooms().activeRoom().entities().slots().get(0);
+        var marinSource = session.rooms().activeRoomOrNull().entities().slots().get(0);
         var clocks = Files.readAllLines(out.resolve("clocks.tsv"));
         String[] first = clocks.get(0).split("\t");
         int firstFrame = Integer.parseInt(first[0]);
@@ -92,7 +94,7 @@ public final class HouseEmulatorCapture {
                     .build(GameFrameState.empty()
                             .withScreen(RenderScreen.OVERWORLD)
                             .withRoom(
-                                    session.rooms().renderSnapshot(),
+                                    session.rooms().renderSnapshotOrNull(),
                                     new ScrollController(),
                                     new TransitionController())
                             .withLink(link)

@@ -32,14 +32,17 @@ final class GameplayCombatEvents implements DamageConsequences, RoomFrameDrain<E
         this.music = Objects.requireNonNull(music);
     }
 
+    @Override
     public void contactHurt() {
         rooms.entityState().resetGuardianAcornCounterOnHurt();
     }
 
+    @Override
     public void powerUpEnded() {
         music.restoreMusicAfterPowerUpEnds(rooms);
     }
 
+    @Override
     public void accept(List<? extends EntityCombatEvent> events) {
         EnemyCombatEventConsumer.consume(events, sounds.sink(), effects);
         for (int i = 0; i < events.size(); i++) {

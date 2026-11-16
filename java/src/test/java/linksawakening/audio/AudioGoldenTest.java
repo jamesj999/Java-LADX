@@ -39,8 +39,8 @@ final class AudioGoldenTest {
             var pcm = MessageDigest.getInstance("SHA-256");
             var apu = new GameBoyApu(48000);
             apu.setPrimitiveRegisterObserver((register, value) -> {
-                writes.update((byte) (int) register);
-                writes.update((byte) (int) value);
+                writes.update((byte) register);
+                writes.update((byte) value);
             });
             var music = new MusicDriver(Rom.of(rom), apu);
             var sfx = new SoundEffectPlayer(apu, Rom.of(rom));

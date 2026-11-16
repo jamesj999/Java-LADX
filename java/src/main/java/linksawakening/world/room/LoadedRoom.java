@@ -103,12 +103,12 @@ public record LoadedRoom(
         hash = 31 * hash + Integer.hashCode(identity.mapCategory());
         hash = 31 * hash + Integer.hashCode(identity.mapId());
         hash = 31 * hash + Integer.hashCode(identity.animatedTilesGroup());
-        hash = 31 * hash + java.util.Objects.hashCode(objects.roomObjectsArea());
-        hash = 31 * hash + java.util.Objects.hashCode(objects.gbcOverlay());
-        hash = 31 * hash + java.util.Objects.hashCode(objects.renderValues());
-        hash = 31 * hash + java.util.Objects.hashCode(graphics.tileIds());
-        hash = 31 * hash + java.util.Objects.hashCode(graphics.tileAttrs());
-        hash = 31 * hash + java.util.Objects.hashCode(graphics.palettes());
+        hash = 31 * hash + System.identityHashCode(objects.roomObjectsArea());
+        hash = 31 * hash + System.identityHashCode(objects.gbcOverlay());
+        hash = 31 * hash + System.identityHashCode(objects.renderValues());
+        hash = 31 * hash + System.identityHashCode(graphics.tileIds());
+        hash = 31 * hash + System.identityHashCode(graphics.tileAttrs());
+        hash = 31 * hash + System.identityHashCode(graphics.palettes());
         hash = 31 * hash + java.util.Objects.hashCode(exits.warps());
         hash = 31 * hash + Boolean.hashCode(exits.indoorHasSouthEntrance());
         hash = 31 * hash + Integer.hashCode(exits.shutterDoorMask());
@@ -117,6 +117,9 @@ public record LoadedRoom(
         return hash;
     }
 
+    // Preserve the existing identity-oriented diagnostic format for owned ROM/graphics buffers. Preserve
+    // identity-oriented diagnostics for live session objects, rather than inventing value formatting.
+    @SuppressWarnings({"ArrayToString", "ObjectToString"})
     @Override
     public String toString() {
         return "LoadedRoom[" + "roomId=" + identity.roomId() + ", " + "mapCategory=" + identity.mapCategory() + ", "

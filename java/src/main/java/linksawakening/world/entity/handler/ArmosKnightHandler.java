@@ -3,7 +3,6 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_ARMOS_KNIGHT;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_LIFTABLE_ROCK;
 
-import java.util.function.IntSupplier;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
@@ -23,7 +22,7 @@ import linksawakening.world.entity.motion.BossIntroMotion;
 /** ROM handler stages for ArmosKnight. */
 final class ArmosKnightHandler {
     static void install(EntityHandlerRegistry registry) {
-        registry.registerInitializer(ENTITY_ARMOS_KNIGHT, (entity, random) -> initialize(registry, entity, random));
+        registry.registerInitializer(ENTITY_ARMOS_KNIGHT, (entity, random) -> initialize(registry, entity));
         registry.registerTick(
                 ENTITY_ARMOS_KNIGHT, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 1, ArmosKnightHandler::phase4ArmosKnight);
     }
@@ -99,7 +98,7 @@ final class ArmosKnightHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity) {
         registry.motion(ArmosKnightMotion.class, ArmosKnightMotion::new).initialize(entity.slot());
     }
 }

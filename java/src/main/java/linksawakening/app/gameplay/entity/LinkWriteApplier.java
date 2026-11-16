@@ -41,6 +41,7 @@ final class LinkWriteApplier implements LinkWriteSink.Positions, LinkWriteSink.A
         }
     }
 
+    @Override
     public void platform(SideViewPlatformLinkRequest request) {
         var c = current;
         if (request.standing()) {
@@ -52,18 +53,22 @@ final class LinkWriteApplier implements LinkWriteSink.Positions, LinkWriteSink.A
         }
     }
 
+    @Override
     public void position(LinkFinalPositionRequest request) {
         current.link().apply(LinkCommandAdapter.from(request));
     }
 
+    @Override
     public void pot(SideViewPotLinkRequest request) {
         current.link().apply(LinkCommandAdapter.from(request));
     }
 
+    @Override
     public void clear(LinkAttackClearRequest request) {
         current.link().apply(LinkCommandAdapter.from(request));
     }
 
+    @Override
     public void step(LinkAttackStepRequest request) {
         current.link().apply(LinkCommandAdapter.from(request));
     }
@@ -122,7 +127,7 @@ final class LinkWriteApplier implements LinkWriteSink.Positions, LinkWriteSink.A
 
             int acquisitionBaseDirection = c.link().animation().direction();
             c.link().apply(LinkCommandAdapter.from(request));
-            if (c.itemRegistry().lookup(InventoryItem.SWORD.romValue()) instanceof Sword acquisitionSword) {
+            if (c.itemRegistry().item(InventoryItem.SWORD.romValue()) instanceof Sword acquisitionSword) {
                 if (request.countdown() == 0x20) {
                     acquisitionSword.startSwordAcquisitionSpin(acquisitionBaseDirection);
                 } else if (acquisitionSword.spinAttackActive()) {
@@ -135,7 +140,7 @@ final class LinkWriteApplier implements LinkWriteSink.Positions, LinkWriteSink.A
             LinkSwordFinalPoseRequest request = linkSwordFinalPoseRequests.get(requestIndex);
 
             c.link().apply(LinkCommandAdapter.from(request));
-            if (c.itemRegistry().lookup(InventoryItem.SWORD.romValue()) instanceof Sword sword) {
+            if (c.itemRegistry().item(InventoryItem.SWORD.romValue()) instanceof Sword sword) {
                 sword.resetSpinAttack();
             }
         }

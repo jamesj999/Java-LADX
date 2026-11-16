@@ -10,7 +10,11 @@ public final class ScrollController {
     public static final int LEFT = 3;
     public static final int RIGHT = 4;
 
-    private Runnable completion;
+    // Retain one callable instance: its identity or allocation-free reuse is part of this retained path.
+    @SuppressWarnings("UnnecessaryLambda")
+    private static final Runnable NO_COMPLETION = () -> {};
+
+    private Runnable completion = NO_COMPLETION;
     private int direction = NONE;
     private int offset;
     private int target;
@@ -22,7 +26,7 @@ public final class ScrollController {
     private int scriptedScreenShakeHorizontal;
 
     public void start(int direction, int linkScreenX, int linkScreenY, RoomRenderSnapshot previousRoom, int target) {
-        this.completion = null;
+        this.completion = NO_COMPLETION;
         this.direction = direction;
         this.linkScreenX = linkScreenX;
         this.linkScreenY = linkScreenY;
@@ -33,7 +37,7 @@ public final class ScrollController {
 
     /** Runs once after the destination has finished scrolling into view. */
     public void onCompletion(Runnable completion) {
-        this.completion = completion;
+        this.completion = completion == null ? NO_COMPLETION : completion;
     }
 
     public boolean tick(int speed) {
@@ -49,10 +53,8 @@ public final class ScrollController {
         target = 0;
         previousRoom = null;
         Runnable finished = completion;
-        completion = null;
-        if (finished != null) {
-            finished.run();
-        }
+        completion = NO_COMPLETION;
+        finished.run();
         return true;
     }
 

@@ -41,7 +41,8 @@ final class EntityPresentationState {
     EntitySpriteSelection writeSpriteSelection(
             /* Optional ROM-backed data; absent in ROM-free or unconfigured presentation state. */ EntitySpriteSelection
                     value) {
-        return spriteSelection = java.util.Objects.requireNonNullElse(value, emptySelection);
+        spriteSelection = java.util.Objects.requireNonNullElse(value, emptySelection);
+        return spriteSelection;
     }
 
     int readBgPaletteEffectAddress() {
@@ -49,7 +50,8 @@ final class EntityPresentationState {
     }
 
     int writeBgPaletteEffectAddress(int value) {
-        return bgPaletteEffectAddress = value;
+        bgPaletteEffectAddress = value;
+        return bgPaletteEffectAddress;
     }
 
     int readPaletteDataFlags() {
@@ -57,7 +59,8 @@ final class EntityPresentationState {
     }
 
     int writePaletteDataFlags(int value) {
-        return paletteDataFlags = value;
+        paletteDataFlags = value;
+        return paletteDataFlags;
     }
 
     int readDefaultMusicTrack() {
@@ -65,7 +68,8 @@ final class EntityPresentationState {
     }
 
     int writeDefaultMusicTrack(int value) {
-        return defaultMusicTrack = value;
+        defaultMusicTrack = value;
+        return defaultMusicTrack;
     }
 
     boolean readActiveMusic() {
@@ -73,7 +77,8 @@ final class EntityPresentationState {
     }
 
     boolean writeActiveMusic(boolean value) {
-        return activeMusic = value;
+        activeMusic = value;
+        return activeMusic;
     }
 
     int readPendingMusicTrack() {
@@ -81,7 +86,8 @@ final class EntityPresentationState {
     }
 
     int writePendingMusicTrack(int value) {
-        return pendingMusicTrack = value;
+        pendingMusicTrack = value;
+        return pendingMusicTrack;
     }
 
     int readPendingMusicFadeOutCountdown() {
@@ -89,6 +95,7 @@ final class EntityPresentationState {
     }
 
     int writePendingMusicFadeOutCountdown(int value) {
-        return pendingMusicFadeOutCountdown = value;
+        pendingMusicFadeOutCountdown = value;
+        return pendingMusicFadeOutCountdown;
     }
 }

@@ -51,7 +51,7 @@ class RenderStateAllocationTest {
                     600,
                     120,
                     () -> snapshot =
-                            session.services().world().roomSession().rooms().renderSnapshot());
+                            session.services().world().roomSession().rooms().renderSnapshotOrNull());
             double stateBytes =
                     AllocationProbe.bytesPerIteration(600, 120, () -> snapshot = assembler.currentGameFrameState());
             var frame = assembler.currentGameFrameState();

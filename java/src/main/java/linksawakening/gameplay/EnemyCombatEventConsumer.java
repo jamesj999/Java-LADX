@@ -8,6 +8,7 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 
 /** Stateless application of raw enemy-combat sound and visual writes in source order. */
 public final class EnemyCombatEventConsumer {
+    private static final TransientVfxSystem NO_VFX = new TransientVfxSystem(0);
     private static final int JINGLE_BUMP_ID = 0x09;
     private static final int JINGLE_TREASURE_FOUND_ID = 0x01;
     private static final int JINGLE_PUZZLE_SOLVED_ID = 0x02;
@@ -37,7 +38,7 @@ public final class EnemyCombatEventConsumer {
     private EnemyCombatEventConsumer() {}
 
     public static void consume(List<? extends EntityCombatEvent> events, GameplaySoundSink soundSink) {
-        consume(events, soundSink, null);
+        consume(events, soundSink, NO_VFX);
     }
 
     public static void consume(
@@ -46,6 +47,7 @@ public final class EnemyCombatEventConsumer {
             TransientVfxSystem transientVfxSystem) {
         Objects.requireNonNull(events, "events");
         Objects.requireNonNull(soundSink, "soundSink");
+        transientVfxSystem = Objects.requireNonNullElse(transientVfxSystem, NO_VFX);
 
         for (int eventIndex = 0; eventIndex < events.size(); eventIndex++) {
             EntityCombatEvent event = events.get(eventIndex);
@@ -55,7 +57,7 @@ public final class EnemyCombatEventConsumer {
             }
             consumeSoundWrite(event.soundChannel(), event.soundId(), soundSink);
             consumeSoundWrite(event.secondarySoundChannel(), event.secondarySoundId(), soundSink);
-            if (transientVfxSystem != null && event.swordPokeVfx() != null) {
+            if (event.swordPokeVfx() != null) {
                 transientVfxSystem.spawn(
                         TransientVfxType.SWORD_POKE,
                         event.swordPokeVfx().worldX(),

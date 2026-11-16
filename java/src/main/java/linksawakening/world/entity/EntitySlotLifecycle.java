@@ -395,18 +395,20 @@ public final class EntitySlotLifecycle {
     }
 
     public void requestPersistentClearMask(int mask) {
-        this.roomVariables.writePendingClearedEntityMask(this.roomVariables.readPendingClearedEntityMask() | (mask));
+        this.roomVariables.writePendingClearedEntityMask(this.roomVariables.readPendingClearedEntityMask() | mask);
     }
 
     public void delayInteractions(int countdown) {
         this.roomVariables.writeEntityInteractionCountdown(countdown);
     }
 
+    // Preserve the eager ROM clinging-state accumulator merge across slots.
+    @SuppressWarnings("ShortCircuitBoolean")
     public void recordGelClinging(boolean clinging) {
         this.motions
                 .get(ZolGelMotion.class, ZolGelMotion::new)
                 .writeGelClingingToLink(
-                        this.motions.get(ZolGelMotion.class, ZolGelMotion::new).readGelClingingToLink() | (clinging));
+                        this.motions.get(ZolGelMotion.class, ZolGelMotion::new).readGelClingingToLink() | clinging);
     }
 
     public void setDroppedItemBySlot(int slot, int value) {

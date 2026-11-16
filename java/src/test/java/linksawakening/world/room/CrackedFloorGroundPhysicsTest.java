@@ -44,7 +44,7 @@ class CrackedFloorGroundPhysicsTest {
     }
 
     private static void object(RoomSession session, int location, int object) {
-        session.rooms().activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + location] = object;
+        session.rooms().activeRoomOrNull().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + location] = object;
     }
 
     private static void count(RoomSession session, int frames) {
@@ -69,7 +69,7 @@ class CrackedFloorGroundPhysicsTest {
                 0xAE,
                 session.components
                         .roomSessionViews()
-                        .objectAtRoomLocation(session.rooms().activeRoom(), 0x33));
+                        .objectAtRoomLocation(session.rooms().activeRoomOrNull(), 0x33));
     }
 
     @Test
@@ -85,7 +85,7 @@ class CrackedFloorGroundPhysicsTest {
                 0xDF,
                 session.components
                         .roomSessionViews()
-                        .objectAtRoomLocation(session.rooms().activeRoom(), 0x33));
+                        .objectAtRoomLocation(session.rooms().activeRoomOrNull(), 0x33));
     }
 
     @Test

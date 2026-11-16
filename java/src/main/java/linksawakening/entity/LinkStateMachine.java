@@ -397,8 +397,8 @@ final class LinkStateMachine {
         linkMotion.get().position().lastRomSpeedX(speedX & 0xFF);
         linkMotion.get().position().lastRomSpeedY(speedY & 0xFF);
         linkAnimationState.get().movingThisFrame = speedX != 0 || speedY != 0;
-        linkMotion.get().position().subX(linkMotion.get().position().subX() + (speedX));
-        linkMotion.get().position().subY(linkMotion.get().position().subY() + (speedY));
+        linkMotion.get().position().subX(linkMotion.get().position().subX() + speedX);
+        linkMotion.get().position().subY(linkMotion.get().position().subY() + speedY);
         if (linkAnimationState.get().movingThisFrame) {
             linkAnimationState.get().walkTickCounter++;
             if (linkAnimationState.get().walkTickCounter >= LinkRomConstants.WALK_FRAME_TICKS) {

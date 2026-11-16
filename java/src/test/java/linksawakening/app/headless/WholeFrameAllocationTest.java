@@ -50,7 +50,7 @@ class WholeFrameAllocationTest {
             assertFalse(diagnostic
                     .roomSession()
                     .rooms()
-                    .activeRoom()
+                    .activeRoomOrNull()
                     .entityView()
                     .loadedEntities()
                     .isEmpty());
@@ -92,11 +92,11 @@ class WholeFrameAllocationTest {
             assertSame(output, session.headlessFrame(output));
         });
         System.out.println(label + " whole-frame bytes: " + bytes);
-        // Round 7 EA-off achieved 0 idle/inventory and 597.1 walking; +25% headroom.
+        // EA-off achieved 0 idle/inventory and 139.6 walking; +25% headroom.
         int budget =
                 switch (label) {
                     case "Idle" -> 0;
-                    case "Walking" -> 747;
+                    case "Walking" -> 175;
                     case "Inventory" -> 0;
                     default -> throw new AssertionError(label);
                 };

@@ -26,10 +26,12 @@ public final class EntityRoomLoader {
     private static final int GHINI_INITIAL_Z = 0x10;
     private static final int ROOM_INDOOR_A_ANGLERS_TUNNEL_KEY_DROP = 0x69;
     private static final int ROOM_INDOOR_A_ANGLERS_TUNNEL_KEY_FALL = 0x7C;
-    private static final int ROOM_INDOOR_A_CATFISHS_MAW_MSTALFOS_4 = 0x80;
+
     private static final int ROOM_INDOOR_A_QUICKSAND_CAVE = 0xF8;
     private static final int ROOM_INDOOR_B_MOUNTAIN_CAVE_ROOM_1 = 0x7A;
 
+    // RomAddress is an immutable record containing only final primitive bank/address values.
+    @SuppressWarnings("ImmutableEnumChecker")
     public enum RoomTable {
         OVERWORLD(RomSymbols.OverworldEntitiesPointersTable),
         INDOORS_A(RomSymbols.IndoorsAEntitiesPointersTable),
@@ -99,7 +101,8 @@ public final class EntityRoomLoader {
         }
 
         RomAddress pointerAddress = table.pointerTable.plus(roomId * 2);
-        int pointerOffset = checkedRomOffset(pointerAddress, 2, "entity pointer");
+        // Preserve the pointer bounds check even though u16le uses the typed address.
+        checkedRomOffset(pointerAddress, 2, "entity pointer");
         int streamAddress = romData.u16le(pointerAddress);
         if (streamAddress < 0x4000 || streamAddress > 0x7FFF) {
             throw new IllegalArgumentException(

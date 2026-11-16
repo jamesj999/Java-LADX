@@ -21,14 +21,17 @@ sealed interface EntityChestContents {
     enum Empty implements EntityChestContents {
         INSTANCE;
 
+        @Override
         public int presentationSoundValue(int itemType) {
             return 0;
         }
 
+        @Override
         public int dialogLowIdFor(int itemType, int shield, int sword, int bracelet, int map, int room) {
             return NO_DIALOG;
         }
 
+        @Override
         public void requireSpawnTable() {
             throw new IllegalStateException("ROM chest contents table is not configured");
         }
@@ -39,14 +42,17 @@ sealed interface EntityChestContents {
             Objects.requireNonNull(table, "chest contents");
         }
 
+        @Override
         public int presentationSoundValue(int itemType) {
             return table.presentationSoundValue(itemType);
         }
 
+        @Override
         public int dialogLowIdFor(int itemType, int shield, int sword, int bracelet, int map, int room) {
             return table.dialogLowIdFor(itemType, shield, sword, bracelet, map, room);
         }
 
+        @Override
         public void requireSpawnTable() {}
     }
 }

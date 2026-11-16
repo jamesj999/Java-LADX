@@ -164,10 +164,12 @@ public record EntityCombatEvent(
             throw new IllegalArgumentException(label + " sound id must be -1 or an unsigned byte: " + id);
         }
         if (channel == SoundChannel.NONE && id != -1) {
-            throw new IllegalArgumentException("A sound id requires a " + label.toLowerCase() + " sound channel");
+            throw new IllegalArgumentException(
+                    "A sound id requires a " + label.toLowerCase(java.util.Locale.getDefault()) + " sound channel");
         }
         if (channel != SoundChannel.NONE && id == -1) {
-            throw new IllegalArgumentException("A " + label.toLowerCase() + " sound channel requires a sound id");
+            throw new IllegalArgumentException(
+                    "A " + label.toLowerCase(java.util.Locale.getDefault()) + " sound channel requires a sound id");
         }
     }
 

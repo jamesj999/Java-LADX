@@ -59,7 +59,7 @@ final class SlimeEyeSessionTest {
             assertTrue(eyes(room).stream().anyMatch(e -> e.z() == 0));
             save(game.headlessFrame(), output.resolve("session-body.png"));
             int ticks = 0;
-            var initialEye = eyes(room).getFirst();
+
             // This older assisted fixture keeps target placement explicit. The separate
             // SlimeEyeControlsTest covers the whole encounter using buttons only.
             while (eyes(room).size() == 1 && ticks < 900) {
@@ -92,7 +92,7 @@ final class SlimeEyeSessionTest {
             assertTrue(eyes(room).isEmpty());
             assertEquals(
                     1,
-                    room.rooms().activeRoom().entities().loadedEntities().stream()
+                    room.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                             .filter(e -> e.type() == 0x36)
                             .count());
             save(game.headlessFrame(), output.resolve("session-defeated.png"));
@@ -110,21 +110,9 @@ final class SlimeEyeSessionTest {
     }
 
     private List<RoomEntity> eyes(linksawakening.world.room.RoomSession room) {
-        return room.rooms().activeRoom().entities().loadedEntities().stream()
+        return room.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(e -> e.type() == 0x5B)
                 .toList();
-    }
-
-    private Object get(Object object, String name) throws Exception {
-        var field = object.getClass().getDeclaredField(name);
-        field.setAccessible(true);
-        return field.get(object);
-    }
-
-    private void set(Object object, String name, Object value) throws Exception {
-        var field = object.getClass().getDeclaredField(name);
-        field.setAccessible(true);
-        field.set(object, value);
     }
 
     private void save(byte[] pixels, Path file) throws Exception {

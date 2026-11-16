@@ -30,7 +30,8 @@ final class IntroEmulatorCapture {
         File outDir = new File(args[0]);
         outDir.mkdirs();
         int count = args.length > 1 ? Integer.parseInt(args[1]) : 3800;
-        try (PrintWriter metadata = new PrintWriter(new File(outDir, "frames.jsonl"))) {
+        try (PrintWriter metadata =
+                new PrintWriter(new File(outDir, "frames.jsonl"), java.nio.charset.Charset.defaultCharset())) {
             for (int frame = 0; frame < count; frame++) {
                 IntroFrameSnapshot snapshot = sequence.snapshot();
                 if (BackgroundSceneCatalog.requiresTitleTileset(snapshot.sceneId()))

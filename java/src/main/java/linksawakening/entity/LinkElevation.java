@@ -10,7 +10,8 @@ final class LinkElevation {
     }
 
     boolean airborne(boolean value) {
-        return airborne = value;
+        airborne = value;
+        return airborne;
     }
 
     private int zSubPixels;
@@ -20,7 +21,8 @@ final class LinkElevation {
     }
 
     int zSubPixels(int value) {
-        return zSubPixels = value;
+        zSubPixels = value;
+        return zSubPixels;
     }
 
     private int zVelocity;
@@ -30,6 +32,7 @@ final class LinkElevation {
     }
 
     int zVelocity(int value) {
-        return zVelocity = value;
+        zVelocity = value;
+        return zVelocity;
     }
 }

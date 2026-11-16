@@ -226,6 +226,6 @@ public final class MusicCatalog {
     }
 
     private static String formatHex(int value) {
-        return "0x" + Integer.toHexString(value).toUpperCase();
+        return "0x" + Integer.toHexString(value).toUpperCase(java.util.Locale.ROOT);
     }
 }

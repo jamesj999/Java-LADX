@@ -32,10 +32,14 @@ public final class EntitySpriteViews {
         this.source = catalog == null ? UnsupportedSource.INSTANCE : new RomSource(catalog);
     }
 
+    // Indexes private tables built from the same enum; ordinals are never persisted or used as ROM bytes.
+    @SuppressWarnings("EnumOrdinal")
     public EntitySpriteDefinition forEntityType(int type, EntityRoomLoader.RoomTable table, int map) {
         return get(0, type, table.ordinal(), map);
     }
 
+    // Indexes private tables built from the same enum; ordinals are never persisted or used as ROM bytes.
+    @SuppressWarnings("EnumOrdinal")
     public EntitySpriteDefinition forColorShellState(int type, int state, EntityStatus status) {
         return get(1, type, state, status.ordinal());
     }
@@ -44,10 +48,14 @@ public final class EntitySpriteViews {
         return get(2, flying ? 1 : 0, 0, 0);
     }
 
+    // Indexes private tables built from the same enum; ordinals are never persisted or used as ROM bytes.
+    @SuppressWarnings("EnumOrdinal")
     public EntitySpriteDefinition forBushCrawlerState(int state, EntityRoomLoader.RoomTable table) {
         return get(3, state, table.ordinal(), 0);
     }
 
+    // Indexes private tables built from the same enum; ordinals are never persisted or used as ROM bytes.
+    @SuppressWarnings("EnumOrdinal")
     public EntitySpriteDefinition forBushCrawlerCrawlState(EntityRoomLoader.RoomTable table, int state) {
         return get(4, table.ordinal(), state, 0);
     }
@@ -218,14 +226,17 @@ public final class EntitySpriteViews {
     private enum UnsupportedSource implements Source {
         INSTANCE;
 
+        @Override
         public boolean supportsPresentation() {
             return false;
         }
 
+        @Override
         public RoomEntity present(RoomEntity entity, EntitySpriteDefinition definition, int variant) {
             return entity;
         }
 
+        @Override
         public EntitySpriteDefinition decode(int kind, int a, int b, int c) {
             int type =
                     switch (kind) {
@@ -318,6 +329,7 @@ public final class EntitySpriteViews {
             java.util.Objects.requireNonNull(catalog, "catalog");
         }
 
+        @Override
         public EntitySpriteDefinition decode(int kind, int a, int b, int c) {
             return switch (kind) {
                 case 0 -> catalog.forEntityType(a, TABLES[b], c);
@@ -348,12 +360,14 @@ public final class EntitySpriteViews {
             };
         }
 
+        @Override
         public EntitySpriteDefinition forMiniMoldormState(
                 int headVariant, int entityX, int entityY, int segment1X, int segment1Y, int segment2X, int segment2Y) {
             return catalog.forMiniMoldormState(
                     headVariant, entityX, entityY, segment1X, segment1Y, segment2X, segment2Y);
         }
 
+        @Override
         public EntitySpriteDefinition forMoldormState(
                 int headVariant,
                 int entityX,
@@ -364,6 +378,7 @@ public final class EntitySpriteViews {
             return catalog.forMoldormState(headVariant, entityX, entityY, segments, privateState3, frameCounter);
         }
 
+        @Override
         public EntitySpriteDefinition forMoldormPresentation(
                 int headVariant,
                 int headX,
@@ -377,23 +392,28 @@ public final class EntitySpriteViews {
                     headVariant, headX, headY, renderBaseX, renderBaseY, segments, privateState3, frameCounter);
         }
 
+        @Override
         public EntitySpriteDefinition forSlimeEyeState(boolean half, int variant, int z) {
             return catalog.forSlimeEyeState(half, variant, z);
         }
 
+        @Override
         public EntitySpriteDefinition decodeSingle(
                 int entityType, int bank, int address, int variantCount, int initialVariant) {
             return catalog.decodeSingle(entityType, bank, address, variantCount, initialVariant);
         }
 
+        @Override
         public EntitySpriteDefinition forChestState(int mapId, int roomId, int itemVariant) {
             return catalog.forChestState(mapId, roomId, itemVariant);
         }
 
+        @Override
         public EntitySpriteDefinition forRollingBonesBar(int privateState1, int entityY, int spriteVariant) {
             return catalog.forRollingBonesBar(privateState1, entityY, spriteVariant);
         }
 
+        @Override
         public EntitySpriteDefinition forRollingBonesBar(int privateState1, int entityY) {
             return catalog.forRollingBonesBar(privateState1, entityY);
         }

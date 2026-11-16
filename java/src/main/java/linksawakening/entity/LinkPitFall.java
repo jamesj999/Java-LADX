@@ -15,7 +15,8 @@ final class LinkPitFall {
     }
 
     boolean fallingIntoPit(boolean value) {
-        return fallingIntoPit = value;
+        fallingIntoPit = value;
+        return fallingIntoPit;
     }
 
     private GroundStatus groundStatus = GroundStatus.NORMAL;
@@ -25,7 +26,8 @@ final class LinkPitFall {
     }
 
     GroundStatus groundStatus(GroundStatus value) {
-        return groundStatus = value;
+        groundStatus = value;
+        return groundStatus;
     }
 
     private int pitSlippingCounter;

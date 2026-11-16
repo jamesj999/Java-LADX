@@ -16,6 +16,8 @@ public final class OpeningRouteCapture {
     private static final StringBuilder kingTrace = new StringBuilder();
     private static final StringBuilder combatTrace = new StringBuilder();
 
+    // Acquisition and close are the behavior under test; the resource handle need not be read in the body.
+    @SuppressWarnings("try")
     public static void main(String[] args) throws Exception {
         Path route = Path.of(args[0]);
         Path out = Path.of(args[1]);
@@ -32,6 +34,8 @@ public final class OpeningRouteCapture {
         }
     }
 
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
     private static void capture(Path route, Path out) throws Exception {
         game.initializeHeadlessNewGame();
         StringBuilder trace = new StringBuilder();
@@ -99,6 +103,8 @@ public final class OpeningRouteCapture {
                         + game.headlessBowWowState() + "}");
     }
 
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
     static void pulseButtons(HeadlessGameDriver game, String buttons, int tick) {
         for (String button : buttons.split("\\+")) {
             if (!button.endsWith("*")) continue;
@@ -108,6 +114,8 @@ public final class OpeningRouteCapture {
         }
     }
 
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
     static boolean reached(HeadlessGameDriver game, String button, String condition, HeadlessGameDriver.State s) {
         String[] parts = condition.split("=");
         int target = Integer.decode(parts[1]);
@@ -130,7 +138,7 @@ public final class OpeningRouteCapture {
                     default -> throw new IllegalArgumentException(condition);
                 };
         if (!parts[0].equals("x") && !parts[0].equals("y")) return value == target;
-        return button.startsWith("left") || button.startsWith("up") ? value <= target : value >= target;
+        return (button.startsWith("left") || button.startsWith("up")) ? value <= target : value >= target;
     }
 
     private static void appendTrace(StringBuilder trace, int frame) {

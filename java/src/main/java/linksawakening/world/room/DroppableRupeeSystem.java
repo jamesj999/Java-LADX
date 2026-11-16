@@ -235,7 +235,7 @@ public final class DroppableRupeeSystem {
 
         slot.posZSubpixels = 0;
         if (slot.speedZSubpixels < 0) {
-            slot.speedZSubpixels = Math.max(0, ((-slot.speedZSubpixels) - 1) / 2);
+            slot.speedZSubpixels = Math.max(0, (-slot.speedZSubpixels - 1) / 2);
         }
     }
 

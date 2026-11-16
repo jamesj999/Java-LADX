@@ -18,7 +18,7 @@ public record FileMenuAction(Type type, int selectedSlot, int targetSlot, int[] 
     }
 
     public FileMenuAction {
-        type = Objects.requireNonNull(type, "type");
+        Objects.requireNonNull(type, "type");
         nameBytes = nameBytes == null ? new int[0] : nameBytes.clone();
     }
 

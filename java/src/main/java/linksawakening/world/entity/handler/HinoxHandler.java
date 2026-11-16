@@ -2,7 +2,6 @@ package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_HINOX;
 
-import java.util.function.IntSupplier;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
@@ -22,7 +21,7 @@ import linksawakening.world.entity.motion.HinoxMotion.HinoxFrame;
 /** ROM handler stages for Hinox. */
 final class HinoxHandler {
     static void install(EntityHandlerRegistry registry) {
-        registry.registerInitializer(ENTITY_HINOX, (entity, random) -> initialize(registry, entity, random));
+        registry.registerInitializer(ENTITY_HINOX, (entity, random) -> initialize(registry, entity));
         registry.registerTick(ENTITY_HINOX, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 2, HinoxHandler::phase4Hinox);
     }
 
@@ -31,7 +30,7 @@ final class HinoxHandler {
                 .execute();
     }
 
-    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity) {
         registry.motion(HinoxMotion.class, HinoxMotion::new).initialize(entity.slot());
     }
 

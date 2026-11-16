@@ -36,34 +36,42 @@ public final class SessionNavigator implements ScreenNavigator, RoomLoadListener
         return Objects.requireNonNull(targets, "Navigator not attached");
     }
 
+    @Override
     public Screen current() {
         return state.currentScreen;
     }
 
+    @Override
     public Screen screen(ScreenKind kind) {
         return targets().screens().screen(kind);
     }
 
+    @Override
     public void show(ScreenKind kind) {
         state.currentScreen = screen(kind);
     }
 
+    @Override
     public void startFileSelection() {
         targets().router().startFileSelection();
     }
 
+    @Override
     public void startDebugGameplay() {
         targets().router().startDebugGameplay();
     }
 
+    @Override
     public BackgroundScene loadFileMenuBackgroundScene(String sceneId) {
         return targets().router().loadFileMenuBackgroundScene(sceneId);
     }
 
+    @Override
     public void setCutsceneScene(String sceneId) {
         targets().router().setCutsceneScene(sceneId);
     }
 
+    @Override
     public void roomLoaded(ActiveRoom room) {
         targets().music().roomLoaded(room);
     }

@@ -77,13 +77,13 @@ public final class EnemyDropMotion {
         int towardX = swapped ? minorResult : vectorLength;
         int towardY = swapped ? vectorLength : minorResult;
         if (dx < 0) {
-            towardX = (-towardX) & 0xFF;
+            towardX = -towardX & 0xFF;
         }
         if (dy < 0) {
-            towardY = (-towardY) & 0xFF;
+            towardY = -towardY & 0xFF;
         }
-        speedX[slot] = (-towardX) & 0xFF;
-        speedY[slot] = (-towardY) & 0xFF;
+        speedX[slot] = -towardX & 0xFF;
+        speedY[slot] = -towardY & 0xFF;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
     }
@@ -218,7 +218,7 @@ public final class EnemyDropMotion {
 
     private static int complementAfterArithmeticShift(int value) {
         int shifted = signedByte(value) >> 1;
-        return (~shifted) & 0xFF;
+        return ~shifted & 0xFF;
     }
 
     /** $6137/$6149 clear the signed-shift result $FF so tiny drifts stop. */

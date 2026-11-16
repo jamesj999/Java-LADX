@@ -52,6 +52,7 @@ class FileMenuBehaviorTest {
             for (int i = 0; i < count; i++) game.stepWithoutRender();
         }
 
+        @Override
         public void close() {
             game.cleanup();
         }
@@ -69,7 +70,8 @@ class FileMenuBehaviorTest {
             assertEquals(
                     RenderScreen.FILE_MENU, s.c.state().screens().currentScreen.renderScreen());
             assertEquals(1, SaveRamStore.open(path).saveFilesMask());
-            assertFalse(s.c.state().screens().fileMenuController.snapshot().creation());
+            assertFalse(
+                    s.c.state().screens().fileMenu.activeController().snapshot().creation());
             s.press("a");
             assertEquals(
                     RenderScreen.OVERWORLD, s.c.state().screens().currentScreen.renderScreen());
@@ -89,8 +91,9 @@ class FileMenuBehaviorTest {
             assertEquals(
                     0, s.c.services().player().playerState().equipmentLevels().swordLevel());
             assertEquals(0xA3, s.c.services().world().roomSession().rooms().currentRoomId());
-            assertTrue(s.c.services().world().roomSession().rooms().activeRoom().entities().loadedEntities().stream()
-                    .anyMatch(e -> e.type() == 0x3F));
+            assertTrue(
+                    s.c.services().world().roomSession().rooms().activeRoomOrNull().entities().loadedEntities().stream()
+                            .anyMatch(e -> e.type() == 0x3F));
             s.game.stepWithoutRender();
             assertTrue(s.c.services().player().link().animation().isMarinWakeUpBedVisible());
         }
@@ -163,10 +166,11 @@ class FileMenuBehaviorTest {
                     .story()
                     .tryOpenMarinFollowUpDialog(
                             s.c.services().input().inputConfig().bKey()));
-            var marin = s.c.services().world().roomSession().rooms().activeRoom().entities().loadedEntities().stream()
-                    .filter(e -> e.type() == 0x3E)
-                    .findFirst()
-                    .orElseThrow();
+            var marin =
+                    s.c.services().world().roomSession().rooms().activeRoomOrNull().entities().loadedEntities().stream()
+                            .filter(e -> e.type() == 0x3E)
+                            .findFirst()
+                            .orElseThrow();
             s.c.services().player().link().position().setPixelPosition(marin.x() - 8, marin.y() - 8);
             s.c.services().player().link().animation().setRomDirection(2);
             assertTrue(s.c.runtime()
@@ -192,15 +196,18 @@ class FileMenuBehaviorTest {
                     .story()
                     .restoreNewGameHouseRuntimeIfNeeded(
                             store.readSlot(0), new linksawakening.app.story.OpeningRestoration() {
+                                @Override
                                 public void restoreWake(linksawakening.startup.MarinWakeUpMotion m) {
                                     assertTrue(m.complete());
                                     calls.add("wake");
                                 }
 
+                                @Override
                                 public void restoreShield(linksawakening.startup.TarinShieldMotion m) {
                                     calls.add("shield");
                                 }
 
+                                @Override
                                 public void refreshPresentation() {
                                     calls.add("presentation");
                                 }
@@ -226,14 +233,17 @@ class FileMenuBehaviorTest {
             s.store(store);
             s.c.runtime().flows().router().startFileSelection();
             assertArrayEquals(
-                    name, s.c.state().screens().fileMenuController.snapshot().nameBytes());
+                    name,
+                    s.c.state().screens().fileMenu.activeController().snapshot().nameBytes());
             s.press("a");
             assertEquals(
                     RenderScreen.OVERWORLD, s.c.state().screens().currentScreen.renderScreen());
             s.c.runtime().flows().router().startFileSelection();
             s.press("down");
             s.press("a");
-            assertTrue(s.c.state().screens().fileMenuController.snapshot().creation(), "Second slot remains empty");
+            assertTrue(
+                    s.c.state().screens().fileMenu.activeController().snapshot().creation(),
+                    "Second slot remains empty");
         }
     }
 
@@ -245,14 +255,14 @@ class FileMenuBehaviorTest {
             store.createNewGame(0, new int[] {1, 2, 0, 0, 0});
             s.store(store);
             s.c.runtime().flows().router().startFileSelection();
-            var original = s.c.state().screens().fileMenuController;
+            var original = s.c.state().screens().fileMenu.activeController();
             s.c.runtime().flows().saves().persistFileMenuMutation(() -> store.copySlot(0, 1));
             assertEquals(3, SaveRamStore.open(path).saveFilesMask());
-            assertNotSame(original, s.c.state().screens().fileMenuController);
-            original = s.c.state().screens().fileMenuController;
+            assertNotSame(original, s.c.state().screens().fileMenu.activeController());
+            original = s.c.state().screens().fileMenu.activeController();
             s.c.runtime().flows().saves().persistFileMenuMutation(() -> store.eraseSlot(0));
             assertEquals(2, SaveRamStore.open(path).saveFilesMask());
-            assertNotSame(original, s.c.state().screens().fileMenuController);
+            assertNotSame(original, s.c.state().screens().fileMenu.activeController());
             assertEquals(
                     RenderScreen.FILE_MENU, s.c.state().screens().currentScreen.renderScreen());
         }

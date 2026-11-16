@@ -136,20 +136,11 @@ abstract class LinkFixture {
         ItemRegistry itemRegistry = new ItemRegistry();
         itemRegistry.register(playerState.inventory().itemA(), new BlockingItem());
         switch (Direction.fromJavaOrUnknown(direction)) {
-            case RIGHT:
-                inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
-                break;
-            case LEFT:
-                inputState.onKeyEvent(inputConfig.leftKey(), GLFW_PRESS);
-                break;
-            case UP:
-                inputState.onKeyEvent(inputConfig.upKey(), GLFW_PRESS);
-                break;
-            case DOWN:
-                inputState.onKeyEvent(inputConfig.downKey(), GLFW_PRESS);
-                break;
-            default:
-                throw new IllegalArgumentException("direction " + direction);
+            case RIGHT -> inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+            case LEFT -> inputState.onKeyEvent(inputConfig.leftKey(), GLFW_PRESS);
+            case UP -> inputState.onKeyEvent(inputConfig.upKey(), GLFW_PRESS);
+            case DOWN -> inputState.onKeyEvent(inputConfig.downKey(), GLFW_PRESS);
+            default -> throw new IllegalArgumentException("direction " + direction);
         }
         Link link = TestLinks.link()
                 .input(inputState)
@@ -194,20 +185,11 @@ abstract class LinkFixture {
 
     protected static void pressDirection(InputState inputState, InputConfig inputConfig, int direction) {
         switch (Direction.fromJavaOrUnknown(direction)) {
-            case DOWN:
-                inputState.onKeyEvent(inputConfig.downKey(), GLFW_PRESS);
-                break;
-            case UP:
-                inputState.onKeyEvent(inputConfig.upKey(), GLFW_PRESS);
-                break;
-            case LEFT:
-                inputState.onKeyEvent(inputConfig.leftKey(), GLFW_PRESS);
-                break;
-            case RIGHT:
-                inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
-                break;
-            default:
-                throw new IllegalArgumentException("direction " + direction);
+            case DOWN -> inputState.onKeyEvent(inputConfig.downKey(), GLFW_PRESS);
+            case UP -> inputState.onKeyEvent(inputConfig.upKey(), GLFW_PRESS);
+            case LEFT -> inputState.onKeyEvent(inputConfig.leftKey(), GLFW_PRESS);
+            case RIGHT -> inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+            default -> throw new IllegalArgumentException("direction " + direction);
         }
     }
 
@@ -239,7 +221,7 @@ abstract class LinkFixture {
     }
 
     protected static final class RecordingRenderItem implements EquipmentItem {
-        protected int renderCalls;
+        int renderCalls;
 
         @Override
         public void render(
@@ -249,7 +231,7 @@ abstract class LinkFixture {
     }
 
     protected static final class HookshotTarget implements Hookshot.LaunchTarget {
-        protected boolean active;
+        boolean active;
 
         @Override
         public boolean fireHookshot() {
@@ -263,9 +245,9 @@ abstract class LinkFixture {
     }
 
     protected static final class AnimationOverrideItem implements EquipmentItem {
-        protected final int animationState;
+        final int animationState;
 
-        protected AnimationOverrideItem(int animationState) {
+        AnimationOverrideItem(int animationState) {
             this.animationState = animationState;
         }
 
@@ -276,8 +258,8 @@ abstract class LinkFixture {
     }
 
     protected static final class OcarinaAnimationTarget implements Ocarina.PlaybackTarget {
-        protected boolean playing;
-        protected int animationState = -1;
+        boolean playing;
+        int animationState = -1;
 
         @Override
         public boolean startOcarina(int countdown, int songFlags, int selectedSong) {
@@ -297,7 +279,7 @@ abstract class LinkFixture {
     }
 
     protected static final class RecordingGameplaySoundSink implements GameplaySoundSink {
-        protected final List<GameplaySoundEvent> events = new ArrayList<>();
+        final List<GameplaySoundEvent> events = new ArrayList<>();
 
         @Override
         public void play(GameplaySoundEvent event) {

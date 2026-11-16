@@ -110,7 +110,7 @@ public final class EntityStoryController {
                 this.state.writeKidKidnapState(slot, 1);
             }
             case 1 -> {
-                if ((yDistance >= -0x20 && yDistance < 0x20 || this.state.preKidKidnapDelay(slot, -1) == 0)
+                if (((yDistance >= -0x20 && yDistance < 0x20) || this.state.preKidKidnapDelay(slot, -1) == 0)
                         && this.roomVariables.readTransitionSequenceCounter() == 0x04) {
                     if (entity.type() == EntityRomConstants.ENTITY_KID_71) {
                         this.events.pendingDialogRequests.add(new DialogRequest(2, 0x20));
@@ -136,7 +136,7 @@ public final class EntityStoryController {
                         this.state.readKidZSpeed(slot) & 255,
                         this.state.storageKidSpeedYAccumulator(),
                         slot);
-                this.state.writeKidZSpeed(slot, this.state.readKidZSpeed(slot) - (2));
+                this.state.writeKidZSpeed(slot, this.state.readKidZSpeed(slot) - 2);
                 if (z == 0 || (z & 128) != 0) {
                     z = 0;
                     this.state.writeKidZSpeed(slot, (frameCounter & 31) == 0 ? 0x10 : 0);
@@ -728,7 +728,7 @@ public final class EntityStoryController {
                         slot,
                         RichardProgressEvent.Kind.START_QUEST,
                         owner.roomVariables.readEntityGoldenLeavesCount()));
-                owner.roomVariables.writeEntityRoomStatus(owner.roomVariables.readEntityRoomStatus() | (0x10));
+                owner.roomVariables.writeEntityRoomStatus(owner.roomVariables.readEntityRoomStatus() | 0x10);
                 owner.state.writeRichardState(slot, 2);
             } else if (owner.roomVariables.readEntityGoldenLeavesCount() < 5) {
                 owner.events.pendingDialogRequests.add(new DialogRequest(1, 0x3F));

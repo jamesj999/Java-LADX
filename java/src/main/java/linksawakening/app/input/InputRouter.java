@@ -153,7 +153,7 @@ public final class InputRouter implements DebugScroll {
 
     public void dumpLinkSurroundings() {
         if (!world.roomSession().rooms().hasActiveRoom()) return;
-        ActiveRoom room = world.roomSession().rooms().activeRoom();
+        ActiveRoom room = world.roomSession().rooms().activeRoomOrNull();
         int[] roomObjectsArea = room.roomObjectsArea();
         int lx = player.link().position().pixelX();
         int ly = player.link().position().pixelY();
@@ -188,6 +188,7 @@ public final class InputRouter implements DebugScroll {
         }
     }
 
+    @Override
     public boolean tryDebugScreenScroll() {
         if (!input.inputState().isDown(KEY_LEFT_SHIFT) && !input.inputState().isDown(KEY_RIGHT_SHIFT)) {
             return false;
@@ -224,7 +225,7 @@ public final class InputRouter implements DebugScroll {
                 return false;
             }
         }
-        if (world.roomSession().rooms().activeRoom().mapCategory() == Warp.CATEGORY_OVERWORLD) {
+        if (world.roomSession().rooms().activeRoomOrNull().mapCategory() == Warp.CATEGORY_OVERWORLD) {
             world.roomTransitionCoordinator().handleOverworldBoundary(player.link());
         } else {
             world.roomTransitionCoordinator().handleWarpAndIndoorBoundaries(player.link());
@@ -272,13 +273,15 @@ public final class InputRouter implements DebugScroll {
     }
 
     public boolean canPresentFileSave() {
-        return (!player.link().status().recoveryBlocksInput())
+        return !player.link().status().recoveryBlocksInput()
                 && !world.scrollController().isActive()
                 && !world.transitionController().isInputBlocked()
-                && (!ui.inventoryController().shouldBlockOverworldInput())
-                && (!GameplayDialogInput.blocksGameplay(ui.dialogController()));
+                && !ui.inventoryController().shouldBlockOverworldInput()
+                && !GameplayDialogInput.blocksGameplay(ui.dialogController());
     }
 
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
     public void headlessButton(String button, boolean pressed) {
         if (button.equals("none")) return;
         if (button.contains("+")) {

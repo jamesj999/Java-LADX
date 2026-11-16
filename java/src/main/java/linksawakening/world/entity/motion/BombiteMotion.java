@@ -147,7 +147,7 @@ public final class BombiteMotion {
     }
 
     static int negate(int speed) {
-        return (-signedByte(speed)) & 0xFF;
+        return -signedByte(speed) & 0xFF;
     }
 
     static int horizontalDirection(int speed) {

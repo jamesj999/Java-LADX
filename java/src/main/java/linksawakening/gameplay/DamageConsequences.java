@@ -7,8 +7,10 @@ public interface DamageConsequences {
     void powerUpEnded();
 
     DamageConsequences NONE = new DamageConsequences() {
+        @Override
         public void contactHurt() {}
 
+        @Override
         public void powerUpEnded() {}
     };
 }

@@ -51,6 +51,6 @@ final class TarinShieldRenderLayerTest {
 
     private static int pixel(byte[] buffer, int x, int y) {
         int offset = (y * Framebuffer.WIDTH + x) * 4;
-        return (buffer[offset] & 0xFF) << 16 | (buffer[offset + 1] & 0xFF) << 8 | buffer[offset + 2] & 0xFF;
+        return (buffer[offset] & 0xFF) << 16 | (buffer[offset + 1] & 0xFF) << 8 | (buffer[offset + 2] & 0xFF);
     }
 }

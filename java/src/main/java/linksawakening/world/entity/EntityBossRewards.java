@@ -110,14 +110,13 @@ public final class EntityBossRewards {
         if (entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
             // The mini-boss option reaches DidKillEnemy's room-event branch,
             // permanently opening the east rescue-room path.
-            runtime.roomVariables.writePendingRoomStatusMask(
-                    runtime.roomVariables.readPendingRoomStatusMask() | (0x20));
+            runtime.roomVariables.writePendingRoomStatusMask(runtime.roomVariables.readPendingRoomStatusMask() | 0x20);
         }
         if (entity.sourceLoadOrder() < 0
                 || (!this.state.readEnemyDropResolver().recordsDefeats() && !swallowedShield)) {
             if (entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
                 runtime.roomVariables.writePendingClearedEntityMask(
-                        runtime.roomVariables.readPendingClearedEntityMask() | (persistentClearMask(entity)));
+                        runtime.roomVariables.readPendingClearedEntityMask() | persistentClearMask(entity));
             }
             runtime.lifecycle.disableEntityWithoutPersistence(entity.slot());
             return;
@@ -147,7 +146,7 @@ public final class EntityBossRewards {
         this.state.writeKillOrder(killIndex, entity.sourceLoadOrder() & 0xFF);
         this.state.writeKillCount((this.state.readKillCount() + 1) & 0xFF);
         runtime.roomVariables.writePendingClearedEntityMask(
-                runtime.roomVariables.readPendingClearedEntityMask() | (persistentClearMask(entity)));
+                runtime.roomVariables.readPendingClearedEntityMask() | persistentClearMask(entity));
         if (result.dropped()) {
             runtime.pickups.spawnEnemyDrop(entity, result.itemType());
         }
@@ -191,10 +190,10 @@ public final class EntityBossRewards {
             this.state.writeKillOrder(killIndex, entity.sourceLoadOrder() & 0xFF);
             this.state.writeKillCount((this.state.readKillCount() + 1) & 0xFF);
             runtime.roomVariables.writePendingClearedEntityMask(
-                    runtime.roomVariables.readPendingClearedEntityMask() | (persistentClearMask(entity)));
+                    runtime.roomVariables.readPendingClearedEntityMask() | persistentClearMask(entity));
             if (runtime.roomVariables.readEntityMapId() != 0x07) {
                 runtime.roomVariables.writePendingRoomStatusMask(
-                        runtime.roomVariables.readPendingRoomStatusMask() | (0x20));
+                        runtime.roomVariables.readPendingRoomStatusMask() | 0x20);
             }
             runtime.lifecycle.disableEntityWithoutPersistence(slot);
             return;
@@ -568,7 +567,7 @@ public final class EntityBossRewards {
                 owner.state.writeKillOrder(killIndex, source.sourceLoadOrder() & 0xFF);
                 owner.state.writeKillCount((owner.state.readKillCount() + 1) & 0xFF);
                 owner.roomVariables.writePendingClearedEntityMask(
-                        owner.roomVariables.readPendingClearedEntityMask() | (persistentClearMask(source)));
+                        owner.roomVariables.readPendingClearedEntityMask() | persistentClearMask(source));
                 owner.pickups.spawnEnemyDrop(source, EntityRomConstants.ENTITY_KEY_DROP_POINT);
                 owner.lifecycle.disableEntityWithoutPersistence(slot);
             } else {
@@ -577,7 +576,7 @@ public final class EntityBossRewards {
                 // room event except in Eagle's Tower and later maps.
                 if (owner.roomVariables.readEntityMapId() >= 0 && owner.roomVariables.readEntityMapId() < 0x06) {
                     owner.roomVariables.writePendingRoomStatusMask(
-                            owner.roomVariables.readPendingRoomStatusMask() | (0x20));
+                            owner.roomVariables.readPendingRoomStatusMask() | 0x20);
                 }
             }
             owner.events.pendingEntityEvents.add(

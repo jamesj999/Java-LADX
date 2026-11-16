@@ -719,7 +719,7 @@ final class RoomEntityLiftThrowRuntimeTest {
         assertEquals(0, link.equipment().romAttackStepAnimationCountdown());
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
-        for (LinkAttackStepRequest request : runtime.consumePendingLinkAttackStepRequests()) {
+        for (LinkAttackStepRequest unused : runtime.consumePendingLinkAttackStepRequests()) {
             link.equipment().startRomItemAttackStep();
         }
 

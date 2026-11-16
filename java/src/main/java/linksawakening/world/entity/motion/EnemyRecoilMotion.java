@@ -68,8 +68,8 @@ public final class EnemyRecoilMotion {
         Vector vector = vectorTowardsLink(entityX, entityY, entityZ, linkX, linkY, length);
 
         // ConfigureEntityRecoil stores the negated vector: away from Link.
-        recoilSpeedX[slot] = (-vector.x()) & 0xFF;
-        recoilSpeedY[slot] = (-vector.y()) & 0xFF;
+        recoilSpeedX[slot] = -vector.x() & 0xFF;
+        recoilSpeedY[slot] = -vector.y() & 0xFF;
         // Recoil setup writes velocity tables only; position fractions persist.
         active[slot] = true;
     }

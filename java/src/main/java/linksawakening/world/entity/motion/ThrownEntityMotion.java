@@ -140,7 +140,7 @@ public final class ThrownEntityMotion {
         // BouncingEntityPhysics ($60B3): landing precedes wall rebound.
         if (sideScrolling && floorCollision) {
             y = ((y & 0xF0) + 0x05) & 0xFF;
-            int rebound = (signedByte((~speedY[slot]) & 0xFF) >> 1) & 0xFF;
+            int rebound = (signedByte(~speedY[slot] & 0xFF) >> 1) & 0xFF;
             if (rebound < 0xF8) {
                 speedY[slot] = rebound;
                 speedX[slot] = halvePlanarSpeed(speedX[slot]);
@@ -150,7 +150,7 @@ public final class ThrownEntityMotion {
             }
         } else if (!sideScrolling && (z & 0x80) != 0) {
             z = 0;
-            int rebound = (~(signedByte(speedZ[slot]) >> 1)) & 0xFF;
+            int rebound = ~(signedByte(speedZ[slot]) >> 1) & 0xFF;
             if (groundStatus == 0x02 || rebound < 0x07) {
                 speedX[slot] = 0;
                 speedY[slot] = 0;
@@ -219,7 +219,7 @@ public final class ThrownEntityMotion {
     }
 
     private static int bounceSpeed(int speed) {
-        return (signedByte((-speed) & 0xFF) >> 3) & 0xFF;
+        return (signedByte(-speed & 0xFF) >> 3) & 0xFF;
     }
 
     private static int horizontalDirection(int speed) {

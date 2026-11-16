@@ -30,8 +30,8 @@ final class RoomSessionFloatingItemTest {
         session.rooms().loadInitialOverworld(0x92);
         session.rooms().loadIndoor(0x00, 0x00, Warp.CATEGORY_SIDESCROLL);
 
-        assertTrue(session.rooms().activeRoom().entities().sideScrolling());
-        assertTrue(session.rooms().renderSnapshot().entities().sideScrolling());
+        assertTrue(session.rooms().activeRoomOrNull().entities().sideScrolling());
+        assertTrue(session.rooms().renderSnapshotOrNull().entities().sideScrolling());
     }
 
     private static byte[] loadRom() {

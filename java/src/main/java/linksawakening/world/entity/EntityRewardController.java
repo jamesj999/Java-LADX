@@ -350,7 +350,7 @@ public final class EntityRewardController {
     static final class EntitySlotLifecycleFrameStep {
         private final EntityRewardController owner;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityPickupFrameInputs inputs;
+        private EntityPickupFrameInputs inputs;
         private int frameCounter;
         private int linkEntityX;
         private int linkEntityY;
@@ -486,7 +486,7 @@ public final class EntityRewardController {
 
         private boolean inUse;
 
-        linksawakening.world.entity.EntityPickupEvent run(linksawakening.world.entity.EntityPickupFrameInputs inputs) {
+        linksawakening.world.entity.EntityPickupEvent run(EntityPickupFrameInputs inputs) {
             if (inUse) {
                 return new EntitySlotLifecycleFrameStep(owner).run(inputs);
             }

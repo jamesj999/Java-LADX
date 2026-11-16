@@ -20,6 +20,8 @@ final class MoldormTailSnapshots {
         }
     }
 
+    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+    @SuppressWarnings("ReferenceEquality")
     List<MoldormSegmentPosition> read(int slot, int inertia, int[] historyX, int[] historyY, int mask) {
         List<MoldormSegmentPosition> previous = snapshots.get(slot);
         var first = segment(previous, 0, (inertia - 0x0C) & mask, historyX, historyY);

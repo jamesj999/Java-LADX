@@ -86,7 +86,12 @@ final class SaveRoundTripTest {
             assertEquals(0, reopened.saveFilesMask());
             assertArrayEquals(new int[5], reopened.savedNames()[0]);
             press(game, "a");
-            assertTrue(game.state().screens().fileMenuController.snapshot().creation());
+            assertTrue(game.state()
+                    .screens()
+                    .fileMenu
+                    .activeController()
+                    .snapshot()
+                    .creation());
         } finally {
             game.close();
         }
@@ -184,6 +189,8 @@ final class SaveRoundTripTest {
         }
     }
 
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
     private static void playWakeUpPrefix(GameSession game) throws Exception {
         // Existing opening replay through the bed exit (first eight commands).
         var commands = Files.readAllLines(Path.of("../tools/opening/tail-cave-warp-route.tsv")).stream()

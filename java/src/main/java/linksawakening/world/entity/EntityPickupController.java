@@ -36,6 +36,8 @@ public final class EntityPickupController {
                 commonUpdates, new RoomEntityRuntime.CommonDroppableUpdate(RoomEntity.disabled(0), false));
     }
 
+    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+    @SuppressWarnings("ReferenceEquality")
     RoomEntityRuntime.CommonDroppableUpdate commonUpdate(RoomEntity entity, boolean hidden) {
         var previous = commonUpdates[entity.slot()];
         if (previous.entity() != entity || previous.hidden() != hidden) {
@@ -550,7 +552,7 @@ public final class EntityPickupController {
                             && (!owner.motions
                                             .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
                                             .readSecretSeashellPegasusCollisionCoordinatesKnown()
-                                    || withinUnsignedWindow(
+                                    || (withinUnsignedWindow(
                                                     entity.x() + 0x08,
                                                     owner.motions
                                                             .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
@@ -561,7 +563,7 @@ public final class EntityPickupController {
                                                     owner.motions
                                                             .get(SecretSeashellMotion.class, SecretSeashellMotion::new)
                                                             .readSecretSeashellPegasusCollisionY(),
-                                                    0x10));
+                                                    0x10)));
                 }
 
                 if (!reveal) {

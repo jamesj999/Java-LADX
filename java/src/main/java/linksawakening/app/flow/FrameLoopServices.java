@@ -12,6 +12,7 @@ import linksawakening.app.state.SaveState;
  */
 public record FrameLoopServices(
         ScreenSet screens,
+        linksawakening.app.debug.DebugTools debug,
         FramePresentation presentation,
         SessionInput input,
         SessionShutdown shutdown,
@@ -19,6 +20,7 @@ public record FrameLoopServices(
         SaveState saves) {
     public FrameLoopServices {
         Objects.requireNonNull(screens);
+        Objects.requireNonNull(debug);
         Objects.requireNonNull(presentation);
         Objects.requireNonNull(input);
         Objects.requireNonNull(shutdown);

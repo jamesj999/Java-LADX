@@ -9,7 +9,8 @@ final class EntityWarpController {
     }
 
     int writeWarpState(int slot, int value) {
-        return warpState[slot] = value;
+        warpState[slot] = value;
+        return warpState[slot];
     }
 
     private final int[] warpTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -19,6 +20,7 @@ final class EntityWarpController {
     }
 
     int writeWarpTransitionCountdown(int slot, int value) {
-        return warpTransitionCountdown[slot] = value;
+        warpTransitionCountdown[slot] = value;
+        return warpTransitionCountdown[slot];
     }
 }

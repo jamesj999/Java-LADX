@@ -180,7 +180,7 @@ public final class SpikedBeetleMotion {
     }
 
     static int complementHalfSpeed(int speed) {
-        return (~(signedByte(speed) >> 1)) & 0xFF;
+        return ~(signedByte(speed) >> 1) & 0xFF;
     }
 
     private static int directionForX(int speed) {

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.function.IntSupplier;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
 import linksawakening.rom.Rom;
-import linksawakening.rom.RomTables;
 import linksawakening.world.entity.event.BombExplosionEvent;
 import linksawakening.world.entity.event.ChestRewardEvent;
 import linksawakening.world.entity.event.DialogRequest;
@@ -159,7 +158,7 @@ public final class RoomEntityRuntime {
         EntitySpriteViews spriteHandlers = builder.spriteHandlers();
         RomEnemyCombatTables enemyCombatTables = builder.enemyCombatTables();
         EntityChestContents chestContentsTable = builder.chestContentsTable();
-        RomTables romTables = builder.romTables();
+
         Rom romData = builder.rom();
 
         this.slots = initial.slots().toArray(RoomEntity[]::new);

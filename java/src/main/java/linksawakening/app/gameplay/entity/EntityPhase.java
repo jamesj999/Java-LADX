@@ -37,50 +37,62 @@ public final class EntityPhase {
     }
 
     private final EntityFrameStages stages = new EntityFrameStages() {
+        @Override
         public List<EntityProjectileEvent> tickEntities(GameplaySimulation c, Sword.CollisionBox b) {
-            return c.roomSession().tickEntities(inputs.create(c, b));
+            return c.roomSession().tickEntities(inputs.borrow(c, b));
         }
 
+        @Override
         public void positions(GameplaySimulation c) {
             linkWrites.applyPositionWrites(c);
         }
 
+        @Override
         public void motion(GameplaySimulation c) {
             LinkWriteApplier.applyMotionWrites(c);
         }
 
+        @Override
         public void attacks(GameplaySimulation c) {
             linkWrites.applyAttackWrites(c);
         }
 
+        @Override
         public void sword(GameplaySimulation c) {
             LinkWriteApplier.applySwordWrites(c);
         }
 
+        @Override
         public void combat(GameplaySimulation c, List<EntityProjectileEvent> events) {
             applyCombat(c, events);
         }
 
+        @Override
         public void chests(GameplaySimulation c) {
             applyChestRewards(c);
         }
 
+        @Override
         public void progress(GameplaySimulation c) {
             applyProgressRewards(c);
         }
 
+        @Override
         public void witch(GameplaySimulation c) {
             applyWitchRewards(c);
         }
 
+        @Override
         public void dialogs(GameplaySimulation c) {
             routeDialogs(c);
         }
 
+        @Override
         public void projectiles(GameplaySimulation c, List<EntityProjectileEvent> events) {
             LinkWriteApplier.applyProjectileResponses(c, events);
         }
 
+        @Override
         public void finalEffects(GameplaySimulation c) {
             LinkWriteApplier.applyFinalEffects(c);
         }

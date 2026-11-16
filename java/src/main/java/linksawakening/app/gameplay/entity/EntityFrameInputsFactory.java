@@ -6,46 +6,186 @@ import linksawakening.state.PowerUp;
 import linksawakening.state.Tunic;
 import linksawakening.world.room.ButtonInputs;
 import linksawakening.world.room.EntityFrameInputs;
-import linksawakening.world.room.LinkInputs;
+import linksawakening.world.room.EntityFrameValues;
 import linksawakening.world.room.PlayerInputs;
 import linksawakening.world.room.SwordBox;
 import linksawakening.world.room.UiInputs;
 
 /** Captures current entity-frame inputs, retaining unchanged immutable leaf values for one session. */
-final class EntityFrameInputsFactory {
+final class EntityFrameInputsFactory implements EntityFrameValues {
     private final EntityInputCache cache = new EntityInputCache();
 
+    private int frameCounter;
+    private final CapturedLink link = new CapturedLink();
+    // Captured domain values are published only after borrow/create fills every group.
+    private PlayerInputs player;
+    private UiInputs ui;
+    private ButtonInputs buttons;
+    private SwordBox sword;
+
+    /** Owned snapshot. Earlier captures remain immutable when this factory is reused. */
     EntityFrameInputs create(GameplaySimulation c, Sword.CollisionBox b) {
-        return new EntityFrameInputs(
-                c.frameCounter(),
-                buildLinkInputs(c),
-                buildPlayerInputs(c),
-                buildUiInputs(c),
-                buildButtonInputs(c),
-                buildSwordBox(c, b));
+        borrow(c, b);
+        var position = cache.linkPosition(link.x, link.y, link.z, link.rawDirection, link.collisionType);
+        var motion = cache.linkMotion(
+                link.airborne, link.rawState, link.shield, link.invincibility, link.speedX, link.speedY);
+        var linkSnapshot = cache.linkInputs(
+                position, motion, link.attackCountdown, link.finalX, link.freeMovement, link.velocityZ);
+        return new EntityFrameInputs(frameCounter, linkSnapshot, player, ui, buttons, sword);
     }
 
-    private LinkInputs buildLinkInputs(GameplaySimulation c) {
+    /** Borrowed until the next borrow/create; the world tick consumes it synchronously. */
+    EntityFrameValues borrow(GameplaySimulation c, Sword.CollisionBox b) {
+        frameCounter = c.frameCounter();
+        captureLink(c);
+        player = buildPlayerInputs(c);
+        ui = buildUiInputs(c);
+        buttons = buildButtonInputs(c);
+        sword = buildSwordBox(b);
+        return this;
+    }
+
+    private void captureLink(GameplaySimulation c) {
         var l = c.link();
         var p = c.playerState();
-        return cache.linkInputs(
-                cache.linkPosition(
-                        l.position().romEntityX(),
-                        l.position().romEntityY(),
-                        l.animation().romEntityZ(),
-                        l.animation().direction(),
-                        l.position().romCollisionType()),
-                cache.linkMotion(
-                        l.airborne().isAirborne(),
-                        l.airborne().romMotionState(),
-                        l.equipment().isUsingShield(),
-                        l.status().isCollisionDamageImmune() ? 1 : p.vitals().invincibilityCounter(),
-                        l.position().romSpeedX(),
-                        l.position().romSpeedY()),
-                l.equipment().romAttackStepAnimationCountdown(),
-                l.position().romFinalPositionX(),
-                l.motion().debugNoClip(),
-                l.airborne().zVelocity());
+        link.x = l.position().romEntityX();
+        link.y = l.position().romEntityY();
+        link.z = l.animation().romEntityZ();
+        link.rawDirection = l.animation().direction();
+        link.collisionType = l.position().romCollisionType();
+        link.airborne = l.airborne().isAirborne();
+        link.rawState = l.airborne().romMotionState();
+        link.shield = l.equipment().isUsingShield();
+        link.invincibility =
+                l.status().isCollisionDamageImmune() ? 1 : p.vitals().invincibilityCounter();
+        link.speedX = l.position().romSpeedX();
+        link.speedY = l.position().romSpeedY();
+        link.attackCountdown = l.equipment().romAttackStepAnimationCountdown();
+        link.finalX = l.position().romFinalPositionX();
+        link.freeMovement = l.motion().debugNoClip();
+        link.velocityZ = l.airborne().zVelocity();
+    }
+
+    @Override
+    public int frameCounter() {
+        return frameCounter;
+    }
+
+    @Override
+    public CapturedLink link() {
+        return link;
+    }
+
+    @Override
+    public PlayerInputs player() {
+        return player;
+    }
+
+    @Override
+    public UiInputs ui() {
+        return ui;
+    }
+
+    @Override
+    public ButtonInputs buttons() {
+        return buttons;
+    }
+
+    @Override
+    public SwordBox sword() {
+        return sword;
+    }
+
+    private static final class CapturedLink
+            implements EntityFrameValues.Link, EntityFrameValues.Position, EntityFrameValues.Motion {
+        private int x, y, z, rawDirection, collisionType, rawState, invincibility, speedX, speedY;
+        private int attackCountdown, finalX, velocityZ;
+        private boolean airborne, shield, freeMovement;
+
+        @Override
+        public CapturedLink position() {
+            return this;
+        }
+
+        @Override
+        public CapturedLink motion() {
+            return this;
+        }
+
+        @Override
+        public int x() {
+            return x;
+        }
+
+        @Override
+        public int y() {
+            return y;
+        }
+
+        @Override
+        public int z() {
+            return z;
+        }
+
+        @Override
+        public int rawDirection() {
+            return rawDirection;
+        }
+
+        @Override
+        public int collisionType() {
+            return collisionType;
+        }
+
+        @Override
+        public int rawState() {
+            return rawState;
+        }
+
+        @Override
+        public int invincibility() {
+            return invincibility;
+        }
+
+        @Override
+        public int speedX() {
+            return speedX;
+        }
+
+        @Override
+        public int speedY() {
+            return speedY;
+        }
+
+        @Override
+        public int attackCountdown() {
+            return attackCountdown;
+        }
+
+        @Override
+        public int finalX() {
+            return finalX;
+        }
+
+        @Override
+        public int velocityZ() {
+            return velocityZ;
+        }
+
+        @Override
+        public boolean airborne() {
+            return airborne;
+        }
+
+        @Override
+        public boolean shield() {
+            return shield;
+        }
+
+        @Override
+        public boolean freeMovement() {
+            return freeMovement;
+        }
     }
 
     private PlayerInputs buildPlayerInputs(GameplaySimulation c) {
@@ -109,7 +249,7 @@ final class EntityFrameInputsFactory {
                 lift.isBombButtonHeld());
     }
 
-    private SwordBox buildSwordBox(GameplaySimulation c, Sword.CollisionBox b) {
+    private SwordBox buildSwordBox(Sword.CollisionBox b) {
         return cache.swordBox(b.active(), b.x(), b.width(), b.y(), b.height());
     }
 }

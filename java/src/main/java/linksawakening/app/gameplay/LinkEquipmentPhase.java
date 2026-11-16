@@ -29,8 +29,8 @@ final class LinkEquipmentPhase {
                 && !context.transitionController().isInputBlocked()
                 && !context.inventoryController().shouldBlockOverworldInput()
                 && !dialogBlocksGameplay
-                && (!context.link().animation().dialogGotItemActive())
-                && (!context.roomSession().entityState().gotItemPresentationActive());
+                && !context.link().animation().dialogGotItemActive()
+                && !context.roomSession().entityState().gotItemPresentationActive();
         boolean swordPickupSequenceActive = context.roomSession().entityState().swordPickupSequenceActive();
         linkActive = linkActive && !swordPickupSequenceActive;
         if (linkActive) {
@@ -47,7 +47,7 @@ final class LinkEquipmentPhase {
                     && (dialogBlocksGameplay
                             || context.scrollController().isActive()
                             || context.transitionController().isInputBlocked()
-                            || (context.roomSession().entityState().gotItemPresentationActive()))) {
+                            || context.roomSession().entityState().gotItemPresentationActive())) {
                 tickCrackedFloor(context, context.link().motion().romInteractiveMotionBlockValue() != 0);
             }
         }

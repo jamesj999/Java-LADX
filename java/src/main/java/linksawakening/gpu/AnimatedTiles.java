@@ -6,7 +6,7 @@ import linksawakening.rom.RomSymbols;
 
 /** Stateful gameplay tile animation; counters intentionally survive room changes. */
 final class AnimatedTiles {
-    private static final int TILE_DATA_SIZE = Vram.TILE_DATA_SIZE;
+
     private static final int MAP_COLOR_DUNGEON = 0xFF;
     private final Vram target;
 

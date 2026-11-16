@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 class RoomFrameEnumTest {
     @Test
     void knownFacingCarriesItsEnumAndExactEngineIndex() {
-        var p = new LinkPosition(10, 20, 3, (Direction.RIGHT).javaIndex(), 4);
+        var p = new LinkPosition(10, 20, 3, Direction.RIGHT.javaIndex(), 4);
         assertEquals(Direction.RIGHT, p.direction());
         assertEquals(3, p.rawDirection());
         assertEquals(10, p.x());
@@ -35,7 +35,7 @@ class RoomFrameEnumTest {
 
     @Test
     void motionStateEnumsDoNotNarrowRawRomGates() {
-        var known = new LinkMotion(false, (LinkMotionState.FALLING_DOWN).romValue(), false, 0, 1, 2);
+        var known = new LinkMotion(false, LinkMotionState.FALLING_DOWN.romValue(), false, 0, 1, 2);
         assertEquals(6, known.rawState());
         assertEquals(LinkMotionState.FALLING_DOWN, known.state());
         var unknown = new LinkMotion(false, 0xFF, false, 0, 1, 2);

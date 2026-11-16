@@ -24,7 +24,7 @@ public final class OverworldBushInteraction {
     private static final int BANK_SIZE = 0x4000;
 
     private static final int ROOM_OBJECTS_BASE = 0x11;
-    private static final int ROOM_OBJECT_ROW_STRIDE = 0x10;
+
     private static final int OBJECTS_PER_ROW = 10;
     private static final int OBJECTS_PER_COLUMN = 8;
     private static final int ROOM_TILE_WIDTH = 20;

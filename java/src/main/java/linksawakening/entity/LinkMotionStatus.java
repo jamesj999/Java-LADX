@@ -12,7 +12,8 @@ final class LinkMotionStatus {
     }
 
     LinkMotionState motionState(LinkMotionState value) {
-        return motionState = value;
+        motionState = value;
+        return motionState;
     }
 
     private int recoverCountdown;
@@ -22,7 +23,8 @@ final class LinkMotionStatus {
     }
 
     int recoverCountdown(int value) {
-        return recoverCountdown = value;
+        recoverCountdown = value;
+        return recoverCountdown;
     }
 
     private boolean recoveringInWater;
@@ -32,7 +34,8 @@ final class LinkMotionStatus {
     }
 
     boolean recoveringInWater(boolean value) {
-        return recoveringInWater = value;
+        recoveringInWater = value;
+        return recoveringInWater;
     }
 
     private int slowWalkingSpeed;
@@ -42,7 +45,8 @@ final class LinkMotionStatus {
     }
 
     int slowWalkingSpeed(int value) {
-        return slowWalkingSpeed = value;
+        slowWalkingSpeed = value;
+        return slowWalkingSpeed;
     }
 
     private int itemUsageContext;
@@ -52,7 +56,8 @@ final class LinkMotionStatus {
     }
 
     int itemUsageContext(int value) {
-        return itemUsageContext = value;
+        itemUsageContext = value;
+        return itemUsageContext;
     }
 
     private boolean romInteractiveMotionBlocked;
@@ -62,7 +67,8 @@ final class LinkMotionStatus {
     }
 
     boolean romInteractiveMotionBlocked(boolean value) {
-        return romInteractiveMotionBlocked = value;
+        romInteractiveMotionBlocked = value;
+        return romInteractiveMotionBlocked;
     }
 
     private int romInteractiveMotionBlockValue;
@@ -72,7 +78,8 @@ final class LinkMotionStatus {
     }
 
     int romInteractiveMotionBlockValue(int value) {
-        return romInteractiveMotionBlockValue = value;
+        romInteractiveMotionBlockValue = value;
+        return romInteractiveMotionBlockValue;
     }
 
     private boolean debugNoClip;
@@ -82,7 +89,8 @@ final class LinkMotionStatus {
     }
 
     boolean debugNoClip(boolean value) {
-        return debugNoClip = value;
+        debugNoClip = value;
+        return debugNoClip;
     }
 
     private int frameCounter;
@@ -92,7 +100,8 @@ final class LinkMotionStatus {
     }
 
     int frameCounter(int value) {
-        return frameCounter = value;
+        frameCounter = value;
+        return frameCounter;
     }
 
     private boolean gelClinging;
@@ -102,7 +111,8 @@ final class LinkMotionStatus {
     }
 
     boolean gelClinging(boolean value) {
-        return gelClinging = value;
+        gelClinging = value;
+        return gelClinging;
     }
 
     private int gelMotionFrame;
@@ -112,7 +122,8 @@ final class LinkMotionStatus {
     }
 
     int gelMotionFrame(int value) {
-        return gelMotionFrame = value;
+        gelMotionFrame = value;
+        return gelMotionFrame;
     }
 
     LinkMotionStatus() {}

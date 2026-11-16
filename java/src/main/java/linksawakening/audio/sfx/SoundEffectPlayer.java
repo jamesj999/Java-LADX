@@ -16,7 +16,6 @@ public final class SoundEffectPlayer implements SoundEffectPlayback {
 
     private static final String ROM_RESOURCE = "rom/azle.gbc";
 
-    private final GameBoyApu apu;
     private final SoundEffectCatalog catalog;
     private final RomSoundEffectEngine engine;
 
@@ -33,7 +32,7 @@ public final class SoundEffectPlayer implements SoundEffectPlayback {
     }
 
     public SoundEffectPlayer(GameBoyApu apu, Rom romData, SoundEffectCatalog catalog) {
-        this.apu = Objects.requireNonNull(apu, "apu");
+        Objects.requireNonNull(apu, "apu");
         this.catalog = Objects.requireNonNull(catalog, "catalog");
         engine = new RomSoundEffectEngine(Objects.requireNonNull(romData, "romData"), apu);
     }
@@ -52,6 +51,7 @@ public final class SoundEffectPlayer implements SoundEffectPlayback {
         return catalog.find(effect.namespace(), effect.id()).isPresent();
     }
 
+    @Override
     public void play(SoundEffect effect) {
         Objects.requireNonNull(effect, "effect");
         if (!supports(effect)) {
@@ -66,6 +66,7 @@ public final class SoundEffectPlayer implements SoundEffectPlayback {
         }
     }
 
+    @Override
     public void tick60Hz() {
         if (!isPlaying()) {
             return;
@@ -76,6 +77,7 @@ public final class SoundEffectPlayer implements SoundEffectPlayback {
         }
     }
 
+    @Override
     public boolean isPlaying() {
         return effectSelected && engine.isPlaying();
     }
@@ -92,6 +94,7 @@ public final class SoundEffectPlayer implements SoundEffectPlayback {
         return engine.takeWaveRestoreRequest();
     }
 
+    @Override
     public void stop() {
         effectSelected = false;
         engine.stop();

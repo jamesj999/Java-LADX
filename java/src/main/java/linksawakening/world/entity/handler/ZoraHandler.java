@@ -2,7 +2,6 @@ package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_ZORA;
 
-import java.util.function.IntSupplier;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
@@ -18,7 +17,7 @@ import linksawakening.world.entity.motion.ZoraMotion;
 /** ROM handler stages for Zora. */
 final class ZoraHandler {
     static void install(EntityHandlerRegistry registry) {
-        registry.registerInitializer(ENTITY_ZORA, (entity, random) -> initialize(registry, entity, random));
+        registry.registerInitializer(ENTITY_ZORA, (entity, random) -> initialize(registry, entity));
         registry.registerTick(ENTITY_ZORA, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 10, ZoraHandler::phase4Zora);
     }
 
@@ -69,7 +68,7 @@ final class ZoraHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity) {
         registry.motion(ZoraMotion.class, ZoraMotion::new).initialize(entity.slot());
     }
 }

@@ -15,26 +15,8 @@ final class TransientVfxRenderLayer implements HardwareRenderLayer {
     private int[] palette;
     private int frameCounter;
 
-    public TransientVfxRenderLayer(
-            TransientVfxSystem transientVfxSystem,
-            CutLeavesEffectRenderer cutLeavesEffectRenderer,
-            ScrollController scrollController,
-            int[] palette) {
-        this(transientVfxSystem, cutLeavesEffectRenderer, scrollController, palette, 0);
-    }
-
-    public TransientVfxRenderLayer(
-            TransientVfxSystem transientVfxSystem,
-            CutLeavesEffectRenderer cutLeavesEffectRenderer,
-            ScrollController scrollController,
-            int[] palette,
-            int frameCounter) {
-        this.transientVfxSystem = transientVfxSystem;
-        this.cutLeavesEffectRenderer = cutLeavesEffectRenderer;
-        this.scrollController = scrollController;
-        this.palette = palette;
-        this.frameCounter = frameCounter & 0xFF;
-    }
+    /** Retained frame adapter; configure supplies its borrowed inputs before submission. */
+    TransientVfxRenderLayer() {}
 
     private VfxPoseCache poses;
 
@@ -44,7 +26,7 @@ final class TransientVfxRenderLayer implements HardwareRenderLayer {
             ScrollController scroll,
             int[] palette,
             int counter) {
-        if (poses == null || cutLeavesEffectRenderer != renderer) poses = new VfxPoseCache(renderer);
+        if (cutLeavesEffectRenderer != renderer) poses = new VfxPoseCache(renderer);
         transientVfxSystem = system;
         cutLeavesEffectRenderer = renderer;
         scrollController = scroll;
@@ -58,54 +40,18 @@ final class TransientVfxRenderLayer implements HardwareRenderLayer {
         }
         int shakeX = -scrollController.screenShakeHorizontal();
         if (transientVfxSystem.activeCount() == 0) return;
-        var slots = transientVfxSystem.activeSlots();
+        var slots = transientVfxSystem.liveSlots();
         for (int slotIndex = 0; slotIndex < slots.size(); slotIndex++) {
             var slot = slots.get(slotIndex);
-            if (poses != null) {
-                var pose = poses.pose(slot, frameCounter);
-                for (int i = 0; i < pose.size(); i++) {
-                    var sprite = pose.get(i);
-                    OamDrawing.draw8(
-                            context,
-                            sprite.tile(),
-                            slot.worldX() + sprite.x() + shakeX,
-                            slot.worldY() + sprite.y(),
-                            (sprite.attributes() & ATTR_FLIP_X) != 0,
-                            (sprite.attributes() & ATTR_FLIP_Y) != 0,
-                            palette);
-                }
-                continue;
-            }
-            var sprites =
-                    switch (slot.type()) {
-                        case BUSH_LEAVES -> cutLeavesEffectRenderer.renderBushLeaves(
-                                slot.worldX(), slot.worldY(), slot.countdown());
-                        case WATER_SPLASH -> cutLeavesEffectRenderer.renderWaterSplash(
-                                slot.worldX(), slot.worldY(), slot.countdown());
-                        case POOF, PEGASUS_DUST, CHEST_APPEARS, STAIRS_APPEARS -> cutLeavesEffectRenderer.renderPoof(
-                                slot.worldX(), slot.worldY(), slot.countdown());
-                        case SWORD_POKE -> cutLeavesEffectRenderer.renderSwordPoke(
-                                slot.worldX(), slot.worldY(), slot.countdown());
-                        case SMOKE -> cutLeavesEffectRenderer.renderSmoke(
-                                slot.worldX(), slot.worldY(), slot.countdown());
-                        case LASER_BEAM -> cutLeavesEffectRenderer.renderLaserBeam(
-                                slot.worldX(), slot.worldY(), slot.countdown(), frameCounter, slot.slotIndex());
-                        case MOVING_SPARKLE -> cutLeavesEffectRenderer.renderMovingSparkle(
-                                slot.worldX(), slot.worldY(), slot.countdown(), slot.variant());
-                        case SWORD_BEAM -> cutLeavesEffectRenderer.renderSwordBeam(
-                                slot.worldX(),
-                                slot.worldY(),
-                                slot.countdown(),
-                                frameCounter,
-                                slot.slotIndex(),
-                                slot.variant());
-                    };
-            for (CutLeavesEffectRenderer.SpritePlacement sprite : sprites) {
+
+            var pose = poses.pose(slot, frameCounter);
+            for (int i = 0; i < pose.size(); i++) {
+                var sprite = pose.get(i);
                 OamDrawing.draw8(
                         context,
                         sprite.tile(),
-                        sprite.x() + shakeX,
-                        sprite.y(),
+                        slot.worldX() + sprite.x() + shakeX,
+                        slot.worldY() + sprite.y(),
                         (sprite.attributes() & ATTR_FLIP_X) != 0,
                         (sprite.attributes() & ATTR_FLIP_Y) != 0,
                         palette);

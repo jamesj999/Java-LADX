@@ -40,7 +40,7 @@ public final class SceneParityExtension implements BeforeEachCallback, BeforeTes
 
     private static void observe(
             ExtensionContext context,
-            ArrayList<String> rows,
+            List<String> rows,
             Map<String, Group> groups,
             Map<String, Group> expectedSources) {
         boolean probe = Boolean.getBoolean("sceneParity.probe");
@@ -134,12 +134,7 @@ public final class SceneParityExtension implements BeforeEachCallback, BeforeTes
     }
 
     private static void report(
-            ArrayList<String> rows,
-            String id,
-            int layers,
-            int expectedPixels,
-            int mismatchPixels,
-            Set<String> evidence) {
+            List<String> rows, String id, int layers, int expectedPixels, int mismatchPixels, Set<String> evidence) {
         if (mismatchPixels > 0) {
             rows.add(id + "\tMISMATCH\tpixels=" + mismatchPixels + ";expectedPixels=" + expectedPixels);
             return;
@@ -155,10 +150,12 @@ public final class SceneParityExtension implements BeforeEachCallback, BeforeTes
 
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
+        // This typed test-store/reflection key is populated with the same concrete collection type before reading.
         @SuppressWarnings("unchecked")
         var builders = (List<GameFrameSceneBuilder>) context.getStore(KEY).remove("builders");
         if (builders != null) builders.forEach(builder -> builder.setDrawObserver(null));
         TestDrawObservers.CURRENT.remove();
+        // This typed test-store/reflection key is populated with the same concrete collection type before reading.
         @SuppressWarnings("unchecked")
         var rows = (ArrayList<String>) context.getStore(KEY).remove("rows");
         if (rows == null || rows.size() == 1) return;
@@ -168,6 +165,7 @@ public final class SceneParityExtension implements BeforeEachCallback, BeforeTes
         Path directory = Path.of("build", "scene-parity", System.getProperty("sceneParity.task", "test"));
         Files.createDirectories(directory);
         Files.write(directory.resolve(name + ".tsv"), rows);
+        // This typed test-store/reflection key is populated with the same concrete collection type before reading.
         @SuppressWarnings("unchecked")
         var expectedSources = (Map<String, Group>) context.getStore(KEY).remove("expectedSources");
         if (expectedSources != null && !expectedSources.isEmpty()) {
@@ -177,6 +175,7 @@ public final class SceneParityExtension implements BeforeEachCallback, BeforeTes
                     report.add(source + "\t" + group.pixels + "\t" + group.scenes + "\t" + group.example));
             Files.write(directory.resolve(name + ".expected.tsv"), report);
         }
+        // This typed test-store/reflection key is populated with the same concrete collection type before reading.
         @SuppressWarnings("unchecked")
         var groups = (Map<String, Group>) context.getStore(KEY).remove("groups");
         if (groups != null && !groups.isEmpty()) {

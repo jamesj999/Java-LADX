@@ -44,8 +44,7 @@ explicit null guards. Null is not a second screen discriminator.
 
 RenderStateAssembler fills overworld room/actors, title/cutscene background, or
 lets the active file screen publish its menu frame. An active non-world dialog
-binds its room palette view explicitly. The four app.screen migration edits only
-remove duplicate immutable/mutable overloads and the obsolete type import.
+binds its room palette view explicitly. File screens publish through the same retained state and scene pipeline.
 
 ## Lifetimes and ownership
 
@@ -87,16 +86,15 @@ bounded regression evidence, not game-wide emulator parity.
 
 With escape analysis disabled, unified assembly and construction measure 0 B;
 composition measures 0 B. The representative room with ten entities, dialog and
-active VFX measures 264 B/frame, within the unchanged <410 budget. Intro and open
+active VFX measures 0 B/frame, guarded at zero; rendering consumes liveSlots()
+without owned VFX snapshots. Intro and open
 inventory build+draw measure 0 B, within <16. Whole-frame idle/inventory measure
-0 B; walking measures about 597 B within its existing guard. Default-JVM and
+0 B; walking measures about 139.5 B within its 175 B guard. Default-JVM and
 EA-off runs use the same tests; temporary init scripts never alter build files.
 
-The baseline was 48 main files / 5,169 lines / 208 explicit null comparisons.
-The audit counts physical source lines and literal == null / != null expressions,
-including ternaries, validation and caches. See the final audit for current
-metrics and each retired owned/reusable pair. Test counts never decrease and
-no opening fixtures or golden hashes are edited.
+Source ownership and historical unification metrics are recorded in the
+[unification audit](archive/history/render-unification.md). Cohesion determines
+class boundaries; there is no file-length target.
 
 Run the required gate with the user ROM configured:
 

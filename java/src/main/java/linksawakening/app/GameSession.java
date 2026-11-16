@@ -44,7 +44,7 @@ public class GameSession implements AutoCloseable {
     void toggleRecording() {
         if (closed) return;
         try {
-            if (recorder != null) {
+            if (recordingActive()) {
                 GameplayRecorder finished = recorder;
                 recorder = null; // Detach audio before finalizing, including on encoder failure.
                 finished.close();
@@ -52,7 +52,8 @@ public class GameSession implements AutoCloseable {
             } else {
                 var directory = recordingSettings.output().toAbsolutePath().getParent();
                 var output = directory.resolve("gameplay-"
-                        + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
+                        + LocalDateTime.now(java.time.ZoneId.systemDefault())
+                                .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
                         + "-" + UUID.randomUUID() + ".mp4");
                 recorder = new GameplayRecorder(new RecordingOptions(
                         output, recordingSettings.scale(), recordingSettings.crf(), recordingSettings.ffmpeg()));
@@ -62,23 +63,27 @@ public class GameSession implements AutoCloseable {
             DebugLog.warning("Recording failed: " + failure.getMessage() + ": "
                     + failure.getCause().getMessage());
         } finally {
-            context.host().recordingStatus(recorder != null);
+            context.host().recordingStatus(recordingActive());
         }
     }
 
     /** Configure before initializing either a desktop or headless session. */
     public void configureRecording(RecordingOptions options) {
-        if (context != null || recorder != null || closed)
+        if (context != null || recordingActive() || closed)
             throw new IllegalStateException("Session already initialized or closed");
         recorder = new GameplayRecorder(options);
         recordingSettings = options;
     }
 
+    private boolean recordingActive() {
+        return recorder != null;
+    }
+
     private void renderFrame() {
-        if (recorder != null) recorder.beginFrame();
+        if (recordingActive()) recorder.beginFrame();
         update();
         context.runtime().presentation().composeFrameBuffer();
-        if (recorder != null) recorder.captureFrame(context.services().visual().indexedDisplayBuffer());
+        if (recordingActive()) recorder.captureFrame(context.services().visual().indexedDisplayBuffer());
     }
 
     private final FrameClock clock = new FrameClock();
@@ -168,7 +173,7 @@ public class GameSession implements AutoCloseable {
                 context.runtime().flows().router().startTitleScreenWithoutIntro();
             }
             context.host().open(this::onKeyEvent);
-            context.host().recordingStatus(recorder != null);
+            context.host().recordingStatus(recordingActive());
             FramePacer pacer = options.headless() ? null : new FramePacer();
             long rendered = 0;
             while (!context.host().shouldClose()
@@ -212,8 +217,7 @@ public class GameSession implements AutoCloseable {
     }
 
     void update() {
-        if (context.state().debug().debugMenu != null
-                && context.state().debug().debugMenu.isOpen()) return;
+        if (context.runtime().debug().menu().isOpen()) return;
         clock.advance();
         // The engine's frame boundary uses scanline zero for non-entity draws.
         random.beginFrame(clock.value(), 0);
@@ -229,7 +233,7 @@ public class GameSession implements AutoCloseable {
         try {
             if (context != null) context.runtime().shutdown().close();
         } finally {
-            if (recorder != null) recorder.close();
+            if (recordingActive()) recorder.close();
         }
     }
 
@@ -255,7 +259,7 @@ public class GameSession implements AutoCloseable {
     void onKeyEvent(int key, int action) {
         if (key >= 0 && key == context.services().input().inputConfig().recordingKey()) {
             if (action == linksawakening.input.KeyCodes.PRESS
-                    && (recorder != null
+                    && (recordingActive()
                             || context.state().screens().currentScreen
                                     instanceof linksawakening.app.screen.GameplayScreen)) {
                 toggleRecording();

@@ -150,17 +150,9 @@ final class EntityCombatResolver {
 
     List<EntityCombatEvent> resolveCombat(EnemyCombatInputs inputs) {
         var runtime = this;
-        int frameCounter = inputs.frameCounter();
-        int linkEntityX = inputs.linkEntityX();
-        int linkEntityY = inputs.linkEntityY();
-        boolean linkAirborne = inputs.linkAirborne();
+
         int linkVerticalVelocity = inputs.linkVerticalVelocity();
-        boolean linkInteractive = inputs.linkInteractive();
-        boolean swordCollisionActive = inputs.swordCollisionActive();
-        int swordX = inputs.swordX();
-        int swordWidth = inputs.swordWidth();
-        int swordY = inputs.swordY();
-        int swordHeight = inputs.swordHeight();
+
         EnemyAttackContext attackContext = inputs.attackContext();
         EntitySlotValidation.validateByte(linkVerticalVelocity, "Link vertical velocity");
         this.clearDeferredContactRecoil();
@@ -327,7 +319,6 @@ final class EntityCombatResolver {
 
     static boolean entityCombatGatesAcceptMovementState(EntityCombatSlot slot) {
         var runtime = slot.runtime;
-        var frame = slot.inputs;
 
         slot.peaHatGrounded = slot.entity.type() != EntityRomConstants.ENTITY_PEAHAT
                 || runtime.motions.get(PeaHatMotion.class, PeaHatMotion::new).isGrounded(slot.entity);
@@ -367,7 +358,6 @@ final class EntityCombatResolver {
 
     static boolean entityCombatGatesAcceptDamageCountdowns(EntityCombatSlot slot) {
         var runtime = slot.runtime;
-        var frame = slot.inputs;
 
         slot.hidingZolSwordCollision = slot.entity.type() != EntityRomConstants.ENTITY_HIDING_ZOL
                 || runtime.motions
@@ -594,7 +584,6 @@ final class EntityCombatResolver {
 
     static boolean entitySwordImpactPrepare(EntityCombatSlot slot) {
         var runtime = slot.runtime;
-        var frame = slot.inputs;
 
         slot.soundChannel = EntityCombatEvent.SoundChannel.NONE;
         slot.soundId = -1;
@@ -619,7 +608,6 @@ final class EntityCombatResolver {
 
     static boolean entitySwordImpactApply(EntityCombatSlot slot) {
         var runtime = slot.runtime;
-        var frame = slot.inputs;
 
         if (slot.entity.type() == EntityRomConstants.ENTITY_CRYSTAL_SWITCH) {
             entitySwordImpactApplyCrystalSwitch(slot);
@@ -727,7 +715,7 @@ final class EntityCombatResolver {
 
     static void entitySwordStatusApply(EntityCombatSlot slot) {
         var runtime = slot.runtime;
-        var frame = slot.inputs;
+
         if (slot.enemySpecialAction == 0xFE) {
             entitySwordStatusBurn(slot);
         } else if (slot.enemySpecialAction == 0xFF) {
@@ -741,7 +729,6 @@ final class EntityCombatResolver {
 
     private static void entitySwordStatusBurn(EntityCombatSlot slot) {
         var runtime = slot.runtime;
-        var frame = slot.inputs;
 
         // ApplySwordDamagesToEnemy's burning branch starts the
         // shared $60 transition and emits NOISE_SFX_BURSTING_FLAME.
@@ -757,7 +744,6 @@ final class EntityCombatResolver {
 
     private static void entitySwordStatusStun(EntityCombatSlot slot) {
         var runtime = slot.runtime;
-        var frame = slot.inputs;
 
         // EntityBecomeStunned uses private countdown 2 and clears
         // vertical speed; the runtime has no separate Z velocity

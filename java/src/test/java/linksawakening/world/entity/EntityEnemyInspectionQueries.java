@@ -38,10 +38,9 @@ import linksawakening.world.entity.motion.ZolGelMotion;
 /** Test-side queries over the production inspector's exact service bindings. */
 final class EntityEnemyInspectionQueries {
     private final EntityEnemyInspection runtime;
-    private final EntityEnemyInspection source;
 
     EntityEnemyInspectionQueries(EntityEnemyInspection source) {
-        this.source = source;
+
         this.runtime = source;
     }
 

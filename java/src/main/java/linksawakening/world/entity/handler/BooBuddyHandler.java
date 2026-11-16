@@ -3,7 +3,6 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOO_BUDDY;
 import static linksawakening.world.entity.EntitySnapshots.withVariant;
 
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
@@ -15,7 +14,7 @@ import linksawakening.world.entity.motion.EnemyRecoilMotion;
 /** ROM handler stages for BooBuddy. */
 final class BooBuddyHandler {
     static void install(EntityHandlerRegistry registry) {
-        registry.registerInitializer(ENTITY_BOO_BUDDY, (entity, random) -> initialize(registry, entity, random));
+        registry.registerInitializer(ENTITY_BOO_BUDDY, (entity, random) -> initialize(registry, entity));
         registry.registerTick(
                 ENTITY_BOO_BUDDY, EntityTickStage.PHASE_1_BEFORE_BOSS_INTRO, 0, BooBuddyHandler::phase1BooBuddy);
         registry.registerTick(
@@ -86,7 +85,7 @@ final class BooBuddyHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity) {
         registry.motion(BooBuddyMotion.class, BooBuddyMotion::new).initialize(entity.slot());
     }
 }

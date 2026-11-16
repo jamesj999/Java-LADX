@@ -79,7 +79,7 @@ public final class AntiFairyMotion {
     }
 
     private static int negateByte(int value) {
-        return (-signedByte(value)) & 0xFF;
+        return -signedByte(value) & 0xFF;
     }
 
     private static int directionForHorizontalSpeed(int speed) {

@@ -45,13 +45,11 @@ public final class RenderStateAssembler {
     }
 
     public void composeFrameBuffer() {
-        if (world.roomSession().rooms().activeRoom() != null) {
+        if (world.roomSession().hasRoom()) {
+            var room = world.roomSession().rooms().requireActiveRoom();
             world.roomSession().dungeon().view().copyTo(dungeonProgress, dungeonItems, dungeonMinimap);
             ui.inventoryMenu()
-                    .setWorldContext(
-                            world.roomSession().rooms().activeRoom().mapCategory() != Warp.CATEGORY_OVERWORLD,
-                            world.roomSession().rooms().activeRoom().mapId(),
-                            dungeonProgress);
+                    .setWorldContext(room.mapCategory() != Warp.CATEGORY_OVERWORLD, room.mapId(), dungeonProgress);
             ui.inventoryMenu()
                     .setDungeonContext(
                             dungeonItems,
@@ -82,7 +80,7 @@ public final class RenderStateAssembler {
 
     private void fillRoomView() {
         inputs.withRoom(
-                world.roomSession().rooms().renderView(), world.scrollController(), world.transitionController());
+                world.roomSession().rooms().renderViewOrNull(), world.scrollController(), world.transitionController());
     }
 
     private void fillOverworld() {

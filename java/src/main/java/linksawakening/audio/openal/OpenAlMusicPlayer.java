@@ -19,7 +19,6 @@ import linksawakening.audio.sfx.SoundEffectPlayer;
 /** Browser transport controls over a pure sample mixer and native stream. */
 public final class OpenAlMusicPlayer implements FrameMusicPlayer {
     private static final int BUFFER_COUNT = 4;
-    private static final int BUFFER_FRAMES = 1024;
 
     private final FrameAudioMixer mixer;
     private final OpenAlStream stream = new OpenAlStream();
@@ -61,6 +60,7 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
     }
 
     /** Returns whether the ROM music driver still has an active channel. */
+    @Override
     public boolean isMusicPlaying() {
         return isAvailable() && driver.isPlaying();
     }
@@ -159,6 +159,7 @@ public final class OpenAlMusicPlayer implements FrameMusicPlayer {
         }
     }
 
+    @Override
     public void update() {
         if (!isAvailable() || paused) {
             return;

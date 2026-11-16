@@ -12,29 +12,35 @@ final class RoomProgressView implements RoomProgress {
         this.session = session;
     }
 
+    @Override
     public void onMapBoundaryWarp(Runnable callback) {
         dependencies.location().mapBoundaryWarp = java.util.Objects.requireNonNull(callback);
     }
 
+    @Override
     public Warp respawnPoint() {
         return dependencies.location().respawnPoint;
     }
 
+    @Override
     public int respawnIndoorRoom() {
         return dependencies.location().respawnIndoorRoom;
     }
 
+    @Override
     public void setRespawnPoint(Warp point, int indoorRoom) {
         dependencies.location().respawnPoint = point;
         dependencies.location().respawnIndoorRoom = indoorRoom;
     }
 
+    @Override
     public void clearGameOverPowerCounter() {
         dependencies.entityFrame().enemyDropCounters = new EnemyDropResolver.CounterState(
                 dependencies.entityFrame().enemyDropCounters.guardianAcornCounter(), 0);
         session.configureEnemyDropRuntime();
     }
 
+    @Override
     public void resetGameOverSwitchBlocks() {
         dependencies.entityFrame().recentRoomEntityClears.reset();
         dependencies.terrain().switchBlocksState = 0;

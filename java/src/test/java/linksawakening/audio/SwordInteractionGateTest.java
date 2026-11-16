@@ -82,10 +82,4 @@ class SwordInteractionGateTest {
         assertFalse(link.sideView().romItemAnimationFrameBlocked());
         assertThrows(IllegalArgumentException.class, () -> link.motion().writeRomInteractiveMotionBlock(256));
     }
-
-    private static void set(Object object, String name, Object value) throws Exception {
-        var f = object.getClass().getDeclaredField(name);
-        f.setAccessible(true);
-        f.set(object, value);
-    }
 }

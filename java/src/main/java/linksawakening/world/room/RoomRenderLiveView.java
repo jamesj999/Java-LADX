@@ -35,10 +35,12 @@ final class RoomRenderLiveView implements RoomRenderSnapshot.View {
     }
 
     private static final Visuals NO_VISUALS = new Visuals() {
+        @Override
         public InstrumentWarpVisual instrumentWarp() {
             return null;
         }
 
+        @Override
         public HeartPieceVisual heartPiece() {
             return null;
         }
@@ -49,55 +51,68 @@ final class RoomRenderLiveView implements RoomRenderSnapshot.View {
             java.util.Objects.requireNonNull(runtime);
         }
 
+        @Override
         public InstrumentWarpVisual instrumentWarp() {
             return runtime.inspection().instrumentWarpVisual();
         }
 
+        @Override
         public HeartPieceVisual heartPiece() {
             return runtime.inspection().heartPieceVisual();
         }
     }
 
+    @Override
     public int tileCount() {
         return room.tileIds().length;
     }
 
+    @Override
     public int tileId(int index) {
         return room.tileIds()[index];
     }
 
+    @Override
     public int attributeCount() {
         return room.tileAttrs().length;
     }
 
+    @Override
     public int tileAttribute(int index) {
         return room.tileAttrs()[index];
     }
 
+    @Override
     public int paletteCount() {
         return room.palettes().length;
     }
 
+    @Override
     public int colorCount(int palette) {
         return room.palettes()[palette].length;
     }
 
+    @Override
     public int paletteColor(int palette, int color) {
         return room.palettes()[palette][color];
     }
 
+    @Override
     public RoomEntitySnapshot entities() {
         return room.entityView();
     }
 
+    @Override
     public int spritePaletteCount() {
         return spritePalettes().length;
     }
 
+    @Override
     public int spriteColorCount(int palette) {
         return spritePalettes()[palette].length;
     }
 
+    @Override
     public int spritePaletteColor(int palette, int color) {
         return spritePalettes()[palette][color];
     }
@@ -114,14 +129,17 @@ final class RoomRenderLiveView implements RoomRenderSnapshot.View {
 
     private static final int[][] EMPTY_PALETTES = new int[0][];
 
+    @Override
     public int linkGrassPalette() {
         return room.mapCategory() == 0 && room.roomId() == 0x32 ? 6 : 0;
     }
     // Active visual events remain owned values; inactive channels return null without allocation.
+    @Override
     public InstrumentWarpVisual instrumentWarp() {
         return visuals.instrumentWarp();
     }
 
+    @Override
     public HeartPieceVisual heartPiece() {
         return visuals.heartPiece();
     }

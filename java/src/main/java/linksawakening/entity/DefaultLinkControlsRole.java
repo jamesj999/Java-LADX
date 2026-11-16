@@ -8,18 +8,22 @@ final class DefaultLinkControlsRole implements LinkControlsRole {
         linkControls = assembly.linkControls.get();
     }
 
+    @Override
     public boolean buttonWasPressed(int key) {
         return linkControls.accessButtonWasPressed(key);
     }
 
+    @Override
     public boolean playerHasFlippers() {
         return linkControls.accessPlayerHasFlippers();
     }
 
+    @Override
     public int buildJoypadMask() {
         return linkControls.accessBuildJoypadMask();
     }
 
+    @Override
     public int romPressedButtonsMask() {
         return linkControls.accessRomPressedButtonsMask();
     }

@@ -36,7 +36,7 @@ public final class BushInteraction {
         if (!world.roomSession().rooms().hasActiveRoom()) {
             return;
         }
-        ActiveRoom room = world.roomSession().rooms().activeRoom();
+        ActiveRoom room = world.roomSession().rooms().activeRoomOrNull();
 
         Sword sword = player.equipmentController().activeSword();
         if (sword == null || !sword.staticCollisionActive()) {

@@ -2,7 +2,6 @@ package linksawakening.world.entity.handler;
 
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_SPIKED_BEETLE;
 
-import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityStatus;
@@ -13,7 +12,7 @@ import linksawakening.world.entity.motion.SpikedBeetleMotion;
 /** ROM handler stages for SpikedBeetle. */
 final class SpikedBeetleHandler {
     static void install(EntityHandlerRegistry registry) {
-        registry.registerInitializer(ENTITY_SPIKED_BEETLE, (entity, random) -> initialize(registry, entity, random));
+        registry.registerInitializer(ENTITY_SPIKED_BEETLE, (entity, random) -> initialize(registry, entity));
         registry.registerTick(
                 ENTITY_SPIKED_BEETLE,
                 EntityTickStage.PHASE_4_BEFORE_FOLLOWER,
@@ -47,7 +46,7 @@ final class SpikedBeetleHandler {
         return true;
     }
 
-    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity, IntSupplier random) {
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity) {
         registry.motion(SpikedBeetleMotion.class, SpikedBeetleMotion::new).initialize(entity.slot());
     }
 }

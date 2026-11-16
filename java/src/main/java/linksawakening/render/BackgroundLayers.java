@@ -77,6 +77,8 @@ final class BackgroundLayers {
                         || state.background.hasCutsceneManager())) layers.add(objects);
     }
 
+    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+    @SuppressWarnings("ReferenceEquality")
     private void capture(FileMenuFrameSnapshot value) {
         if (value == capturedMenu) return;
         capturedMenu = value;
@@ -86,6 +88,8 @@ final class BackgroundLayers {
         menuObj = value.objectPalettes();
     }
 
+    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+    @SuppressWarnings("ReferenceEquality")
     private void capture(IntroFrameSnapshot value) {
         if (value == capturedIntro) return;
         capturedIntro = value;

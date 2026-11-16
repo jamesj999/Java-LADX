@@ -30,6 +30,7 @@ class WorldRomEntryPointsTest {
             return method == null ? owner.getConstructor(signature) : owner.getMethod(method, signature);
         }
 
+        @Override
         public String toString() {
             return owner.getSimpleName();
         }

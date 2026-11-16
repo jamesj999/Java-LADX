@@ -103,24 +103,26 @@ Edits apply immediately in memory. They are written only through the normal
 save action if playing a save slot; a standalone F2 debug session has no save
 slot. Closing the menu does not undo edits or automatically save them.
 
-Debug-menu verification (2026-11-07): the ROM-free suite passed (953 tests).
-ROM-backed menu tests cover pausing, input isolation, configuration gating,
-inventory/resource writes and overworld/indoor/side-view/Color Dungeon loads.
-The full suite passed 2,473 of 2,474 tests. The opening replay
-`tools/opening/tail-cave-warp-route.tsv` (SHA-256
-`79c179a1bce0e23d63c84238a6da404b9ddc8f2786b8751550873dcfffb4bf80`)
-blocked at `down+a*+b y=88 4`, map `00`, room `42`, ROM position `(140,64)`,
-frame counter 118, health 4, powder 19, before clearing the forest. Re-running
-with the original `GameSession` reproduced the identical failure/state.
-No new emulator pixel comparison was performed: these checks verify debug
-controls and bounded room loading, not later-game parity.
-
 ## Code style and checks
 
 Java uses Spotless with Palantir Java Format. From `java/`, run
 `./gradlew spotlessApply` before committing and `./gradlew spotlessCheck` to
 check formatting without edits. With a local ROM configured, the pre-merge gate
-is `./gradlew spotlessApply test` (or `./gradlew test` after formatting).
+is `./gradlew spotlessApply check` (`spotlessApply test` remains the regression
+oracle). `check` includes `spotlessCheck`, both Java compilations and tests.
+
+Error Prone 2.43.0 (Gradle plugin 5.0.0) and javac lint run for main and tests.
+All enabled diagnostics fail compilation through `-Werror`; Error Prone errors
+are not downgraded. Only `ArrayRecordComponent` is disabled, because intentional
+ROM/pixel array payloads do not promise deep value equality. Javac `serial` and
+`processing` are excluded: Java serialization is not a persistence API and no
+annotation processors are used. Every scoped suppression needs an adjacent
+reason, checked by `architecture.SuppressionReasonTest`. The complete check
+triage and preserved suspected defect are in
+[build-hardening.md](archive/history/build-hardening.md).
+
+The daemon heap is bounded at 3 GB without heap dumps. Parallelism and build
+caching remain opt-in for this single-project, local-ROM workflow.
 
 `test` is the default regression oracle, including `@RequiresRom` integrations
 when a ROM is available. `romFreeTest` excludes ROM-tagged tests. `knownGapTest`
@@ -133,7 +135,8 @@ it is not part of the default gate. Do not weaken tests or route fixtures.
 for setup, assumptions and adding coverage.
 
 Public CI runs only for pull requests into `main`, with wrapper validation,
-`spotlessCheck`, ROM-free tests and Python lint/unit checks. ROM-backed tests
+`spotlessCheck compileJava compileTestJava romFreeTest distZip -PallPlatforms`,
+plus Python lint/unit checks. Both explicit compilations enforce lint as errors. ROM-backed tests
 cannot run in public CI by design: no ROM may be distributed or uploaded as a
 CI fixture. A passing public build does not replace the local ROM-enabled gate.
 
@@ -243,26 +246,6 @@ FFmpeg/ffprobe are unavailable. The ROM-backed session recording check compares
 660 framebuffers and gameplay states with an unrecorded session; it uses the
 user-supplied ROM, never a fixture.
 
-Recording verification (2026-11-12, Java 21/macOS ARM64): `test` passed 2,812
-with one skipped; `romFreeTest` passed 1,137; `spotlessCheck` passed. Native
-windowed capture produced 180 frames / 3 seconds with matching audio duration;
-headless capture produced 1,800 frames / 30 seconds (476,778 bytes).
-`tools/opening/house-route.tsv` (SHA-256
-`e6065107a5ef0ed993855dc4e7acfabe8f4bfb5756106b5032bfede2e12b5142`)
-completed all 22 checkpoints with and without recording. All 22 checkpoint PNGs
-and five trace/metadata files were byte-identical. The final checkpoint was
-map `00`, room `A2`, position `(88,82)`, shield 1, health 24; the recording had
-2,959 frames with matching video/audio duration (49.316667 seconds). Trace
-SHA-256: `30638dc045f59722f1208e7abda2febbed18a15c18b8fba71f04e171e0742343`.
-This verifies recording does not alter the tested opening route. No new emulator
-comparison was performed; existing gameplay parity gaps remain outside this check.
-
-Shortcut verification (2026-11-12): `test` passed 2,814 with one skipped;
-`romFreeTest` passed 1,138; formatting passed. Input integration exercises
-stop/restart, fresh filenames, ignored repeat/release events, continued frames
-between clips, and stopping on the title screen. Configuration tests cover
-remapping, disabling and invalid-name fallback. A 120-frame native windowed
-recording smoke test completed with the recording-status title update enabled.
 ## Platform startup and persistence troubleshooting
 
 - **Failed to initialize GLFW / Failed to create window:** the GLFW error callback
@@ -291,4 +274,4 @@ Pass it with `--init-script`; setting only the Gradle daemon's JVM options does 
 configure the forked test JVM. Do not commit local verification JVM settings.
 Default headless PCM and desktop PCM both opt into reusable frame storage; custom
 outputs retain owned arrays. Native failure tests use fakes, never a real device
-or window. Host vsync remains interval 1; the app-owned frame-pacing loop was not changed.
+or window. Host vsync is disabled (swap interval 0); FramePacer owns the 60 Hz desktop cadence. Headless stepping stays unpaced.

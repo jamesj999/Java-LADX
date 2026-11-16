@@ -11,7 +11,7 @@ class RoomRuntimeTest {
     @Test
     void aLoadedGenerationOwnsItsRoomRuntimeAndFreshCollisionScratch() {
         var session = RoomRenderAllocationTest.room();
-        var room = session.rooms().activeRoom();
+        var room = session.rooms().activeRoomOrNull();
         var entities = session.loadedRoomOrNull().entities;
         var first = new RoomRuntime(
                 session.loadedRoomOrNull().contents, entities, session.components.roomRuntimeServices());
@@ -65,8 +65,8 @@ class RoomRuntimeTest {
         org.junit.jupiter.api.Assertions.assertNull(session.transitions().pollStaircaseWarp(0, 0, 0, false));
         org.junit.jupiter.api.Assertions.assertNull(session.rooms().renderViewOrNull());
         org.junit.jupiter.api.Assertions.assertNull(session.rooms().renderSnapshotOrNull());
-        org.junit.jupiter.api.Assertions.assertNull(session.rooms().renderView());
-        org.junit.jupiter.api.Assertions.assertNull(session.rooms().renderSnapshot());
+        org.junit.jupiter.api.Assertions.assertNull(session.rooms().renderViewOrNull());
+        org.junit.jupiter.api.Assertions.assertNull(session.rooms().renderSnapshotOrNull());
         for (int i = 0; i < session.dungeon().view().minimapSize(); i++)
             assertEquals(0, session.dungeon().view().minimapStatus(i));
         org.junit.jupiter.api.Assertions.assertFalse(session.entities().inBossBattle());

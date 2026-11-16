@@ -58,7 +58,6 @@ public final class CutsceneScreen implements Screen {
             dependencies.navigator().show(ScreenKind.TITLE);
         }
         dependencies.inputState().tickEdges();
-        return;
     }
 
     @Override

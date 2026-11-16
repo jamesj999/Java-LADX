@@ -149,6 +149,6 @@ final class EntityScrollVisibilityTest {
 
     private static int pixel(byte[] buffer, int x, int y) {
         int at = (y * 160 + x) * 4;
-        return (buffer[at] & 255) << 16 | (buffer[at + 1] & 255) << 8 | buffer[at + 2] & 255;
+        return (buffer[at] & 255) << 16 | (buffer[at + 1] & 255) << 8 | (buffer[at + 2] & 255);
     }
 }

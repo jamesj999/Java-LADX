@@ -16,42 +16,50 @@ class SimulationOrderTest {
         boolean blocked = true;
         final Sword.CollisionBox box = new Sword.CollisionBox(true, 1, 2, 3, 4);
 
+        @Override
         public boolean dialogStory() {
             calls.add("story");
             return proceed;
         }
 
+        @Override
         public boolean dialogBlocks() {
             calls.add("blockers");
             return blocked;
         }
 
+        @Override
         public void linkEquipment(boolean dialog, boolean inventory) {
             assertEquals(blocked, dialog);
             assertTrue(inventory);
             calls.add("link");
         }
 
+        @Override
         public boolean passingOut() {
             calls.add("passout");
             return passingOut;
         }
 
+        @Override
         public Sword.CollisionBox combat(boolean dialog) {
             assertEquals(blocked, dialog);
             calls.add("combat");
             return box;
         }
 
+        @Override
         public void entities(Sword.CollisionBox sword) {
             assertSame(box, sword);
             calls.add("entities");
         }
 
+        @Override
         public void completeInput() {
             calls.add("cooldown");
         }
 
+        @Override
         public void animatedTiles(boolean dialog) {
             assertEquals(blocked, dialog);
             calls.add("tiles");

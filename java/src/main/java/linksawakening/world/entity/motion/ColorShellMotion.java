@@ -18,7 +18,8 @@ public final class ColorShellMotion {
     }
 
     public ColorShellWorld writeColorShellWorld(ColorShellWorld value) {
-        return colorShellWorld = value;
+        colorShellWorld = value;
+        return colorShellWorld;
     }
 
     static final int ENTITY_COLOR_SHELL_RED = 0xE9;

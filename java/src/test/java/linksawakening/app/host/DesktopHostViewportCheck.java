@@ -62,7 +62,7 @@ public final class DesktopHostViewportCheck {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
         // Exercise a 1x backing framebuffer even on a Retina monitor.
-        if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+        if (System.getProperty("os.name").toLowerCase(java.util.Locale.ROOT).contains("mac")) {
             glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
         }
         long window = glfwCreateWindow(640, 576, "Unscaled viewport check", 0, 0);

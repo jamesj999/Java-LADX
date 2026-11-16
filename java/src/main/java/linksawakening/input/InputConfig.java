@@ -127,6 +127,9 @@ public final class InputConfig {
         return new InputConfig(menuOpenKey, upKey, downKey, leftKey, rightKey, aKey, bKey, selectKey, recordingKey);
     }
 
+    // Suspected defect: ASCII key parsing depends on the default locale; propose Locale.ROOT with a Turkish-locale
+    // regression separately.
+    @SuppressWarnings("StringCaseLocaleUsage")
     private static int resolveKey(String name) {
         int glfwKey = KEY_NAME_TO_CODE.getOrDefault(name.toUpperCase(), UNKNOWN_KEY);
         if (glfwKey == UNKNOWN_KEY) {

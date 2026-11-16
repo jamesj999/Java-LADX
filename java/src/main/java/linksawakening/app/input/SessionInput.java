@@ -40,8 +40,8 @@ public final class SessionInput {
     }
 
     public void onKeyEvent(int key, int action) {
-        if (state.debug().debugMenu != null && state.debug().debugMenu.isOpen()) {
-            state.debug().debugMenu.key(key, action);
+        if (debugTools.menu().isOpen()) {
+            debugTools.menu().key(key, action);
             input.inputState().clear();
             screenSet.gameplay().clearPendingInput();
             return;

@@ -44,16 +44,17 @@ final class GhiniMotionTest {
         motion.initialize(0, HIDING_GHINI);
         RoomEntity source = entity(0, HIDING_GHINI, 0x50, 0x50, 0x08, pairDefinition(HIDING_GHINI), 0x02);
 
-        RoomEntity far = motion.advance(source, 0, HIDING_GHINI, 0x80, 0x80, 0, noRandom());
+        RoomEntity far = motion.advance(source, 0, HIDING_GHINI, 0x80, 0x80, 0, GhiniMotionTest::noRandom);
         assertHidden(source, far);
         assertTrue(motion.hidden(0));
 
-        RoomEntity nearWithoutCollision = motion.advance(far, 1, HIDING_GHINI, 0x5F, 0x5F, 0, noRandom());
+        RoomEntity nearWithoutCollision =
+                motion.advance(far, 1, HIDING_GHINI, 0x5F, 0x5F, 0, GhiniMotionTest::noRandom);
         assertHidden(source, nearWithoutCollision);
         assertTrue(motion.hidden(0));
 
         RoomEntity exactlyAtWindowEdge =
-                motion.advance(nearWithoutCollision, 2, HIDING_GHINI, 0x60, 0x5F, 1, noRandom());
+                motion.advance(nearWithoutCollision, 2, HIDING_GHINI, 0x60, 0x5F, 1, GhiniMotionTest::noRandom);
         assertHidden(source, exactlyAtWindowEdge);
         assertTrue(motion.hidden(0));
     }
@@ -64,7 +65,7 @@ final class GhiniMotionTest {
         motion.initialize(0, HIDING_GHINI);
         RoomEntity source = entity(0, HIDING_GHINI, 0xFE, 0xFE, 0x08, pairDefinition(HIDING_GHINI), 0x02);
 
-        RoomEntity revealTick = motion.advance(source, 0, HIDING_GHINI, 0x02, 0x02, 1, noRandom());
+        RoomEntity revealTick = motion.advance(source, 0, HIDING_GHINI, 0x02, 0x02, 1, GhiniMotionTest::noRandom);
 
         assertEquals(-1, revealTick.spriteVariant());
         assertFalse(motion.hidden(0));
@@ -81,8 +82,8 @@ final class GhiniMotionTest {
         motion.initialize(0, HIDING_GHINI);
         RoomEntity source = entity(0, HIDING_GHINI, 0x50, 0x50, 0x0E, pairDefinition(HIDING_GHINI), 0x02);
 
-        RoomEntity revealTick = motion.advance(source, 0, HIDING_GHINI, 0x50, 0x50, 1, noRandom());
-        RoomEntity visibleTick = motion.advance(revealTick, 4, HIDING_GHINI, 0x50, 0x50, 0, noRandom());
+        RoomEntity revealTick = motion.advance(source, 0, HIDING_GHINI, 0x50, 0x50, 1, GhiniMotionTest::noRandom);
+        RoomEntity visibleTick = motion.advance(revealTick, 4, HIDING_GHINI, 0x50, 0x50, 0, GhiniMotionTest::noRandom);
 
         assertEquals(0x2F, motion.privateCountdown2(0));
         assertEquals(0x0F, visibleTick.z());
@@ -144,7 +145,7 @@ final class GhiniMotionTest {
         motion.initialize(0, GIANT_GHINI);
         RoomEntity current = entity(0, GIANT_GHINI, 0x50, 0x50, 0x10, giantDefinition(), 0x02);
 
-        current = motion.advance(current, 0, GIANT_GHINI, 0x50, 0x50, 1, noRandom());
+        current = motion.advance(current, 0, GIANT_GHINI, 0x50, 0x50, 1, GhiniMotionTest::noRandom);
         assertEquals(-1, current.spriteVariant());
         assertEquals(0x30, motion.privateCountdown2(0));
 
@@ -217,10 +218,8 @@ final class GhiniMotionTest {
                 -8, -8, new EntitySpriteDefinition.OamAttribute(tile, 0x02)));
     }
 
-    private static IntSupplier noRandom() {
-        return () -> {
-            throw new AssertionError("hidden Ghini must not consume random bytes");
-        };
+    private static int noRandom() {
+        throw new AssertionError("hidden Ghini must not consume random bytes");
     }
 
     private static IntSupplier sequence(int... values) {

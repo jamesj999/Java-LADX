@@ -117,16 +117,12 @@ public final class Sword implements EquipmentItem {
     }
 
     private static GameplaySoundEvent swordSwingSound(int randomByte) {
-        switch (randomByte & 0x03) {
-            case 0:
-                return GameplaySoundEvent.SWORD_SWING_A;
-            case 1:
-                return GameplaySoundEvent.SWORD_SWING_B;
-            case 2:
-                return GameplaySoundEvent.SWORD_SWING_C;
-            default:
-                return GameplaySoundEvent.SWORD_SWING_D;
-        }
+        return switch (randomByte & 0x03) {
+            case 0 -> GameplaySoundEvent.SWORD_SWING_A;
+            case 1 -> GameplaySoundEvent.SWORD_SWING_B;
+            case 2 -> GameplaySoundEvent.SWORD_SWING_C;
+            default -> GameplaySoundEvent.SWORD_SWING_D;
+        };
     }
 
     public int state() {
@@ -202,21 +198,24 @@ public final class Sword implements EquipmentItem {
             return;
         }
         switch (state) {
-            case STATE_NONE:
+            case STATE_NONE -> {
                 return;
-            case STATE_DRAW:
+            }
+            case STATE_DRAW -> {
                 if (--timer <= 0) {
                     state = STATE_SWING_START;
                     timer = SWING_START_FRAMES;
                 }
                 return;
-            case STATE_SWING_START:
+            }
+            case STATE_SWING_START -> {
                 if (--timer <= 0) {
                     state = STATE_SWING_MIDDLE;
                     timer = SWING_MIDDLE_FRAMES;
                 }
                 return;
-            case STATE_SWING_MIDDLE:
+            }
+            case STATE_SWING_MIDDLE -> {
                 if (--timer <= 0) {
                     state = buttonHeld ? STATE_HOLDING : STATE_NONE;
                     if (state == STATE_NONE) {
@@ -224,13 +223,15 @@ public final class Sword implements EquipmentItem {
                     }
                 }
                 return;
-            case STATE_SWING_END:
+            }
+            case STATE_SWING_END -> {
                 state = buttonHeld ? STATE_HOLDING : STATE_NONE;
                 if (state == STATE_NONE) {
                     charge = 0;
                 }
                 return;
-            case STATE_HOLDING:
+            }
+            case STATE_HOLDING -> {
                 if (charge < MAX_CHARGE) {
                     charge++;
                     if (charge == MAX_CHARGE) {
@@ -238,8 +239,8 @@ public final class Sword implements EquipmentItem {
                     }
                 }
                 return;
-            default:
-                state = STATE_NONE;
+            }
+            default -> state = STATE_NONE;
         }
     }
 
@@ -298,6 +299,7 @@ public final class Sword implements EquipmentItem {
                 offsetY);
     }
 
+    @Override
     public void submitOam(linksawakening.render.OamSink sink, int x, int y, int direction, int offsetX, int offsetY) {
         if (state == STATE_NONE && !spinAttackActive()) return;
         renderer.submitOam(
@@ -362,6 +364,7 @@ public final class Sword implements EquipmentItem {
      * in bank2.asm. The rectangle is independent from the visual blade OAM
      * bounds and is therefore kept as a separate ROM-table lookup.
      */
+    @Override
     public Sword.CollisionBox enemyCollisionBox(int linkEntityX, int linkEntityY, int linkDirection) {
         return enemyCollisionBox(linkEntityX, linkEntityY, linkDirection, false);
     }

@@ -30,6 +30,7 @@ public final class GameOverFlow implements GameOverActions {
         this.rupees = Objects.requireNonNull(rupees);
     }
 
+    @Override
     public void finishGameOver(int option) {
         var sword = equipment.activeSword();
         if (sword != null) sword.resetAfterGameOver();

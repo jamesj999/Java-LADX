@@ -216,7 +216,7 @@ public final class GoombaMotion {
     }
 
     private static int negateByte(int value) {
-        return (-signedByte(value)) & 0xFF;
+        return -signedByte(value) & 0xFF;
     }
 
     private static int signedByte(int value) {

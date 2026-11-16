@@ -24,18 +24,22 @@ public final class ScreenTestFixtures {
 
     public static GameplayScreen gameplay() {
         return new GameplayScreen(new GameplayScreenDriver() {
+            @Override
             public boolean interceptFrameInput() {
                 throw new AssertionError("Unexpected input");
             }
 
+            @Override
             public void onKey(int key, int action) {
                 throw new AssertionError("Unexpected key");
             }
 
+            @Override
             public void tick() {
                 throw new AssertionError("Unexpected tick");
             }
 
+            @Override
             public FileMenuFrameSnapshot gameOver() {
                 return null;
             }
@@ -44,26 +48,32 @@ public final class ScreenTestFixtures {
 
     public static FileMenuScreen fileMenu() {
         var actions = new SaveActions() {
+            @Override
             public void startNewGame() {
                 throw new AssertionError("Unexpected new game");
             }
 
+            @Override
             public void startSavedGame(SaveSlotState saved) {
                 throw new AssertionError("Unexpected load");
             }
 
+            @Override
             public void saveCurrentPlayerState() {
                 throw new AssertionError("Unexpected save");
             }
 
+            @Override
             public void startFileSave() {
                 throw new AssertionError("Unexpected menu");
             }
 
+            @Override
             public void finishGameOver(int option) {
                 throw new AssertionError("Unexpected game over");
             }
 
+            @Override
             public void persistFileMenuMutation(Runnable mutation) {
                 throw new AssertionError("Unexpected mutation");
             }

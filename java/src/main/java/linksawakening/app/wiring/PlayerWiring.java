@@ -56,13 +56,17 @@ final class PlayerWiring {
         var dialogController = ui.dialogController();
         var itemRegistry = new ItemRegistry();
         LinkTunicPalette linkTunicPalette = graphics.linkTunicPalette();
-        Link link = new Link(
+        Link link = new Link(new linksawakening.entity.LinkDependencies(
                 inputState,
                 inputConfig,
-                romTables,
+                romTables.linkMotionTables(),
+                romTables.swordTables(),
                 overworldCollision,
                 graphics.linkSpriteSheet(),
-                new Link.Services(playerState, itemRegistry, gameplaySoundSink, linkTunicPalette));
+                playerState,
+                itemRegistry,
+                gameplaySoundSink,
+                linkTunicPalette));
         link.equipment()
                 .setShieldInputAllowed(() -> !GameplayDialogInput.blocksGameplay(dialogController)
                         && (!roomSession.entityState().powerUpPickupSequenceActive()

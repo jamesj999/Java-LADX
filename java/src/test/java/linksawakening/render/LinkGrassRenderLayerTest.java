@@ -75,6 +75,6 @@ final class LinkGrassRenderLayerTest {
 
     private static int pixel(byte[] buffer, int x, int y) {
         int offset = (y * 160 + x) * 4;
-        return (buffer[offset] & 255) << 16 | (buffer[offset + 1] & 255) << 8 | buffer[offset + 2] & 255;
+        return (buffer[offset] & 255) << 16 | (buffer[offset + 1] & 255) << 8 | (buffer[offset + 2] & 255);
     }
 }

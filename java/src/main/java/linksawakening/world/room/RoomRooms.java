@@ -15,9 +15,6 @@ public interface RoomRooms {
 
     void loadIndoor(int mapId, int roomId, int mapCategory);
 
-    /** Compatibility name; returns null before the first room load. */
-    ActiveRoom activeRoom();
-
     /** Current room data, or null before the first room load. */
     ActiveRoom activeRoomOrNull();
 
@@ -34,9 +31,6 @@ public interface RoomRooms {
 
     int indoorRoomPositionForSave();
 
-    /** Compatibility name; returns null before the first room load. */
-    int[][] palettes();
-
     /** Current palette plane, or null before the first room load. */
     int[][] palettesOrNull();
 
@@ -49,12 +43,8 @@ public interface RoomRooms {
     /** Owned snapshot, or null before the first room load. */
     RoomRenderSnapshot renderSnapshotOrNull();
 
-    /** Compatibility name; prefer renderSnapshotOrNull(). */
-    RoomRenderSnapshot renderSnapshot();
-
     /** Reused read-only render projection, valid until the next tick or room change. */
     /** Nullable until the first room load; otherwise a same-thread view valid until the next tick. */
-    RoomRenderSnapshot.View renderView();
 
     /** Borrowed until next tick/room change; null before the first room load. */
     RoomRenderSnapshot.View renderViewOrNull();

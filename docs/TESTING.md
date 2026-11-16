@@ -2,7 +2,8 @@
 
 Run Gradle from `java/` with JDK 21. The local pre-merge gate is
 `LA_ROM=/absolute/path/azle.gbc ./gradlew spotlessApply test`.
-Public CI cannot distribute a ROM; it runs `spotlessCheck` and `romFreeTest`.
+Public CI cannot distribute a ROM; it runs `spotlessCheck compileJava compileTestJava romFreeTest distZip -PallPlatforms`
+plus Python checks. Both Java source sets compile with lint as errors.
 Passing tests bound verified behavior; they do not prove game-wide parity.
 
 ## Test taxonomy and adding coverage
@@ -67,12 +68,12 @@ than full frames and do not replace pixel/replay parity.
 
 | Guard (test class) | Scope | Budget |
 | --- | --- | --- |
-| `app.headless.WholeFrameAllocationTest` | Full update + render assembly + scene + composition + copy into retained capture storage; idle/walking/inventory | <=1,340 / 1,287 / 900 B/frame |
-| `app.SessionAllocationTest` | Update only, opening dialog / active house | <=80 / 842 B/frame |
+| `app.headless.WholeFrameAllocationTest` | Full update + render assembly + scene + composition + copy into retained capture storage; idle/walking/inventory | <=0 / 175 / 0 B/frame |
+| `app.SessionAllocationTest` | Update only, opening dialog / active house | <=0 / 172 B/frame |
 | `app.presentation.RenderStateAllocationTest` | Reusable assembly / assembly+scene, no composition | exactly 0 / 0 B/frame |
-| Same class, owned reference/capture path | Owned assembly+scene and frame-state overhead over room snapshot | <=21,200 B/frame; <=100 B state overhead (existing tighter caps retained) |
-| `app.gameplay.entity.EntityAllocationTest` | Immutable entity input / output application without world ticking | <=50 / 350 B/frame |
-| `render.SceneConstructionAllocationTest` | Representative reusable build+draw / construction only | <410 / <16 B/frame |
+| Same class, snapshot diagnostic | Owned room snapshots allocate; production assembly remains borrowed | Assembly is covered by the exact-zero guard above |
+| `app.gameplay.entity.EntityAllocationTest` | Owned / borrowed entity input and output application without world ticking | <=50 / 0 / 350 B/frame |
+| `render.SceneConstructionAllocationTest` | Representative reusable build+draw / construction only | exactly 0 / <16 B/frame |
 | `render.SpecialSceneAllocationTest` | Published intro and fully open inventory reusable build+draw | <16 B/frame each |
 | `render.ComposeAllocationTest` | Indexed composition of a retained room | <4,096 B/frame |
 | `gpu.GpuAllocationTest` | Animated tile tick / stable entity-tile snapshot | <16 B/call each |
@@ -85,22 +86,23 @@ than full frames and do not replace pixel/replay parity.
 | `world.entity.MarinPresentationAllocationTest` | Repeated immutable poses | exactly 0 B/iteration |
 | `world.room.RoomLiveBoundaryTest` | Empty outbox drains and ordered merges | exactly 0 B/iteration |
 | `world.room.RoomRenderAllocationTest` | Populated room/entity/BG+OBJ/inventory read-only views and buffer copies | <256 B/frame |
-| `dialog.DialogAllocationTest` (external owner) | Dialog printing/update and event drain, not full window/font painting | <=8 B/frame |
-| `entity.LinkAllocationTest` (external owner) | Link walking/sword update, not sprite submission | <=8 B/frame |
-| `ui.InventoryAllocationTest` (external owner) | Synthetic HUD/inventory submission fixture | <=8 B/frame |
+| `dialog.DialogAllocationTest` | Dialog printing/update and event drain, not full window/font painting | <=8 B/frame |
+| `entity.LinkAllocationTest` | Link walking/sword update, not sprite submission | <=8 B/frame |
+| `ui.InventoryAllocationTest` | Synthetic HUD/inventory submission fixture | <=8 B/frame |
 
 `app.gameplay.PhaseAllocationTest` reports per-phase nonnegative measurements;
 it has no upper performance budget. The owned capture API allocates its returned
 framebuffer by design; whole-frame budgets use `headlessFrame(retainedBuffer)`
 while testing that its pixels match `headlessFrame()`.
 
-EA-off whole-frame results are approximately 1,072 idle, 1,029 walking and 720
-inventory B/frame. Idle exceeds 256 only because off-limits dialog font/text,
-inventory setter clones and startup pose values total 1,072 B/frame; attributed
-owned idle allocation is zero. Inventory's 720 bytes are also off-limits UI.
-Walking meets the 2 KB target including its changed immutable input values.
-JFR allocation-site scope and exact sources are recorded in the
-[round-5 report](archive/history/room-integration-round-5.md). Keep JFR files local.
+EA-off whole-frame results are 0 idle, approximately 139.5 walking and 0
+inventory B/frame. Update-only results are 0 idle / 137 active. The app uses
+borrowed phase inputs and live VFX observations; owned captures retain their
+immutability. Public EntityHandler callbacks can retain EntityFrameContext and
+its LinkState, so those values remain immutable. Recording disabled adds no
+steady per-frame allocation. See the
+[allocation consolidation](archive/history/frame-input-allocation.md) for
+bisection, ownership decisions and measured scope.
 
 ## Opening route format
 

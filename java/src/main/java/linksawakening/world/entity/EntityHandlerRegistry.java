@@ -12,7 +12,11 @@ import java.util.function.Predicate;
 /** ROM type-byte dispatch; unregistered types remain explicitly unsupported. */
 public final class EntityHandlerRegistry {
     private static final EntityHandler NO_INITIALIZER = (entity, random) -> {};
+    // Retain one callable instance: its identity or allocation-free reuse is part of this retained path.
+    @SuppressWarnings("UnnecessaryLambda")
     private static final BiFunction<RoomEntity, EntityFrameContext, RoomEntity> NO_ADVANCE = (entity, frame) -> entity;
+    // Retain one callable instance: its identity or allocation-free reuse is part of this retained path.
+    @SuppressWarnings("UnnecessaryLambda")
     private static final Predicate<EntityFrameExecution> USE_INITIALIZER = frame -> true;
 
     private static final class Binding implements EntityHandler {
@@ -30,10 +34,12 @@ public final class EntityHandlerRegistry {
             initializerRegistered = true;
         }
 
+        @Override
         public void initialize(RoomEntity entity, IntSupplier random) {
             initializer.initialize(entity, random);
         }
 
+        @Override
         public RoomEntity advance(RoomEntity entity, EntityFrameContext context) {
             if (advanceRegistered) return advance.apply(entity, context);
             return initializer.advance(entity, context);

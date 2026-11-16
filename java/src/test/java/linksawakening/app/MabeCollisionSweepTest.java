@@ -110,8 +110,10 @@ final class MabeCollisionSweepTest {
                                     && link.position().pixelY() == y
                                     && link.position().romCollisionType() == 0) {
                                 entityBlocks++;
-                                for (var entity :
-                                        session.rooms().activeRoom().entities().loadedEntities()) {
+                                for (var entity : session.rooms()
+                                        .activeRoomOrNull()
+                                        .entities()
+                                        .loadedEntities()) {
                                     if (Math.abs(entity.x() - link.position().romEntityX()) < 20
                                             && Math.abs(entity.y()
                                                             - link.position().romEntityY())

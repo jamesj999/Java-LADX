@@ -21,11 +21,13 @@ final class EntityPickupState {
     }
 
     int writeChestSpeedY(int slot, int value) {
-        return chestSpeedY[slot] = value;
+        chestSpeedY[slot] = value;
+        return chestSpeedY[slot];
     }
 
     int writeChestSpeedYAccumulator(int slot, int value) {
-        return chestSpeedYAccumulator[slot] = value;
+        chestSpeedYAccumulator[slot] = value;
+        return chestSpeedYAccumulator[slot];
     }
 
     int[] storageChestSpeedYAccumulator() {
@@ -37,7 +39,8 @@ final class EntityPickupState {
     }
 
     int writeChestInertia(int slot, int value) {
-        return chestInertia[slot] = value;
+        chestInertia[slot] = value;
+        return chestInertia[slot];
     }
 
     int readChestItemBySlot(int slot) {
@@ -45,7 +48,8 @@ final class EntityPickupState {
     }
 
     int writeChestItemBySlot(int slot, int value) {
-        return chestItemBySlot[slot] = value;
+        chestItemBySlot[slot] = value;
+        return chestItemBySlot[slot];
     }
 
     int readChestShieldLevel() {
@@ -53,7 +57,8 @@ final class EntityPickupState {
     }
 
     int writeChestShieldLevel(int value) {
-        return chestShieldLevel = value;
+        chestShieldLevel = value;
+        return chestShieldLevel;
     }
 
     int readChestSwordLevel() {
@@ -61,7 +66,8 @@ final class EntityPickupState {
     }
 
     int writeChestSwordLevel(int value) {
-        return chestSwordLevel = value;
+        chestSwordLevel = value;
+        return chestSwordLevel;
     }
 
     boolean readChestPlayerLevelsKnown() {
@@ -69,7 +75,8 @@ final class EntityPickupState {
     }
 
     boolean writeChestPlayerLevelsKnown(boolean value) {
-        return chestPlayerLevelsKnown = value;
+        chestPlayerLevelsKnown = value;
+        return chestPlayerLevelsKnown;
     }
 
     int readChestPowerBraceletLevel() {
@@ -77,7 +84,8 @@ final class EntityPickupState {
     }
 
     int writeChestPowerBraceletLevel(int value) {
-        return chestPowerBraceletLevel = value;
+        chestPowerBraceletLevel = value;
+        return chestPowerBraceletLevel;
     }
 
     {
@@ -89,7 +97,8 @@ final class EntityPickupState {
     }
 
     HeartPiecePickupMotion writeHeartPiecePickup(int slot, HeartPiecePickupMotion value) {
-        return heartPiecePickup[slot] = java.util.Objects.requireNonNull(value, "pickup sequence");
+        heartPiecePickup[slot] = java.util.Objects.requireNonNull(value, "pickup sequence");
+        return heartPiecePickup[slot];
     }
 
     HeartPiecePickupMotion[] storageHeartPiecePickup() {
@@ -101,7 +110,8 @@ final class EntityPickupState {
     }
 
     int writeHeartPiecesCount(int value) {
-        return heartPiecesCount = value;
+        heartPiecesCount = value;
+        return heartPiecesCount;
     }
 
     int postHeartPiecesCount(int delta) {
@@ -111,7 +121,8 @@ final class EntityPickupState {
     }
 
     int writeHeartPieceMeterPairs(int slot, int value) {
-        return heartPieceMeterPairs[slot] = value;
+        heartPieceMeterPairs[slot] = value;
+        return heartPieceMeterPairs[slot];
     }
 
     int[] storageHeartPieceMeterPairs() {

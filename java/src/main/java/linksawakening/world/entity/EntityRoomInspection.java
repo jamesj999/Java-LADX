@@ -597,6 +597,8 @@ public final class EntityRoomInspection {
         return entityRoomQueriesPresentedEntity(runtime, slot, UNREAD_PRESENTATION, UNREAD_PRESENTATION);
     }
 
+    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+    @SuppressWarnings("ReferenceEquality")
     static RoomEntity entityRoomQueriesPresentedEntity(
             EntityRoomInspection runtime,
             int slot, /* Source identity of the cached projection, or UNREAD_PRESENTATION. */

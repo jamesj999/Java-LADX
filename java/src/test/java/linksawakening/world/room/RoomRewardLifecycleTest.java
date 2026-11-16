@@ -59,7 +59,7 @@ final class RoomRewardLifecycleTest {
         RoomDebugFixture.of(session).setEnemyDropCountersForTest(7, 9);
         RoomDebugFixture.of(session).setSwitchButtonPressedForTest(0x60);
         session.rooms().loadInitialOverworld(0xF2);
-        assertFalse(session.rooms().activeRoom().entities().loadedEntities().stream()
+        assertFalse(session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x31 || entity.type() == 0x41));
 
         session.story().initializeNewGameWorldState();
@@ -71,9 +71,9 @@ final class RoomRewardLifecycleTest {
         assertEquals(0, RoomDebugFixture.of(session).switchButtonPressedForTest());
         assertArrayEquals(
                 new byte[DungeonItemState.ITEM_FLAG_SIZE], session.dungeon().currentDungeonItemFlagsSnapshot());
-        assertTrue(session.rooms().activeRoom().entities().loadedEntities().stream()
+        assertTrue(session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x31));
-        assertTrue(session.rooms().activeRoom().entities().loadedEntities().stream()
+        assertTrue(session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x41));
     }
 
@@ -83,7 +83,7 @@ final class RoomRewardLifecycleTest {
         session.rooms().loadInitialOverworld(0xF2);
         session.story().setChestPlayerLevels(0, 0, 0);
 
-        RoomEntity sword = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity sword = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x31)
                 .findFirst()
                 .orElseThrow();
@@ -115,7 +115,7 @@ final class RoomRewardLifecycleTest {
         assertEquals(0, RoomDebugFixture.of(session).overworldRoomStatusForTest(0xF2) & 0x10);
 
         boolean owlMusicRestored = false;
-        while (session.rooms().activeRoom().entities().loadedEntities().stream()
+        while (session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                         .anyMatch(entity -> entity.type() == 0x41)
                 && frame < 0x400) {
             tickInteractive(session, frame++, 0x58, 0x60);
@@ -123,7 +123,7 @@ final class RoomRewardLifecycleTest {
         }
         assertTrue(owlMusicRestored);
 
-        RoomEntity sword = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity sword = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x31)
                 .findFirst()
                 .orElseThrow();
@@ -148,7 +148,7 @@ final class RoomRewardLifecycleTest {
         assertEquals(0x31, session.consumePendingMusicTrack());
 
         session.rooms().loadInitialOverworld(0xF2);
-        assertFalse(session.rooms().activeRoom().entities().loadedEntities().stream()
+        assertFalse(session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x31 || entity.type() == 0x41));
     }
 
@@ -175,7 +175,7 @@ final class RoomRewardLifecycleTest {
     void witchExchangeRunsThroughTheLiveIndoorRoomInSourceOrder() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x0E, 0xA2);
-        RoomEntity witch = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity witch = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x40)
                 .findFirst()
                 .orElseThrow();
@@ -279,7 +279,7 @@ final class RoomRewardLifecycleTest {
         session.rooms().loadIndoor(0x03, 0x7C, Warp.CATEGORY_SIDESCROLL);
 
         session.entities().tickEntities(0);
-        RoomEntity key = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity key = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x30)
                 .findFirst()
                 .orElseThrow();
@@ -292,7 +292,12 @@ final class RoomRewardLifecycleTest {
         assertEquals(0x30, pickup.type());
         assertEquals(
                 EntityStatus.DISABLED,
-                session.rooms().activeRoom().entities().slots().get(key.slot()).status());
+                session.rooms()
+                        .activeRoomOrNull()
+                        .entities()
+                        .slots()
+                        .get(key.slot())
+                        .status());
         assertEquals(0x10, RoomDebugFixture.of(session).indoorRoomStatusForTest(0x03, 0x7C) & 0x10);
         assertEquals(
                 List.of(new KeyRewardEvent(key.slot(), ChestContentsTable.CHEST_SMALL_KEY)),
@@ -401,7 +406,8 @@ final class RoomRewardLifecycleTest {
             tileIndex + RoomConstants.ROOM_TILE_WIDTH + 1
         };
         for (int i = 0; i < 4; i++) {
-            assertEquals(rom[source + i] & 0xFF, session.rooms().activeRoom().tileIds()[positions[i]]);
+            assertEquals(
+                    rom[source + i] & 0xFF, session.rooms().activeRoomOrNull().tileIds()[positions[i]]);
         }
         session.rooms().loadInitialOverworld(0x51);
         session.rooms().loadInitialOverworld(0x41);
@@ -409,7 +415,8 @@ final class RoomRewardLifecycleTest {
                 .tryOpenChest(64, 58, Direction.fromJavaOrUnknown(Direction.UP.javaIndex()), true, 1)
                 .opened());
         for (int i = 0; i < 4; i++) {
-            assertEquals(rom[source + i] & 0xFF, session.rooms().activeRoom().tileIds()[positions[i]]);
+            assertEquals(
+                    rom[source + i] & 0xFF, session.rooms().activeRoomOrNull().tileIds()[positions[i]]);
         }
     }
 
@@ -419,16 +426,16 @@ final class RoomRewardLifecycleTest {
         session.rooms().loadIndoor(0x00, 0x20);
         int location = 0x22;
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
-        session.rooms().activeRoom().roomObjectsArea()[areaIndex] = 0xA0;
+        session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex] = 0xA0;
 
         ChestOpenResult result = session.doors()
                 .tryOpenChest(0x18, 0x21, Direction.fromJavaOrUnknown(Direction.UP.javaIndex()), true, 1);
 
         assertTrue(result.opened());
-        assertEquals(0xA1, session.rooms().activeRoom().roomObjectsArea()[areaIndex]);
-        assertTrue(session.rooms().activeRoom().renderValues() == null);
+        assertEquals(0xA1, session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex]);
+        assertTrue(session.rooms().activeRoomOrNull().renderValues() == null);
         assertEquals(0x10, RoomDebugFixture.of(session).indoorRoomStatusForTest(0x00, 0x20) & 0x10);
-        RoomEntity chest = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity chest = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == EntitySpriteHandlerCatalog.ENTITY_CHEST_WITH_ITEM)
                 .findFirst()
                 .orElseThrow();
@@ -450,8 +457,8 @@ final class RoomRewardLifecycleTest {
         int buttonIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x35;
 
         assertEquals(0x63, RoomDebugFixture.of(session).activeRoomEventForTest());
-        assertEquals(0xAA, session.rooms().activeRoom().roomObjectsArea()[buttonIndex]);
-        assertNotEquals(0xA0, session.rooms().activeRoom().roomObjectsArea()[chestIndex]);
+        assertEquals(0xAA, session.rooms().activeRoomOrNull().roomObjectsArea()[buttonIndex]);
+        assertNotEquals(0xA0, session.rooms().activeRoomOrNull().roomObjectsArea()[chestIndex]);
         for (int frame = 0; frame < 23; frame++) {
             session.entities().tickEntities(frame, 0x58, 0x40);
         }
@@ -465,13 +472,13 @@ final class RoomRewardLifecycleTest {
         assertEquals(
                 TransientVfxType.CHEST_APPEARS, vfx.activeSlots().getFirst().type());
         assertEquals(0x0F, vfx.activeSlots().getFirst().countdown());
-        assertNotEquals(0xA0, session.rooms().activeRoom().roomObjectsArea()[chestIndex]);
+        assertNotEquals(0xA0, session.rooms().activeRoomOrNull().roomObjectsArea()[chestIndex]);
 
         for (int frame = 24; frame <= 34; frame++) {
             session.entities().tickEntities(frame, 0x40, 0x60);
         }
 
-        assertEquals(0xA0, session.rooms().activeRoom().roomObjectsArea()[chestIndex]);
+        assertEquals(0xA0, session.rooms().activeRoomOrNull().roomObjectsArea()[chestIndex]);
         ChestOpenResult chest = session.doors()
                 .tryOpenChest(0x78, 0x21, Direction.fromJavaOrUnknown(Direction.UP.javaIndex()), true, 1);
         assertTrue(chest.opened());
@@ -495,7 +502,7 @@ final class RoomRewardLifecycleTest {
         RoomDebugFixture.of(session).replaceEntityRuntimeForTest(runtime);
         int chestIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x28;
         assertEquals(0x66, RoomDebugFixture.of(session).activeRoomEventForTest());
-        assertNotEquals(0xA0, session.rooms().activeRoom().roomObjectsArea()[chestIndex]);
+        assertNotEquals(0xA0, session.rooms().activeRoomOrNull().roomObjectsArea()[chestIndex]);
 
         int frame = 0;
         session.entities().tickEntities(frame++, 0x50, 0x60);
@@ -504,10 +511,10 @@ final class RoomRewardLifecycleTest {
         assertEquals(List.of(GameplaySoundEvent.PUZZLE_SOLVED), sounds);
         assertEquals(
                 TransientVfxType.CHEST_APPEARS, vfx.activeSlots().getFirst().type());
-        while (session.rooms().activeRoom().roomObjectsArea()[chestIndex] != 0xA0 && frame < 0x200) {
+        while (session.rooms().activeRoomOrNull().roomObjectsArea()[chestIndex] != 0xA0 && frame < 0x200) {
             session.entities().tickEntities(frame++, 0x50, 0x60);
         }
-        assertEquals(0xA0, session.rooms().activeRoom().roomObjectsArea()[chestIndex]);
+        assertEquals(0xA0, session.rooms().activeRoomOrNull().roomObjectsArea()[chestIndex]);
         assertEquals(
                 ChestContentsTable.CHEST_NIGHTMARE_KEY,
                 new ChestContentsTable((rom == null ? (Rom) null : TestRoms.partial(rom)))
@@ -524,11 +531,11 @@ final class RoomRewardLifecycleTest {
                 .opened());
         assertEquals(0x10, RoomDebugFixture.of(session).indoorRoomStatusForTest(0, 0x15) & 0x10);
         session.entities().tickEntities(0, 56, 74);
-        assertNotEquals(0, session.rooms().activeRoom().shutterDoorMask());
+        assertNotEquals(0, session.rooms().activeRoomOrNull().shutterDoorMask());
         // Reloading the opened chest must not bypass the still-live enemies.
         session.rooms().loadIndoor(0, 0x15);
-        assertNotEquals(0, session.rooms().activeRoom().shutterDoorMask());
-        var hazardsOnly = session.rooms().activeRoom().entities().slots().stream()
+        assertNotEquals(0, session.rooms().activeRoomOrNull().shutterDoorMask());
+        var hazardsOnly = session.rooms().activeRoomOrNull().entities().slots().stream()
                 .map(entity -> entity.type() == 0x9B ? RoomEntity.disabled(entity.slot()) : entity)
                 .toList();
         RoomDebugFixture.of(session)
@@ -537,7 +544,7 @@ final class RoomRewardLifecycleTest {
                         .build());
         session.entities().tickEntities(1, 56, 74);
         assertEquals(0, RoomDebugFixture.of(session).activeRoomEventForTest());
-        assertEquals(0, session.rooms().activeRoom().shutterDoorMask());
+        assertEquals(0, session.rooms().activeRoomOrNull().shutterDoorMask());
         assertEquals(0x10, RoomDebugFixture.of(session).indoorRoomStatusForTest(0, 0x15) & 0x10);
     }
 
@@ -546,7 +553,7 @@ final class RoomRewardLifecycleTest {
         TransientVfxSystem transientVfx = new TransientVfxSystem(16);
         RoomSession session = newSession(transientVfx);
         session.rooms().loadIndoor(0x00, 0x02);
-        RoomEntity instrument = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity instrument = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS)
                 .findFirst()
                 .orElseThrow();
@@ -582,7 +589,7 @@ final class RoomRewardLifecycleTest {
                 0x100,
                 session.entityState().consumeEntityDialogRequests().getFirst().globalDialogId());
         RoomEntity heldInstrument =
-                session.rooms().activeRoom().entities().slots().get(instrument.slot());
+                session.rooms().activeRoomOrNull().entities().slots().get(instrument.slot());
         assertEquals(EntityStatus.ACTIVE, heldInstrument.status());
         assertEquals(0x50, heldInstrument.x());
         assertEquals(0x54, heldInstrument.y());
@@ -592,7 +599,7 @@ final class RoomRewardLifecycleTest {
     void tailCaveInstrumentWaitsForDialogBeforePlayingTheCelloTrack() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x00, 0x02);
-        RoomEntity instrument = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity instrument = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS)
                 .findFirst()
                 .orElseThrow();
@@ -629,7 +636,7 @@ final class RoomRewardLifecycleTest {
         RoomSession session = newSession();
         session.rooms().loadOverworld(0x44);
         session.entities().tickEntities(0, 72, 80);
-        RoomEntity piece = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity piece = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(e -> e.type() == 0x35)
                 .findFirst()
                 .orElseThrow();
@@ -658,7 +665,7 @@ final class RoomRewardLifecycleTest {
         session.rooms().loadOverworld(0x43);
         session.rooms().loadOverworld(0x44);
         session.entities().tickEntities(240, 72, 80);
-        assertTrue(session.rooms().activeRoom().entities().loadedEntities().stream()
+        assertTrue(session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .noneMatch(e -> e.type() == 0x35));
     }
 
@@ -667,13 +674,16 @@ final class RoomRewardLifecycleTest {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0, 2);
         byte[] rom = loadRom();
-        int[][] before =
-                session.rooms().renderSnapshot().entities().spriteSelection().objectPalettes();
+        int[][] before = session.rooms()
+                .renderSnapshotOrNull()
+                .entities()
+                .spriteSelection()
+                .objectPalettes();
         session.entities().tickEntities(0, 0x50, 0x70); // Initialize the room entity first.
         for (int frame : new int[] {8, 16, 64, 120}) {
             session.entities().tickEntities(frame, 0x50, 0x70);
             int[][] after = session.rooms()
-                    .renderSnapshot()
+                    .renderSnapshotOrNull()
                     .entities()
                     .spriteSelection()
                     .objectPalettes();
@@ -692,7 +702,7 @@ final class RoomRewardLifecycleTest {
     void tailCaveInstrumentRunsThePerformanceAndWarpCountdownsBeforeReleasingLink() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x00, 0x02);
-        RoomEntity instrument = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity instrument = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS)
                 .findFirst()
                 .orElseThrow();
@@ -708,7 +718,7 @@ final class RoomRewardLifecycleTest {
         assertEquals(0x20, session.consumePendingMusicTrack());
 
         session.entities().tickEntities(90, 0x50, 0x60);
-        RoomEntity instrumentShard = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity instrumentShard = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.slot() != instrument.slot()
                         && entity.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS)
                 .findFirst()
@@ -730,7 +740,7 @@ final class RoomRewardLifecycleTest {
         assertEquals(
                 EntityStatus.ACTIVE,
                 session.rooms()
-                        .activeRoom()
+                        .activeRoomOrNull()
                         .entities()
                         .slots()
                         .get(instrument.slot())
@@ -744,7 +754,7 @@ final class RoomRewardLifecycleTest {
         assertEquals(
                 0x150,
                 session.entityState().consumeEntityDialogRequests().getFirst().globalDialogId());
-        InstrumentWarpVisual visual = session.rooms().renderSnapshot().instrumentWarp();
+        InstrumentWarpVisual visual = session.rooms().renderSnapshotOrNull().instrumentWarp();
         assertEquals(31, visual.backgroundFade());
         assertEquals(31, visual.objectFade());
         assertEquals(9, visual.commandBatches());
@@ -764,7 +774,7 @@ final class RoomRewardLifecycleTest {
         assertEquals(
                 EntityStatus.ACTIVE,
                 session.rooms()
-                        .activeRoom()
+                        .activeRoomOrNull()
                         .entities()
                         .slots()
                         .get(instrument.slot())
@@ -777,18 +787,19 @@ final class RoomRewardLifecycleTest {
         session.entities().tickEntities(956, 0x50, 0x60);
 
         assertFalse(session.rooms()
-                .activeRoom()
+                .activeRoomOrNull()
                 .entities()
                 .slots()
                 .get(instrument.slot())
                 .loaded());
         assertTrue(session.consumeLinkMotionBlockRequests().isEmpty());
         assertEquals(
-                session.rooms().activeRoom().firstWarp(), session.transitions().consumeInstrumentTransitionRequest());
+                session.rooms().activeRoomOrNull().firstWarp(),
+                session.transitions().consumeInstrumentTransitionRequest());
         assertEquals(0x80, session.story().bowWowState());
-        assertEquals(9, session.rooms().renderSnapshot().instrumentWarp().commandBatches());
+        assertEquals(9, session.rooms().renderSnapshotOrNull().instrumentWarp().commandBatches());
         session.rooms().loadOverworld(0xD3);
-        assertNull(session.rooms().renderSnapshot().instrumentWarp());
+        assertNull(session.rooms().renderSnapshotOrNull().instrumentWarp());
     }
 
     @Test
@@ -796,7 +807,7 @@ final class RoomRewardLifecycleTest {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x01, 0x2B);
         assertEquals(0x21, RoomDebugFixture.of(session).activeRoomEventForTest());
-        assertNotEquals(0, session.rooms().activeRoom().shutterDoorMask());
+        assertNotEquals(0, session.rooms().activeRoomOrNull().shutterDoorMask());
 
         List<RoomEntity> emptySlots = new ArrayList<>();
         for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
@@ -809,15 +820,15 @@ final class RoomRewardLifecycleTest {
         session.entities().tickEntities(0, 0x50, 0x50);
 
         assertEquals(0, RoomDebugFixture.of(session).activeRoomEventForTest());
-        assertEquals(0, session.rooms().activeRoom().shutterDoorMask());
+        assertEquals(0, session.rooms().activeRoomOrNull().shutterDoorMask());
 
         session.rooms().loadIndoor(0x01, 0x2A);
         assertEquals(0x21, RoomDebugFixture.of(session).activeRoomEventForTest());
-        RoomEntity instrument = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity instrument = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == EntitySpriteHandlerCatalog.ENTITY_INSTRUMENT_OF_THE_SIRENS)
                 .findFirst()
                 .orElseThrow();
-        Warp exit = session.rooms().activeRoom().firstWarp();
+        Warp exit = session.rooms().activeRoomOrNull().firstWarp();
         assertEquals(Warp.CATEGORY_OVERWORLD, exit.category());
         assertEquals(0x00, exit.destMap());
         assertEquals(0x24, exit.destRoom());
@@ -884,7 +895,7 @@ final class RoomRewardLifecycleTest {
         linksawakening.world.entity.EntityRuntimeTestAccess.setTransitionCountdownForTest(runtime, 0, 1);
         session.entities().tickEntities(2, 0x50, 0x50);
 
-        RoomEntity heart = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity heart = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x36)
                 .findFirst()
                 .orElseThrow();
@@ -911,7 +922,7 @@ final class RoomRewardLifecycleTest {
         session.rooms().loadInitialOverworld(0xB5);
         int gateIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x16;
 
-        assertEquals(0xC2, session.rooms().activeRoom().roomObjectsArea()[gateIndex]);
+        assertEquals(0xC2, session.rooms().activeRoomOrNull().roomObjectsArea()[gateIndex]);
         assertTrue(session.doors()
                 .tryUnlockKeyCavernKeyhole(0x5A, 0x4A, Direction.fromJavaOrUnknown(Direction.UP.javaIndex()), 0x01, 5));
         assertEquals(
@@ -934,27 +945,27 @@ final class RoomRewardLifecycleTest {
                 > 0xD8) {
             session.doors().tickTailCaveKeyholeSequence();
         }
-        assertEquals(0x0C, session.rooms().activeRoom().tileIds()[gateTopLeft]);
-        assertEquals(0x1C, session.rooms().activeRoom().tileIds()[gateTopLeft + RoomConstants.ROOM_TILE_WIDTH]);
+        assertEquals(0x0C, session.rooms().activeRoomOrNull().tileIds()[gateTopLeft]);
+        assertEquals(0x1C, session.rooms().activeRoomOrNull().tileIds()[gateTopLeft + RoomConstants.ROOM_TILE_WIDTH]);
         while (session.components
                         .roomDoorInteractions()
                         .tailCaveKeyholeCountdownForTest(session.loadedRoomOrNull().contents)
                 > 0xC8) {
             session.doors().tickTailCaveKeyholeSequence();
         }
-        assertEquals(0x0C, session.rooms().activeRoom().tileIds()[gateTopLeft]);
+        assertEquals(0x0C, session.rooms().activeRoomOrNull().tileIds()[gateTopLeft]);
         while (session.doors().tailCaveKeyholeSequenceActive()) {
             session.doors().tickTailCaveKeyholeSequence();
         }
 
-        assertEquals(0xE3, session.rooms().activeRoom().roomObjectsArea()[gateIndex]);
+        assertEquals(0xE3, session.rooms().activeRoomOrNull().roomObjectsArea()[gateIndex]);
         assertEquals(
                 List.of(
                         GameplaySoundEvent.DOOR_UNLOCKED,
                         GameplaySoundEvent.OPEN_KEY_CAVERN,
                         GameplaySoundEvent.DUNGEON_OPENED),
                 sounds);
-        Warp entrance = session.rooms().activeRoom().warps().stream()
+        Warp entrance = session.rooms().activeRoomOrNull().warps().stream()
                 .filter(warp -> warp.destMap() == 0x02 && warp.destRoom() == 0x52)
                 .findFirst()
                 .orElseThrow();
@@ -1000,7 +1011,7 @@ final class RoomRewardLifecycleTest {
 
         session.rooms().loadInitialOverworld(0x41);
         assertEquals(0x20, RoomDebugFixture.of(session).overworldRoomStatusForTest(0x41) & 0x20);
-        assertFalse(session.rooms().activeRoom().entities().loadedEntities().stream()
+        assertFalse(session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x41));
 
         session.rooms().loadInitialOverworld(0xD3);
@@ -1018,7 +1029,7 @@ final class RoomRewardLifecycleTest {
     void liveEntityCollisionProbeUsesRomSwitchBlockStateAndObjectKind() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x00, 0x0F);
-        RoomEntity entity = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity entity = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(candidate -> candidate.type() == 0x1E)
                 .findFirst()
                 .orElseThrow();
@@ -1082,7 +1093,7 @@ final class RoomRewardLifecycleTest {
     void shippedCrystalRoomCarriesAHitIntoTheRoomOwnedSwitchStage() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x00, 0x22);
-        RoomEntity crystal = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity crystal = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x66)
                 .findFirst()
                 .orElseThrow();
@@ -1115,7 +1126,7 @@ final class RoomRewardLifecycleTest {
         RoomSession session = newSession();
         session.rooms().loadInitialOverworld(0xA4);
 
-        RoomEntity pickup = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity pickup = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x3D)
                 .findFirst()
                 .orElseThrow();
@@ -1132,7 +1143,7 @@ final class RoomRewardLifecycleTest {
         for (int frame = 2; frame <= 0x19; frame++) {
             session.entities().tickEntities(frame);
         }
-        pickup = session.rooms().activeRoom().entities().slots().get(pickup.slot());
+        pickup = session.rooms().activeRoomOrNull().entities().slots().get(pickup.slot());
         int collectionFrame = (pickup.slot() & 1) == 0 ? 1 : 0;
 
         EntityPickupEvent event =
@@ -1143,7 +1154,7 @@ final class RoomRewardLifecycleTest {
         assertEquals(
                 EntityStatus.DISABLED,
                 session.rooms()
-                        .activeRoom()
+                        .activeRoomOrNull()
                         .entities()
                         .slots()
                         .get(pickup.slot())
@@ -1158,6 +1169,7 @@ final class RoomRewardLifecycleTest {
         session.rooms().loadOverworld(0xA4);
 
         assertEquals(
-                0xAE, session.rooms().activeRoom().entities().slots().get(0).type());
+                0xAE,
+                session.rooms().activeRoomOrNull().entities().slots().get(0).type());
     }
 }

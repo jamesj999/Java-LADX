@@ -43,10 +43,12 @@ public final class EnemyProjectileEventConsumer {
             Runnable onContactHurt,
             Runnable onPowerUpEnded) {
         consume(events, playerState, link, soundSink, new DamageConsequences() {
+            @Override
             public void contactHurt() {
                 onContactHurt.run();
             }
 
+            @Override
             public void powerUpEnded() {
                 onPowerUpEnded.run();
             }

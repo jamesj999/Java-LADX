@@ -14,7 +14,6 @@ import linksawakening.state.Direction;
 import linksawakening.state.PowerUp;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.EntityPickupEvent;
-import linksawakening.world.room.EntityPickupInputs;
 import linksawakening.world.transition.Warp;
 
 /**
@@ -138,12 +137,12 @@ final class ActiveLinkPhase {
                 && !context.link().actions().isCarryingLiftedObject()
                 && !context.link().sideView().romItemAnimationFrameBlocked()) {
             if (context.link().airborne().romMotionState() == 0x05
-                    || (context.roomSession().entityState().gelClingingToLink())) {
+                    || context.roomSession().entityState().gelClingingToLink()) {
                 context.equipmentController().tickEquippedItemsWithoutInput(context.frameCounter());
             } else {
                 if (!swordPickupSequenceActive
-                        && ((!context.roomSession().entityState().powerUpPickupSequenceActive()
-                                && !context.roomSession().rooms().heartPiecePickupActive())))
+                        && (!context.roomSession().entityState().powerUpPickupSequenceActive()
+                                && !context.roomSession().rooms().heartPiecePickupActive()))
                     context.equipmentController().dispatchButtonEdges();
                 context.equipmentController().tickEquippedItems(context.frameCounter());
             }
@@ -265,17 +264,7 @@ final class ActiveLinkPhase {
                             context.playerState().equipmentLevels().runningWithPegasusBoots());
             EntityPickupEvent pickup = context.roomSession()
                     .entities()
-                    .collectEntityIfNeeded(new EntityPickupInputs(
-                            context.frameCounter(),
-                            context.frameInputs()
-                                    .pickup(
-                                            context.link().position().romEntityX(),
-                                            context.link().position().romEntityY(),
-                                            context.link().airborne().isAirborne(),
-                                            true,
-                                            context.link().animation().direction(),
-                                            context.link().animation().romEntityZ()),
-                            context.frameInputs().sword(box.active(), box.x(), box.width(), box.y(), box.height())));
+                    .collectEntityIfNeeded(context.frameInputs().pickup(context, box));
             if (pickup != null) {
                 if (pickup.type() == 0x36) {
                     context.playerState().equipmentLevels().setActivePowerUp(PowerUp.NONE.romValue());

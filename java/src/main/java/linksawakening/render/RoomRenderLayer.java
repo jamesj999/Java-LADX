@@ -40,6 +40,8 @@ final class RoomRenderLayer implements HardwareRenderLayer {
         transitionController = transition;
     }
 
+    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+    @SuppressWarnings("ReferenceEquality")
     @Override
     public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
         if (currentSnapshot != null) {
@@ -99,24 +101,23 @@ final class RoomRenderLayer implements HardwareRenderLayer {
         int currentY = 0;
 
         switch (scrollController.direction()) {
-            case ScrollController.LEFT:
+            case ScrollController.LEFT -> {
                 previousX = scrollController.offset();
                 currentX = -ROOM_PIXEL_WIDTH + scrollController.offset();
-                break;
-            case ScrollController.RIGHT:
+            }
+            case ScrollController.RIGHT -> {
                 previousX = -scrollController.offset();
                 currentX = ROOM_PIXEL_WIDTH - scrollController.offset();
-                break;
-            case ScrollController.UP:
+            }
+            case ScrollController.UP -> {
                 previousY = scrollController.offset();
                 currentY = -ROOM_PIXEL_HEIGHT + scrollController.offset();
-                break;
-            case ScrollController.DOWN:
+            }
+            case ScrollController.DOWN -> {
                 previousY = -scrollController.offset();
                 currentY = ROOM_PIXEL_HEIGHT - scrollController.offset();
-                break;
-            default:
-                break;
+            }
+            default -> {}
         }
         return reusableOffsets.set(previousX, previousY, currentX, currentY);
     }

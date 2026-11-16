@@ -93,6 +93,11 @@ class WorldDependencyTest {
             "room/RoomTerrain",
             "room/ButtonInputs",
             "room/EntityFrameInputs",
+            "room/EntityFrameValues",
+            "room/EntityTickValues",
+            "entity/EnemyCombatInputs",
+            "entity/EntityPickupFrameInputs",
+            "room/LinkGroundInputs",
             "room/EntityCombatInputs",
             "room/EntityPickupInputs",
             "room/RoomSessionConfig",
@@ -190,6 +195,8 @@ class WorldDependencyTest {
     // even though the current app uses the full-frame and synchronous-drain APIs.
     private static final Set<String> OTHER_PUBLIC_WORLD_CONTRACTS = Set.of("room/EntityTickInputs", "room/LinkWrite");
 
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
     @Test
     void externalPackagesUseOnlyDeclaredWorldBoundaries() throws Exception {
         for (var type : classes()) {

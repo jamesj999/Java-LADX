@@ -1,7 +1,9 @@
 package linksawakening.world.room;
 
 import java.util.List;
+import linksawakening.world.entity.EnemyCombatInputs;
 import linksawakening.world.entity.EntityPickupEvent;
+import linksawakening.world.entity.EntityPickupFrameInputs;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 
@@ -12,10 +14,12 @@ final class RoomEntitiesView implements RoomEntities {
         this.dependencies = dependencies;
     }
 
+    @Override
     public boolean inBossBattle() {
         return dependencies.session().inBossBattle();
     }
 
+    @Override
     public EntityPickupEvent collectEntityIfNeeded(
             int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive) {
         return dependencies
@@ -23,6 +27,7 @@ final class RoomEntitiesView implements RoomEntities {
                 .collectEntityIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive);
     }
 
+    @Override
     public EntityPickupEvent collectEntityIfNeeded(
             int frameCounter,
             int linkEntityX,
@@ -36,6 +41,7 @@ final class RoomEntitiesView implements RoomEntities {
                         frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection);
     }
 
+    @Override
     public EntityPickupEvent collectEntityIfNeeded(
             int frameCounter,
             int linkEntityX,
@@ -50,10 +56,12 @@ final class RoomEntitiesView implements RoomEntities {
                         frameCounter, linkEntityX, linkEntityY, linkAirborne, linkInteractive, linkDirection, linkZ);
     }
 
-    public EntityPickupEvent collectEntityIfNeeded(EntityPickupInputs inputs) {
+    @Override
+    public EntityPickupEvent collectEntityIfNeeded(EntityPickupFrameInputs inputs) {
         return dependencies.session().collectEntityIfNeeded(inputs);
     }
 
+    @Override
     public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
             int frameCounter,
             int linkEntityX,
@@ -74,6 +82,7 @@ final class RoomEntitiesView implements RoomEntities {
                         usingShield);
     }
 
+    @Override
     public List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
             int frameCounter,
             int linkEntityX,
@@ -96,22 +105,27 @@ final class RoomEntitiesView implements RoomEntities {
                         usingShield);
     }
 
-    public List<EntityCombatEvent> resolveEntityCombat(EntityCombatInputs inputs) {
+    @Override
+    public List<EntityCombatEvent> resolveEntityCombat(EnemyCombatInputs inputs) {
         return dependencies.session().resolveEntityCombat(inputs);
     }
 
+    @Override
     public void tickEntities(int frameCounter) {
         dependencies.session().tickEntities(frameCounter);
     }
 
+    @Override
     public void tickEntities(int frameCounter, int linkEntityX, int linkEntityY) {
         dependencies.session().tickEntities(frameCounter, linkEntityX, linkEntityY);
     }
 
+    @Override
     public void tickEntities(int frameCounter, int linkEntityX, int linkEntityY, int linkEntityZ, int linkDirection) {
         dependencies.session().tickEntities(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkDirection);
     }
 
+    @Override
     public void tickEntities(
             int frameCounter,
             int linkEntityX,
@@ -124,7 +138,8 @@ final class RoomEntitiesView implements RoomEntities {
                 .tickEntities(frameCounter, linkEntityX, linkEntityY, linkEntityZ, linkAirborne, linkDirection);
     }
 
-    public List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs) {
+    @Override
+    public List<EntityProjectileEvent> tickEntities(EntityTickValues inputs) {
         return dependencies.session().tickEntities(inputs);
     }
 

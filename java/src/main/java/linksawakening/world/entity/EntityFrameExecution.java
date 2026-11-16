@@ -349,7 +349,8 @@ public final class EntityFrameExecution {
         }
 
         public RoomEntity lifted(RoomEntity value) {
-            return lifted = value;
+            lifted = value;
+            return lifted;
         }
 
         public int liftedRomDirection() {
@@ -357,7 +358,8 @@ public final class EntityFrameExecution {
         }
 
         public int liftedRomDirection(int value) {
-            return liftedRomDirection = value;
+            liftedRomDirection = value;
+            return liftedRomDirection;
         }
 
         public boolean carryingEntity() {
@@ -365,7 +367,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean carryingEntity(boolean value) {
-            return carryingEntity = value;
+            carryingEntity = value;
+            return carryingEntity;
         }
 
         public int index() {
@@ -373,7 +376,8 @@ public final class EntityFrameExecution {
         }
 
         public int index(int value) {
-            return index = value;
+            index = value;
+            return index;
         }
 
         public int postIndex(int delta) {
@@ -387,7 +391,8 @@ public final class EntityFrameExecution {
         }
 
         public RoomEntity entity(RoomEntity value) {
-            return entity = value;
+            entity = value;
+            return entity;
         }
 
         public boolean moldormIntroOpenedThisFrame() {
@@ -395,7 +400,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean moldormIntroOpenedThisFrame(boolean value) {
-            return moldormIntroOpenedThisFrame = value;
+            moldormIntroOpenedThisFrame = value;
+            return moldormIntroOpenedThisFrame;
         }
 
         public boolean rollingBonesHitThisFrame() {
@@ -403,7 +409,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean rollingBonesHitThisFrame(boolean value) {
-            return rollingBonesHitThisFrame = value;
+            rollingBonesHitThisFrame = value;
+            return rollingBonesHitThisFrame;
         }
 
         public boolean kanaletLeafProducer() {
@@ -411,7 +418,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean kanaletLeafProducer(boolean value) {
-            return kanaletLeafProducer = value;
+            kanaletLeafProducer = value;
+            return kanaletLeafProducer;
         }
 
         public RoomEntity originalEntity() {
@@ -419,7 +427,8 @@ public final class EntityFrameExecution {
         }
 
         public RoomEntity originalEntity(RoomEntity value) {
-            return originalEntity = value;
+            originalEntity = value;
+            return originalEntity;
         }
 
         public EntityStatus initialStatus() {
@@ -427,7 +436,8 @@ public final class EntityFrameExecution {
         }
 
         public EntityStatus initialStatus(EntityStatus value) {
-            return initialStatus = value;
+            initialStatus = value;
+            return initialStatus;
         }
 
         public boolean wasInitializing() {
@@ -435,7 +445,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean wasInitializing(boolean value) {
-            return wasInitializing = value;
+            wasInitializing = value;
+            return wasInitializing;
         }
 
         public EntityStatus status() {
@@ -443,7 +454,8 @@ public final class EntityFrameExecution {
         }
 
         public EntityStatus status(EntityStatus value) {
-            return status = value;
+            status = value;
+            return status;
         }
 
         public boolean keyDropTransitionActive() {
@@ -451,7 +463,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean keyDropTransitionActive(boolean value) {
-            return keyDropTransitionActive = value;
+            keyDropTransitionActive = value;
+            return keyDropTransitionActive;
         }
 
         public RoomEntityGroundInteraction.Result preAppliedGroundResult() {
@@ -459,7 +472,8 @@ public final class EntityFrameExecution {
         }
 
         public RoomEntityGroundInteraction.Result preAppliedGroundResult(RoomEntityGroundInteraction.Result value) {
-            return preAppliedGroundResult = value;
+            preAppliedGroundResult = value;
+            return preAppliedGroundResult;
         }
 
         public boolean applyGenericGroundInteraction() {
@@ -467,7 +481,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean applyGenericGroundInteraction(boolean value) {
-            return applyGenericGroundInteraction = value;
+            applyGenericGroundInteraction = value;
+            return applyGenericGroundInteraction;
         }
 
         public RoomEntity updated() {
@@ -475,7 +490,8 @@ public final class EntityFrameExecution {
         }
 
         public RoomEntity updated(RoomEntity value) {
-            return updated = value;
+            updated = value;
+            return updated;
         }
 
         public EntityLinkCollisionRules.LinkPushPolicy genericLinkPushPolicy() {
@@ -484,7 +500,8 @@ public final class EntityFrameExecution {
 
         public EntityLinkCollisionRules.LinkPushPolicy genericLinkPushPolicy(
                 EntityLinkCollisionRules.LinkPushPolicy value) {
-            return genericLinkPushPolicy = value;
+            genericLinkPushPolicy = value;
+            return genericLinkPushPolicy;
         }
 
         public int variant() {
@@ -492,7 +509,8 @@ public final class EntityFrameExecution {
         }
 
         public int variant(int value) {
-            return variant = value;
+            variant = value;
+            return variant;
         }
 
         public int renderFlipAttribute() {
@@ -500,7 +518,8 @@ public final class EntityFrameExecution {
         }
 
         public int renderFlipAttribute(int value) {
-            return renderFlipAttribute = value;
+            renderFlipAttribute = value;
+            return renderFlipAttribute;
         }
 
         void reset() {
@@ -561,7 +580,8 @@ public final class EntityFrameExecution {
         }
 
         public int frameCounter(int value) {
-            return frameCounter = value;
+            frameCounter = value;
+            return frameCounter;
         }
 
         public int linkEntityX() {
@@ -569,7 +589,8 @@ public final class EntityFrameExecution {
         }
 
         public int linkEntityX(int value) {
-            return linkEntityX = value;
+            linkEntityX = value;
+            return linkEntityX;
         }
 
         public int linkEntityY() {
@@ -577,7 +598,8 @@ public final class EntityFrameExecution {
         }
 
         public int linkEntityY(int value) {
-            return linkEntityY = value;
+            linkEntityY = value;
+            return linkEntityY;
         }
 
         public int collisionType() {
@@ -585,7 +607,8 @@ public final class EntityFrameExecution {
         }
 
         public int collisionType(int value) {
-            return collisionType = value;
+            collisionType = value;
+            return collisionType;
         }
 
         public IntSupplier randomByteSupplier() {
@@ -593,7 +616,8 @@ public final class EntityFrameExecution {
         }
 
         public IntSupplier randomByteSupplier(IntSupplier value) {
-            return randomByteSupplier = value;
+            randomByteSupplier = value;
+            return randomByteSupplier;
         }
 
         public RoomEntityBackgroundCollision backgroundCollision() {
@@ -601,7 +625,8 @@ public final class EntityFrameExecution {
         }
 
         public RoomEntityBackgroundCollision backgroundCollision(RoomEntityBackgroundCollision value) {
-            return backgroundCollision = value;
+            backgroundCollision = value;
+            return backgroundCollision;
         }
 
         public RoomEntityObjectCollision objectCollision() {
@@ -609,7 +634,8 @@ public final class EntityFrameExecution {
         }
 
         public RoomEntityObjectCollision objectCollision(RoomEntityObjectCollision value) {
-            return objectCollision = value;
+            objectCollision = value;
+            return objectCollision;
         }
 
         public LinkPositionHistory linkPositionHistory() {
@@ -619,7 +645,8 @@ public final class EntityFrameExecution {
         public LinkPositionHistory linkPositionHistory(
                 /* Optional room geometry/history; null preserves the path without that room input. */ LinkPositionHistory
                         value) {
-            return linkPositionHistory = value;
+            linkPositionHistory = value;
+            return linkPositionHistory;
         }
 
         public int linkZ() {
@@ -627,7 +654,8 @@ public final class EntityFrameExecution {
         }
 
         public int linkZ(int value) {
-            return linkZ = value;
+            linkZ = value;
+            return linkZ;
         }
 
         public boolean linkAirborne() {
@@ -635,7 +663,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean linkAirborne(boolean value) {
-            return linkAirborne = value;
+            linkAirborne = value;
+            return linkAirborne;
         }
 
         public int linkDirection() {
@@ -643,7 +672,8 @@ public final class EntityFrameExecution {
         }
 
         public int linkDirection(int value) {
-            return linkDirection = value;
+            linkDirection = value;
+            return linkDirection;
         }
 
         public int entityYOffset() {
@@ -651,7 +681,8 @@ public final class EntityFrameExecution {
         }
 
         public int entityYOffset(int value) {
-            return entityYOffset = value;
+            entityYOffset = value;
+            return entityYOffset;
         }
 
         public EnemyProjectileCollision.LinkState projectileLinkState() {
@@ -659,7 +690,8 @@ public final class EntityFrameExecution {
         }
 
         public EnemyProjectileCollision.LinkState projectileLinkState(EnemyProjectileCollision.LinkState value) {
-            return projectileLinkState = value;
+            projectileLinkState = value;
+            return projectileLinkState;
         }
 
         public boolean creditsGameplay() {
@@ -667,7 +699,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean creditsGameplay(boolean value) {
-            return creditsGameplay = value;
+            creditsGameplay = value;
+            return creditsGameplay;
         }
 
         public boolean swordCollisionActive() {
@@ -675,7 +708,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean swordCollisionActive(boolean value) {
-            return swordCollisionActive = value;
+            swordCollisionActive = value;
+            return swordCollisionActive;
         }
 
         public int swordX() {
@@ -683,7 +717,8 @@ public final class EntityFrameExecution {
         }
 
         public int swordX(int value) {
-            return swordX = value;
+            swordX = value;
+            return swordX;
         }
 
         public int swordWidth() {
@@ -691,7 +726,8 @@ public final class EntityFrameExecution {
         }
 
         public int swordWidth(int value) {
-            return swordWidth = value;
+            swordWidth = value;
+            return swordWidth;
         }
 
         public int swordY() {
@@ -699,7 +735,8 @@ public final class EntityFrameExecution {
         }
 
         public int swordY(int value) {
-            return swordY = value;
+            swordY = value;
+            return swordY;
         }
 
         public int swordHeight() {
@@ -707,7 +744,8 @@ public final class EntityFrameExecution {
         }
 
         public int swordHeight(int value) {
-            return swordHeight = value;
+            swordHeight = value;
+            return swordHeight;
         }
 
         public int frame() {
@@ -715,7 +753,8 @@ public final class EntityFrameExecution {
         }
 
         public int frame(int value) {
-            return frame = value;
+            frame = value;
+            return frame;
         }
 
         public int romCollisionType() {
@@ -723,7 +762,8 @@ public final class EntityFrameExecution {
         }
 
         public int romCollisionType(int value) {
-            return romCollisionType = value;
+            romCollisionType = value;
+            return romCollisionType;
         }
 
         public RoomEntityBackgroundInteraction hinoxBackgroundInteraction() {
@@ -731,7 +771,8 @@ public final class EntityFrameExecution {
         }
 
         public RoomEntityBackgroundInteraction hinoxBackgroundInteraction(RoomEntityBackgroundInteraction value) {
-            return hinoxBackgroundInteraction = value;
+            hinoxBackgroundInteraction = value;
+            return hinoxBackgroundInteraction;
         }
 
         public List<EntityProjectileEvent> projectileEvents() {
@@ -739,7 +780,8 @@ public final class EntityFrameExecution {
         }
 
         public List<EntityProjectileEvent> projectileEvents(List<EntityProjectileEvent> value) {
-            return projectileEvents = value;
+            projectileEvents = value;
+            return projectileEvents;
         }
 
         public int romLinkDirection() {
@@ -747,7 +789,8 @@ public final class EntityFrameExecution {
         }
 
         public int romLinkDirection(int value) {
-            return romLinkDirection = value;
+            romLinkDirection = value;
+            return romLinkDirection;
         }
 
         void reset() {
@@ -803,7 +846,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean handlerLinkCollisionEnabled(boolean value) {
-            return handlerLinkCollisionEnabled = value;
+            handlerLinkCollisionEnabled = value;
+            return handlerLinkCollisionEnabled;
         }
 
         public boolean countdownBlocksInteraction() {
@@ -811,7 +855,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean countdownBlocksInteraction(boolean value) {
-            return countdownBlocksInteraction = value;
+            countdownBlocksInteraction = value;
+            return countdownBlocksInteraction;
         }
 
         public boolean threeOfAKindInteractive() {
@@ -819,7 +864,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean threeOfAKindInteractive(boolean value) {
-            return threeOfAKindInteractive = value;
+            threeOfAKindInteractive = value;
+            return threeOfAKindInteractive;
         }
 
         public boolean handlerInteractive() {
@@ -827,7 +873,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean handlerInteractive(boolean value) {
-            return handlerInteractive = value;
+            handlerInteractive = value;
+            return handlerInteractive;
         }
 
         public boolean bowWowHandlerInteractive() {
@@ -835,7 +882,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean bowWowHandlerInteractive(boolean value) {
-            return bowWowHandlerInteractive = value;
+            bowWowHandlerInteractive = value;
+            return bowWowHandlerInteractive;
         }
 
         public boolean projectileTimersInteractive() {
@@ -843,7 +891,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean projectileTimersInteractive(boolean value) {
-            return projectileTimersInteractive = value;
+            projectileTimersInteractive = value;
+            return projectileTimersInteractive;
         }
 
         public boolean sideViewPotInteractive() {
@@ -851,7 +900,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean sideViewPotInteractive(boolean value) {
-            return sideViewPotInteractive = value;
+            sideViewPotInteractive = value;
+            return sideViewPotInteractive;
         }
 
         public boolean sideViewPotLinkCollisionInteractive() {
@@ -859,7 +909,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean sideViewPotLinkCollisionInteractive(boolean value) {
-            return sideViewPotLinkCollisionInteractive = value;
+            sideViewPotLinkCollisionInteractive = value;
+            return sideViewPotLinkCollisionInteractive;
         }
 
         public boolean freezeTarinTimers() {
@@ -867,7 +918,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean freezeTarinTimers(boolean value) {
-            return freezeTarinTimers = value;
+            freezeTarinTimers = value;
+            return freezeTarinTimers;
         }
 
         public boolean freezeThreeOfAKindTimers() {
@@ -875,7 +927,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean freezeThreeOfAKindTimers(boolean value) {
-            return freezeThreeOfAKindTimers = value;
+            freezeThreeOfAKindTimers = value;
+            return freezeThreeOfAKindTimers;
         }
 
         public boolean freezeHinoxTimers() {
@@ -883,7 +936,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean freezeHinoxTimers(boolean value) {
-            return freezeHinoxTimers = value;
+            freezeHinoxTimers = value;
+            return freezeHinoxTimers;
         }
 
         public boolean freezeGenieTimers() {
@@ -891,7 +945,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean freezeGenieTimers(boolean value) {
-            return freezeGenieTimers = value;
+            freezeGenieTimers = value;
+            return freezeGenieTimers;
         }
 
         public boolean freezeWitchTimers() {
@@ -899,7 +954,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean freezeWitchTimers(boolean value) {
-            return freezeWitchTimers = value;
+            freezeWitchTimers = value;
+            return freezeWitchTimers;
         }
 
         public boolean freezePowderTimers() {
@@ -907,7 +963,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean freezePowderTimers(boolean value) {
-            return freezePowderTimers = value;
+            freezePowderTimers = value;
+            return freezePowderTimers;
         }
 
         public boolean freezeBooBuddyTimers() {
@@ -915,7 +972,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean freezeBooBuddyTimers(boolean value) {
-            return freezeBooBuddyTimers = value;
+            freezeBooBuddyTimers = value;
+            return freezeBooBuddyTimers;
         }
 
         public boolean freezeBowWowTimers() {
@@ -923,7 +981,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean freezeBowWowTimers(boolean value) {
-            return freezeBowWowTimers = value;
+            freezeBowWowTimers = value;
+            return freezeBowWowTimers;
         }
 
         public boolean freezeMoblinKingTimers() {
@@ -931,7 +990,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean freezeMoblinKingTimers(boolean value) {
-            return freezeMoblinKingTimers = value;
+            freezeMoblinKingTimers = value;
+            return freezeMoblinKingTimers;
         }
 
         public boolean ignoreHitsDecrementedBeforeHandler() {
@@ -939,7 +999,8 @@ public final class EntityFrameExecution {
         }
 
         public boolean ignoreHitsDecrementedBeforeHandler(boolean value) {
-            return ignoreHitsDecrementedBeforeHandler = value;
+            ignoreHitsDecrementedBeforeHandler = value;
+            return ignoreHitsDecrementedBeforeHandler;
         }
 
         void reset() {

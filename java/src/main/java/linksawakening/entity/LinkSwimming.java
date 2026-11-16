@@ -198,7 +198,7 @@ final class LinkSwimming {
             linkStateMachine
                     .get()
                     .roomPhysics()
-                    .physicsModifier(linkStateMachine.get().roomPhysics().physicsModifier() ^ (1));
+                    .physicsModifier(linkStateMachine.get().roomPhysics().physicsModifier() ^ 1);
             divingCountdown = linkStateMachine.get().roomPhysics().physicsModifier() == 0 ? 0 : 0xA0;
         }
         if (linkControls
@@ -265,6 +265,8 @@ final class LinkSwimming {
         }
     }
 
+    // The signed-byte casts deliberately truncate both ROM speeds before subtraction.
+    @SuppressWarnings("SelfAssignment")
     static int approachSignedSpeed(int current, int target) {
         current = (byte) current;
         target = (byte) target;

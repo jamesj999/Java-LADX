@@ -10,7 +10,8 @@ final class LinkCollisionState {
     }
 
     int romCollisionType(int value) {
-        return romCollisionType = value;
+        romCollisionType = value;
+        return romCollisionType;
     }
 
     private boolean doorWarpPending;
@@ -20,7 +21,8 @@ final class LinkCollisionState {
     }
 
     boolean doorWarpPending(boolean value) {
-        return doorWarpPending = value;
+        doorWarpPending = value;
+        return doorWarpPending;
     }
 
     private final int[] collisionProbePixelX = new int[4];

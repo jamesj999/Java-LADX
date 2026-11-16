@@ -66,14 +66,14 @@ class RoomRenderAllocationTest {
     void populatedRenderAndInventoryViewsAllocateLessThan256Bytes() {
         var session = room();
         double owned = AllocationProbe.bytesPerIteration(4000, 1000, () -> {
-            retained = session.rooms().renderSnapshot();
+            retained = session.rooms().renderSnapshotOrNull();
             retained = session.dungeon().currentDungeonItemFlagsSnapshot();
             retained = session.dungeon().dungeonProgressFlagsSnapshot();
             retained = session.dungeon().dungeonMinimapRoomStatusSnapshot();
         });
         byte[] progress = new byte[8], items = new byte[5], minimap = new byte[64];
         double live = AllocationProbe.bytesPerIteration(4000, 1000, () -> {
-            var view = session.rooms().renderView();
+            var view = session.rooms().renderViewOrNull();
             retained = view;
             var entities = view.entities().loadedEntities();
             int value = entities.get(0).x() + entities.get(1).spriteVariant();
@@ -97,14 +97,14 @@ class RoomRenderAllocationTest {
     @Test
     void liveViewsFollowChangesWhileOwnedCopiesStayHistorical() {
         var session = room();
-        var view = session.rooms().renderView();
-        var snapshot = session.rooms().renderSnapshot();
+        var view = session.rooms().renderViewOrNull();
+        var snapshot = session.rooms().renderSnapshotOrNull();
         var flags = session.dungeon().currentDungeonItemFlagsSnapshot();
-        session.rooms().activeRoom().tileIds()[0] = 7;
-        session.rooms().activeRoom().palettes()[0][0] = 11;
+        session.rooms().activeRoomOrNull().tileIds()[0] = 7;
+        session.rooms().activeRoomOrNull().palettes()[0][0] = 11;
         session.dungeon().setDungeonItemForDebug(0, 0, 1);
         session.components.roomState().dungeonItemState.loadForMap(0, true);
-        assertSame(view, session.rooms().renderView());
+        assertSame(view, session.rooms().renderViewOrNull());
         assertEquals(7, view.tileId(0));
         assertEquals(11, view.paletteColor(0, 0));
         assertEquals(0, snapshot.tileIds()[0]);

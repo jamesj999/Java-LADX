@@ -195,7 +195,7 @@ final class RoomNavigationFixture {
                 }
             }
         }
-        for (LinkMotionBlockRequest request : session.consumeLinkMotionBlockRequests()) {
+        for (LinkMotionBlockRequest unused : session.consumeLinkMotionBlockRequests()) {
             link.motion().blockNextRomMotionFrame();
         }
         // These Main streams are not emitted by the authored A5/D6 route;
@@ -247,14 +247,14 @@ final class RoomNavigationFixture {
 
     static int letBowWowEatAllGoponga(RoomSession session, OverworldCollision collision, Link link, int frame) {
         int deadline = frame + 0x4000;
-        while (session.rooms().activeRoom().entities().loadedEntities().stream()
+        while (session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                         .anyMatch(entity -> entity.type() == 0x7C || entity.type() == 0x7E)
                 && frame < deadline) {
-            RoomEntity target = session.rooms().activeRoom().entities().loadedEntities().stream()
+            RoomEntity target = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                     .filter(entity -> entity.type() == 0x7C || entity.type() == 0x7E)
                     .findFirst()
                     .orElseThrow();
-            RoomEntity bowWow = session.rooms().activeRoom().entities().loadedEntities().stream()
+            RoomEntity bowWow = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                     .filter(entity -> entity.type() == 0x6D)
                     .findFirst()
                     .orElseThrow();
@@ -270,7 +270,7 @@ final class RoomNavigationFixture {
                         link.position().romEntityX(),
                         link.position().romEntityY());
                 session.consumeEntityEvents();
-                bowWow = session.rooms().activeRoom().entities().loadedEntities().stream()
+                bowWow = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                         .filter(entity -> entity.type() == 0x6D)
                         .findFirst()
                         .orElseThrow();
@@ -312,7 +312,7 @@ final class RoomNavigationFixture {
                     session.consumeEntityEvents();
                 }
             }
-            while (session.rooms().activeRoom().entities().loadedEntities().stream()
+            while (session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                             .anyMatch(entity ->
                                     entity.slot() == target.slot() && (entity.type() == 0x7C || entity.type() == 0x7E))
                     && frame < deadline) {
@@ -325,9 +325,9 @@ final class RoomNavigationFixture {
             }
         }
         assertFalse(
-                session.rooms().activeRoom().entities().loadedEntities().stream()
+                session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                         .anyMatch(entity -> entity.type() == 0x7C || entity.type() == 0x7E),
-                session.rooms().activeRoom().entities().loadedEntities().stream()
+                session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                         .map(entity -> String.format(
                                 "slot%d:%02X@(%02X,%02X,z=%02X,v=%d,s=%s)",
                                 entity.slot(),
@@ -349,7 +349,7 @@ final class RoomNavigationFixture {
 
     static int objectAt(RoomSession session, int location) {
         return session.rooms()
-                .activeRoom()
+                .activeRoomOrNull()
                 .roomObjectsArea()[ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F)];
     }
 
@@ -368,7 +368,7 @@ final class RoomNavigationFixture {
     static int[] roomObjectTiles(RoomSession session, int location) {
         int tileX = (location & 0x0F) * 2;
         int tileY = ((location & 0xF0) >>> 4) * 2;
-        int[] tiles = session.rooms().activeRoom().tileIds();
+        int[] tiles = session.rooms().activeRoomOrNull().tileIds();
         int rowStride = RoomConstants.ROOM_TILE_WIDTH;
         return new int[] {
             tiles[tileY * rowStride + tileX],
@@ -379,7 +379,7 @@ final class RoomNavigationFixture {
     }
 
     static boolean bowWowOutsideLeash(RoomSession session, Link link) {
-        RoomEntity bowWow = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity bowWow = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x6D)
                 .findFirst()
                 .orElseThrow();
@@ -635,7 +635,7 @@ final class RoomNavigationFixture {
                 setDirectionalInput(inputState, inputConfig, firstMask, GLFW_PRESS);
                 int jumpStartX = link.position().pixelX();
                 int jumpStartY = link.position().pixelY();
-                itemRegistry.lookup(playerState.inventory().itemA()).onPress();
+                itemRegistry.item(playerState.inventory().itemA()).onPress();
                 assertTrue(
                         link.airborne().isAirborne(),
                         "Feather did not start at (" + jumpStartX + "," + jumpStartY + ")");
@@ -700,7 +700,7 @@ final class RoomNavigationFixture {
             PlayerState playerState,
             int joypadMask) {
         setDirectionalInput(inputState, inputConfig, joypadMask, GLFW_PRESS);
-        itemRegistry.lookup(playerState.inventory().itemA()).onPress();
+        itemRegistry.item(playerState.inventory().itemA()).onPress();
         assertTrue(link.airborne().isAirborne());
         boolean crossedPit = false;
         int deadline = 0x40;
@@ -918,7 +918,8 @@ final class RoomNavigationFixture {
 
     static SwordApproach reachableSwordContactPath(
             OverworldCollision collision, int startX, int startY, RoomEntity entity, RomTables romTables) {
-        Sword sword = new Sword(romTables, null);
+        Sword sword = new Sword(
+                new Sword.Assets(romTables.swordTables(), linksawakening.equipment.SwordSpriteSheet.invisible()));
         sword.onPress();
         for (int swingFrame = 0; swingFrame < 4; swingFrame++) {
             sword.tick(false);
@@ -940,7 +941,8 @@ final class RoomNavigationFixture {
 
     static SwordApproach reachableSwordContactPathWithFeather(
             OverworldCollision collision, RomTables romTables, int startX, int startY, RoomEntity entity) {
-        Sword sword = new Sword(romTables, null);
+        Sword sword = new Sword(
+                new Sword.Assets(romTables.swordTables(), linksawakening.equipment.SwordSpriteSheet.invisible()));
         sword.onPress();
         for (int swingFrame = 0; swingFrame < 4; swingFrame++) {
             sword.tick(false);

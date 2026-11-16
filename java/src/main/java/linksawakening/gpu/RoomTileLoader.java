@@ -84,22 +84,21 @@ final class RoomTileLoader {
         // LoadIndoorTiles copies the map's indoor-item sheet to vTiles1+$400
         // after the shared gameplay base copy. House maps use the overworld
         // item sheet; dungeon maps use InventoryIndoorItemsTiles.
-        if (mapId != MAP_COLOR_DUNGEON) {
-            if (mapId >= 0x0A) {
-                target.loadTilesFromROM(
-                        romData,
-                        GbcBanks.adjust(INVENTORY_OVERWORLD_ITEMS_TILES_BANK),
-                        INVENTORY_OVERWORLD_ITEMS_TILES_ADDR,
-                        0x30,
-                        0x0C0);
-            } else {
-                target.loadTilesFromROM(
-                        romData,
-                        GbcBanks.adjust(INVENTORY_INDOOR_ITEMS_TILES_BANK),
-                        INVENTORY_INDOOR_ITEMS_TILES_ADDR,
-                        0x30,
-                        0x0C0);
-            }
+
+        if (mapId >= 0x0A) {
+            target.loadTilesFromROM(
+                    romData,
+                    GbcBanks.adjust(INVENTORY_OVERWORLD_ITEMS_TILES_BANK),
+                    INVENTORY_OVERWORLD_ITEMS_TILES_ADDR,
+                    0x30,
+                    0x0C0);
+        } else {
+            target.loadTilesFromROM(
+                    romData,
+                    GbcBanks.adjust(INVENTORY_INDOOR_ITEMS_TILES_BANK),
+                    INVENTORY_INDOOR_ITEMS_TILES_ADDR,
+                    0x30,
+                    0x0C0);
         }
 
         // LoadRoomSpecificTiles $00:2F24-$2F4A replaces the entire BG-only

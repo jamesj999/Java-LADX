@@ -223,7 +223,7 @@ public final class BoomerangMotion {
 
     private static int signedResult(int magnitude, boolean negative) {
         int value = magnitude & 0xFF;
-        return negative ? (-value) & 0xFF : value;
+        return negative ? -value & 0xFF : value;
     }
 
     private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {

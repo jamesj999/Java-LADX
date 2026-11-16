@@ -91,7 +91,7 @@ final class ColorShellMotionTest {
         ColorShellMotion motion = new ColorShellMotion();
         MotionTestFixture.setStateForTest(motion, 0, 1, 0, 0, 0, 0);
 
-        ColorShellMotion.Update update = motion.advance(
+        motion.advance(
                 entity(0x40, 0x40),
                 0,
                 0x4F,
@@ -125,7 +125,7 @@ final class ColorShellMotionTest {
         ColorShellMotion motion = new ColorShellMotion();
         MotionTestFixture.setStateForTest(motion, 0, 3, 0, 1, 0x10, 0xF0);
 
-        ColorShellMotion.Update update = motion.advance(
+        motion.advance(
                 entity(0x40, 0x40), 0, 0, 0, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
 
         assertEquals(1, motion.state(0));
@@ -150,7 +150,7 @@ final class ColorShellMotionTest {
         assertEquals(5, motion.state(0));
         assertEquals(0, update.nextIgnoreHitsCountdown());
 
-        update = motion.advance(
+        motion.advance(
                 update.entity(), 2, 0, 0, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN, 0);
         assertEquals(1, motion.state(0));
         assertEquals(0, motion.physicsFlags(0) & 0x80);

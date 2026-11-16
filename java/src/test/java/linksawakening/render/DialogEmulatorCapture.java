@@ -74,6 +74,8 @@ public final class DialogEmulatorCapture {
         capture("marin", initialClocks, frames, consumer);
     }
 
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
     static void capture(String scenario, String initialClocks, List<String> frames, BiConsumer<String, byte[]> consumer)
             throws Exception {
         boolean timedDialog =
@@ -133,7 +135,7 @@ public final class DialogEmulatorCapture {
             link.animation().showStandingShieldDownPose();
         }
         var motion = new MarinWakeUpMotion();
-        var marinSource = session.rooms().activeRoom().entities().slots().get(0);
+        var marinSource = session.rooms().activeRoomOrNull().entities().slots().get(0);
         String[] initial = initialClocks.trim().split("\\t");
         int firstFrame = Integer.parseInt(initial[0]);
         int inertia = Integer.parseInt(initial[1]);
@@ -164,6 +166,8 @@ public final class DialogEmulatorCapture {
                 gpu);
     }
 
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
     private static void replay(
             String scenario,
             List<String> frames,
@@ -219,7 +223,7 @@ public final class DialogEmulatorCapture {
                     .build(GameFrameState.empty()
                             .withScreen(RenderScreen.OVERWORLD)
                             .withRoom(
-                                    session.rooms().renderSnapshot(),
+                                    session.rooms().renderSnapshotOrNull(),
                                     new ScrollController(),
                                     new TransitionController())
                             .withLink(link)

@@ -29,7 +29,8 @@ final class EntitySlotPresentation {
     }
 
     List<HookshotChainOam.Entry> writeHookshotChainOam(List<HookshotChainOam.Entry> value) {
-        return hookshotChainOam = value;
+        hookshotChainOam = value;
+        return hookshotChainOam;
     }
 
     List<PincerBodyOam.Entry> readPincerBodyOam() {
@@ -37,7 +38,8 @@ final class EntitySlotPresentation {
     }
 
     List<PincerBodyOam.Entry> writePincerBodyOam(List<PincerBodyOam.Entry> value) {
-        return pincerBodyOam = value;
+        pincerBodyOam = value;
+        return pincerBodyOam;
     }
 
     List<WingedOctorokOam.Entry> readWingedOctorokOam() {
@@ -45,7 +47,8 @@ final class EntitySlotPresentation {
     }
 
     List<WingedOctorokOam.Entry> writeWingedOctorokOam(List<WingedOctorokOam.Entry> value) {
-        return wingedOctorokOam = value;
+        wingedOctorokOam = value;
+        return wingedOctorokOam;
     }
 
     boolean readWingedSwordAttackThisFrame(int slot) {
@@ -53,7 +56,8 @@ final class EntitySlotPresentation {
     }
 
     boolean writeWingedSwordAttackThisFrame(int slot, boolean value) {
-        return wingedSwordAttackThisFrame[slot] = value;
+        wingedSwordAttackThisFrame[slot] = value;
+        return wingedSwordAttackThisFrame[slot];
     }
 
     boolean[] storageWingedSwordAttackThisFrame() {
@@ -65,7 +69,8 @@ final class EntitySlotPresentation {
     }
 
     boolean writeWingedStateTwoThisFrame(int slot, boolean value) {
-        return wingedStateTwoThisFrame[slot] = value;
+        wingedStateTwoThisFrame[slot] = value;
+        return wingedStateTwoThisFrame[slot];
     }
 
     boolean[] storageWingedStateTwoThisFrame() {
@@ -77,7 +82,8 @@ final class EntitySlotPresentation {
     }
 
     List<BowWowChain.Entry> writeBowWowChainOam(List<BowWowChain.Entry> value) {
-        return bowWowChainOam = value;
+        bowWowChainOam = value;
+        return bowWowChainOam;
     }
 
     void updatePincerBodyOam(RoomEntity[] slots, EntityMotionRegistry motions) {

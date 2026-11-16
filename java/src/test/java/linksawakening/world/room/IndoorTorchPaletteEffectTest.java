@@ -212,6 +212,6 @@ final class IndoorTorchPaletteEffectTest {
     }
 
     private static int rgb555(int red, int green, int blue) {
-        return red * 255 / 31 << 16 | green * 255 / 31 << 8 | blue * 255 / 31;
+        return (red * 255 / 31) << 16 | (green * 255 / 31) << 8 | blue * 255 / 31;
     }
 }

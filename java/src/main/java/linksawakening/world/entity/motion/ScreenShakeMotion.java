@@ -12,6 +12,7 @@ public final class ScreenShakeMotion implements ScreenShake {
     private int horizontal;
     private int vertical;
 
+    @Override
     public void start(int countdown, int phase) {
         if (countdown < 0 || countdown > 0xFF) {
             throw new IllegalArgumentException("Screen-shake countdown must be an unsigned byte");
@@ -23,6 +24,7 @@ public final class ScreenShakeMotion implements ScreenShake {
         this.phase = phase;
     }
 
+    @Override
     public void tick() {
         if (countdown == 0) {
             return;
@@ -33,14 +35,17 @@ public final class ScreenShakeMotion implements ScreenShake {
         vertical = VERTICAL_BY_PHASE[tableIndex];
     }
 
+    @Override
     public int countdown() {
         return countdown;
     }
 
+    @Override
     public int horizontal() {
         return horizontal;
     }
 
+    @Override
     public int vertical() {
         return vertical;
     }

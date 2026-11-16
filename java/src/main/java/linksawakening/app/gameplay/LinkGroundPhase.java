@@ -1,6 +1,6 @@
 package linksawakening.app.gameplay;
 
-import linksawakening.world.room.LinkGroundFrame;
+import linksawakening.world.room.LinkGroundInputs;
 
 /**
  * Ground sampling at the pre- and post-motion ROM positions. Stateless utility; no session state is
@@ -25,11 +25,12 @@ final class LinkGroundPhase {
      * sequence (UseMagicPowder $00:149E) and the witch presentation
      * ($05:4834, $05:48DB). */
     static boolean dialogGotItemActive(GameplaySimulation context) {
-        return (context.link().animation().dialogGotItemActive())
-                || (context.roomSession().entityState().gotItemPresentationActive());
+        return context.link().animation().dialogGotItemActive()
+                || context.roomSession().entityState().gotItemPresentationActive();
     }
 
-    static LinkGroundFrame groundFrame(GameplaySimulation context, int pixelX, int pixelY, boolean interactionBlocked) {
+    static LinkGroundInputs groundFrame(
+            GameplaySimulation context, int pixelX, int pixelY, boolean interactionBlocked) {
         return context.frameInputs().ground(context, pixelX, pixelY, interactionBlocked);
     }
 }

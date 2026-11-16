@@ -60,7 +60,7 @@ final class EscapeSaveScreenTest {
                             ScrollController.RIGHT,
                             80,
                             80,
-                            state.roomSession().rooms().renderSnapshot(),
+                            state.roomSession().rooms().renderSnapshotOrNull(),
                             160);
             case TRANSITION -> state.transitionController().startFadeOut(() -> {});
             case PASS_OUT -> state.link().status().beginPassOut();
@@ -175,6 +175,8 @@ final class EscapeSaveScreenTest {
         return game;
     }
 
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
     private static void finishWakeUp(GameSession game) throws Exception {
         // Replay only the existing opening route's wake-up and bed-exit prefix.
         for (String command : Files.readAllLines(Path.of("../tools/opening/tail-cave-warp-route.tsv")).stream()

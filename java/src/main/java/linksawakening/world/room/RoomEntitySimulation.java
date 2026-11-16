@@ -28,7 +28,7 @@ final class RoomEntitySimulation {
         this.dependencies = dependencies;
     }
 
-    List<EntityProjectileEvent> tickEntities(RoomRuntime loaded, EntityTickInputs inputs) {
+    List<EntityProjectileEvent> tickEntities(RoomRuntime loaded, EntityTickValues inputs) {
         int frameCounter = inputs.frameCounter();
         int linkEntityX = inputs.position().x();
         int linkEntityY = inputs.position().y();

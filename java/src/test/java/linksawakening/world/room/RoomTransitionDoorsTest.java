@@ -108,7 +108,7 @@ final class RoomTransitionDoorsTest {
         assertEquals(0x25, RoomDebugFixture.of(session).activeRoomEventForTest());
         assertEquals(0xAB, objectAt(session, 0x34));
         assertEquals(0xAB, objectAt(session, 0x35));
-        assertEquals(0x08, session.rooms().activeRoom().shutterDoorMask() & 0x08);
+        assertEquals(0x08, session.rooms().activeRoomOrNull().shutterDoorMask() & 0x08);
         for (int tick = 0; tick < 9; tick++) tickInteractiveEntities(session, tick, 0x40, 0x50);
         int closedEastDoorObject = objectAt(session, 0x39);
         int[] closedEastDoorTiles = roomObjectTiles(session, 0x39);
@@ -127,7 +127,7 @@ final class RoomTransitionDoorsTest {
 
         assertEquals(2, RoomDebugFixture.of(session).roomTriggerCountForTest());
         assertEquals(0, RoomDebugFixture.of(session).activeRoomEventForTest());
-        assertEquals(0, session.rooms().activeRoom().shutterDoorMask() & 0x08);
+        assertEquals(0, session.rooms().activeRoomOrNull().shutterDoorMask() & 0x08);
         assertEquals(0x0B, objectAt(session, 0x39));
         assertEquals(0x0C, objectAt(session, 0x49));
         assertFalse(java.util.Arrays.equals(closedEastDoorTiles, roomObjectTiles(session, 0x39)));
@@ -141,7 +141,7 @@ final class RoomTransitionDoorsTest {
         RoomSession session = newSession(rom, romTables, collision);
         session.rooms().loadInitialOverworld(0x92);
         session.rooms().loadIndoor(MAP_WITH_NO_WARP_ROOM, INDOOR_ROOM_WITH_NO_WARPS);
-        assertFalse(session.rooms().activeRoom().hasWarps());
+        assertFalse(session.rooms().activeRoomOrNull().hasWarps());
 
         ScrollController scrollController = new ScrollController();
         RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
@@ -183,10 +183,10 @@ final class RoomTransitionDoorsTest {
         OverworldCollision collision = new OverworldCollision(romTables);
         RoomSession session = newSession(rom, romTables, collision);
         session.rooms().loadIndoor(0x10, 0xA3);
-        assertTrue(session.rooms().activeRoom().indoorHasSouthEntrance());
+        assertTrue(session.rooms().activeRoomOrNull().indoorHasSouthEntrance());
         assertEquals(
                 Warp.CATEGORY_OVERWORLD,
-                session.rooms().activeRoom().firstWarp().category());
+                session.rooms().activeRoomOrNull().firstWarp().category());
 
         TransitionController transition = new TransitionController();
         RoomTransitionCoordinator coordinator = new RoomTransitionCoordinator(
@@ -219,8 +219,9 @@ final class RoomTransitionDoorsTest {
         session.rooms().loadInitialOverworld(0x92);
         session.rooms().loadIndoor(0x00, 0x19, Warp.CATEGORY_SIDESCROLL);
         assertEquals(
-                Warp.CATEGORY_INDOOR, session.rooms().activeRoom().firstWarp().category());
-        assertEquals(0x03, session.rooms().activeRoom().firstWarp().destRoom());
+                Warp.CATEGORY_INDOOR,
+                session.rooms().activeRoomOrNull().firstWarp().category());
+        assertEquals(0x03, session.rooms().activeRoomOrNull().firstWarp().destRoom());
 
         TransitionController transition = new TransitionController();
         ScrollController scroll = new ScrollController();

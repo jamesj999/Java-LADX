@@ -287,8 +287,8 @@ public final class BomberMotion {
                 nextTransitionCountdown = 0x12;
                 BomberMotion.Vector vector =
                         BomberMotion.vectorTowardsLink(moved.x(), moved.y(), moved.z(), linkEntityX, linkEntityY, 0x20);
-                owner.speedX[slot] = (-BomberMotion.signedByte(vector.x())) & 0xFF;
-                owner.speedY[slot] = (-BomberMotion.signedByte(vector.y())) & 0xFF;
+                owner.speedX[slot] = -BomberMotion.signedByte(vector.x()) & 0xFF;
+                owner.speedY[slot] = -BomberMotion.signedByte(vector.y()) & 0xFF;
             }
 
             return new BomberMotion.Update(moved, nextTransitionCountdown, bombSpawn, playJingle);

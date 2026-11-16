@@ -59,8 +59,8 @@ final class RoomSessionFollowersTest {
 
         int location = 0x55;
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
-        session.rooms().activeRoom().roomObjectsArea()[areaIndex] = 0x04;
-        session.rooms().activeRoom().renderValues()[areaIndex] = 0x04;
+        session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex] = 0x04;
+        session.rooms().activeRoomOrNull().renderValues()[areaIndex] = 0x04;
 
         assertTrue(session.playerItems().startShovel(0x44, 0x56, 0, false).started());
         session.playerItems().advanceShovel(0x44, 0x56, 0, 0x10);
@@ -104,7 +104,8 @@ final class RoomSessionFollowersTest {
                 .setFollowingNpcState(
                         new FollowingNpcState(true, 0, false, false, 0, 0, false), 0x50, 0x60, 0x00, 0x00, 0x00);
 
-        RoomEntity rooster = session.rooms().activeRoom().entities().slots().get(15);
+        RoomEntity rooster =
+                session.rooms().activeRoomOrNull().entities().slots().get(15);
         assertEquals(0xD5, rooster.type());
         assertEquals(EntityStatus.ACTIVE, rooster.status());
         assertEquals(0x50, rooster.x());
@@ -114,12 +115,13 @@ final class RoomSessionFollowersTest {
         assertEquals(
                 0x59BC,
                 session.rooms()
-                        .activeRoom()
+                        .activeRoomOrNull()
                         .entities()
                         .spriteSelection()
                         .spriteOverrideFor(0xD5)
                         .address());
-        assertEquals(rooster, session.rooms().activeRoom().entities().slots().get(15));
+        assertEquals(
+                rooster, session.rooms().activeRoomOrNull().entities().slots().get(15));
     }
 
     @Test
@@ -137,7 +139,7 @@ final class RoomSessionFollowersTest {
 
         int frame = 1;
         for (int type : new int[] {0x3E, 0x3F}) {
-            RoomEntity npc = session.rooms().activeRoom().entities().loadedEntities().stream()
+            RoomEntity npc = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                     .filter(entity -> entity.type() == type)
                     .findFirst()
                     .orElseThrow();
@@ -159,13 +161,13 @@ final class RoomSessionFollowersTest {
     void houseMarinUnloadsOnceLinkOwnsTheSword() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x10, 0xA3);
-        assertTrue(session.rooms().activeRoom().entities().loadedEntities().stream()
+        assertTrue(session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x3E));
 
         session.story().setChestPlayerLevels(1, 1, 0);
         session.entities().tickEntities(0);
 
-        assertFalse(session.rooms().activeRoom().entities().loadedEntities().stream()
+        assertFalse(session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x3E));
     }
 
@@ -173,13 +175,13 @@ final class RoomSessionFollowersTest {
     void indoorMarinSwordRuleDoesNotUnloadOverworldEntityType3e() {
         RoomSession session = newSession();
         session.rooms().loadInitialOverworld(0x92);
-        assertTrue(session.rooms().activeRoom().entities().loadedEntities().stream()
+        assertTrue(session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x3E));
 
         session.story().setChestPlayerLevels(1, 1, 0);
         session.entities().tickEntities(0);
 
-        assertTrue(session.rooms().activeRoom().entities().loadedEntities().stream()
+        assertTrue(session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == 0x3E));
     }
 
@@ -188,11 +190,11 @@ final class RoomSessionFollowersTest {
         RoomSession session = newSession();
         session.story().setBowWowState(0x80);
         session.rooms().loadInitialOverworld(0xB0);
-        RoomEntity kid71 = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity kid71 = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x71)
                 .findFirst()
                 .orElseThrow();
-        RoomEntity kid72 = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity kid72 = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x72)
                 .findFirst()
                 .orElseThrow();
@@ -223,7 +225,7 @@ final class RoomSessionFollowersTest {
         session.story().setBowWowState(0x80);
         session.rooms().loadIndoor(0x15, 0xE2);
         session.entities().tickEntities(0, 0x20, 0x40, 0, Direction.RIGHT.javaIndex());
-        RoomEntity before = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity before = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x6D)
                 .findFirst()
                 .orElseThrow();
@@ -234,10 +236,11 @@ final class RoomSessionFollowersTest {
                 1,
                 new SwordBox(false, 0, 0, 0, 0)));
         assertEquals(1, session.story().bowWowState());
-        RoomEntity rescued = session.rooms().activeRoom().entities().slots().get(before.slot());
+        RoomEntity rescued =
+                session.rooms().activeRoomOrNull().entities().slots().get(before.slot());
         session.entityState().setEntityDialogActive(true);
         session.entities().tickEntities(2, 0x80, 0x40, 0, Direction.RIGHT.javaIndex());
-        RoomEntity after = session.rooms().activeRoom().entities().slots().get(before.slot());
+        RoomEntity after = session.rooms().activeRoomOrNull().entities().slots().get(before.slot());
         assertEquals(0x6D, after.type());
         assertEquals(before.sourceLoadOrder(), after.sourceLoadOrder());
         assertEquals(rescued.x(), after.x());
@@ -249,7 +252,7 @@ final class RoomSessionFollowersTest {
         RoomSession session = newSession();
         session.story().setBowWowState(0x80);
         session.rooms().loadIndoor(0x10, 0xA7);
-        RoomEntity madam = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity madam = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x79)
                 .findFirst()
                 .orElseThrow();
@@ -284,7 +287,7 @@ final class RoomSessionFollowersTest {
                         0,
                         Direction.DOWN.javaIndex());
         session.rooms().loadIndoor(0x10, 0xA7);
-        RoomEntity madam = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity madam = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x79)
                 .findFirst()
                 .orElseThrow();
@@ -330,7 +333,7 @@ final class RoomSessionFollowersTest {
                         0,
                         Direction.DOWN.javaIndex());
         session.rooms().loadIndoor(0x10, 0xA7);
-        RoomEntity madam = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity madam = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x79)
                 .findFirst()
                 .orElseThrow();
@@ -358,7 +361,7 @@ final class RoomSessionFollowersTest {
         RoomSession session = newSession();
         session.story().setBowWowState(1);
         session.rooms().loadIndoor(0x10, 0xC7);
-        RoomEntity richard = session.rooms().activeRoom().entities().loadedEntities().stream()
+        RoomEntity richard = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x95)
                 .findFirst()
                 .orElseThrow();

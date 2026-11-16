@@ -268,6 +268,8 @@ public final class DialogController {
         return events;
     }
 
+    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+    @SuppressWarnings("ReferenceEquality")
     public String visibleText() {
         if (scrollAge >= 0) return scrollAge == 0 ? scrollPrevious : retainedLine;
         int end = visibleEnd();

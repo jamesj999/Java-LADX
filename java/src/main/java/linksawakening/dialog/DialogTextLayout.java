@@ -10,6 +10,8 @@ final class DialogTextLayout {
     private String source;
     private int size;
 
+    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+    @SuppressWarnings("ReferenceEquality")
     void update(String text) {
         if (source == text) return;
         source = text;

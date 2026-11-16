@@ -103,14 +103,14 @@ final class KeyCavernEntranceRouteTest {
         assertEquals(0x61, RoomDebugFixture.of(session).activeRoomEventForTest());
         assertEquals(0x0D, objectAt(session, 0x28));
         tickInteractiveEntities(session, frame++, 0x48, 0x70);
-        List<Integer> enemies = session.rooms().activeRoom().entities().loadedEntities().stream()
+        List<Integer> enemies = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .map(RoomEntity::slot)
                 .toList();
         assertEquals(4, enemies.size());
         for (int slot : enemies) {
             for (int attempt = 0; attempt < 12; attempt++) {
                 RoomEntity enemy =
-                        session.rooms().activeRoom().entities().slots().get(slot);
+                        session.rooms().activeRoomOrNull().entities().slots().get(slot);
                 if (!enemy.loaded()) break;
                 session.entities()
                         .resolveEntityCombat(new EntityCombatInputs(
@@ -130,7 +130,7 @@ final class KeyCavernEntranceRouteTest {
         assertEquals(
                 0,
                 RoomDebugFixture.of(session).activeRoomEventForTest(),
-                session.rooms().activeRoom().entities().loadedEntities().toString());
+                session.rooms().activeRoomOrNull().entities().loadedEntities().toString());
         assertEquals(0xA0, objectAt(session, 0x28));
         List<int[]> chestPath = reachablePositionPath(
                 collision,
@@ -157,7 +157,7 @@ final class KeyCavernEntranceRouteTest {
         assertEquals(0x21, RoomDebugFixture.of(session).activeRoomEventForTest());
         tickInteractiveEntities(
                 session, frame++, link.position().romEntityX(), link.position().romEntityY());
-        List<Integer> hiddenZols = session.rooms().activeRoom().entities().loadedEntities().stream()
+        List<Integer> hiddenZols = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x9B)
                 .map(RoomEntity::slot)
                 .toList();
@@ -165,7 +165,7 @@ final class KeyCavernEntranceRouteTest {
         for (int slot : hiddenZols) {
             for (int attempt = 0; attempt < 0x200; attempt++) {
                 RoomEntity enemy =
-                        session.rooms().activeRoom().entities().slots().get(slot);
+                        session.rooms().activeRoomOrNull().entities().slots().get(slot);
                 if (!enemy.loaded()) break;
                 tickInteractiveEntities(session, frame++, enemy.x(), enemy.y() + 0x10);
                 session.entities()
@@ -190,12 +190,12 @@ final class KeyCavernEntranceRouteTest {
         assertEquals(
                 0,
                 RoomDebugFixture.of(session).activeRoomEventForTest(),
-                session.rooms().activeRoom().entities().loadedEntities().toString());
+                session.rooms().activeRoomOrNull().entities().loadedEntities().toString());
         walkToAndCrossIndoorBoundary(coordinator, transition, scroll, collision, link, ScrollController.UP);
         assertEquals(0x4E, session.rooms().currentRoomId());
         walkToAndCrossIndoorBoundary(coordinator, transition, scroll, collision, link, ScrollController.UP);
         assertEquals(0x4C, session.rooms().currentRoomId());
-        Warp stairs = session.rooms().activeRoom().warps().getFirst();
+        Warp stairs = session.rooms().activeRoomOrNull().warps().getFirst();
         assertEquals(0x56, stairs.destRoom());
         coordinator.handleWarpAndIndoorBoundaries(link);
         List<int[]> stairPath = reachablePositionPath(

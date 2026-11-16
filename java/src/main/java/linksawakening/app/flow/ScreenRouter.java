@@ -58,12 +58,12 @@ public final class ScreenRouter {
     private static final int ROOM_PIXEL_HEIGHT = 128;
 
     private void setFileMenuController(FileMenuController controller) {
-        state.screens().fileMenuController = controller;
+        state.screens().fileMenu.open(controller);
     }
 
     public void startIntroCutscene() {
-        state.screens().fileMenuController = null;
-        state.screens().fileSaveController = null;
+        state.screens().fileMenu.clear();
+        state.screens().fileSave.clear();
         actions.navigator().show(ScreenKind.CUTSCENE);
         actions.music().playDirectMusic(MusicDirector.introCutsceneMusicTrack());
         rom.gpu().loadIntroSequenceTiles(rom.romData());
@@ -79,15 +79,15 @@ public final class ScreenRouter {
     }
 
     public void startTitleScreenWithoutIntro() {
-        state.screens().fileMenuController = null;
-        state.screens().fileSaveController = null;
+        state.screens().fileMenu.clear();
+        state.screens().fileSave.clear();
         actions.navigator().show(ScreenKind.TITLE);
         actions.music().playDirectMusic(MusicDirector.directTitleScreenMusicTrack());
     }
 
     public void startFileSelection() {
         actions.navigator().show(ScreenKind.FILE_MENU);
-        state.screens().fileSaveController = null;
+        state.screens().fileSave.clear();
         rom.gpu().loadMenuTiles(rom.romData());
         setFileMenuController(new FileMenuController(
                 new FileMenuRomData(rom.romData()),
@@ -145,8 +145,8 @@ public final class ScreenRouter {
         if (actions.navigator().current() == actions.navigator().screen(ScreenKind.CUTSCENE)) {
             ui.cutsceneManager().skipIntroToTitle();
         }
-        state.screens().fileMenuController = null;
-        state.screens().fileSaveController = null;
+        state.screens().fileMenu.clear();
+        state.screens().fileSave.clear();
         state.opening().wakeUp(null);
         state.opening().shield(null);
         state.screens().currentSaveSlot = -1;
@@ -165,8 +165,8 @@ public final class ScreenRouter {
     }
 
     public void startConfiguredLocationGameplay() {
-        state.screens().fileMenuController = null;
-        state.screens().fileSaveController = null;
+        state.screens().fileMenu.clear();
+        state.screens().fileSave.clear();
         state.screens().currentSaveSlot = -1;
         state.opening().wakeUp(null);
         state.opening().shield(null);

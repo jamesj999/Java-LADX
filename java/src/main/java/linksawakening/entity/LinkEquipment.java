@@ -117,7 +117,7 @@ final class LinkEquipment {
     }
 
     static boolean itemBlocksMotion(EquipmentItem item, boolean beforeTopDownAnimation) {
-        return beforeTopDownAnimation && item instanceof linksawakening.equipment.Sword sword
+        return (beforeTopDownAnimation && item instanceof linksawakening.equipment.Sword sword)
                 ? sword.blocksTopDownMotion()
                 : item.blocksMotion();
     }
@@ -144,7 +144,7 @@ final class LinkEquipment {
     }
 
     static boolean itemLocksFacing(EquipmentItem item, boolean beforeTopDownAnimation) {
-        return beforeTopDownAnimation && item instanceof linksawakening.equipment.Sword sword
+        return (beforeTopDownAnimation && item instanceof linksawakening.equipment.Sword sword)
                 ? sword.locksTopDownFacing()
                 : item.locksFacing();
     }

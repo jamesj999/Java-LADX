@@ -13,7 +13,8 @@ public final class WitchMotion {
     }
 
     public int writeWitchGotItemCountdown(int slot, int value) {
-        return witchGotItemCountdown[slot] = value;
+        witchGotItemCountdown[slot] = value;
+        return witchGotItemCountdown[slot];
     }
 
     public int[] storageWitchGotItemCountdown() {

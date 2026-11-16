@@ -160,10 +160,10 @@ public final class SessionWiring {
             Host host,
             ScreenSet screens,
             SessionControllers controllers) {
-        var debugTools = new DebugTools(
-                state.debug(), s.player().playerState(), s.world().roomSession(), controllers.teleporter());
+        var debugTools = new DebugTools(s.player().playerState(), s.world().roomSession(), controllers.teleporter());
         return new FrameLoopServices(
                 screens,
+                debugTools,
                 new FramePresentation(
                         controllers.renderer(), debugTools, s.visual().indexedDisplayBuffer()),
                 new SessionInput(

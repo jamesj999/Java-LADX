@@ -432,6 +432,7 @@ public final class RoomEntitySnapshot {
             int[] visualYOffsetBySlot,
             List<BowWowChain.Entry> bowWowChainOam)
             implements Data {
+        @Override
         public int visualYOffset(int slot) {
             if (slot < 0 || slot >= visualYOffsetBySlot.length)
                 throw new IllegalArgumentException("Entity slot out of range: " + slot);
@@ -441,39 +442,48 @@ public final class RoomEntitySnapshot {
 
     private record Live(EntityRoomInspection room, List<RoomEntity> slots, List<RoomEntity> loadedEntities)
             implements Data {
+        @Override
         public EntitySpriteSelection spriteSelection() {
             return room.presentationState.snapshotSelection();
         }
 
+        @Override
         public EntitySpriteTileSnapshot spriteTiles() {
             return room.spriteTiles;
         }
 
+        @Override
         public boolean sideScrolling() {
             return room.physicsTables.readGroundInteractionSideScrolling();
         }
 
+        @Override
         public List<HookshotChainOam.Entry> hookshotChainOam() {
             return room.slotProperties.readHookshotChainOam();
         }
 
+        @Override
         public List<PincerBodyOam.Entry> pincerBodyOam() {
             return room.slotProperties.readPincerBodyOam();
         }
 
+        @Override
         public List<WingedOctorokOam.Entry> wingedOctorokOam() {
             return room.slotProperties.readWingedOctorokOam();
         }
 
+        @Override
         public List<BowWowChain.Entry> bowWowChainOam() {
             return room.slotProperties.readBowWowChainOam();
         }
 
+        @Override
         public int visualYOffset(int slot) {
             java.util.Objects.checkIndex(slot, RoomEntity.SLOT_COUNT);
             return room.physicsTables.readFallingVisualYOffset(slot);
         }
 
+        @Override
         public int[] visualYOffsetBySlot() {
             int[] offsets = new int[RoomEntity.SLOT_COUNT];
             for (int slot = 0; slot < offsets.length; slot++) offsets[slot] = visualYOffset(slot);

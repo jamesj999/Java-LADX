@@ -155,12 +155,12 @@ final class LinkAnimator {
     void cachePushingAnimation() {
         pushingAnimationState = -1;
         if (linkItemState.get().accessIsRomLinkPushing()
-                && (!linkServices
+                && !linkServices
                         .get()
                         .collision
                         .linkOnSlowGround(
                                 linkMotion.get().position().pixelX(),
-                                linkMotion.get().position().pixelY()))) {
+                                linkMotion.get().position().pixelY())) {
             int frame = (linkAnimationState.get().romConsecutiveStepsCount >> 3) & 1;
             pushingAnimationState = linkServices
                     .get()
@@ -324,7 +324,8 @@ final class LinkAnimator {
     }
 
     boolean tarinShieldPresentation(boolean value) {
-        return tarinShieldPresentation = value;
+        tarinShieldPresentation = value;
+        return tarinShieldPresentation;
     }
 
     int[] tarinShieldPalette(int[] value) {
@@ -333,19 +334,23 @@ final class LinkAnimator {
     }
 
     int romAnimationStateOverride(int value) {
-        return romAnimationStateOverride = value;
+        romAnimationStateOverride = value;
+        return romAnimationStateOverride;
     }
 
     int swordAcquisitionBaseRomDirection(int value) {
-        return swordAcquisitionBaseRomDirection = value;
+        swordAcquisitionBaseRomDirection = value;
+        return swordAcquisitionBaseRomDirection;
     }
 
     int swordAcquisitionAnimationState(int value) {
-        return swordAcquisitionAnimationState = value;
+        swordAcquisitionAnimationState = value;
+        return swordAcquisitionAnimationState;
     }
 
     int marinWakeUpBedVariant(int value) {
-        return marinWakeUpBedVariant = value;
+        marinWakeUpBedVariant = value;
+        return marinWakeUpBedVariant;
     }
 
     int bedJumpRenderZ() {
@@ -353,11 +358,13 @@ final class LinkAnimator {
     }
 
     int bedJumpRenderZ(int value) {
-        return bedJumpRenderZ = value;
+        bedJumpRenderZ = value;
+        return bedJumpRenderZ;
     }
 
     int ledgeJumpRenderY(int value) {
-        return ledgeJumpRenderY = value;
+        ledgeJumpRenderY = value;
+        return ledgeJumpRenderY;
     }
 
     int jumpAnimationCounter() {
@@ -365,11 +372,13 @@ final class LinkAnimator {
     }
 
     int jumpAnimationCounter(int value) {
-        return jumpAnimationCounter = value;
+        jumpAnimationCounter = value;
+        return jumpAnimationCounter;
     }
 
     int jumpAnimationFrame(int value) {
-        return jumpAnimationFrame = value;
+        jumpAnimationFrame = value;
+        return jumpAnimationFrame;
     }
 
     int pushingAnimationState() {
@@ -377,7 +386,8 @@ final class LinkAnimator {
     }
 
     int pushingAnimationState(int value) {
-        return pushingAnimationState = value;
+        pushingAnimationState = value;
+        return pushingAnimationState;
     }
 
     void render(byte[] displayBuffer, int offsetX, int offsetY) {
