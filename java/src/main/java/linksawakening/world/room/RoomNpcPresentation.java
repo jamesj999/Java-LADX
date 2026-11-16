@@ -13,7 +13,7 @@ final class RoomNpcPresentation {
     }
 
     boolean applyMarinWakeUpPresentation(RoomRuntime loaded, int x, int y, int spriteVariant) {
-        if (!loaded.entities.applyMarinWakeUpPresentation(x, y, spriteVariant)) {
+        if (!loaded.entities.commands().applyMarinWakeUpPresentation(x, y, spriteVariant)) {
             return false;
         }
         loaded.room.replaceEntities(loaded.entities.inspection().view());
@@ -26,7 +26,7 @@ final class RoomNpcPresentation {
                 && dependencies.followers().tarinFlag != 1
                 && dependencies.followers().tarinFlag != 2
                 && (frameCounter & 0x1F) == 0) {
-            loaded.entities.updateHouseTarinPresentation(linkX, linkY);
+            loaded.entities.commands().updateHouseTarinPresentation(linkX, linkY);
             loaded.room.replaceEntities(loaded.entities.inspection().view());
         }
     }

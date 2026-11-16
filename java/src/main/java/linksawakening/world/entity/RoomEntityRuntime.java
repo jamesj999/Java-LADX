@@ -150,35 +150,7 @@ public final class RoomEntityRuntime {
         configuration().setHeartPiecesCount(count);
     }
 
-    public int thrownDirection(int slot) {
-        return commands().thrownDirection(slot);
-    }
-
-    public boolean beginLift(int slot, int romDirection) {
-        return commands().beginLift(slot, romDirection);
-    }
-
-    public boolean throwLiftedEntity(int romDirection) {
-        return commands().throwLiftedEntity(romDirection);
-    }
-
-    public boolean applyMarinWakeUpPresentation(int x, int y, int spriteVariant) {
-        return commands().applyMarinWakeUpPresentation(x, y, spriteVariant);
-    }
-
-    public void updateHouseTarinPresentation(int linkX, int linkY) {
-        commands().updateHouseTarinPresentation(linkX, linkY);
-    }
-
-    public void movePushedBlock(int slot, int x, int y) {
-        commands().movePushedBlock(slot, x, y);
-    }
-
     public void resolvePushedBlockLinkContact(int slot, int linkEntityX, int linkEntityY) {
         background().resolvePushedBlockLinkContact(slot, linkEntityX, linkEntityY);
-    }
-
-    public void removePushedBlock(int slot) {
-        commands().removePushedBlock(slot);
     }
 }

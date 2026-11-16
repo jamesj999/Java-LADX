@@ -213,8 +213,9 @@ final class RoomLiftInteractions {
     private void completeStatueLift(
             RoomRuntime loaded, linksawakening.world.entity.RoomEntity statue, Direction linkDirection) {
 
-        loaded.entities.beginLift(
-                statue.slot(), RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection));
+        loaded.entities
+                .commands()
+                .beginLift(statue.slot(), RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection));
         dependencies
                 .entityRuntimeState()
                 .outbox

@@ -146,7 +146,7 @@ final class RoomPuzzleController {
             }
         }
 
-        loaded.entities.movePushedBlock(loaded.contents.puzzles.pushedBlockEntitySlot, x, y);
+        loaded.entities.commands().movePushedBlock(loaded.contents.puzzles.pushedBlockEntitySlot, x, y);
         if (dependencies.entityFrame().currentLinkMotionState < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE) {
             loaded.entities.resolvePushedBlockLinkContact(
                     loaded.contents.puzzles.pushedBlockEntitySlot, linkEntityX, linkEntityY);
@@ -471,7 +471,7 @@ final class RoomPuzzleController {
             loaded.room.roomObjectsArea()[destinationIndex] = OBJECT_SETTLED_PUSHED_BLOCK;
         }
 
-        loaded.entities.removePushedBlock(loaded.contents.puzzles.pushedBlockEntitySlot);
+        loaded.entities.commands().removePushedBlock(loaded.contents.puzzles.pushedBlockEntitySlot);
         loaded.room.replaceEntities(loaded.entities.inspection().view());
 
         loaded.contents.puzzles.pushedBlockEntitySlot = -1;

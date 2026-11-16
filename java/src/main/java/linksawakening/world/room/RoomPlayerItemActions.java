@@ -164,8 +164,9 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
 
     boolean throwLiftedEntity(RoomRuntime loaded, linksawakening.state.Direction linkDirection) {
 
-        boolean thrown = loaded.entities.throwLiftedEntity(
-                RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection));
+        boolean thrown = loaded.entities
+                .commands()
+                .throwLiftedEntity(RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection));
         if (thrown) {
             publishEntityView(loaded);
         }

@@ -126,7 +126,7 @@ final class RoomCollisionQueries {
         if ((entity.z() & 0x80) != 0) {
             ledgeTimer = 0;
         }
-        int thrownDirection = loaded.entities.thrownDirection(entity.slot());
+        int thrownDirection = loaded.entities.commands().thrownDirection(entity.slot());
         EntityBackgroundCollisionState state = new EntityBackgroundCollisionState(
                 frameCounter,
                 loaded.room.mapCategory() != Warp.CATEGORY_OVERWORLD,

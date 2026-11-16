@@ -61,11 +61,11 @@ class RoomLiveBoundaryTest {
         room.replaceEntities(runtime.inspection().view());
         var first = room.entities();
         assertSame(first, room.renderSnapshot().entities());
-        runtime.applyMarinWakeUpPresentation(56, 56, 1);
+        runtime.commands().applyMarinWakeUpPresentation(56, 56, 1);
         var second = room.entities();
         assertEquals(1, second.slots().get(0).spriteVariant());
         assertEquals(0, first.slots().get(0).spriteVariant());
-        runtime.applyMarinWakeUpPresentation(64, 64, 0);
+        runtime.commands().applyMarinWakeUpPresentation(64, 64, 0);
         assertSame(first, room.entities());
         assertSame(runtime.inspection().view(), room.entityView());
     }

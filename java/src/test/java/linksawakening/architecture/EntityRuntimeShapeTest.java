@@ -22,18 +22,11 @@ class EntityRuntimeShapeTest {
     // Exact overloads still used outside world/entity. Caller files and replacements:
     // docs/archive/history/entity-runtime-seam.md. Remove entries when those callers migrate.
     private static final Set<String> SEAM_BRIDGES = Set.of(
-            "applyMarinWakeUpPresentation(int,int,int)",
-            "beginLift(int,int)",
             "builder(RoomEntitySnapshot)",
             "gelClingingToLink()",
-            "movePushedBlock(int,int,int)",
-            "removePushedBlock(int)",
             "resolvePushedBlockLinkContact(int,int,int)",
             "setFreeMovementMode(boolean)",
-            "setHeartPiecesCount(int)",
-            "throwLiftedEntity(int)",
-            "thrownDirection(int)",
-            "updateHouseTarinPresentation(int,int)");
+            "setHeartPiecesCount(int)");
 
     @Test
     void onlyTheCompositionRootDependsOnTheRuntime() throws Exception {
