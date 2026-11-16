@@ -3,39 +3,39 @@ package linksawakening.rom;
 public final class LinkMotionTables {
     // FrameCounterToLinkDirection: original loader length.
     private static final int PIT_WARP_ARRIVAL_DIRECTIONS_LENGTH = 4;
-    private final byte[] pitWarpArrivalDirections;
     // Data_002_7C40: original loader length.
     private static final int WATER_CURRENT_X_LENGTH = 8;
-    private final byte[] waterCurrentX;
     // Data_002_7C48: original loader length.
     private static final int WATER_CURRENT_Y_LENGTH = 8;
-    private final byte[] waterCurrentY;
     // HorizontalIncrementForLinkPosition: original loader length.
     private static final int LINK_SPEED_X_LENGTH = 32;
-    private final byte[] linkSpeedX;
     // VerticalIncrementForLinkPosition: original loader length.
     private static final int LINK_SPEED_Y_LENGTH = 32;
-    private final byte[] linkSpeedY;
     // Data_002_68B1: original loader length.
     private static final int AIR_SPEED_X_LENGTH = 4;
-    private final byte[] airSpeedX;
     // Data_002_44E7: original loader length.
     private static final int AIR_SPEED_Y_LENGTH = 4;
-    private final byte[] airSpeedY;
     // Data_002_4EF0: original loader length.
     private static final int SWIMMING_SPEED_X_LENGTH = 32;
-    private final byte[] swimmingSpeedX;
     // Data_002_4F10: original loader length.
     private static final int SWIMMING_SPEED_Y_LENGTH = 32;
-    private final byte[] swimmingSpeedY;
     // Data_002_750A: original loader length.
     private static final int SWIMMING_ENTRY_SPEED_X_LENGTH = 4;
-    private final byte[] swimmingEntrySpeedX;
     // Data_002_750E: original loader length.
     private static final int SWIMMING_ENTRY_SPEED_Y_LENGTH = 4;
-    private final byte[] swimmingEntrySpeedY;
     // LinkRevolvingDoorAnimation: original loader length.
     private static final int REVOLVING_DOOR_ANIMATION_LENGTH = 7;
+    private final byte[] pitWarpArrivalDirections;
+    private final byte[] waterCurrentX;
+    private final byte[] waterCurrentY;
+    private final byte[] linkSpeedX;
+    private final byte[] linkSpeedY;
+    private final byte[] airSpeedX;
+    private final byte[] airSpeedY;
+    private final byte[] swimmingSpeedX;
+    private final byte[] swimmingSpeedY;
+    private final byte[] swimmingEntrySpeedX;
+    private final byte[] swimmingEntrySpeedY;
     private final int[] revolvingDoorAnimation;
 
     private final int[][] revolvingDoorPalettes;
@@ -80,19 +80,6 @@ public final class LinkMotionTables {
 
     public static LinkMotionTables load(Rom rom) {
         return new LinkMotionTables(rom);
-    }
-
-    private static int[][] loadRevolvingDoorPalettes(Rom rom) {
-        int[][] palettes = new int[2][4];
-        int base = RomSymbols.Data_002_4E1C.offset();
-        for (int row = 0; row < 2; row++) {
-            for (int color = 0; color < 4; color++) {
-                int offset = base + row * 8 + color * 2;
-                int value = rom.u16le(RomAddress.fromOffset(offset));
-                palettes[row][color] = ((value & 31) << 19) | (((value >> 5) & 31) << 11) | (((value >> 10) & 31) << 3);
-            }
-        }
-        return palettes;
     }
 
     /** LinkMotionRevolvingDoorHandler and Data_002_4E1C. */
@@ -153,5 +140,18 @@ public final class LinkMotionTables {
     /** Signed direction-indexed entry speed written when flippers start swimming. */
     public int swimmingEntrySpeedY(int romDirection) {
         return swimmingEntrySpeedY[romDirection & 0x03];
+    }
+
+    private static int[][] loadRevolvingDoorPalettes(Rom rom) {
+        int[][] palettes = new int[2][4];
+        int base = RomSymbols.Data_002_4E1C.offset();
+        for (int row = 0; row < 2; row++) {
+            for (int color = 0; color < 4; color++) {
+                int offset = base + row * 8 + color * 2;
+                int value = rom.u16le(RomAddress.fromOffset(offset));
+                palettes[row][color] = ((value & 31) << 19) | (((value >> 5) & 31) << 11) | (((value >> 10) & 31) << 3);
+            }
+        }
+        return palettes;
     }
 }

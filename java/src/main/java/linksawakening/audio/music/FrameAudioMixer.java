@@ -19,6 +19,8 @@ public final class FrameAudioMixer {
     private MusicTrack currentTrack;
     private boolean trackSelected;
 
+    private final short[] pcm = new short[BUFFER_FRAMES * 2];
+
     public FrameAudioMixer(MusicDriver driver, GameBoyApu apu, SoundEffectPlayback effects) {
         this.driver = Objects.requireNonNull(driver, "driver");
         this.apu = Objects.requireNonNull(apu, "apu");
@@ -35,8 +37,6 @@ public final class FrameAudioMixer {
     public void setLoopEnabled(boolean enabled) {
         loopEnabled = enabled;
     }
-
-    private final short[] pcm = new short[BUFFER_FRAMES * 2];
 
     /** Returned storage is reused by the next call. */
     public short[] renderBufferPcm() {
@@ -74,6 +74,11 @@ public final class FrameAudioMixer {
         return driver.isPlaying();
     }
 
+    public void resetSampleClock() {
+        tickSampleRemainder = 0;
+        samplesUntilNextTick = nextTickFrameCount();
+    }
+
     private void tick60HzClients() {
         if (driver.isPlaying()) {
             driver.tick60Hz();
@@ -87,11 +92,6 @@ public final class FrameAudioMixer {
 
     private boolean isSoundEffectPlaying() {
         return soundEffectPlayer.isPlaying();
-    }
-
-    public void resetSampleClock() {
-        tickSampleRemainder = 0;
-        samplesUntilNextTick = nextTickFrameCount();
     }
 
     private int nextTickFrameCount() {

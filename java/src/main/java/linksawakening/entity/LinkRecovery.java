@@ -13,6 +13,10 @@ final class LinkRecovery {
     private final LinkComponentRef<LinkServices> linkServices;
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;
 
+    int passOutCountdown = -1;
+    int passOutPaletteEffect;
+    int gameOverCountdown;
+
     LinkRecovery(Dependencies dependencies) {
         linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
         linkAnimationState = Objects.requireNonNull(dependencies.linkAnimationState, "linkAnimationState");
@@ -22,20 +26,6 @@ final class LinkRecovery {
         linkServices = Objects.requireNonNull(dependencies.linkServices, "linkServices");
         linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
     }
-
-    static final class Dependencies {
-        LinkComponentRef<LinkAirborne> linkAirborne;
-        LinkComponentRef<LinkAnimationState> linkAnimationState;
-        LinkComponentRef<LinkAnimator> linkAnimator;
-        LinkComponentRef<LinkDamage> linkDamage;
-        LinkComponentRef<LinkMotion> linkMotion;
-        LinkComponentRef<LinkServices> linkServices;
-        LinkComponentRef<LinkStateMachine> linkStateMachine;
-    }
-
-    int passOutCountdown = -1;
-    int passOutPaletteEffect;
-    int gameOverCountdown;
 
     boolean accessIsPassingOut() {
         return linkAirborne.get().accessRomMotionState() == LinkMotionState.PASS_OUT.romValue();
@@ -95,5 +85,15 @@ final class LinkRecovery {
         passOutCountdown = countdown;
         passOutPaletteEffect = paletteEffect;
         linkAnimator.get().romAnimationStateOverride(animationState);
+    }
+
+    static final class Dependencies {
+        LinkComponentRef<LinkAirborne> linkAirborne;
+        LinkComponentRef<LinkAnimationState> linkAnimationState;
+        LinkComponentRef<LinkAnimator> linkAnimator;
+        LinkComponentRef<LinkDamage> linkDamage;
+        LinkComponentRef<LinkMotion> linkMotion;
+        LinkComponentRef<LinkServices> linkServices;
+        LinkComponentRef<LinkStateMachine> linkStateMachine;
     }
 }

@@ -130,6 +130,283 @@ final class EntitySpriteRegistrationData {
     /** WaterTektiteSpriteVariants at $07:$752D. */
     private static final RomAddress AQUATIC_WATER_TEKTITE_SPRITE_VARIANTS = new RomAddress(0x07, 0x752D);
 
+    /** HardHatBeetleCaveBSpriteVariants from azle.sym. */
+    private static final RomAddress ARMOREDENEMY_HARD_HAT_BEETLE_CAVE_BSPRITE_VARIANTS = new RomAddress(0x6, 0x4f34);
+    /** HardHatBeetleSpriteVariants from azle.sym. */
+    private static final RomAddress ARMOREDENEMY_HARD_HAT_BEETLE_SPRITE_VARIANTS = new RomAddress(0x6, 0x4f2c);
+    /** SpikedBeetle2SpriteVariants from azle.sym. */
+    private static final RomAddress ARMOREDENEMY_SPIKED_BEETLE2_SPRITE_VARIANTS = new RomAddress(0x7, 0x7794);
+    /** SpikedBeetle1SpriteVariants from azle.sym. */
+    private static final RomAddress ARMOREDENEMY_SPIKED_BEETLE1_SPRITE_VARIANTS = new RomAddress(0x7, 0x7784);
+
+    /** MoblinSpriteVariants at $03:$5917. */
+    private static final RomAddress ARMOREDENEMY_MOBLIN_SPRITE_VARIANTS = new RomAddress(0x03, 0x5917);
+    /** Data_018_77ED at $18:$77ED. */
+    private static final RomAddress ARMOREDENEMY_DATA_018_77ED = new RomAddress(0x18, 0x77ED);
+    /** MadBomberSpriteVariants at $06:$4126. */
+    private static final RomAddress ARMOREDENEMY_MAD_BOMBER_SPRITE_VARIANTS = new RomAddress(0x06, 0x4126);
+    /** EntityArrowSpriteVariants at $03:$6BC6. */
+    private static final RomAddress ARMOREDENEMY_ENTITY_ARROW_SPRITE_VARIANTS = new RomAddress(0x03, 0x6BC6);
+    /** ArmosStatueSpriteVariants at $06:$7446. */
+    private static final RomAddress ARMOREDENEMY_ARMOS_STATUE_SPRITE_VARIANTS = new RomAddress(0x06, 0x7446);
+    /** IronMasksMaskSpriteVariants at $03:$5B80. */
+    private static final RomAddress ARMOREDENEMY_IRON_MASKS_MASK_SPRITE_VARIANTS = new RomAddress(0x03, 0x5B80);
+
+    private static final int BOSS_MAP_TURTLE_ROCK = 0x07;
+    private static final int BOSS_MAP_EAGLES_TOWER = 0x06;
+    /** Data_006_527A, Data_006_523A and Data_006_51FA select the dungeon Hinox palette lists. */
+    private static final RomAddress BOSS_TURTLE_ROCK_HINOX = new RomAddress(0x06, 0x527A);
+
+    private static final RomAddress BOSS_EAGLES_TOWER_HINOX = new RomAddress(0x06, 0x523A);
+    private static final RomAddress BOSS_DEFAULT_HINOX = new RomAddress(0x06, 0x51FA);
+
+    /** Data_006_6E1E at $06:$6E1E. */
+    private static final RomAddress BOSS_DATA_006_6E1E = new RomAddress(0x06, 0x6E1E);
+    /** ThreeOfAKindSpriteVariants at $06:$4911. */
+    private static final RomAddress BOSS_THREE_OF_AKIND_SPRITE_VARIANTS = new RomAddress(0x06, 0x4911);
+    /** Data_006_5523 at $06:$5523. */
+    private static final RomAddress BOSS_DATA_006_5523 = new RomAddress(0x06, 0x5523);
+
+    /** CuccoSpriteVariants at $05:$4514. */
+    private static final RomAddress COMPANION_CUCCO_SPRITE_VARIANTS = new RomAddress(0x05, 0x4514);
+    /** BowWowAtHomeSpriteVariants at $05:$4000. */
+    private static final RomAddress COMPANION_BOW_WOW_AT_HOME_SPRITE_VARIANTS = new RomAddress(0x05, 0x4000);
+    /** DogSpriteVariants at $19:$48CA. */
+    private static final RomAddress COMPANION_DOG_SPRITE_VARIANTS = new RomAddress(0x19, 0x48CA);
+    /** ButterflyOAMAttributes at $06:$6BBD. */
+    private static final RomAddress COMPANION_BUTTERFLY_OAMATTRIBUTES = new RomAddress(0x06, 0x6BBD);
+
+    /** LiftableStatueSpriteRect_BottleGrotto from azle.sym. */
+    private static final RomAddress CONTEXTUALOBJECT_LIFTABLE_STATUE_SPRITE_RECT_BOTTLE_GROTTO =
+            new RomAddress(0x19, 0x4010);
+    /** LiftableStatueSpriteRect from azle.sym. */
+    private static final RomAddress CONTEXTUALOBJECT_LIFTABLE_STATUE_SPRITE_RECT = new RomAddress(0x19, 0x4000);
+
+    /** KeeseCaveBSpriteVariants from azle.sym. */
+    private static final RomAddress DUNGEONCREATURE_KEESE_CAVE_BSPRITE_VARIANTS = new RomAddress(0x6, 0x6710);
+    /** KeeseSpriteVariants from azle.sym. */
+    private static final RomAddress DUNGEONCREATURE_KEESE_SPRITE_VARIANTS = new RomAddress(0x6, 0x6708);
+    /** BouncingBombiteEntityHandler from azle.sym. */
+    private static final RomAddress DUNGEONCREATURE_BOUNCING_BOMBITE_ENTITY_HANDLER = new RomAddress(0x4, 0x7e0d);
+    /** BouncingBombite1SpriteVariants from azle.sym. */
+    private static final RomAddress DUNGEONCREATURE_BOUNCING_BOMBITE1_SPRITE_VARIANTS = new RomAddress(0x4, 0x7df5);
+    /** Bombite2SpriteVariants from azle.sym. */
+    private static final RomAddress DUNGEONCREATURE_BOMBITE2_SPRITE_VARIANTS = new RomAddress(0x4, 0x7d07);
+    /** Bombite1SpriteVariants from azle.sym. */
+    private static final RomAddress DUNGEONCREATURE_BOMBITE1_SPRITE_VARIANTS = new RomAddress(0x4, 0x7cef);
+
+    /** SnakeSpriteVariants at $07:$683E. */
+    private static final RomAddress DUNGEONCREATURE_SNAKE_SPRITE_VARIANTS = new RomAddress(0x07, 0x683E);
+    /** WizrobeSpriteVariants at $06:$7604. */
+    private static final RomAddress DUNGEONCREATURE_WIZROBE_SPRITE_VARIANTS = new RomAddress(0x06, 0x7604);
+    /** WizrobeProjectileSpriteVariants at $06:$65E1. */
+    private static final RomAddress DUNGEONCREATURE_WIZROBE_PROJECTILE_SPRITE_VARIANTS = new RomAddress(0x06, 0x65E1);
+    /** MimicSpriteVariants at $19:$6A8D. */
+    private static final RomAddress DUNGEONCREATURE_MIMIC_SPRITE_VARIANTS = new RomAddress(0x19, 0x6A8D);
+    /** MiniMoldormSpriteVariants at $04:$5A49. */
+    private static final RomAddress DUNGEONCREATURE_MINI_MOLDORM_SPRITE_VARIANTS = new RomAddress(0x04, 0x5A49);
+    /** LikeLikeSpriteVariants at $06:$7DD4. */
+    private static final RomAddress DUNGEONCREATURE_LIKE_LIKE_SPRITE_VARIANTS = new RomAddress(0x06, 0x7DD4);
+    /** PolsVoiceSpriteVariants at $06:$7373. */
+    private static final RomAddress DUNGEONCREATURE_POLS_VOICE_SPRITE_VARIANTS = new RomAddress(0x06, 0x7373);
+    /** PairoddSpriteVariants at $04:$5DD1. */
+    private static final RomAddress DUNGEONCREATURE_PAIRODD_SPRITE_VARIANTS = new RomAddress(0x04, 0x5DD1);
+    /** PairoddProjectileSpriteVariants at $04:$5EF4. */
+    private static final RomAddress DUNGEONCREATURE_PAIRODD_PROJECTILE_SPRITE_VARIANTS = new RomAddress(0x04, 0x5EF4);
+
+    /** Data_015_4A15 at $15:$4A15. */
+    private static final RomAddress HAZARD_DATA_015_4A15 = new RomAddress(0x15, 0x4A15);
+    /** MaskedMimicGoriyaSpriteVariants at $19:$4796. */
+    private static final RomAddress HAZARD_MASKED_MIMIC_GORIYA_SPRITE_VARIANTS = new RomAddress(0x19, 0x4796);
+    /** AntiFairySpriteVariants at $06:$786E. */
+    private static final RomAddress HAZARD_ANTI_FAIRY_SPRITE_VARIANTS = new RomAddress(0x06, 0x786E);
+    /** SparkSpriteVariants at $06:$6615. */
+    private static final RomAddress HAZARD_SPARK_SPRITE_VARIANTS = new RomAddress(0x06, 0x6615);
+    /** LaserSpriteVariants at $04:$6C2D. */
+    private static final RomAddress HAZARD_LASER_SPRITE_VARIANTS = new RomAddress(0x04, 0x6C2D);
+    /** SpikeTrapSpriteVariants at $06:$74FA. */
+    private static final RomAddress HAZARD_SPIKE_TRAP_SPRITE_VARIANTS = new RomAddress(0x06, 0x74FA);
+
+    /** CrowSpriteVariants at $06:$5C89. */
+    private static final RomAddress OVERWORLDCREATURE_CROW_SPRITE_VARIANTS = new RomAddress(0x06, 0x5C89);
+    /** BuzzBlobSpriteVariants at $18:$7729. */
+    private static final RomAddress OVERWORLDCREATURE_BUZZ_BLOB_SPRITE_VARIANTS = new RomAddress(0x18, 0x7729);
+    /** OctorokSpriteVariants at $03:$57FB. */
+    private static final RomAddress OVERWORLDCREATURE_OCTOROK_SPRITE_VARIANTS = new RomAddress(0x03, 0x57FB);
+    /** OctorokRockSpriteVariants at $03:$6A1E. */
+    private static final RomAddress OVERWORLDCREATURE_OCTOROK_ROCK_SPRITE_VARIANTS = new RomAddress(0x03, 0x6A1E);
+    /** TektiteSpriteVariants at $06:$78B7. */
+    private static final RomAddress OVERWORLDCREATURE_TEKTITE_SPRITE_VARIANTS = new RomAddress(0x06, 0x78B7);
+    /** LeeverSpriteVariants at $04:$7EE5. */
+    private static final RomAddress OVERWORLDCREATURE_LEEVER_SPRITE_VARIANTS = new RomAddress(0x04, 0x7EE5);
+    /** WingedOctorokSpriteVariants at $07:$562D. */
+    private static final RomAddress OVERWORLDCREATURE_WINGED_OCTOROK_SPRITE_VARIANTS = new RomAddress(0x07, 0x562D);
+    /** PincerSpriteVariants at $07:$542B. */
+    private static final RomAddress OVERWORLDCREATURE_PINCER_SPRITE_VARIANTS = new RomAddress(0x07, 0x542B);
+    /** PeaHatSpriteVariants at $07:$6701. */
+    private static final RomAddress OVERWORLDCREATURE_PEA_HAT_SPRITE_VARIANTS = new RomAddress(0x07, 0x6701);
+
+    /** SirensInstrument2SpriteVariants at $03:$5D83. */
+    private static final RomAddress PICKUP_SIRENS_INSTRUMENT2_SPRITE_VARIANTS = new RomAddress(0x03, 0x5D83);
+    /** DroppableHeartSprite at $03:$5D36. */
+    private static final RomAddress PICKUP_DROPPABLE_HEART_SPRITE = new RomAddress(0x03, 0x5D36);
+    /** DroppableRupeeSprite at $03:$609C. */
+    private static final RomAddress PICKUP_DROPPABLE_RUPEE_SPRITE = new RomAddress(0x03, 0x609C);
+    /** data_003_6157 at $03:$6157. */
+    private static final RomAddress PICKUP_DATA_003_6157 = new RomAddress(0x03, 0x6157);
+    /** KeyDropSpriteTable at $03:$5C78. */
+    private static final RomAddress PICKUP_KEY_DROP_SPRITE_TABLE = new RomAddress(0x03, 0x5C78);
+    /** Data_003_5B95 at $03:$5B95. */
+    private static final RomAddress PICKUP_DATA_003_5B95 = new RomAddress(0x03, 0x5B95);
+    /** PieceOfPowerSpriteVariants at $03:$5B65. */
+    private static final RomAddress PICKUP_PIECE_OF_POWER_SPRITE_VARIANTS = new RomAddress(0x03, 0x5B65);
+    /** Data_003_5B5B at $03:$5B5B. */
+    private static final RomAddress PICKUP_DATA_003_5B5B = new RomAddress(0x03, 0x5B5B);
+    /** HeartPieceEntitySprite at $03:$5A4D. */
+    private static final RomAddress PICKUP_HEART_PIECE_ENTITY_SPRITE = new RomAddress(0x03, 0x5A4D);
+    /** Entity13Handler at $03:$59D8. */
+    private static final RomAddress PICKUP_ENTITY13_HANDLER = new RomAddress(0x03, 0x59D8);
+    /** DroppableArrowSprite at $03:$6079. */
+    private static final RomAddress PICKUP_DROPPABLE_ARROW_SPRITE = new RomAddress(0x03, 0x6079);
+    /** DroppableBombsSprite at $03:$5FC0. */
+    private static final RomAddress PICKUP_DROPPABLE_BOMBS_SPRITE = new RomAddress(0x03, 0x5FC0);
+    /** SleepyToadstoolSprite at $03:$5D47. */
+    private static final RomAddress PICKUP_SLEEPY_TOADSTOOL_SPRITE = new RomAddress(0x03, 0x5D47);
+    /** DroppableMagicPowderSprite at $03:$6055. */
+    private static final RomAddress PICKUP_DROPPABLE_MAGIC_POWDER_SPRITE = new RomAddress(0x03, 0x6055);
+    /** HidingSlimeKeySprite at $03:$5FFB. */
+    private static final RomAddress PICKUP_HIDING_SLIME_KEY_SPRITE = new RomAddress(0x03, 0x5FFB);
+    /** DroppableSeashellSprite at $03:$5FD1. */
+    private static final RomAddress PICKUP_DROPPABLE_SEASHELL_SPRITE = new RomAddress(0x03, 0x5FD1);
+
+    /** BushcrawlerIndoorSpriteVariants from azle.sym. */
+    private static final RomAddress PLANT_BUSHCRAWLER_INDOOR_SPRITE_VARIANTS = new RomAddress(0x7, 0x401a);
+    /** BushcrawlerOutdoorSpriteVariants from azle.sym. */
+    private static final RomAddress PLANT_BUSHCRAWLER_OUTDOOR_SPRITE_VARIANTS = new RomAddress(0x7, 0x4012);
+
+    /** GopongaFlowerSpriteVariants at $06:$63F4. */
+    private static final RomAddress PLANT_GOPONGA_FLOWER_SPRITE_VARIANTS = new RomAddress(0x06, 0x63F4);
+    /** Data_006_6316 at $06:$6316. */
+    private static final RomAddress PLANT_DATA_006_6316 = new RomAddress(0x06, 0x6316);
+    /** GopongaFlowerProjectileSpriteList at $06:$638F. */
+    private static final RomAddress PLANT_GOPONGA_FLOWER_PROJECTILE_SPRITE_LIST = new RomAddress(0x06, 0x638F);
+    /** Data_036_6FC2 at $36:$6FC2. */
+    private static final RomAddress PLANT_DATA_036_6FC2 = new RomAddress(0x36, 0x6FC2);
+
+    /** EntityArrowSpriteVariants at $03:$6BC6. */
+    private static final RomAddress PLAYERPROJECTILE_ENTITY_ARROW_SPRITE_VARIANTS = new RomAddress(0x03, 0x6BC6);
+    /** BoomerangSpriteVariants at $19:$4451. */
+    private static final RomAddress PLAYERPROJECTILE_BOOMERANG_SPRITE_VARIANTS = new RomAddress(0x19, 0x4451);
+    /** MagicRodFireballSpriteVariants at $03:$69AA. */
+    private static final RomAddress PLAYERPROJECTILE_MAGIC_ROD_FIREBALL_SPRITE_VARIANTS = new RomAddress(0x03, 0x69AA);
+    /** Data_018_7ABA at $18:$7ABA. */
+    private static final RomAddress PLAYERPROJECTILE_DATA_018_7ABA = new RomAddress(0x18, 0x7ABA);
+    /** MusicalNoteEntityHandler at $05:$7EF8. */
+    private static final RomAddress PLAYERPROJECTILE_MUSICAL_NOTE_ENTITY_HANDLER = new RomAddress(0x05, 0x7EF8);
+    /** Data_019_44FC at $19:$44FC. */
+    private static final RomAddress PLAYERPROJECTILE_DATA_019_44FC = new RomAddress(0x19, 0x44FC);
+
+    /** OwlStatueSpriteVariants at $18:$5DF7. */
+    private static final RomAddress ROOMOBJECT_OWL_STATUE_SPRITE_VARIANTS = new RomAddress(0x18, 0x5DF7);
+    /** ChestItemSpriteTable at $07:$7B57. */
+    private static final RomAddress ROOMOBJECT_CHEST_ITEM_SPRITE_TABLE = new RomAddress(0x07, 0x7B57);
+    /** Unknown011SpriteVariants at $03:$5235. */
+    private static final RomAddress ROOMOBJECT_UNKNOWN011_SPRITE_VARIANTS = new RomAddress(0x03, 0x5235);
+    /** CrystalSwitchSpriteVariants at $15:$4320. */
+    private static final RomAddress ROOMOBJECT_CRYSTAL_SWITCH_SPRITE_VARIANTS = new RomAddress(0x15, 0x4320);
+
+    /** GoombaSpriteVariants at $07:$65CE. */
+    private static final RomAddress SIDEVIEW_GOOMBA_SPRITE_VARIANTS = new RomAddress(0x07, 0x65CE);
+
+    /** ZolSpriteVariants at $06:$7C09. */
+    private static final RomAddress SLIMEENEMY_ZOL_SPRITE_VARIANTS = new RomAddress(0x06, 0x7C09);
+    /** GelSpriteVariants at $06:$7BFA. */
+    private static final RomAddress SLIMEENEMY_GEL_SPRITE_VARIANTS = new RomAddress(0x06, 0x7BFA);
+    /** StarSpriteVariants at $07:$7247. */
+    private static final RomAddress SLIMEENEMY_STAR_SPRITE_VARIANTS = new RomAddress(0x07, 0x7247);
+
+    /** GibdoTurtleRockSpriteVariants from azle.sym. */
+    private static final RomAddress UNDEADENEMY_GIBDO_TURTLE_ROCK_SPRITE_VARIANTS = new RomAddress(0x6, 0x7e77);
+    /** GibdoSpriteVariants from azle.sym. */
+    private static final RomAddress UNDEADENEMY_GIBDO_SPRITE_VARIANTS = new RomAddress(0x6, 0x7e6f);
+
+    /** ZombieSpriteVariants at $18:$63F8. */
+    private static final RomAddress UNDEADENEMY_ZOMBIE_SPRITE_VARIANTS = new RomAddress(0x18, 0x63F8);
+    /** BooBuddyEntityHandler at $06:$79A9. */
+    private static final RomAddress UNDEADENEMY_BOO_BUDDY_ENTITY_HANDLER = new RomAddress(0x06, 0x79A9);
+    /** StalfosAggressiveSpriteVariants at $06:$4AA8. */
+    private static final RomAddress UNDEADENEMY_STALFOS_AGGRESSIVE_SPRITE_VARIANTS = new RomAddress(0x06, 0x4AA8);
+    /** StalfosEvasive2SpriteVariants at $15:$4E7D. */
+    private static final RomAddress UNDEADENEMY_STALFOS_EVASIVE2_SPRITE_VARIANTS = new RomAddress(0x15, 0x4E7D);
+    /** GhiniSpriteVariants at $04:$5BFC. */
+    private static final RomAddress UNDEADENEMY_GHINI_SPRITE_VARIANTS = new RomAddress(0x04, 0x5BFC);
+    /** GiantGhiniSpriteRectVariants at $04:$5D26. */
+    private static final RomAddress UNDEADENEMY_GIANT_GHINI_SPRITE_RECT_VARIANTS = new RomAddress(0x04, 0x5D26);
+
+    /** Kid72SpriteVariants from azle.sym. */
+    private static final RomAddress VILLAGENPC_KID72_SPRITE_VARIANTS = new RomAddress(0x6, 0x605d);
+
+    /** WitchRatSpriteVariants at $15:$788D. */
+    private static final RomAddress VILLAGENPC_WITCH_RAT_SPRITE_VARIANTS = new RomAddress(0x15, 0x788D);
+    /** Data_005_4780 at $05:$4780. */
+    private static final RomAddress VILLAGENPC_DATA_005_4780 = new RomAddress(0x05, 0x4780);
+    /** MarinIndoorSpriteVariants at $05:$4E0A. */
+    private static final RomAddress VILLAGENPC_MARIN_INDOOR_SPRITE_VARIANTS = new RomAddress(0x05, 0x4E0A);
+    /** MarinCreditsSpriteVariants at $05:$4E2A. */
+    private static final RomAddress VILLAGENPC_MARIN_CREDITS_SPRITE_VARIANTS = new RomAddress(0x05, 0x4E2A);
+    /** Tarin3SpriteVariants at $05:$4932. */
+    private static final RomAddress VILLAGENPC_TARIN3_SPRITE_VARIANTS = new RomAddress(0x05, 0x4932);
+    /** Tarin1SpriteVariants at $05:$4912. */
+    private static final RomAddress VILLAGENPC_TARIN1_SPRITE_VARIANTS = new RomAddress(0x05, 0x4912);
+    /** MarinAtTalTalAndInStoreSpriteVariants at $18:$5EB7. */
+    private static final RomAddress VILLAGENPC_MARIN_AT_TAL_TAL_AND_IN_STORE_SPRITE_VARIANTS =
+            new RomAddress(0x18, 0x5EB7);
+    /** Kid71SpriteVariants at $06:$604D. */
+    private static final RomAddress VILLAGENPC_KID71_SPRITE_VARIANTS = new RomAddress(0x06, 0x604D);
+    /** MadamMeowMeowSpriteVariants at $06:$5B56. */
+    private static final RomAddress VILLAGENPC_MADAM_MEOW_MEOW_SPRITE_VARIANTS = new RomAddress(0x06, 0x5B56);
+    /** Data_006_5C51 at $06:$5C51. */
+    private static final RomAddress VILLAGENPC_DATA_006_5C51 = new RomAddress(0x06, 0x5C51);
+
+    private static final int[] MAPS = {-1, 1, 3, 6, 7, 10, 22, 31, 128, 129, 130, 131};
+    private static final EntitySpriteRegistrationData INSTANCE = new EntitySpriteRegistrationData();
+    private final EntitySpriteRecipe[][][] recipes;
+
+    // Indexes private tables built from the same enum; ordinals are never persisted or used as ROM bytes.
+    @SuppressWarnings("EnumOrdinal")
+    private EntitySpriteRegistrationData() {
+        var rooms = EntityRoomLoader.RoomTable.values();
+        recipes = new EntitySpriteRecipe[rooms.length][MAPS.length][256];
+        for (var room : rooms)
+            for (int map = 0; map < MAPS.length; map++)
+                for (int entity = 0; entity < 256; entity++)
+                    recipes[room.ordinal()][map][entity] = select(entity, room, MAPS[map]);
+    }
+
+    static EntitySpriteRegistrationData instance() {
+        return INSTANCE;
+    }
+
+    // Indexes private tables built from the same enum; ordinals are never persisted or used as ROM bytes.
+    @SuppressWarnings("EnumOrdinal")
+    EntitySpriteRecipe lookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
+        if ((entityType & ~255) != 0)
+            throw new IllegalArgumentException("Entity type must be an unsigned byte: " + entityType);
+        if (roomTable == null) throw new IllegalArgumentException("Room entity table cannot be null");
+        int map =
+                switch (mapId) {
+                    case 1 -> 1;
+                    case 3 -> 2;
+                    case 6 -> 3;
+                    case 7 -> 4;
+                    case 10 -> 5;
+                    case 22 -> 6;
+                    case 31 -> 7;
+                    default -> mapId < 0 ? 0 : 8 + (mapId & 3);
+                };
+        return recipes[roomTable.ordinal()][map][entityType];
+    }
+
     private static EntitySpriteRecipe aquaticLookup(int entityType) {
         if (entityType == ENTITY_ZORA) {
             return EntitySpriteRecipe.pair(
@@ -167,28 +444,6 @@ final class EntitySpriteRegistrationData {
         }
         return EntitySpriteRecipe.NO_MATCH;
     }
-
-    /** HardHatBeetleCaveBSpriteVariants from azle.sym. */
-    private static final RomAddress ARMOREDENEMY_HARD_HAT_BEETLE_CAVE_BSPRITE_VARIANTS = new RomAddress(0x6, 0x4f34);
-    /** HardHatBeetleSpriteVariants from azle.sym. */
-    private static final RomAddress ARMOREDENEMY_HARD_HAT_BEETLE_SPRITE_VARIANTS = new RomAddress(0x6, 0x4f2c);
-    /** SpikedBeetle2SpriteVariants from azle.sym. */
-    private static final RomAddress ARMOREDENEMY_SPIKED_BEETLE2_SPRITE_VARIANTS = new RomAddress(0x7, 0x7794);
-    /** SpikedBeetle1SpriteVariants from azle.sym. */
-    private static final RomAddress ARMOREDENEMY_SPIKED_BEETLE1_SPRITE_VARIANTS = new RomAddress(0x7, 0x7784);
-
-    /** MoblinSpriteVariants at $03:$5917. */
-    private static final RomAddress ARMOREDENEMY_MOBLIN_SPRITE_VARIANTS = new RomAddress(0x03, 0x5917);
-    /** Data_018_77ED at $18:$77ED. */
-    private static final RomAddress ARMOREDENEMY_DATA_018_77ED = new RomAddress(0x18, 0x77ED);
-    /** MadBomberSpriteVariants at $06:$4126. */
-    private static final RomAddress ARMOREDENEMY_MAD_BOMBER_SPRITE_VARIANTS = new RomAddress(0x06, 0x4126);
-    /** EntityArrowSpriteVariants at $03:$6BC6. */
-    private static final RomAddress ARMOREDENEMY_ENTITY_ARROW_SPRITE_VARIANTS = new RomAddress(0x03, 0x6BC6);
-    /** ArmosStatueSpriteVariants at $06:$7446. */
-    private static final RomAddress ARMOREDENEMY_ARMOS_STATUE_SPRITE_VARIANTS = new RomAddress(0x06, 0x7446);
-    /** IronMasksMaskSpriteVariants at $03:$5B80. */
-    private static final RomAddress ARMOREDENEMY_IRON_MASKS_MASK_SPRITE_VARIANTS = new RomAddress(0x03, 0x5B80);
 
     private static EntitySpriteRecipe armoredEnemyLookup(int entityType, int mapId) {
         if (entityType == ENTITY_MOBLIN) {
@@ -264,21 +519,6 @@ final class EntitySpriteRegistrationData {
         return EntitySpriteRecipe.NO_MATCH;
     }
 
-    private static final int BOSS_MAP_TURTLE_ROCK = 0x07;
-    private static final int BOSS_MAP_EAGLES_TOWER = 0x06;
-    /** Data_006_527A, Data_006_523A and Data_006_51FA select the dungeon Hinox palette lists. */
-    private static final RomAddress BOSS_TURTLE_ROCK_HINOX = new RomAddress(0x06, 0x527A);
-
-    private static final RomAddress BOSS_EAGLES_TOWER_HINOX = new RomAddress(0x06, 0x523A);
-    private static final RomAddress BOSS_DEFAULT_HINOX = new RomAddress(0x06, 0x51FA);
-
-    /** Data_006_6E1E at $06:$6E1E. */
-    private static final RomAddress BOSS_DATA_006_6E1E = new RomAddress(0x06, 0x6E1E);
-    /** ThreeOfAKindSpriteVariants at $06:$4911. */
-    private static final RomAddress BOSS_THREE_OF_AKIND_SPRITE_VARIANTS = new RomAddress(0x06, 0x4911);
-    /** Data_006_5523 at $06:$5523. */
-    private static final RomAddress BOSS_DATA_006_5523 = new RomAddress(0x06, 0x5523);
-
     private static EntitySpriteRecipe bossLookup(int entityType, int mapId) {
         if (entityType == 0x5B) return EntitySpriteRecipe.special(EntitySpriteRecipe.Kind.SLIME_EYE, entityType);
         if (entityType == ENTITY_MOLDORM) {
@@ -312,15 +552,6 @@ final class EntitySpriteRegistrationData {
         return EntitySpriteRecipe.NO_MATCH;
     }
 
-    /** CuccoSpriteVariants at $05:$4514. */
-    private static final RomAddress COMPANION_CUCCO_SPRITE_VARIANTS = new RomAddress(0x05, 0x4514);
-    /** BowWowAtHomeSpriteVariants at $05:$4000. */
-    private static final RomAddress COMPANION_BOW_WOW_AT_HOME_SPRITE_VARIANTS = new RomAddress(0x05, 0x4000);
-    /** DogSpriteVariants at $19:$48CA. */
-    private static final RomAddress COMPANION_DOG_SPRITE_VARIANTS = new RomAddress(0x19, 0x48CA);
-    /** ButterflyOAMAttributes at $06:$6BBD. */
-    private static final RomAddress COMPANION_BUTTERFLY_OAMATTRIBUTES = new RomAddress(0x06, 0x6BBD);
-
     private static EntitySpriteRecipe companionLookup(int entityType) {
         if (entityType == ENTITY_CUCCO) {
             return EntitySpriteRecipe.pair(
@@ -352,12 +583,6 @@ final class EntitySpriteRegistrationData {
         }
         return EntitySpriteRecipe.NO_MATCH;
     }
-
-    /** LiftableStatueSpriteRect_BottleGrotto from azle.sym. */
-    private static final RomAddress CONTEXTUALOBJECT_LIFTABLE_STATUE_SPRITE_RECT_BOTTLE_GROTTO =
-            new RomAddress(0x19, 0x4010);
-    /** LiftableStatueSpriteRect from azle.sym. */
-    private static final RomAddress CONTEXTUALOBJECT_LIFTABLE_STATUE_SPRITE_RECT = new RomAddress(0x19, 0x4000);
 
     private static EntitySpriteRecipe contextualObjectLookupFloatingItem(
             int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
@@ -398,38 +623,6 @@ final class EntitySpriteRegistrationData {
         }
         return EntitySpriteRecipe.NO_MATCH;
     }
-
-    /** KeeseCaveBSpriteVariants from azle.sym. */
-    private static final RomAddress DUNGEONCREATURE_KEESE_CAVE_BSPRITE_VARIANTS = new RomAddress(0x6, 0x6710);
-    /** KeeseSpriteVariants from azle.sym. */
-    private static final RomAddress DUNGEONCREATURE_KEESE_SPRITE_VARIANTS = new RomAddress(0x6, 0x6708);
-    /** BouncingBombiteEntityHandler from azle.sym. */
-    private static final RomAddress DUNGEONCREATURE_BOUNCING_BOMBITE_ENTITY_HANDLER = new RomAddress(0x4, 0x7e0d);
-    /** BouncingBombite1SpriteVariants from azle.sym. */
-    private static final RomAddress DUNGEONCREATURE_BOUNCING_BOMBITE1_SPRITE_VARIANTS = new RomAddress(0x4, 0x7df5);
-    /** Bombite2SpriteVariants from azle.sym. */
-    private static final RomAddress DUNGEONCREATURE_BOMBITE2_SPRITE_VARIANTS = new RomAddress(0x4, 0x7d07);
-    /** Bombite1SpriteVariants from azle.sym. */
-    private static final RomAddress DUNGEONCREATURE_BOMBITE1_SPRITE_VARIANTS = new RomAddress(0x4, 0x7cef);
-
-    /** SnakeSpriteVariants at $07:$683E. */
-    private static final RomAddress DUNGEONCREATURE_SNAKE_SPRITE_VARIANTS = new RomAddress(0x07, 0x683E);
-    /** WizrobeSpriteVariants at $06:$7604. */
-    private static final RomAddress DUNGEONCREATURE_WIZROBE_SPRITE_VARIANTS = new RomAddress(0x06, 0x7604);
-    /** WizrobeProjectileSpriteVariants at $06:$65E1. */
-    private static final RomAddress DUNGEONCREATURE_WIZROBE_PROJECTILE_SPRITE_VARIANTS = new RomAddress(0x06, 0x65E1);
-    /** MimicSpriteVariants at $19:$6A8D. */
-    private static final RomAddress DUNGEONCREATURE_MIMIC_SPRITE_VARIANTS = new RomAddress(0x19, 0x6A8D);
-    /** MiniMoldormSpriteVariants at $04:$5A49. */
-    private static final RomAddress DUNGEONCREATURE_MINI_MOLDORM_SPRITE_VARIANTS = new RomAddress(0x04, 0x5A49);
-    /** LikeLikeSpriteVariants at $06:$7DD4. */
-    private static final RomAddress DUNGEONCREATURE_LIKE_LIKE_SPRITE_VARIANTS = new RomAddress(0x06, 0x7DD4);
-    /** PolsVoiceSpriteVariants at $06:$7373. */
-    private static final RomAddress DUNGEONCREATURE_POLS_VOICE_SPRITE_VARIANTS = new RomAddress(0x06, 0x7373);
-    /** PairoddSpriteVariants at $04:$5DD1. */
-    private static final RomAddress DUNGEONCREATURE_PAIRODD_SPRITE_VARIANTS = new RomAddress(0x04, 0x5DD1);
-    /** PairoddProjectileSpriteVariants at $04:$5EF4. */
-    private static final RomAddress DUNGEONCREATURE_PAIRODD_PROJECTILE_SPRITE_VARIANTS = new RomAddress(0x04, 0x5EF4);
 
     private static EntitySpriteRecipe dungeonCreatureLookup(int entityType, int mapId) {
         if (entityType == ENTITY_KEESE) {
@@ -539,19 +732,6 @@ final class EntitySpriteRegistrationData {
         return EntitySpriteRecipe.NO_MATCH;
     }
 
-    /** Data_015_4A15 at $15:$4A15. */
-    private static final RomAddress HAZARD_DATA_015_4A15 = new RomAddress(0x15, 0x4A15);
-    /** MaskedMimicGoriyaSpriteVariants at $19:$4796. */
-    private static final RomAddress HAZARD_MASKED_MIMIC_GORIYA_SPRITE_VARIANTS = new RomAddress(0x19, 0x4796);
-    /** AntiFairySpriteVariants at $06:$786E. */
-    private static final RomAddress HAZARD_ANTI_FAIRY_SPRITE_VARIANTS = new RomAddress(0x06, 0x786E);
-    /** SparkSpriteVariants at $06:$6615. */
-    private static final RomAddress HAZARD_SPARK_SPRITE_VARIANTS = new RomAddress(0x06, 0x6615);
-    /** LaserSpriteVariants at $04:$6C2D. */
-    private static final RomAddress HAZARD_LASER_SPRITE_VARIANTS = new RomAddress(0x04, 0x6C2D);
-    /** SpikeTrapSpriteVariants at $06:$74FA. */
-    private static final RomAddress HAZARD_SPIKE_TRAP_SPRITE_VARIANTS = new RomAddress(0x06, 0x74FA);
-
     private static EntitySpriteRecipe hazardLookup(int entityType, int mapId) {
         if (entityType == 0xE4) {
             // func_015_4AC9 indexes fourteen three-sprite body variants at
@@ -598,25 +778,6 @@ final class EntitySpriteRegistrationData {
         }
         return EntitySpriteRecipe.NO_MATCH;
     }
-
-    /** CrowSpriteVariants at $06:$5C89. */
-    private static final RomAddress OVERWORLDCREATURE_CROW_SPRITE_VARIANTS = new RomAddress(0x06, 0x5C89);
-    /** BuzzBlobSpriteVariants at $18:$7729. */
-    private static final RomAddress OVERWORLDCREATURE_BUZZ_BLOB_SPRITE_VARIANTS = new RomAddress(0x18, 0x7729);
-    /** OctorokSpriteVariants at $03:$57FB. */
-    private static final RomAddress OVERWORLDCREATURE_OCTOROK_SPRITE_VARIANTS = new RomAddress(0x03, 0x57FB);
-    /** OctorokRockSpriteVariants at $03:$6A1E. */
-    private static final RomAddress OVERWORLDCREATURE_OCTOROK_ROCK_SPRITE_VARIANTS = new RomAddress(0x03, 0x6A1E);
-    /** TektiteSpriteVariants at $06:$78B7. */
-    private static final RomAddress OVERWORLDCREATURE_TEKTITE_SPRITE_VARIANTS = new RomAddress(0x06, 0x78B7);
-    /** LeeverSpriteVariants at $04:$7EE5. */
-    private static final RomAddress OVERWORLDCREATURE_LEEVER_SPRITE_VARIANTS = new RomAddress(0x04, 0x7EE5);
-    /** WingedOctorokSpriteVariants at $07:$562D. */
-    private static final RomAddress OVERWORLDCREATURE_WINGED_OCTOROK_SPRITE_VARIANTS = new RomAddress(0x07, 0x562D);
-    /** PincerSpriteVariants at $07:$542B. */
-    private static final RomAddress OVERWORLDCREATURE_PINCER_SPRITE_VARIANTS = new RomAddress(0x07, 0x542B);
-    /** PeaHatSpriteVariants at $07:$6701. */
-    private static final RomAddress OVERWORLDCREATURE_PEA_HAT_SPRITE_VARIANTS = new RomAddress(0x07, 0x6701);
 
     private static EntitySpriteRecipe overworldCreatureLookup(int entityType) {
         if (entityType == ENTITY_CROW) {
@@ -693,39 +854,6 @@ final class EntitySpriteRegistrationData {
         }
         return EntitySpriteRecipe.NO_MATCH;
     }
-
-    /** SirensInstrument2SpriteVariants at $03:$5D83. */
-    private static final RomAddress PICKUP_SIRENS_INSTRUMENT2_SPRITE_VARIANTS = new RomAddress(0x03, 0x5D83);
-    /** DroppableHeartSprite at $03:$5D36. */
-    private static final RomAddress PICKUP_DROPPABLE_HEART_SPRITE = new RomAddress(0x03, 0x5D36);
-    /** DroppableRupeeSprite at $03:$609C. */
-    private static final RomAddress PICKUP_DROPPABLE_RUPEE_SPRITE = new RomAddress(0x03, 0x609C);
-    /** data_003_6157 at $03:$6157. */
-    private static final RomAddress PICKUP_DATA_003_6157 = new RomAddress(0x03, 0x6157);
-    /** KeyDropSpriteTable at $03:$5C78. */
-    private static final RomAddress PICKUP_KEY_DROP_SPRITE_TABLE = new RomAddress(0x03, 0x5C78);
-    /** Data_003_5B95 at $03:$5B95. */
-    private static final RomAddress PICKUP_DATA_003_5B95 = new RomAddress(0x03, 0x5B95);
-    /** PieceOfPowerSpriteVariants at $03:$5B65. */
-    private static final RomAddress PICKUP_PIECE_OF_POWER_SPRITE_VARIANTS = new RomAddress(0x03, 0x5B65);
-    /** Data_003_5B5B at $03:$5B5B. */
-    private static final RomAddress PICKUP_DATA_003_5B5B = new RomAddress(0x03, 0x5B5B);
-    /** HeartPieceEntitySprite at $03:$5A4D. */
-    private static final RomAddress PICKUP_HEART_PIECE_ENTITY_SPRITE = new RomAddress(0x03, 0x5A4D);
-    /** Entity13Handler at $03:$59D8. */
-    private static final RomAddress PICKUP_ENTITY13_HANDLER = new RomAddress(0x03, 0x59D8);
-    /** DroppableArrowSprite at $03:$6079. */
-    private static final RomAddress PICKUP_DROPPABLE_ARROW_SPRITE = new RomAddress(0x03, 0x6079);
-    /** DroppableBombsSprite at $03:$5FC0. */
-    private static final RomAddress PICKUP_DROPPABLE_BOMBS_SPRITE = new RomAddress(0x03, 0x5FC0);
-    /** SleepyToadstoolSprite at $03:$5D47. */
-    private static final RomAddress PICKUP_SLEEPY_TOADSTOOL_SPRITE = new RomAddress(0x03, 0x5D47);
-    /** DroppableMagicPowderSprite at $03:$6055. */
-    private static final RomAddress PICKUP_DROPPABLE_MAGIC_POWDER_SPRITE = new RomAddress(0x03, 0x6055);
-    /** HidingSlimeKeySprite at $03:$5FFB. */
-    private static final RomAddress PICKUP_HIDING_SLIME_KEY_SPRITE = new RomAddress(0x03, 0x5FFB);
-    /** DroppableSeashellSprite at $03:$5FD1. */
-    private static final RomAddress PICKUP_DROPPABLE_SEASHELL_SPRITE = new RomAddress(0x03, 0x5FD1);
 
     private static EntitySpriteRecipe pickupLookup(int entityType, int mapId) {
         if (entityType == ENTITY_INSTRUMENT_OF_THE_SIRENS) {
@@ -815,20 +943,6 @@ final class EntitySpriteRegistrationData {
         return EntitySpriteRecipe.NO_MATCH;
     }
 
-    /** BushcrawlerIndoorSpriteVariants from azle.sym. */
-    private static final RomAddress PLANT_BUSHCRAWLER_INDOOR_SPRITE_VARIANTS = new RomAddress(0x7, 0x401a);
-    /** BushcrawlerOutdoorSpriteVariants from azle.sym. */
-    private static final RomAddress PLANT_BUSHCRAWLER_OUTDOOR_SPRITE_VARIANTS = new RomAddress(0x7, 0x4012);
-
-    /** GopongaFlowerSpriteVariants at $06:$63F4. */
-    private static final RomAddress PLANT_GOPONGA_FLOWER_SPRITE_VARIANTS = new RomAddress(0x06, 0x63F4);
-    /** Data_006_6316 at $06:$6316. */
-    private static final RomAddress PLANT_DATA_006_6316 = new RomAddress(0x06, 0x6316);
-    /** GopongaFlowerProjectileSpriteList at $06:$638F. */
-    private static final RomAddress PLANT_GOPONGA_FLOWER_PROJECTILE_SPRITE_LIST = new RomAddress(0x06, 0x638F);
-    /** Data_036_6FC2 at $36:$6FC2. */
-    private static final RomAddress PLANT_DATA_036_6FC2 = new RomAddress(0x36, 0x6FC2);
-
     private static EntitySpriteRecipe plantLookup(int entityType, EntityRoomLoader.RoomTable roomTable) {
         if (entityType == ENTITY_GOPONGA_FLOWER) {
             return EntitySpriteRecipe.pair(
@@ -870,19 +984,6 @@ final class EntitySpriteRegistrationData {
         }
         return EntitySpriteRecipe.NO_MATCH;
     }
-
-    /** EntityArrowSpriteVariants at $03:$6BC6. */
-    private static final RomAddress PLAYERPROJECTILE_ENTITY_ARROW_SPRITE_VARIANTS = new RomAddress(0x03, 0x6BC6);
-    /** BoomerangSpriteVariants at $19:$4451. */
-    private static final RomAddress PLAYERPROJECTILE_BOOMERANG_SPRITE_VARIANTS = new RomAddress(0x19, 0x4451);
-    /** MagicRodFireballSpriteVariants at $03:$69AA. */
-    private static final RomAddress PLAYERPROJECTILE_MAGIC_ROD_FIREBALL_SPRITE_VARIANTS = new RomAddress(0x03, 0x69AA);
-    /** Data_018_7ABA at $18:$7ABA. */
-    private static final RomAddress PLAYERPROJECTILE_DATA_018_7ABA = new RomAddress(0x18, 0x7ABA);
-    /** MusicalNoteEntityHandler at $05:$7EF8. */
-    private static final RomAddress PLAYERPROJECTILE_MUSICAL_NOTE_ENTITY_HANDLER = new RomAddress(0x05, 0x7EF8);
-    /** Data_019_44FC at $19:$44FC. */
-    private static final RomAddress PLAYERPROJECTILE_DATA_019_44FC = new RomAddress(0x19, 0x44FC);
 
     private static EntitySpriteRecipe playerProjectileLookup(int entityType) {
         if (entityType == ENTITY_ARROW) {
@@ -945,15 +1046,6 @@ final class EntitySpriteRegistrationData {
         return EntitySpriteRecipe.NO_MATCH;
     }
 
-    /** OwlStatueSpriteVariants at $18:$5DF7. */
-    private static final RomAddress ROOMOBJECT_OWL_STATUE_SPRITE_VARIANTS = new RomAddress(0x18, 0x5DF7);
-    /** ChestItemSpriteTable at $07:$7B57. */
-    private static final RomAddress ROOMOBJECT_CHEST_ITEM_SPRITE_TABLE = new RomAddress(0x07, 0x7B57);
-    /** Unknown011SpriteVariants at $03:$5235. */
-    private static final RomAddress ROOMOBJECT_UNKNOWN011_SPRITE_VARIANTS = new RomAddress(0x03, 0x5235);
-    /** CrystalSwitchSpriteVariants at $15:$4320. */
-    private static final RomAddress ROOMOBJECT_CRYSTAL_SWITCH_SPRITE_VARIANTS = new RomAddress(0x15, 0x4320);
-
     private static EntitySpriteRecipe roomObjectLookup(
             int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
         if (entityType == 0x42 && mapId != 0x16) {
@@ -993,9 +1085,6 @@ final class EntitySpriteRegistrationData {
         return EntitySpriteRecipe.NO_MATCH;
     }
 
-    /** GoombaSpriteVariants at $07:$65CE. */
-    private static final RomAddress SIDEVIEW_GOOMBA_SPRITE_VARIANTS = new RomAddress(0x07, 0x65CE);
-
     private static EntitySpriteRecipe sideViewLookup(int entityType) {
         if (entityType == ENTITY_GOOMBA) {
             return EntitySpriteRecipe.pair(
@@ -1007,13 +1096,6 @@ final class EntitySpriteRegistrationData {
         }
         return EntitySpriteRecipe.NO_MATCH;
     }
-
-    /** ZolSpriteVariants at $06:$7C09. */
-    private static final RomAddress SLIMEENEMY_ZOL_SPRITE_VARIANTS = new RomAddress(0x06, 0x7C09);
-    /** GelSpriteVariants at $06:$7BFA. */
-    private static final RomAddress SLIMEENEMY_GEL_SPRITE_VARIANTS = new RomAddress(0x06, 0x7BFA);
-    /** StarSpriteVariants at $07:$7247. */
-    private static final RomAddress SLIMEENEMY_STAR_SPRITE_VARIANTS = new RomAddress(0x07, 0x7247);
 
     private static EntitySpriteRecipe slimeEnemyLookup(int entityType) {
         if (entityType == ENTITY_ZOL) {
@@ -1037,24 +1119,6 @@ final class EntitySpriteRegistrationData {
         }
         return EntitySpriteRecipe.NO_MATCH;
     }
-
-    /** GibdoTurtleRockSpriteVariants from azle.sym. */
-    private static final RomAddress UNDEADENEMY_GIBDO_TURTLE_ROCK_SPRITE_VARIANTS = new RomAddress(0x6, 0x7e77);
-    /** GibdoSpriteVariants from azle.sym. */
-    private static final RomAddress UNDEADENEMY_GIBDO_SPRITE_VARIANTS = new RomAddress(0x6, 0x7e6f);
-
-    /** ZombieSpriteVariants at $18:$63F8. */
-    private static final RomAddress UNDEADENEMY_ZOMBIE_SPRITE_VARIANTS = new RomAddress(0x18, 0x63F8);
-    /** BooBuddyEntityHandler at $06:$79A9. */
-    private static final RomAddress UNDEADENEMY_BOO_BUDDY_ENTITY_HANDLER = new RomAddress(0x06, 0x79A9);
-    /** StalfosAggressiveSpriteVariants at $06:$4AA8. */
-    private static final RomAddress UNDEADENEMY_STALFOS_AGGRESSIVE_SPRITE_VARIANTS = new RomAddress(0x06, 0x4AA8);
-    /** StalfosEvasive2SpriteVariants at $15:$4E7D. */
-    private static final RomAddress UNDEADENEMY_STALFOS_EVASIVE2_SPRITE_VARIANTS = new RomAddress(0x15, 0x4E7D);
-    /** GhiniSpriteVariants at $04:$5BFC. */
-    private static final RomAddress UNDEADENEMY_GHINI_SPRITE_VARIANTS = new RomAddress(0x04, 0x5BFC);
-    /** GiantGhiniSpriteRectVariants at $04:$5D26. */
-    private static final RomAddress UNDEADENEMY_GIANT_GHINI_SPRITE_RECT_VARIANTS = new RomAddress(0x04, 0x5D26);
 
     private static EntitySpriteRecipe undeadEnemyLookup(int entityType, int mapId) {
         if (entityType == ENTITY_ZOMBIE) {
@@ -1118,31 +1182,6 @@ final class EntitySpriteRegistrationData {
         }
         return EntitySpriteRecipe.NO_MATCH;
     }
-
-    /** Kid72SpriteVariants from azle.sym. */
-    private static final RomAddress VILLAGENPC_KID72_SPRITE_VARIANTS = new RomAddress(0x6, 0x605d);
-
-    /** WitchRatSpriteVariants at $15:$788D. */
-    private static final RomAddress VILLAGENPC_WITCH_RAT_SPRITE_VARIANTS = new RomAddress(0x15, 0x788D);
-    /** Data_005_4780 at $05:$4780. */
-    private static final RomAddress VILLAGENPC_DATA_005_4780 = new RomAddress(0x05, 0x4780);
-    /** MarinIndoorSpriteVariants at $05:$4E0A. */
-    private static final RomAddress VILLAGENPC_MARIN_INDOOR_SPRITE_VARIANTS = new RomAddress(0x05, 0x4E0A);
-    /** MarinCreditsSpriteVariants at $05:$4E2A. */
-    private static final RomAddress VILLAGENPC_MARIN_CREDITS_SPRITE_VARIANTS = new RomAddress(0x05, 0x4E2A);
-    /** Tarin3SpriteVariants at $05:$4932. */
-    private static final RomAddress VILLAGENPC_TARIN3_SPRITE_VARIANTS = new RomAddress(0x05, 0x4932);
-    /** Tarin1SpriteVariants at $05:$4912. */
-    private static final RomAddress VILLAGENPC_TARIN1_SPRITE_VARIANTS = new RomAddress(0x05, 0x4912);
-    /** MarinAtTalTalAndInStoreSpriteVariants at $18:$5EB7. */
-    private static final RomAddress VILLAGENPC_MARIN_AT_TAL_TAL_AND_IN_STORE_SPRITE_VARIANTS =
-            new RomAddress(0x18, 0x5EB7);
-    /** Kid71SpriteVariants at $06:$604D. */
-    private static final RomAddress VILLAGENPC_KID71_SPRITE_VARIANTS = new RomAddress(0x06, 0x604D);
-    /** MadamMeowMeowSpriteVariants at $06:$5B56. */
-    private static final RomAddress VILLAGENPC_MADAM_MEOW_MEOW_SPRITE_VARIANTS = new RomAddress(0x06, 0x5B56);
-    /** Data_006_5C51 at $06:$5C51. */
-    private static final RomAddress VILLAGENPC_DATA_006_5C51 = new RomAddress(0x06, 0x5C51);
 
     private static EntitySpriteRecipe villageNpcLookup(int entityType, EntityRoomLoader.RoomTable roomTable) {
         if (entityType == ENTITY_WITCH_RAT) {
@@ -1242,45 +1281,6 @@ final class EntitySpriteRegistrationData {
                     0);
         }
         return EntitySpriteRecipe.NO_MATCH;
-    }
-
-    private static final int[] MAPS = {-1, 1, 3, 6, 7, 10, 22, 31, 128, 129, 130, 131};
-    private static final EntitySpriteRegistrationData INSTANCE = new EntitySpriteRegistrationData();
-    private final EntitySpriteRecipe[][][] recipes;
-
-    // Indexes private tables built from the same enum; ordinals are never persisted or used as ROM bytes.
-    @SuppressWarnings("EnumOrdinal")
-    private EntitySpriteRegistrationData() {
-        var rooms = EntityRoomLoader.RoomTable.values();
-        recipes = new EntitySpriteRecipe[rooms.length][MAPS.length][256];
-        for (var room : rooms)
-            for (int map = 0; map < MAPS.length; map++)
-                for (int entity = 0; entity < 256; entity++)
-                    recipes[room.ordinal()][map][entity] = select(entity, room, MAPS[map]);
-    }
-
-    static EntitySpriteRegistrationData instance() {
-        return INSTANCE;
-    }
-
-    // Indexes private tables built from the same enum; ordinals are never persisted or used as ROM bytes.
-    @SuppressWarnings("EnumOrdinal")
-    EntitySpriteRecipe lookup(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {
-        if ((entityType & ~255) != 0)
-            throw new IllegalArgumentException("Entity type must be an unsigned byte: " + entityType);
-        if (roomTable == null) throw new IllegalArgumentException("Room entity table cannot be null");
-        int map =
-                switch (mapId) {
-                    case 1 -> 1;
-                    case 3 -> 2;
-                    case 6 -> 3;
-                    case 7 -> 4;
-                    case 10 -> 5;
-                    case 22 -> 6;
-                    case 31 -> 7;
-                    default -> mapId < 0 ? 0 : 8 + (mapId & 3);
-                };
-        return recipes[roomTable.ordinal()][map][entityType];
     }
 
     private static EntitySpriteRecipe select(int entityType, EntityRoomLoader.RoomTable roomTable, int mapId) {

@@ -3,57 +3,21 @@ package linksawakening.entity;
 final class LinkRoles {
     private final LinkSideViewRole sideView;
 
-    LinkSideViewRole sideView() {
-        return sideView;
-    }
-
     private final LinkMotionRole motion;
-
-    LinkMotionRole motion() {
-        return motion;
-    }
 
     private final LinkStatusRole status;
 
-    LinkStatusRole status() {
-        return status;
-    }
-
     private final LinkEquipmentRole equipment;
-
-    LinkEquipmentRole equipment() {
-        return equipment;
-    }
 
     private final LinkAnimationRole animation;
 
-    LinkAnimationRole animation() {
-        return animation;
-    }
-
     private final LinkActionsRole actions;
-
-    LinkActionsRole actions() {
-        return actions;
-    }
 
     private final LinkPositionRole position;
 
-    LinkPositionRole position() {
-        return position;
-    }
-
     private final LinkAirborneRole airborne;
 
-    LinkAirborneRole airborne() {
-        return airborne;
-    }
-
     private final LinkControlsRole controls;
-
-    LinkControlsRole controls() {
-        return controls;
-    }
 
     LinkRoles(LinkAssembly assembly) {
         sideView = new DefaultLinkSideViewRole(assembly);
@@ -65,5 +29,41 @@ final class LinkRoles {
         position = new DefaultLinkPositionRole(assembly);
         airborne = new DefaultLinkAirborneRole(assembly);
         controls = new DefaultLinkControlsRole(assembly);
+    }
+
+    LinkSideViewRole sideView() {
+        return sideView;
+    }
+
+    LinkMotionRole motion() {
+        return motion;
+    }
+
+    LinkStatusRole status() {
+        return status;
+    }
+
+    LinkEquipmentRole equipment() {
+        return equipment;
+    }
+
+    LinkAnimationRole animation() {
+        return animation;
+    }
+
+    LinkActionsRole actions() {
+        return actions;
+    }
+
+    LinkPositionRole position() {
+        return position;
+    }
+
+    LinkAirborneRole airborne() {
+        return airborne;
+    }
+
+    LinkControlsRole controls() {
+        return controls;
     }
 }

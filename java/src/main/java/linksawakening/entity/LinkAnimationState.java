@@ -18,22 +18,17 @@ final class LinkAnimationState {
     private final LinkComponentRef<LinkAirborne> linkAirborne;
     private final LinkComponentRef<LinkMotion> linkMotion;
 
-    LinkAnimationState(Dependencies dependencies) {
-        linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
-        linkMotion = Objects.requireNonNull(dependencies.linkMotion, "linkMotion");
-    }
-
-    static final class Dependencies {
-        LinkComponentRef<LinkAirborne> linkAirborne;
-        LinkComponentRef<LinkMotion> linkMotion;
-    }
-
     Direction direction = Direction.DOWN;
     int walkTickCounter;
     int walkFrame;
     boolean movingThisFrame;
     int romConsecutiveStepsCount = 7;
     boolean topDownFeatherStarted;
+
+    LinkAnimationState(Dependencies dependencies) {
+        linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
+        linkMotion = Objects.requireNonNull(dependencies.linkMotion, "linkMotion");
+    }
 
     int accessRomEntityZ() {
         return linkAirborne.get().accessZPixels();
@@ -86,5 +81,10 @@ final class LinkAnimationState {
             walkTickCounter = 0;
             walkFrame ^= 1;
         }
+    }
+
+    static final class Dependencies {
+        LinkComponentRef<LinkAirborne> linkAirborne;
+        LinkComponentRef<LinkMotion> linkMotion;
     }
 }

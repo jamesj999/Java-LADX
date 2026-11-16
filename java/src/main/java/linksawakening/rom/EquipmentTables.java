@@ -6,18 +6,18 @@ import java.util.Arrays;
 public final class EquipmentTables {
     // LinkDirectionToMagicRodXOffset: original loader length.
     private static final int MAGIC_ROD_X_OFFSET_LENGTH = 8;
-    private final byte[] magicRodXOffset;
     // LinkDirectionToMagicRodYOffset: original loader length.
     private static final int MAGIC_ROD_Y_OFFSET_LENGTH = 8;
-    private final byte[] magicRodYOffset;
     // LinkDirectionToMagicRodTiles: original loader length.
     private static final int MAGIC_ROD_TILES_LENGTH = 16;
-    private final int[] magicRodTiles;
     // LinkDirectionToMagicRodOAMAttributes: original loader length.
     private static final int MAGIC_ROD_ATTRIBUTES_LENGTH = 16;
-    private final int[] magicRodAttributes;
     // LinkDirectionToLinkAnimationState2: original loader length.
     private static final int SHOVEL_ANIMATION_STATES_LENGTH = 8;
+    private final byte[] magicRodXOffset;
+    private final byte[] magicRodYOffset;
+    private final int[] magicRodTiles;
+    private final int[] magicRodAttributes;
     private final int[] shovelAnimationStates;
 
     /** Hidden equipment sprites for an action-only actor. */

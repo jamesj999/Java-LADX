@@ -16,6 +16,17 @@ final class LinkSideView {
     private final LinkComponentRef<LinkServices> linkServices;
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;
 
+    boolean sideScrolling;
+    int sideViewModifier;
+    int sideViewSpeedX;
+    int sideViewSpeedY;
+    boolean sideViewGrounded;
+    boolean sideViewFeatherPending;
+    /** Mirrors wC147: Link was standing on a side-view moving entity this frame. */
+    boolean standingOnSideViewEntity;
+    /** One-frame hLinkSpeedY write supplied by the side-view platform handler. */
+    int sideViewPlatformVerticalSpeedPending = -1;
+
     LinkSideView(Dependencies dependencies) {
         linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
         linkAnimationState = Objects.requireNonNull(dependencies.linkAnimationState, "linkAnimationState");
@@ -27,29 +38,6 @@ final class LinkSideView {
         linkServices = Objects.requireNonNull(dependencies.linkServices, "linkServices");
         linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
     }
-
-    static final class Dependencies {
-        LinkComponentRef<LinkAirborne> linkAirborne;
-        LinkComponentRef<LinkAnimationState> linkAnimationState;
-        LinkComponentRef<LinkAnimator> linkAnimator;
-        LinkComponentRef<LinkControls> linkControls;
-        LinkComponentRef<LinkDamage> linkDamage;
-        LinkComponentRef<LinkEquipment> linkEquipment;
-        LinkComponentRef<LinkMotion> linkMotion;
-        LinkComponentRef<LinkServices> linkServices;
-        LinkComponentRef<LinkStateMachine> linkStateMachine;
-    }
-
-    boolean sideScrolling;
-    int sideViewModifier;
-    int sideViewSpeedX;
-    int sideViewSpeedY;
-    boolean sideViewGrounded;
-    boolean sideViewFeatherPending;
-    /** Mirrors wC147: Link was standing on a side-view moving entity this frame. */
-    boolean standingOnSideViewEntity;
-    /** One-frame hLinkSpeedY write supplied by the side-view platform handler. */
-    int sideViewPlatformVerticalSpeedPending = -1;
 
     /** Warp entry sets hLinkPhysicsModifier=1 at $00:18F0. */
     void setSideScrolling(boolean enabled) {
@@ -105,58 +93,6 @@ final class LinkSideView {
             if ((mask & 15) == 8) linkAnimationState.get().direction = Direction.DOWN;
         }
         finishSideViewMotion(platformSpeedY, mask, recoiling, ladderFrame);
-    }
-
-    private void finishSideViewMotion(int platformSpeedY, int mask, boolean recoiling, boolean ladderFrame) {
-        if (platformSpeedY >= 0) sideViewSpeedY = (byte) platformSpeedY;
-        int oldX = linkMotion.get().position().subX(),
-                oldY = linkMotion.get().position().subY();
-        moveSideViewAndCollide(sideViewSpeedX, sideViewSpeedY, mask);
-        int centerPhysics = linkServices
-                .get()
-                .collision
-                .objectPhysicsFlagAtPoint(
-                        linkMotion.get().position().romEntityX(),
-                        linkMotion.get().position().romEntityY() - 5);
-        if (!recoiling) {
-            if (sideViewModifier == 1 && centerPhysics != 0xB1) sideViewModifier = 0;
-            else if (sideViewModifier == 0 && centerPhysics == 0xB1 && (mask & 12) != 0) sideViewModifier = 1;
-        }
-        if (!ladderFrame || recoiling) {
-            if (recoiling) sideViewSpeedY = (byte) (sideViewSpeedY + 3);
-            else if (sideViewSpeedY < 0x40) {
-                sideViewSpeedY++;
-                boolean featherHeld =
-                        (linkServices.get().playerState.inventory().itemB() == InventoryItem.ROCS_FEATHER.romValue()
-                                ? linkServices
-                                        .get()
-                                        .inputState
-                                        .isDown(linkServices.get().inputConfig.bKey())
-                                : linkServices
-                                        .get()
-                                        .inputState
-                                        .isDown(linkServices.get().inputConfig.aKey()));
-                if (sideViewSpeedY >= 0 || !featherHeld) sideViewSpeedY++;
-            }
-        }
-        if (sideViewFeatherPending) {
-            sideViewFeatherPending = false;
-            linkAirborne.get().elevation().airborne(true);
-            sideViewSpeedY = (mask & 3) == 0 ? -22 : -24;
-            sideViewGrounded = false;
-            moveSideViewAndCollide(sideViewSpeedX, sideViewSpeedY, mask);
-            linkAnimator.get().jumpAnimationCounter(linkAnimator.get().jumpAnimationFrame(0));
-            linkServices.get().soundSink.play(GameplaySoundEvent.ROC_FEATHER_JUMP);
-        }
-        linkAirborne.get().elevation().zSubPixels(linkAirborne.get().elevation().zVelocity(0));
-        linkMotion.get().position().lastRomSpeedX(sideViewSpeedX & 255);
-        linkMotion.get().position().lastRomSpeedY(sideViewSpeedY & 255);
-        linkAnimationState.get().movingThisFrame = linkMotion.get().position().subX() != oldX
-                || linkMotion.get().position().subY() != oldY;
-        if (linkAnimationState.get().movingThisFrame) linkAnimationState.get().accessTickAnimation();
-        else linkAnimationState.get().walkTickCounter = linkAnimationState.get().walkFrame = 0;
-        // Side-view falling uses the normal airborne pose, not a Z-axis flip.
-        linkAnimator.get().jumpAnimationFrame(3);
     }
 
     void moveSideViewAndCollide(int speedX, int speedY, int mask) {
@@ -304,5 +240,69 @@ final class LinkSideView {
 
     void accessApplySideViewPotContact(int romPositionY, int romSpeedY) {
         this.applySideViewPotContact(romPositionY, romSpeedY);
+    }
+
+    private void finishSideViewMotion(int platformSpeedY, int mask, boolean recoiling, boolean ladderFrame) {
+        if (platformSpeedY >= 0) sideViewSpeedY = (byte) platformSpeedY;
+        int oldX = linkMotion.get().position().subX(),
+                oldY = linkMotion.get().position().subY();
+        moveSideViewAndCollide(sideViewSpeedX, sideViewSpeedY, mask);
+        int centerPhysics = linkServices
+                .get()
+                .collision
+                .objectPhysicsFlagAtPoint(
+                        linkMotion.get().position().romEntityX(),
+                        linkMotion.get().position().romEntityY() - 5);
+        if (!recoiling) {
+            if (sideViewModifier == 1 && centerPhysics != 0xB1) sideViewModifier = 0;
+            else if (sideViewModifier == 0 && centerPhysics == 0xB1 && (mask & 12) != 0) sideViewModifier = 1;
+        }
+        if (!ladderFrame || recoiling) {
+            if (recoiling) sideViewSpeedY = (byte) (sideViewSpeedY + 3);
+            else if (sideViewSpeedY < 0x40) {
+                sideViewSpeedY++;
+                boolean featherHeld =
+                        (linkServices.get().playerState.inventory().itemB() == InventoryItem.ROCS_FEATHER.romValue()
+                                ? linkServices
+                                        .get()
+                                        .inputState
+                                        .isDown(linkServices.get().inputConfig.bKey())
+                                : linkServices
+                                        .get()
+                                        .inputState
+                                        .isDown(linkServices.get().inputConfig.aKey()));
+                if (sideViewSpeedY >= 0 || !featherHeld) sideViewSpeedY++;
+            }
+        }
+        if (sideViewFeatherPending) {
+            sideViewFeatherPending = false;
+            linkAirborne.get().elevation().airborne(true);
+            sideViewSpeedY = (mask & 3) == 0 ? -22 : -24;
+            sideViewGrounded = false;
+            moveSideViewAndCollide(sideViewSpeedX, sideViewSpeedY, mask);
+            linkAnimator.get().jumpAnimationCounter(linkAnimator.get().jumpAnimationFrame(0));
+            linkServices.get().soundSink.play(GameplaySoundEvent.ROC_FEATHER_JUMP);
+        }
+        linkAirborne.get().elevation().zSubPixels(linkAirborne.get().elevation().zVelocity(0));
+        linkMotion.get().position().lastRomSpeedX(sideViewSpeedX & 255);
+        linkMotion.get().position().lastRomSpeedY(sideViewSpeedY & 255);
+        linkAnimationState.get().movingThisFrame = linkMotion.get().position().subX() != oldX
+                || linkMotion.get().position().subY() != oldY;
+        if (linkAnimationState.get().movingThisFrame) linkAnimationState.get().accessTickAnimation();
+        else linkAnimationState.get().walkTickCounter = linkAnimationState.get().walkFrame = 0;
+        // Side-view falling uses the normal airborne pose, not a Z-axis flip.
+        linkAnimator.get().jumpAnimationFrame(3);
+    }
+
+    static final class Dependencies {
+        LinkComponentRef<LinkAirborne> linkAirborne;
+        LinkComponentRef<LinkAnimationState> linkAnimationState;
+        LinkComponentRef<LinkAnimator> linkAnimator;
+        LinkComponentRef<LinkControls> linkControls;
+        LinkComponentRef<LinkDamage> linkDamage;
+        LinkComponentRef<LinkEquipment> linkEquipment;
+        LinkComponentRef<LinkMotion> linkMotion;
+        LinkComponentRef<LinkServices> linkServices;
+        LinkComponentRef<LinkStateMachine> linkStateMachine;
     }
 }

@@ -13,38 +13,13 @@ import linksawakening.rom.RomBank;
 
 /** Validated ROM display-list decoding for single, paired and rectangular OAM layouts. */
 final class EntitySpriteDecoder {
+
+    private final Rom romData;
+
     EntitySpriteDecoder(Rom romData) {
         if (romData == null) throw new IllegalArgumentException("ROM data cannot be null");
         this.romData = romData;
     }
-
-    EntitySpriteDefinition decode(EntitySpriteRecipe recipe) {
-        return switch (recipe.kind()) {
-            case PAIR -> decodePair(
-                    recipe.entityType(),
-                    recipe.bank(),
-                    recipe.address(),
-                    recipe.variantCount(),
-                    recipe.initialVariant(),
-                    recipe.tileSource());
-            case SINGLE -> decodeSingle(
-                    recipe.entityType(),
-                    recipe.bank(),
-                    recipe.address(),
-                    recipe.variantCount(),
-                    recipe.initialVariant());
-            case RECTANGLE -> decodeRectangle(
-                    recipe.entityType(),
-                    recipe.bank(),
-                    recipe.address(),
-                    recipe.variantCount(),
-                    recipe.spriteCount(),
-                    recipe.initialVariant());
-            default -> throw new IllegalArgumentException("Recipe requires a specialized composer: " + recipe.kind());
-        };
-    }
-
-    private final Rom romData;
 
     public EntitySpriteDefinition decodePair(
             int entityType, int bank, int address, int variantCount, int initialVariant) {
@@ -55,28 +30,6 @@ final class EntitySpriteDecoder {
                 variantCount,
                 initialVariant,
                 EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS);
-    }
-
-    EntitySpriteDefinition decodePair(
-            int entityType,
-            int bank,
-            int address,
-            int variantCount,
-            int initialVariant,
-            EntitySpriteDefinition.DynamicSprite.TileSource tileSource) {
-        int offset = validateDisplayList(entityType, bank, address, variantCount, 4, initialVariant);
-        List<EntitySpriteDefinition.Variant> variants = new ArrayList<>(variantCount);
-        for (int variant = 0; variant < variantCount; variant++) {
-            int index = offset + variant * 4;
-            variants.add(new EntitySpriteDefinition.Variant(
-                    new EntitySpriteDefinition.OamAttribute(
-                            romData.u8(RomAddress.fromOffset(index)), romData.u8(RomAddress.fromOffset(index + 1))),
-                    new EntitySpriteDefinition.OamAttribute(
-                            romData.u8(RomAddress.fromOffset(index + 2)),
-                            romData.u8(RomAddress.fromOffset(index + 3)))));
-        }
-        return new EntitySpriteDefinition(
-                entityType, bank, address, EntitySpriteDefinition.Shape.PAIR, initialVariant, variants, tileSource);
     }
 
     public EntitySpriteDefinition decodeSingle(
@@ -106,6 +59,54 @@ final class EntitySpriteDecoder {
                 initialVariant,
                 List.of(),
                 rectangleVariants);
+    }
+
+    EntitySpriteDefinition decode(EntitySpriteRecipe recipe) {
+        return switch (recipe.kind()) {
+            case PAIR -> decodePair(
+                    recipe.entityType(),
+                    recipe.bank(),
+                    recipe.address(),
+                    recipe.variantCount(),
+                    recipe.initialVariant(),
+                    recipe.tileSource());
+            case SINGLE -> decodeSingle(
+                    recipe.entityType(),
+                    recipe.bank(),
+                    recipe.address(),
+                    recipe.variantCount(),
+                    recipe.initialVariant());
+            case RECTANGLE -> decodeRectangle(
+                    recipe.entityType(),
+                    recipe.bank(),
+                    recipe.address(),
+                    recipe.variantCount(),
+                    recipe.spriteCount(),
+                    recipe.initialVariant());
+            default -> throw new IllegalArgumentException("Recipe requires a specialized composer: " + recipe.kind());
+        };
+    }
+
+    EntitySpriteDefinition decodePair(
+            int entityType,
+            int bank,
+            int address,
+            int variantCount,
+            int initialVariant,
+            EntitySpriteDefinition.DynamicSprite.TileSource tileSource) {
+        int offset = validateDisplayList(entityType, bank, address, variantCount, 4, initialVariant);
+        List<EntitySpriteDefinition.Variant> variants = new ArrayList<>(variantCount);
+        for (int variant = 0; variant < variantCount; variant++) {
+            int index = offset + variant * 4;
+            variants.add(new EntitySpriteDefinition.Variant(
+                    new EntitySpriteDefinition.OamAttribute(
+                            romData.u8(RomAddress.fromOffset(index)), romData.u8(RomAddress.fromOffset(index + 1))),
+                    new EntitySpriteDefinition.OamAttribute(
+                            romData.u8(RomAddress.fromOffset(index + 2)),
+                            romData.u8(RomAddress.fromOffset(index + 3)))));
+        }
+        return new EntitySpriteDefinition(
+                entityType, bank, address, EntitySpriteDefinition.Shape.PAIR, initialVariant, variants, tileSource);
     }
 
     List<List<EntitySpriteDefinition.RectangleSprite>> decodeRectangleVariants(

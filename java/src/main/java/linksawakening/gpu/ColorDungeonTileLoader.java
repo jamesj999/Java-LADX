@@ -6,11 +6,6 @@ import linksawakening.rom.RomSymbols;
 
 /** Color Dungeon BG uploads, selected by the room's high-byte/bank table. */
 final class ColorDungeonTileLoader {
-    private final Vram target;
-
-    ColorDungeonTileLoader(Vram target) {
-        this.target = target;
-    }
 
     private static final int COLOR_DUNGEON_ROOM_COUNT = 0x16;
     private static final int DUNGEONS_TILES_BANK = RomSymbols.DungeonsTiles.bank();
@@ -25,6 +20,11 @@ final class ColorDungeonTileLoader {
     private static final int COLOR_DUNGEON_BG_BANK = RomSymbols.ColorDungeonTiles.bank();
     private static final int COLOR_DUNGEON_BG_FLOOR_ADDR = RomSymbols.ColorDungeonTiles.address();
     private static final int COLOR_DUNGEON_BG_ITEMS_ADDR = RomSymbols.ColorDungeonTiles.address() + 0x100;
+    private final Vram target;
+
+    ColorDungeonTileLoader(Vram target) {
+        this.target = target;
+    }
 
     void loadBackground(Rom romData, int roomId) {
         if (roomId < 0 || roomId >= COLOR_DUNGEON_ROOM_COUNT) {

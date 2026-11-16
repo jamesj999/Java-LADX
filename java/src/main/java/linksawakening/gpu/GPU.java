@@ -9,6 +9,26 @@ public final class GPU {
     public static final int VRAM_SIZE = Vram.VRAM_SIZE;
     public static final int TILE_COUNT = Vram.TILE_COUNT;
     public static final int TILE_DATA_SIZE = Vram.TILE_DATA_SIZE;
+
+    // SwitchBlockTiles in bank0c.asm and the GBC-adjusted bank used by the
+    // gameplay tile loader. UpdateSwitchBlockTiles copies four tiles at a
+    // time to vTilesSwitchBlockA/B ($9040/$9080).
+
+    // Ping-pong offset table used by dungeon-1 and lava animations.
+    // Matches AnimatedTilesDataOffsets in home/animated_tiles.asm:267.
+
+    private static final int INVENTORY_EQUIPMENT_ITEMS_TILES_BANK = RomSymbols.InventoryEquipmentItemsTiles.bank();
+    private static final int INVENTORY_EQUIPMENT_ITEMS_TILES_ADDR = RomSymbols.InventoryEquipmentItemsTiles.address();
+
+    // TilesGfxSource._08.._0A in home/interrupts.asm. The source label is
+    // OcarinaSymbolsTiles in bank $0C at $6960; the GBC loader selects $2C.
+
+    // SaveMenuTiles in bank0.asm:2E5E. Unlike the GBC-adjusted menu sheet,
+    // this source is copied from bank $0F by LoadSaveMenuTiles.
+
+    private static final int LINK_CHARACTER_TILES_BANK = RomSymbols.LinkCharacterTiles.bank();
+    private static final int LINK_CHARACTER_TILES_ADDR = RomSymbols.LinkCharacterTiles.address();
+    private static final int LINK_CHARACTER_TILES_COUNT = 0x40;
     private final Vram vram = new Vram();
     private final AnimatedTiles animatedTiles = new AnimatedTiles(vram);
     private final InventoryTileLoader inventory = new InventoryTileLoader(vram);
@@ -45,26 +65,6 @@ public final class GPU {
     public void tickAnimatedTiles(Rom rom) {
         animatedTiles.tickAnimatedTiles(rom);
     }
-
-    // SwitchBlockTiles in bank0c.asm and the GBC-adjusted bank used by the
-    // gameplay tile loader. UpdateSwitchBlockTiles copies four tiles at a
-    // time to vTilesSwitchBlockA/B ($9040/$9080).
-
-    // Ping-pong offset table used by dungeon-1 and lava animations.
-    // Matches AnimatedTilesDataOffsets in home/animated_tiles.asm:267.
-
-    private static final int INVENTORY_EQUIPMENT_ITEMS_TILES_BANK = RomSymbols.InventoryEquipmentItemsTiles.bank();
-    private static final int INVENTORY_EQUIPMENT_ITEMS_TILES_ADDR = RomSymbols.InventoryEquipmentItemsTiles.address();
-
-    // TilesGfxSource._08.._0A in home/interrupts.asm. The source label is
-    // OcarinaSymbolsTiles in bank $0C at $6960; the GBC loader selects $2C.
-
-    // SaveMenuTiles in bank0.asm:2E5E. Unlike the GBC-adjusted menu sheet,
-    // this source is copied from bank $0F by LoadSaveMenuTiles.
-
-    private static final int LINK_CHARACTER_TILES_BANK = RomSymbols.LinkCharacterTiles.bank();
-    private static final int LINK_CHARACTER_TILES_ADDR = RomSymbols.LinkCharacterTiles.address();
-    private static final int LINK_CHARACTER_TILES_COUNT = 0x40;
 
     // NpcTilesBankTable in bank0.asm:$2E6F, adjusted for the GBC banks used
     // by the shipped color ROM. The two high bits of a sheet selector index

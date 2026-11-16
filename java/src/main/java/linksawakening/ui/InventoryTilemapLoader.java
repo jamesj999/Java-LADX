@@ -98,19 +98,19 @@ public final class InventoryTilemapLoader {
         return ocarinaPopupOam.clone();
     }
 
-    private static int[] padTo(int[] source, int size, int filler) {
-        int[] padded = new int[size];
-        for (int i = 0; i < size; i++) {
-            padded[i] = i < source.length ? source[i] : filler;
-        }
-        return padded;
-    }
-
     /** Replaces synchronous renderer scratch buffers, including zero padding. */
     void copyInto(int[] tiles, int[] attributes) {
         Arrays.fill(tiles, 0);
         Arrays.fill(attributes, 0);
         System.arraycopy(baseTilemap, 0, tiles, 0, Math.min(tiles.length, baseTilemap.length));
         System.arraycopy(attrmap, 0, attributes, 0, Math.min(attributes.length, attrmap.length));
+    }
+
+    private static int[] padTo(int[] source, int size, int filler) {
+        int[] padded = new int[size];
+        for (int i = 0; i < size; i++) {
+            padded[i] = i < source.length ? source[i] : filler;
+        }
+        return padded;
     }
 }

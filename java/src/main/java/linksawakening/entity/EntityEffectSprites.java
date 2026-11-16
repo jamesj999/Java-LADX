@@ -78,26 +78,6 @@ final class EntityEffectSprites {
     }
 
     /**
-     * Decodes Data_006_7ADD as a mixed pair definition. The bank-$06 handler
-     * renders variants $00-$06 as single sprites, except that variant $05 of
-     * ENTITY_FLOATING_ITEM_2 deliberately points at Data_006_7AD1 + 2. That
-     * source address is inside the preceding Boo Buddy code; preserve its ROM
-     * bytes rather than correcting the disassembly's source quirk.
-     */
-    EntitySpriteDefinition decodeFloatingItemMain(int entityType) {
-        EntitySpriteDefinition singles = decoder.decodeSingle(entityType, 0x06, 0x7ADD, 7, 0);
-        List<EntitySpriteDefinition.Variant> variants = new ArrayList<>(7);
-        for (EntitySpriteDefinition.Variant variant : singles.variants()) {
-            variants.add(variant);
-        }
-        if (entityType == ENTITY_FLOATING_ITEM_2) {
-            EntitySpriteDefinition quirk = decoder.decodePair(entityType, 0x06, 0x7AD3, 1, 0);
-            variants.set(5, quirk.variant(0));
-        }
-        return new EntitySpriteDefinition(entityType, 0x06, 0x7ADD, EntitySpriteDefinition.Shape.PAIR, 0, variants);
-    }
-
-    /**
      * Builds the mixed display list emitted by BombArrowHandler. The handler
      * draws the bomb's single sprite first, then the ordinary arrow pair, all
      * at the current arrow position.
@@ -144,6 +124,26 @@ final class EntityEffectSprites {
      */
     public EntitySpriteDefinition forMagicPowderTorchState(boolean lighting) {
         return decoder.decodePair(ENTITY_MAGIC_POWDER_SPRINKLE, 0x18, lighting ? 0x795E : 0x7962, 1, 0);
+    }
+
+    /**
+     * Decodes Data_006_7ADD as a mixed pair definition. The bank-$06 handler
+     * renders variants $00-$06 as single sprites, except that variant $05 of
+     * ENTITY_FLOATING_ITEM_2 deliberately points at Data_006_7AD1 + 2. That
+     * source address is inside the preceding Boo Buddy code; preserve its ROM
+     * bytes rather than correcting the disassembly's source quirk.
+     */
+    EntitySpriteDefinition decodeFloatingItemMain(int entityType) {
+        EntitySpriteDefinition singles = decoder.decodeSingle(entityType, 0x06, 0x7ADD, 7, 0);
+        List<EntitySpriteDefinition.Variant> variants = new ArrayList<>(7);
+        for (EntitySpriteDefinition.Variant variant : singles.variants()) {
+            variants.add(variant);
+        }
+        if (entityType == ENTITY_FLOATING_ITEM_2) {
+            EntitySpriteDefinition quirk = decoder.decodePair(entityType, 0x06, 0x7AD3, 1, 0);
+            variants.set(5, quirk.variant(0));
+        }
+        return new EntitySpriteDefinition(entityType, 0x06, 0x7ADD, EntitySpriteDefinition.Shape.PAIR, 0, variants);
     }
 
     EntitySpriteDefinition decodeLiftableRock(EntityRoomLoader.RoomTable roomTable) {

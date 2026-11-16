@@ -10,6 +10,8 @@ final class Vram {
     private final byte[] vram;
     private final Tile[] tiles;
 
+    private EntitySpriteTileSnapshot entitySnapshot;
+
     public Vram() {
         vram = new byte[VRAM_SIZE];
         tiles = new Tile[TILE_COUNT];
@@ -37,6 +39,24 @@ final class Vram {
         return 0;
     }
 
+    public Tile getTile(int index) {
+        if (index >= 0 && index < TILE_COUNT) {
+            return tiles[index];
+        }
+        return null;
+    }
+
+    public EntitySpriteTileSnapshot snapshotEntityTiles() {
+        if (entitySnapshot != null && entitySnapshot.matches(tiles, EntitySpriteTileSnapshot.BASE_TILE_INDEX))
+            return entitySnapshot;
+        Tile[] entityTiles = new Tile[EntitySpriteTileSnapshot.TILE_COUNT];
+        for (int i = 0; i < entityTiles.length; i++) {
+            entityTiles[i] = tiles[EntitySpriteTileSnapshot.BASE_TILE_INDEX + i];
+        }
+        entitySnapshot = new EntitySpriteTileSnapshot(entityTiles);
+        return entitySnapshot;
+    }
+
     final void updateTile(int tileIndex) {
         int address = tileIndex * TILE_DATA_SIZE;
         if (address + TILE_DATA_SIZE > VRAM_SIZE) {
@@ -57,28 +77,8 @@ final class Vram {
         }
     }
 
-    public Tile getTile(int index) {
-        if (index >= 0 && index < TILE_COUNT) {
-            return tiles[index];
-        }
-        return null;
-    }
-
-    private EntitySpriteTileSnapshot entitySnapshot;
-
     final void invalidateEntitySnapshot() {
         entitySnapshot = null;
-    }
-
-    public EntitySpriteTileSnapshot snapshotEntityTiles() {
-        if (entitySnapshot != null && entitySnapshot.matches(tiles, EntitySpriteTileSnapshot.BASE_TILE_INDEX))
-            return entitySnapshot;
-        Tile[] entityTiles = new Tile[EntitySpriteTileSnapshot.TILE_COUNT];
-        for (int i = 0; i < entityTiles.length; i++) {
-            entityTiles[i] = tiles[EntitySpriteTileSnapshot.BASE_TILE_INDEX + i];
-        }
-        entitySnapshot = new EntitySpriteTileSnapshot(entityTiles);
-        return entitySnapshot;
     }
 
     final void loadTilesFromROM(Rom romData, int bank, int address, int tileCount, int vramTileIndex) {

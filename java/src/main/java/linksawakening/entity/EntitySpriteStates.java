@@ -23,6 +23,9 @@ import linksawakening.world.entity.EntityStatus;
 
 /** Entity state and room-dependent sprite selection with immutable registration data. */
 final class EntitySpriteStates {
+
+    private static final int[] COLOR_SHELL_ACTIVE_DISPLAY_ADDRESSES = {0x6688, 0x66E8, 0x6748};
+    private static final int[] COLOR_SHELL_INACTIVE_DISPLAY_ADDRESSES = {0x67A8, 0x67D8, 0x6808};
     private final EntitySpriteDecoder decoder;
     private final EntitySpriteRegistrationData registrations;
 
@@ -30,9 +33,6 @@ final class EntitySpriteStates {
         this.decoder = decoder;
         this.registrations = registrations;
     }
-
-    private static final int[] COLOR_SHELL_ACTIVE_DISPLAY_ADDRESSES = {0x6688, 0x66E8, 0x6748};
-    private static final int[] COLOR_SHELL_INACTIVE_DISPLAY_ADDRESSES = {0x67A8, 0x67D8, 0x6808};
 
     /** Selects the runtime-dependent display list used by entity $31. */
     public EntitySpriteDefinition forSwordShieldPickup(boolean beachSword) {
@@ -189,6 +189,24 @@ final class EntitySpriteStates {
     }
 
     /**
+     * Returns the display list selected by CreateFollowingNpcEntity handlers.
+     * The caller supplies the matching follower entity type in the same form
+     * used by the disassembly's dynamic entity spawner.
+     */
+    public EntitySpriteDefinition forFollowerEntityType(int entityType) {
+        if ((entityType & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Entity type must be an unsigned byte: " + entityType);
+        }
+        return switch (entityType) {
+            case ENTITY_BOW_WOW -> decoder.decodePair(entityType, 0x05, 0x401C, 7, 0);
+            case ENTITY_MARIN_AT_THE_SHORE -> decoder.decodePair(entityType, 0x18, 0x59B8, 11, 0);
+            case 0xD4 -> decoder.decodePair(entityType, 0x19, 0x5DF8, 6, 0);
+            case 0xD5 -> decoder.decodePair(entityType, 0x19, 0x59BC, 8, 0);
+            default -> EntitySpriteDefinition.unsupported(entityType);
+        };
+    }
+
+    /**
      * Decodes Hiding Zol's mixed display path. The bank-$07 handler selects
      * the single-sprite list when the entity variant is $01 and the pair list
      * for variants $00, $02, and $03. A null second OAM entry represents that
@@ -279,24 +297,6 @@ final class EntitySpriteStates {
                 new EntitySpriteDefinition.OamAttribute(secondTile, secondAttributes),
                 source,
                 false));
-    }
-
-    /**
-     * Returns the display list selected by CreateFollowingNpcEntity handlers.
-     * The caller supplies the matching follower entity type in the same form
-     * used by the disassembly's dynamic entity spawner.
-     */
-    public EntitySpriteDefinition forFollowerEntityType(int entityType) {
-        if ((entityType & ~0xFF) != 0) {
-            throw new IllegalArgumentException("Entity type must be an unsigned byte: " + entityType);
-        }
-        return switch (entityType) {
-            case ENTITY_BOW_WOW -> decoder.decodePair(entityType, 0x05, 0x401C, 7, 0);
-            case ENTITY_MARIN_AT_THE_SHORE -> decoder.decodePair(entityType, 0x18, 0x59B8, 11, 0);
-            case 0xD4 -> decoder.decodePair(entityType, 0x19, 0x5DF8, 6, 0);
-            case 0xD5 -> decoder.decodePair(entityType, 0x19, 0x59BC, 8, 0);
-            default -> EntitySpriteDefinition.unsupported(entityType);
-        };
     }
 
     /** Bank $19:43A9: center pair followed by four orbiting single sprites. */

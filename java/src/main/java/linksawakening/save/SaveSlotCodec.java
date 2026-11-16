@@ -155,6 +155,10 @@ final class SaveSlotCodec {
                 .build();
     }
 
+    static int unsigned(byte value) {
+        return value & 0xFF;
+    }
+
     private static int decodeBcd(byte value) {
         return (unsigned(value) >>> 4) * 10 + (unsigned(value) & 0x0F);
     }
@@ -199,9 +203,5 @@ final class SaveSlotCodec {
         };
         return startingHealthByMaxHearts[
                 Math.min(Math.max(playerState.vitals().maxHearts(), 0), startingHealthByMaxHearts.length - 1)];
-    }
-
-    static int unsigned(byte value) {
-        return value & 0xFF;
     }
 }

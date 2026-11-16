@@ -4,9 +4,9 @@ public final class EntityPropertyTables {
     private static final int ENTITY_OPTIONS_TABLE_SIZE = 0x100;
     // Options1ForEntity: original loader length.
     private static final int ENTITY_OPTIONS1_LENGTH = 256;
-    private final int[] entityOptions1;
     // HitboxFlagsForEntity: original loader length.
     private static final int ENTITY_HITBOX_FLAGS_LENGTH = 251;
+    private final int[] entityOptions1;
     private final int[] entityHitboxFlags;
 
     private EntityPropertyTables(Rom rom) {

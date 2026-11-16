@@ -23,20 +23,14 @@ public final class IntroSequence {
     static final int BEACH_LINK_Y = 0x6E;
     static final int[] SEA_LIGHTNING_SCROLLS = {0x10, 0x30, 0x38, 0x58, 0x5A, 0x69};
 
-    enum Stage {
-        SEA,
-        LINK_FACE,
-        SEA_FADE,
-        BEACH_LOAD,
-        BEACH_FADE,
-        BEACH,
-        TITLE_REVEAL,
-        TITLE_WAIT,
-        TITLE_DX,
-        COMPLETE
-    }
-
-    record Lightning(int variant, int x, int y, int remaining) {}
+    public static final int SEA_SCROLL_FRAMES = (0xC0 - 0x50) * 8 + 1;
+    public static final int LINK_FACE_FRAMES = 0xA0;
+    public static final int SEA_FADE_FRAMES = 0x58 - 1;
+    public static final int BEACH_FADE_FRAMES = 0xFF;
+    public static final int BEACH_MARIN_WALK_FRAMES = (0xB0 - 0x47) * 4;
+    public static final int BEACH_MARIN_WAIT_FRAMES = 0x40;
+    public static final int TITLE_REVEAL_STEP_FRAMES = 1;
+    public static final int TITLE_HOLD_FRAMES = 160;
 
     private final IntroRomData rom;
     private final List<IntroRomData.TitleRow> titleRows;
@@ -54,8 +48,13 @@ public final class IntroSequence {
     private int titleRowIndex;
     private final List<Lightning> lightning = new ArrayList<>();
     private int lightningVisibleCountdown;
-
-    record DefaultResources(Rom romData, Function<String, BackgroundScene> backgroundProvider) {}
+    private final IntroVideoMemory video = new IntroVideoMemory();
+    private final IntroClock clockState = new IntroClock();
+    private final IntroWater water;
+    private final IntroBeachActors actors;
+    private final IntroSpriteComposer spriteComposer;
+    private final IntroPhaseState phase = new IntroPhaseState();
+    private final IntroFramePublisher frames;
 
     /** Compatibility constructor for older callers; runtime data still comes from the bundled ROM. */
     public IntroSequence() {
@@ -110,27 +109,8 @@ public final class IntroSequence {
         this(resources.romData(), resources.backgroundProvider());
     }
 
-    private static void copyDrawRow(int[] map, int targetAddress, int[] values) {
-        int offset = targetAddress - 0x9800;
-        if (offset < 0 || offset >= map.length || values.length > 32) {
-            throw new IllegalArgumentException(
-                    String.format("Intro draw command target $%04X is outside the 32x32 map", targetAddress));
-        }
-        for (int i = 0; i < values.length; i++) {
-            map[(offset & 0x3E0) | ((offset + i) & 31)] = values[i];
-        }
-    }
-
     public void setNoiseSound(IntConsumer sink) {
         noiseSound = Objects.requireNonNull(sink);
-    }
-
-    private void tickSeaWaveSound() {
-        // intro.asm func_001_71C7: called by stage 6 and Marin, not the sea handler.
-        if (actors.linkState() < 2 && ++seaWaveCounter == 0xA0) {
-            noiseSound.accept(0x0F);
-            seaWaveCounter = 0;
-        }
     }
 
     public void tick() {
@@ -244,6 +224,33 @@ public final class IntroSequence {
 
     public IntroFrameSnapshot snapshot() {
         return frames.snapshot();
+    }
+
+    public String sceneId() {
+        return phase.sceneId();
+    }
+
+    public int scrollX() {
+        return frames.scrollX();
+    }
+
+    private static void copyDrawRow(int[] map, int targetAddress, int[] values) {
+        int offset = targetAddress - 0x9800;
+        if (offset < 0 || offset >= map.length || values.length > 32) {
+            throw new IllegalArgumentException(
+                    String.format("Intro draw command target $%04X is outside the 32x32 map", targetAddress));
+        }
+        for (int i = 0; i < values.length; i++) {
+            map[(offset & 0x3E0) | ((offset + i) & 31)] = values[i];
+        }
+    }
+
+    private void tickSeaWaveSound() {
+        // intro.asm func_001_71C7: called by stage 6 and Marin, not the sea handler.
+        if (actors.linkState() < 2 && ++seaWaveCounter == 0xA0) {
+            noiseSound.accept(0x0F);
+            seaWaveCounter = 0;
+        }
     }
 
     private void tickSea() {
@@ -451,27 +458,20 @@ public final class IntroSequence {
         copyDrawRow(video.attrmap(), row.attributeTargetAddress(), row.attributeBytes());
     }
 
-    public static final int SEA_SCROLL_FRAMES = (0xC0 - 0x50) * 8 + 1;
-    public static final int LINK_FACE_FRAMES = 0xA0;
-    public static final int SEA_FADE_FRAMES = 0x58 - 1;
-    public static final int BEACH_FADE_FRAMES = 0xFF;
-    public static final int BEACH_MARIN_WALK_FRAMES = (0xB0 - 0x47) * 4;
-    public static final int BEACH_MARIN_WAIT_FRAMES = 0x40;
-    public static final int TITLE_REVEAL_STEP_FRAMES = 1;
-    public static final int TITLE_HOLD_FRAMES = 160;
-    private final IntroVideoMemory video = new IntroVideoMemory();
-    private final IntroClock clockState = new IntroClock();
-    private final IntroWater water;
-    private final IntroBeachActors actors;
-    private final IntroSpriteComposer spriteComposer;
-    private final IntroPhaseState phase = new IntroPhaseState();
-    private final IntroFramePublisher frames;
-
-    public String sceneId() {
-        return phase.sceneId();
+    enum Stage {
+        SEA,
+        LINK_FACE,
+        SEA_FADE,
+        BEACH_LOAD,
+        BEACH_FADE,
+        BEACH,
+        TITLE_REVEAL,
+        TITLE_WAIT,
+        TITLE_DX,
+        COMPLETE
     }
 
-    public int scrollX() {
-        return frames.scrollX();
-    }
+    record Lightning(int variant, int x, int y, int remaining) {}
+
+    record DefaultResources(Rom romData, Function<String, BackgroundScene> backgroundProvider) {}
 }

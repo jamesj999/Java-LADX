@@ -33,11 +33,6 @@ public final class SaveRamStore {
         return open(path, Files::readAllBytes);
     }
 
-    @FunctionalInterface
-    interface ImageReader {
-        byte[] read(Path path) throws IOException;
-    }
-
     static SaveRamStore open(Path path, ImageReader reader) throws IOException {
         Objects.requireNonNull(path, "path");
         byte[] bytes;
@@ -63,13 +58,13 @@ public final class SaveRamStore {
         return store;
     }
 
+    public static SaveRamStore inMemory() {
+        return new SaveRamStore(null, SaveRamImage.empty());
+    }
+
     /** Original wrong-sized image preserved during open, when present. */
     public Optional<Path> corruptBackup() {
         return Optional.ofNullable(corruptBackup);
-    }
-
-    public static SaveRamStore inMemory() {
-        return new SaveRamStore(null, SaveRamImage.empty());
     }
 
     public static Path defaultPath() {
@@ -195,5 +190,10 @@ public final class SaveRamStore {
             throw failure;
         }
         Files.deleteIfExists(temporary);
+    }
+
+    @FunctionalInterface
+    interface ImageReader {
+        byte[] read(Path path) throws IOException;
     }
 }

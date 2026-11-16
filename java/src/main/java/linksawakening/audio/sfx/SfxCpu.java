@@ -10,8 +10,31 @@ import static linksawakening.audio.sfx.RomSoundEffectEngine.unsigned16;
 final class SfxCpu {
     private final RomSoundEffectEngine bus;
 
+    private final int[] stack = new int[512];
+    private int pc;
+    private int stackSize;
+    private int a;
+    private int b;
+    private int c;
+    private int d;
+    private int e;
+    private int h;
+    private int l;
+    private boolean flagZ;
+    private boolean flagN;
+    private boolean flagH;
+    private boolean flagC;
+    private boolean stopped;
+
     SfxCpu(RomSoundEffectEngine bus) {
         this.bus = bus;
+    }
+
+    void runFrom(int entryAddress) {
+        pc = entryAddress & 0xFFFF;
+        stackSize = a = b = c = d = e = h = l = 0;
+        flagZ = flagN = flagH = flagC = stopped = false;
+        run();
     }
 
     private void step() {
@@ -190,29 +213,6 @@ final class SfxCpu {
             case 0xFE -> cpA(next8());
             default -> throw unsupported(opcode, opcodeAddress);
         }
-    }
-
-    private final int[] stack = new int[512];
-    private int pc;
-    private int stackSize;
-    private int a;
-    private int b;
-    private int c;
-    private int d;
-    private int e;
-    private int h;
-    private int l;
-    private boolean flagZ;
-    private boolean flagN;
-    private boolean flagH;
-    private boolean flagC;
-    private boolean stopped;
-
-    void runFrom(int entryAddress) {
-        pc = entryAddress & 0xFFFF;
-        stackSize = a = b = c = d = e = h = l = 0;
-        flagZ = flagN = flagH = flagC = stopped = false;
-        run();
     }
 
     private void run() {

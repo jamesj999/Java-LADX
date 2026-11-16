@@ -44,6 +44,35 @@ public final class DialogRenderer {
                 palette,
                 dialog);
     }
+    /** Indexed counterpart; dialog_letters.asm $4A84 writes attribute $01 (no priority bit). */
+    public static void submitWindow(
+            linksawakening.render.HardwareFrame frame, DialogController dialog, int[] suppliedPalette) {
+        if (!dialog.isActive()) return;
+        int[] palette = Objects.requireNonNullElse(suppliedPalette, DEFAULT_PALETTE);
+        int boxY = dialog.boxY();
+        for (int row = 0; row < BOX_HEIGHT / CELL_SIZE; row++) {
+            if (!dialog.isBoxRowVisible(row)) continue;
+            for (int y = 0; y < CELL_SIZE; y++)
+                for (int x = 0; x < BOX_WIDTH; x++)
+                    frame.backgroundPixel(BOX_X + x, boxY + row * CELL_SIZE + y, 3, palette, -1, 0x01);
+        }
+        DialogTextLayout text = dialog.renderLayout();
+        int originY = boxY + TEXT_Y_OFFSET + dialog.textScrollOffset();
+        for (int i = 0; i < text.size(); i++) {
+            int y = originY + text.row(i) * LINE_HEIGHT;
+            int boxRow = (y - boxY) / CELL_SIZE;
+            if (dialog.isBoxRowVisible(boxRow)) {
+                byte[] tile = FONT.tileView(text.character(i));
+                for (int ty = 0; ty < 8; ty++)
+                    for (int tx = 0; tx < 8; tx++) {
+                        int bit = 7 - tx;
+                        int index = ((tile[ty * 2] >> bit) & 1) | (((tile[ty * 2 + 1] >> bit) & 1) << 1);
+                        frame.backgroundPixel(
+                                TEXT_X + text.column(i) * CELL_SIZE + tx, y + ty, index, palette, -1, 0x01);
+                    }
+            }
+        }
+    }
 
     private static void drawText(
             byte[] buffer, DialogTextLayout text, int x, int y, int[] palette, DialogController dialog) {
@@ -89,34 +118,5 @@ public final class DialogRenderer {
         buffer[offset + 1] = (byte) ((color >> 8) & 0xFF);
         buffer[offset + 2] = (byte) (color & 0xFF);
         buffer[offset + 3] = (byte) 0xFF;
-    }
-    /** Indexed counterpart; dialog_letters.asm $4A84 writes attribute $01 (no priority bit). */
-    public static void submitWindow(
-            linksawakening.render.HardwareFrame frame, DialogController dialog, int[] suppliedPalette) {
-        if (!dialog.isActive()) return;
-        int[] palette = Objects.requireNonNullElse(suppliedPalette, DEFAULT_PALETTE);
-        int boxY = dialog.boxY();
-        for (int row = 0; row < BOX_HEIGHT / CELL_SIZE; row++) {
-            if (!dialog.isBoxRowVisible(row)) continue;
-            for (int y = 0; y < CELL_SIZE; y++)
-                for (int x = 0; x < BOX_WIDTH; x++)
-                    frame.backgroundPixel(BOX_X + x, boxY + row * CELL_SIZE + y, 3, palette, -1, 0x01);
-        }
-        DialogTextLayout text = dialog.renderLayout();
-        int originY = boxY + TEXT_Y_OFFSET + dialog.textScrollOffset();
-        for (int i = 0; i < text.size(); i++) {
-            int y = originY + text.row(i) * LINE_HEIGHT;
-            int boxRow = (y - boxY) / CELL_SIZE;
-            if (dialog.isBoxRowVisible(boxRow)) {
-                byte[] tile = FONT.tileView(text.character(i));
-                for (int ty = 0; ty < 8; ty++)
-                    for (int tx = 0; tx < 8; tx++) {
-                        int bit = 7 - tx;
-                        int index = ((tile[ty * 2] >> bit) & 1) | (((tile[ty * 2 + 1] >> bit) & 1) << 1);
-                        frame.backgroundPixel(
-                                TEXT_X + text.column(i) * CELL_SIZE + tx, y + ty, index, palette, -1, 0x01);
-                    }
-            }
-        }
     }
 }

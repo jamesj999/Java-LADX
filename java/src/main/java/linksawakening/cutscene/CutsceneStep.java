@@ -6,10 +6,6 @@ import java.util.function.Consumer;
 /** Contract for cutscene step. */
 public interface CutsceneStep {
 
-    boolean tick(CutsceneContext context);
-
-    CutsceneStep fresh();
-
     static CutsceneStep waitFrames(int frames) {
         return new WaitFramesStep(frames);
     }
@@ -21,6 +17,10 @@ public interface CutsceneStep {
     static CutsceneStep showDialog(String text) {
         return new ShowDialogStep(text);
     }
+
+    boolean tick(CutsceneContext context);
+
+    CutsceneStep fresh();
 
     final class WaitFramesStep implements CutsceneStep {
         private final int initialFrames;

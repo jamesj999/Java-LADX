@@ -2,7 +2,6 @@ package linksawakening.state;
 
 /** ROM chest variant values consumed by player rewards. */
 final class ChestItemValues {
-    private ChestItemValues() {}
 
     static final int CHEST_POWER_BRACELET = 0x00;
     static final int CHEST_SHIELD = 0x01;
@@ -33,4 +32,6 @@ final class ChestItemValues {
     static final int CHEST_SEASHELL = 0x20;
     static final int CHEST_MESSAGE = 0x21;
     static final int CHEST_ZOL = 0x22;
+
+    private ChestItemValues() {}
 }

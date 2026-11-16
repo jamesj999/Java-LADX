@@ -11,6 +11,10 @@ public final class DialogController {
     private static final int DIALOG_COOLDOWN = 0x18;
     private static final char ASK_MARKER = '\u00FE';
 
+    private static final List<SoundEvent> TEXT_PRINT = List.of(SoundEvent.TEXT_PRINT);
+    private static final List<SoundEvent> DIALOG_BREAK = List.of(SoundEvent.DIALOG_BREAK);
+    private static final List<SoundEvent> MOVE_SELECTION = List.of(SoundEvent.MOVE_SELECTION);
+
     private final int lineWidth;
     private boolean romTimed;
     private int openingAge;
@@ -40,6 +44,8 @@ public final class DialogController {
     private int choiceSelectionIndex;
     private BoxPosition boxPosition = BoxPosition.BOTTOM;
     private final List<SoundEvent> soundEvents = new ArrayList<>();
+
+    private final DialogText textPreparation;
 
     public DialogController(int lineWidth) {
         if (lineWidth <= 0) {
@@ -80,29 +86,6 @@ public final class DialogController {
 
     public void openPreformattedForLinkY(String text, int linkY) {
         openPreformatted(text, linkY < LINK_Y_BOX_THRESHOLD ? BoxPosition.BOTTOM : BoxPosition.TOP);
-    }
-
-    private void open(String text, BoxPosition boxPosition, boolean preformatted) {
-        DialogText.ParsedText parsedText = textPreparation.parse(Objects.requireNonNullElse(text, ""));
-        this.text = preformatted
-                ? textPreparation.formatPreformatted(parsedText.text())
-                : textPreparation.wrap(parsedText.text());
-        this.choicePrompt = false;
-        this.choiceSelectionIndex = 0;
-        this.boxPosition = Objects.requireNonNullElse(boxPosition, BoxPosition.BOTTOM);
-        openingAge = 0;
-        closingAge = -1;
-        scrollAge = -1;
-        scrollBase = 0;
-        shiftedPage = false;
-        retainedLine = "";
-        pageStart = 0;
-        visibleCharactersOnPage = 0;
-        visibleNonSpaceCharactersOnPage = 0;
-        revealTicks = 0;
-        waitingForPageAdvance = false;
-        soundEvents.clear();
-        active = true;
     }
 
     public void tick() {
@@ -153,13 +136,6 @@ public final class DialogController {
             scrollBase = lineWidth;
         }
         enterPageWaitIfNeeded();
-    }
-
-    private void beginScroll(String previous) {
-        scrollPrevious = previous;
-        retainedLine = previous.substring(previous.lastIndexOf('\n') + 1);
-        scrollAge = 0;
-        revealTicks = 0;
     }
 
     public int textScrollOffset() {
@@ -244,10 +220,6 @@ public final class DialogController {
         open(text, linkY < LINK_Y_BOX_THRESHOLD ? BoxPosition.BOTTOM : BoxPosition.TOP);
     }
 
-    private static final List<SoundEvent> TEXT_PRINT = List.of(SoundEvent.TEXT_PRINT);
-    private static final List<SoundEvent> DIALOG_BREAK = List.of(SoundEvent.DIALOG_BREAK);
-    private static final List<SoundEvent> MOVE_SELECTION = List.of(SoundEvent.MOVE_SELECTION);
-
     public BoxPosition boxPosition() {
         return boxPosition;
     }
@@ -294,10 +266,44 @@ public final class DialogController {
         return cachedVisibleText;
     }
 
+    public void setPlayerName(String playerName) {
+        textPreparation.setPlayerName(playerName);
+    }
+
     /** Borrowed cell layout, refreshed only when the visible text changes. */
     DialogTextLayout renderLayout() {
         renderLayout.update(visibleText());
         return renderLayout;
+    }
+
+    private void open(String text, BoxPosition boxPosition, boolean preformatted) {
+        DialogText.ParsedText parsedText = textPreparation.parse(Objects.requireNonNullElse(text, ""));
+        this.text = preformatted
+                ? textPreparation.formatPreformatted(parsedText.text())
+                : textPreparation.wrap(parsedText.text());
+        this.choicePrompt = false;
+        this.choiceSelectionIndex = 0;
+        this.boxPosition = Objects.requireNonNullElse(boxPosition, BoxPosition.BOTTOM);
+        openingAge = 0;
+        closingAge = -1;
+        scrollAge = -1;
+        scrollBase = 0;
+        shiftedPage = false;
+        retainedLine = "";
+        pageStart = 0;
+        visibleCharactersOnPage = 0;
+        visibleNonSpaceCharactersOnPage = 0;
+        revealTicks = 0;
+        waitingForPageAdvance = false;
+        soundEvents.clear();
+        active = true;
+    }
+
+    private void beginScroll(String previous) {
+        scrollPrevious = previous;
+        retainedLine = previous.substring(previous.lastIndexOf('\n') + 1);
+        scrollAge = 0;
+        revealTicks = 0;
     }
 
     private void enterPageWaitIfNeeded() {
@@ -447,11 +453,5 @@ public final class DialogController {
         public int y() {
             return y;
         }
-    }
-
-    private final DialogText textPreparation;
-
-    public void setPlayerName(String playerName) {
-        textPreparation.setPlayerName(playerName);
     }
 }

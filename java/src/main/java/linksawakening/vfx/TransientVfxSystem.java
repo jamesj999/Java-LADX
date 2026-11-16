@@ -10,114 +10,9 @@ import java.util.RandomAccess;
  * Fixed-slot transient VFX runtime for short-lived overworld gameplay effects.
  */
 public final class TransientVfxSystem {
-    /** Read-only effect values; live implementations change with the simulation. */
-    public interface SlotView {
-        int slotIndex();
-
-        TransientVfxType type();
-
-        int countdown();
-
-        int worldX();
-
-        int worldY();
-
-        int variant();
-    }
-
-    /** Immutable slot values. */
-    public record Slot(int slotIndex, TransientVfxType type, int countdown, int worldX, int worldY, int variant)
-            implements SlotView {
-        public Slot(int slotIndex, TransientVfxType type, int countdown, int worldX, int worldY) {
-            this(slotIndex, type, countdown, worldX, worldY, 0);
-        }
-    }
-
-    private static final class MutableSlot implements SlotView {
-        private final int slotIndex;
-        // An inactive slot has no effect. Its retained values are ignored until activate().
-        private boolean active;
-        private TransientVfxType type = TransientVfxType.POOF;
-        private int countdown;
-        private int worldX;
-        private int worldY;
-        private int variant;
-
-        private MutableSlot(int slotIndex) {
-            this.slotIndex = slotIndex;
-        }
-
-        private void activate(TransientVfxType type, int countdown, int worldX, int worldY, int variant) {
-            active = true;
-            this.type = type;
-            this.countdown = countdown;
-            this.worldX = worldX;
-            this.worldY = worldY;
-            this.variant = variant & 0xFF;
-        }
-
-        @Override
-        public int slotIndex() {
-            return slotIndex;
-        }
-
-        @Override
-        public TransientVfxType type() {
-            return type;
-        }
-
-        @Override
-        public int countdown() {
-            return countdown;
-        }
-
-        @Override
-        public int worldX() {
-            return worldX;
-        }
-
-        @Override
-        public int worldY() {
-            return worldY;
-        }
-
-        @Override
-        public int variant() {
-            return variant;
-        }
-
-        private Slot snapshot() {
-            return new Slot(slotIndex, type, countdown, worldX, worldY, variant);
-        }
-    }
 
     private final MutableSlot[] slots;
     private final List<SlotView> liveSlots;
-
-    private static final class LiveSlots extends AbstractList<SlotView> implements RandomAccess {
-        private final MutableSlot[] slots;
-
-        private LiveSlots(MutableSlot[] slots) {
-            this.slots = slots;
-        }
-
-        @Override
-        public SlotView get(int index) {
-            if (index >= 0) {
-                for (MutableSlot slot : slots) {
-                    if (slot.active && index-- == 0) return slot;
-                }
-            }
-            throw new IndexOutOfBoundsException();
-        }
-
-        @Override
-        public int size() {
-            int size = 0;
-            for (MutableSlot slot : slots) if (slot.active) size++;
-            return size;
-        }
-    }
 
     public TransientVfxSystem(int capacity) {
         if (capacity < 0) {
@@ -190,5 +85,110 @@ public final class TransientVfxSystem {
             if (slot.active) active.add(slot.snapshot());
         }
         return List.copyOf(active);
+    }
+    /** Read-only effect values; live implementations change with the simulation. */
+    public interface SlotView {
+        int slotIndex();
+
+        TransientVfxType type();
+
+        int countdown();
+
+        int worldX();
+
+        int worldY();
+
+        int variant();
+    }
+
+    /** Immutable slot values. */
+    public record Slot(int slotIndex, TransientVfxType type, int countdown, int worldX, int worldY, int variant)
+            implements SlotView {
+        public Slot(int slotIndex, TransientVfxType type, int countdown, int worldX, int worldY) {
+            this(slotIndex, type, countdown, worldX, worldY, 0);
+        }
+    }
+
+    private static final class MutableSlot implements SlotView {
+        private final int slotIndex;
+        // An inactive slot has no effect. Its retained values are ignored until activate().
+        private boolean active;
+        private TransientVfxType type = TransientVfxType.POOF;
+        private int countdown;
+        private int worldX;
+        private int worldY;
+        private int variant;
+
+        private MutableSlot(int slotIndex) {
+            this.slotIndex = slotIndex;
+        }
+
+        @Override
+        public int slotIndex() {
+            return slotIndex;
+        }
+
+        @Override
+        public TransientVfxType type() {
+            return type;
+        }
+
+        @Override
+        public int countdown() {
+            return countdown;
+        }
+
+        @Override
+        public int worldX() {
+            return worldX;
+        }
+
+        @Override
+        public int worldY() {
+            return worldY;
+        }
+
+        @Override
+        public int variant() {
+            return variant;
+        }
+
+        private void activate(TransientVfxType type, int countdown, int worldX, int worldY, int variant) {
+            active = true;
+            this.type = type;
+            this.countdown = countdown;
+            this.worldX = worldX;
+            this.worldY = worldY;
+            this.variant = variant & 0xFF;
+        }
+
+        private Slot snapshot() {
+            return new Slot(slotIndex, type, countdown, worldX, worldY, variant);
+        }
+    }
+
+    private static final class LiveSlots extends AbstractList<SlotView> implements RandomAccess {
+        private final MutableSlot[] slots;
+
+        private LiveSlots(MutableSlot[] slots) {
+            this.slots = slots;
+        }
+
+        @Override
+        public SlotView get(int index) {
+            if (index >= 0) {
+                for (MutableSlot slot : slots) {
+                    if (slot.active && index-- == 0) return slot;
+                }
+            }
+            throw new IndexOutOfBoundsException();
+        }
+
+        @Override
+        public int size() {
+            int size = 0;
+            for (MutableSlot slot : slots) if (slot.active) size++;
+            return size;
+        }
     }
 }

@@ -16,19 +16,6 @@ public final class RomSlice {
         return length;
     }
 
-    private int checkedIndex(int index, int count) {
-        if (index < 0 || count < 0 || index > length || count > length - index) {
-            throw new IndexOutOfBoundsException(String.format(
-                    "ROM view %02X:%04X length %d: index %d length %d",
-                    start.bank(), start.address(), length, index, count));
-        }
-        return start.offset() + index;
-    }
-
-    private RomAddress checked(int index, int count) {
-        return RomAddress.fromOffset(checkedIndex(index, count));
-    }
-
     public int u8(int index) {
         return rom.unsignedByteAt(checkedIndex(index, 1));
     }
@@ -56,5 +43,18 @@ public final class RomSlice {
 
     RomAddress address(int index) {
         return checked(index, 0);
+    }
+
+    private int checkedIndex(int index, int count) {
+        if (index < 0 || count < 0 || index > length || count > length - index) {
+            throw new IndexOutOfBoundsException(String.format(
+                    "ROM view %02X:%04X length %d: index %d length %d",
+                    start.bank(), start.address(), length, index, count));
+        }
+        return start.offset() + index;
+    }
+
+    private RomAddress checked(int index, int count) {
+        return RomAddress.fromOffset(checkedIndex(index, count));
     }
 }

@@ -25,6 +25,8 @@ final class OpenAlStream {
     int source;
     int queuedBuffers;
 
+    private final ShortBuffer streamingPcm = BufferUtils.createShortBuffer(2048);
+
     void makeContextCurrent() {
         if (context != MemoryUtil.NULL && !ALC10.alcMakeContextCurrent(context)) {
             throw new IllegalStateException("could not make music OpenAL context current");
@@ -131,15 +133,6 @@ final class OpenAlStream {
         return failure;
     }
 
-    private boolean hasGeneratedBuffers() {
-        for (int buffer : buffers) {
-            if (buffer != 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     void unqueueProcessedBuffers() {
         int processedBuffers = AL10.alGetSourcei(source, AL10.AL_BUFFERS_PROCESSED);
         for (int i = 0; i < processedBuffers; i++) {
@@ -197,12 +190,6 @@ final class OpenAlStream {
         }
     }
 
-    private static RuntimeException asRuntimeFailure(Throwable failure) {
-        return failure instanceof RuntimeException runtime
-                ? runtime
-                : new IllegalStateException("OpenAL native cleanup failed: " + conciseMessage(failure), failure);
-    }
-
     static RuntimeException combine(RuntimeException first, RuntimeException next) {
         if (next == null) {
             return first;
@@ -229,8 +216,6 @@ final class OpenAlStream {
         }
         return message;
     }
-
-    private final ShortBuffer streamingPcm = BufferUtils.createShortBuffer(2048);
 
     boolean hasSource() {
         return source != 0;
@@ -272,5 +257,20 @@ final class OpenAlStream {
         AL10.alBufferData(buffer, AL10.AL_FORMAT_STEREO16, data, sampleRate);
         AL10.alSourceQueueBuffers(source, buffer);
         queuedBuffers++;
+    }
+
+    private boolean hasGeneratedBuffers() {
+        for (int buffer : buffers) {
+            if (buffer != 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static RuntimeException asRuntimeFailure(Throwable failure) {
+        return failure instanceof RuntimeException runtime
+                ? runtime
+                : new IllegalStateException("OpenAL native cleanup failed: " + conciseMessage(failure), failure);
     }
 }

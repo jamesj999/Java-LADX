@@ -12,15 +12,15 @@ import linksawakening.state.PlayerState;
 
 /** DX inventory UI; InventoryTransition owns the ROM fade/load/interactive states. */
 public final class InventoryMenu {
-    private final InventoryDungeonPanel.Presentation dungeonPresentation =
-            new InventoryDungeonPanel.Presentation(0, 0, 0, null);
-
-    private final TilemapRenderer.Region tileRegion = new TilemapRenderer.Region(0, 0, 0, 0);
 
     // Subscreen grid: 2 cols x 5 rows. Even slot index = left column,
     // odd = right column. Up/down moves by 2 slots (next row, same col);
     // left/right moves by 1 (other column, same row).
     private static final int SUBSCREEN_COLS = 2;
+    private final InventoryDungeonPanel.Presentation dungeonPresentation =
+            new InventoryDungeonPanel.Presentation(0, 0, 0, null);
+
+    private final TilemapRenderer.Region tileRegion = new TilemapRenderer.Region(0, 0, 0, 0);
 
     private final InventoryTilemapLoader tilemapLoader;
     private final int[] frameTiles = new int[InventoryTilemapLoader.WIDTH * InventoryTilemapLoader.HEIGHT];
@@ -96,17 +96,6 @@ public final class InventoryMenu {
             return;
         }
         toggleInventory();
-    }
-
-    private void toggleInventory() {
-        if (isFullyClosed()) {
-            instrumentPaletteFrame = 0;
-            transition.open(!showInstruments);
-            soundSink.play(GameplaySoundEvent.INVENTORY_OPEN); // $02:6176.
-        } else if (isFullyOpen()) {
-            transition.close();
-            soundSink.play(GameplaySoundEvent.INVENTORY_CLOSE); // CloseInventory $20:6441.
-        }
     }
 
     public void tick() {
@@ -221,13 +210,6 @@ public final class InventoryMenu {
         openOcarinaIfSelected(selectedItem);
     }
 
-    private void openOcarinaIfSelected(int selectedItem) {
-        if (selectedItem == InventoryItem.OCARINA.romValue()
-                && playerState.progression().ocarinaSongFlags() != 0) {
-            ocarinaSongMenu.requestOpen();
-        }
-    }
-
     public int instrumentPaletteTick() {
         return instrumentPaletteFrame;
     }
@@ -309,8 +291,6 @@ public final class InventoryMenu {
             ocarinaTilesLoaded = false;
         }
     }
-    /** Immutable closed window values. */
-    public record ClosedWindow(int[] tiles, int[] attributes, int[][] palettes, int y) {}
 
     public boolean canSubmitClosedWindow() {
         return isFullyClosed() && !ocarinaSongMenu.isVisible();
@@ -387,4 +367,24 @@ public final class InventoryMenu {
             ocarinaTilesLoaded = false;
         }
     }
+
+    private void toggleInventory() {
+        if (isFullyClosed()) {
+            instrumentPaletteFrame = 0;
+            transition.open(!showInstruments);
+            soundSink.play(GameplaySoundEvent.INVENTORY_OPEN); // $02:6176.
+        } else if (isFullyOpen()) {
+            transition.close();
+            soundSink.play(GameplaySoundEvent.INVENTORY_CLOSE); // CloseInventory $20:6441.
+        }
+    }
+
+    private void openOcarinaIfSelected(int selectedItem) {
+        if (selectedItem == InventoryItem.OCARINA.romValue()
+                && playerState.progression().ocarinaSongFlags() != 0) {
+            ocarinaSongMenu.requestOpen();
+        }
+    }
+    /** Immutable closed window values. */
+    public record ClosedWindow(int[] tiles, int[] attributes, int[][] palettes, int y) {}
 }

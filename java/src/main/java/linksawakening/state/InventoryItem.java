@@ -24,10 +24,6 @@ public enum InventoryItem {
         this.romValue = romValue;
     }
 
-    public int romValue() {
-        return romValue;
-    }
-
     /** Unknown bytes map to UNKNOWN; callers retain the original byte for persistence. */
     public static InventoryItem fromRom(int value) {
         return switch (value) {
@@ -47,5 +43,9 @@ public enum InventoryItem {
             case 13 -> BOOMERANG;
             default -> UNKNOWN;
         };
+    }
+
+    public int romValue() {
+        return romValue;
     }
 }

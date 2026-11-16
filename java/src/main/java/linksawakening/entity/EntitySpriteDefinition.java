@@ -5,66 +5,6 @@ import java.util.List;
 
 /** ROM-decoded OAM display list and handler metadata for one entity type. */
 public final class EntitySpriteDefinition {
-    /** Named shape values. */
-    public enum Shape {
-        PAIR,
-        SINGLE,
-        RECTANGLE,
-        DYNAMIC,
-        UNSUPPORTED
-    }
-    /** Immutable oam attribute values. */
-    public record OamAttribute(int tile, int attributes) {
-        public OamAttribute {
-            if ((tile & ~0xFF) != 0 || (attributes & ~0xFF) != 0) {
-                throw new IllegalArgumentException("OAM bytes must be unsigned bytes");
-            }
-        }
-    }
-    /** OAM pair; a single-column variant has no second entry (query {@link Variant#hasSecond()}). */
-    public record Variant(OamAttribute first, OamAttribute second) {
-        /** Whether the ROM display list emits a second 8x16 column. */
-        public boolean hasSecond() {
-            return second != null;
-        }
-
-        public Variant {
-            if (first == null) {
-                throw new IllegalArgumentException("A display-list variant needs a first OAM entry");
-            }
-        }
-    }
-
-    /** One [Y offset, X offset, tile, attributes] tuple from a rectangle list. */
-    public record RectangleSprite(int yOffset, int xOffset, OamAttribute oam) {
-        public RectangleSprite {
-            if (yOffset < -128 || yOffset > 127 || xOffset < -128 || xOffset > 127) {
-                throw new IllegalArgumentException("Rectangle offsets must be signed bytes");
-            }
-            if (oam == null) {
-                throw new IllegalArgumentException("Rectangle OAM entry cannot be null");
-            }
-        }
-    }
-
-    /** One handler-generated OAM entry with offsets relative to hActiveEntityPosX/Y. */
-    public record DynamicSprite(
-            int yOffset, int xOffset, OamAttribute oam, TileSource tileSource, boolean appliesEntityFlipAttribute) {
-        /** Named tile source values. */
-        public enum TileSource {
-            ENTITY_SHEETS,
-            GPU
-        }
-
-        public DynamicSprite {
-            if (yOffset < -128 || yOffset > 127 || xOffset < -128 || xOffset > 127) {
-                throw new IllegalArgumentException("Dynamic offsets must be signed bytes");
-            }
-            if (oam == null || tileSource == null) {
-                throw new IllegalArgumentException("Dynamic OAM metadata cannot be null");
-            }
-        }
-    }
 
     private final int entityType;
     private final int bank;
@@ -280,6 +220,66 @@ public final class EntitySpriteDefinition {
             copy.add(List.copyOf(variant));
         }
         return List.copyOf(copy);
+    }
+    /** Named shape values. */
+    public enum Shape {
+        PAIR,
+        SINGLE,
+        RECTANGLE,
+        DYNAMIC,
+        UNSUPPORTED
+    }
+    /** Immutable oam attribute values. */
+    public record OamAttribute(int tile, int attributes) {
+        public OamAttribute {
+            if ((tile & ~0xFF) != 0 || (attributes & ~0xFF) != 0) {
+                throw new IllegalArgumentException("OAM bytes must be unsigned bytes");
+            }
+        }
+    }
+    /** OAM pair; a single-column variant has no second entry (query {@link Variant#hasSecond()}). */
+    public record Variant(OamAttribute first, OamAttribute second) {
+
+        public Variant {
+            if (first == null) {
+                throw new IllegalArgumentException("A display-list variant needs a first OAM entry");
+            }
+        }
+        /** Whether the ROM display list emits a second 8x16 column. */
+        public boolean hasSecond() {
+            return second != null;
+        }
+    }
+
+    /** One [Y offset, X offset, tile, attributes] tuple from a rectangle list. */
+    public record RectangleSprite(int yOffset, int xOffset, OamAttribute oam) {
+        public RectangleSprite {
+            if (yOffset < -128 || yOffset > 127 || xOffset < -128 || xOffset > 127) {
+                throw new IllegalArgumentException("Rectangle offsets must be signed bytes");
+            }
+            if (oam == null) {
+                throw new IllegalArgumentException("Rectangle OAM entry cannot be null");
+            }
+        }
+    }
+
+    /** One handler-generated OAM entry with offsets relative to hActiveEntityPosX/Y. */
+    public record DynamicSprite(
+            int yOffset, int xOffset, OamAttribute oam, TileSource tileSource, boolean appliesEntityFlipAttribute) {
+
+        public DynamicSprite {
+            if (yOffset < -128 || yOffset > 127 || xOffset < -128 || xOffset > 127) {
+                throw new IllegalArgumentException("Dynamic offsets must be signed bytes");
+            }
+            if (oam == null || tileSource == null) {
+                throw new IllegalArgumentException("Dynamic OAM metadata cannot be null");
+            }
+        }
+        /** Named tile source values. */
+        public enum TileSource {
+            ENTITY_SHEETS,
+            GPU
+        }
     }
 
     /** Arguments shared by EntitySpriteDefinition operations. */

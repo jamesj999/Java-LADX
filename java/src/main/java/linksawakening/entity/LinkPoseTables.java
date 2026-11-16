@@ -1,7 +1,6 @@
 package linksawakening.entity;
 /** Fallback ROM walking, shield, jump and fall animation-state tables for UpdateLinkAnimation. */
 final class LinkPoseTables {
-    private LinkPoseTables() {}
 
     static final int[][] ANIMATION_STATE = {
         {0x00, 0x01}, // DOWN:  standing, walking
@@ -49,4 +48,6 @@ final class LinkPoseTables {
 
     static final int[] FALL_ANIMATION_STATE = {0x55, 0x56, 0x57, 0x57};
     static final int[] UNSHIELDED_WALK_BASE = {0x1A, 0x1C, 0x1E, 0x20};
+
+    private LinkPoseTables() {}
 }

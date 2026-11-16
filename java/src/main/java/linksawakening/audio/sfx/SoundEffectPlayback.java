@@ -2,6 +2,11 @@ package linksawakening.audio.sfx;
 
 /** Optional SFX transport capability, represented by an explicit silent implementation. */
 public interface SoundEffectPlayback {
+
+    static SoundEffectPlayback none() {
+        return Silent.INSTANCE;
+    }
+
     boolean available();
 
     boolean isPlaying();
@@ -11,10 +16,6 @@ public interface SoundEffectPlayback {
     void tick60Hz();
 
     void stop();
-
-    static SoundEffectPlayback none() {
-        return Silent.INSTANCE;
-    }
 
     /** A transport without an SFX engine; never owns channels or advances an APU. */
     enum Silent implements SoundEffectPlayback {

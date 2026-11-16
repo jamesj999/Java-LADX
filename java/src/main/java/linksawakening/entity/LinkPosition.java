@@ -5,6 +5,46 @@ final class LinkPosition {
 
     private int subX;
 
+    private int subY;
+
+    private int lastRomSpeedX;
+
+    private int lastRomSpeedY;
+
+    private boolean forcedSpeedPending;
+
+    private boolean forcedSpeedXOnly;
+
+    private int forcedSpeedX;
+
+    private int forcedSpeedY;
+
+    private int lastSafeSubX;
+
+    private int lastSafeSubY;
+
+    private boolean hasLastSafePosition;
+
+    private int romFinalSubX;
+
+    private int romFinalSubY;
+
+    private boolean hasRomFinalPosition;
+
+    private int roomEntrySubX;
+
+    private int roomEntrySubY;
+
+    private boolean hasRoomEntryPosition;
+
+    private final LinkComponentRef<LinkSideView> linkSideView;
+    private final LinkCollisionState collisionState;
+
+    LinkPosition(LinkComponentRef<LinkSideView> linkSideView, LinkCollisionState collisionState) {
+        this.linkSideView = linkSideView;
+        this.collisionState = collisionState;
+    }
+
     int subX() {
         return subX;
     }
@@ -13,8 +53,6 @@ final class LinkPosition {
         subX = value;
         return subX;
     }
-
-    private int subY;
 
     int subY() {
         return subY;
@@ -25,8 +63,6 @@ final class LinkPosition {
         return subY;
     }
 
-    private int lastRomSpeedX;
-
     int lastRomSpeedX() {
         return lastRomSpeedX;
     }
@@ -35,8 +71,6 @@ final class LinkPosition {
         lastRomSpeedX = value;
         return lastRomSpeedX;
     }
-
-    private int lastRomSpeedY;
 
     int lastRomSpeedY() {
         return lastRomSpeedY;
@@ -47,8 +81,6 @@ final class LinkPosition {
         return lastRomSpeedY;
     }
 
-    private boolean forcedSpeedPending;
-
     boolean forcedSpeedPending() {
         return forcedSpeedPending;
     }
@@ -57,8 +89,6 @@ final class LinkPosition {
         forcedSpeedPending = value;
         return forcedSpeedPending;
     }
-
-    private boolean forcedSpeedXOnly;
 
     boolean forcedSpeedXOnly() {
         return forcedSpeedXOnly;
@@ -69,8 +99,6 @@ final class LinkPosition {
         return forcedSpeedXOnly;
     }
 
-    private int forcedSpeedX;
-
     int forcedSpeedX() {
         return forcedSpeedX;
     }
@@ -79,8 +107,6 @@ final class LinkPosition {
         forcedSpeedX = value;
         return forcedSpeedX;
     }
-
-    private int forcedSpeedY;
 
     int forcedSpeedY() {
         return forcedSpeedY;
@@ -91,8 +117,6 @@ final class LinkPosition {
         return forcedSpeedY;
     }
 
-    private int lastSafeSubX;
-
     int lastSafeSubX() {
         return lastSafeSubX;
     }
@@ -101,8 +125,6 @@ final class LinkPosition {
         lastSafeSubX = value;
         return lastSafeSubX;
     }
-
-    private int lastSafeSubY;
 
     int lastSafeSubY() {
         return lastSafeSubY;
@@ -113,8 +135,6 @@ final class LinkPosition {
         return lastSafeSubY;
     }
 
-    private boolean hasLastSafePosition;
-
     boolean hasLastSafePosition() {
         return hasLastSafePosition;
     }
@@ -123,14 +143,6 @@ final class LinkPosition {
         hasLastSafePosition = value;
         return hasLastSafePosition;
     }
-
-    private int romFinalSubX;
-
-    private int romFinalSubY;
-
-    private boolean hasRomFinalPosition;
-
-    private int roomEntrySubX;
 
     int roomEntrySubX() {
         return roomEntrySubX;
@@ -141,8 +153,6 @@ final class LinkPosition {
         return roomEntrySubX;
     }
 
-    private int roomEntrySubY;
-
     int roomEntrySubY() {
         return roomEntrySubY;
     }
@@ -152,8 +162,6 @@ final class LinkPosition {
         return roomEntrySubY;
     }
 
-    private boolean hasRoomEntryPosition;
-
     boolean hasRoomEntryPosition() {
         return hasRoomEntryPosition;
     }
@@ -161,14 +169,6 @@ final class LinkPosition {
     boolean hasRoomEntryPosition(boolean value) {
         hasRoomEntryPosition = value;
         return hasRoomEntryPosition;
-    }
-
-    private final LinkComponentRef<LinkSideView> linkSideView;
-    private final LinkCollisionState collisionState;
-
-    LinkPosition(LinkComponentRef<LinkSideView> linkSideView, LinkCollisionState collisionState) {
-        this.linkSideView = linkSideView;
-        this.collisionState = collisionState;
     }
 
     void setPixelPosition(int pixelX, int pixelY) {

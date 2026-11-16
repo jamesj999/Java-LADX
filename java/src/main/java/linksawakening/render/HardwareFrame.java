@@ -11,15 +11,16 @@ import linksawakening.gpu.Tile;
 public final class HardwareFrame implements RenderLayer, OamSink {
     private static final int WIDTH = Framebuffer.WIDTH;
     private static final int HEIGHT = Framebuffer.HEIGHT;
+    // Retain one callable instance: its identity or allocation-free reuse is part of this retained path.
+    @SuppressWarnings("UnnecessaryLambda")
+    private static final IntUnaryOperator IDENTITY = color -> color;
+
     final int[][] backgroundPalettes = new int[WIDTH * HEIGHT][];
     final byte[] backgroundIndex = new byte[WIDTH * HEIGHT];
     final boolean[] backgroundPriority = new boolean[WIDTH * HEIGHT];
     final int[] objects = new int[WIDTH * HEIGHT];
     final int[] objectOrder = new int[WIDTH * HEIGHT];
     final boolean[] objectBehind = new boolean[WIDTH * HEIGHT];
-    // Retain one callable instance: its identity or allocation-free reuse is part of this retained path.
-    @SuppressWarnings("UnnecessaryLambda")
-    private static final IntUnaryOperator IDENTITY = color -> color;
 
     private int paletteTransform;
     private final int[] bgTransforms = new int[WIDTH * HEIGHT];
@@ -35,19 +36,13 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     private final HardwareFrameObserver observer;
     private RenderContext indexedContext;
 
-    RenderContext indexedContext(linksawakening.gpu.GPU gpu) {
-        if (indexedContext == null || indexedContext.gpu() != gpu)
-            indexedContext = new RenderContext(new byte[0], gpu, this);
-        return indexedContext;
-    }
-
     private HardwareFrame backgroundScratch;
 
-    HardwareFrame backgroundScratch() {
-        if (backgroundScratch == null) backgroundScratch = new HardwareFrame(true);
-        backgroundScratch.reset();
-        return backgroundScratch;
-    }
+    int inventoryCutoffY = -1;
+
+    private final ArrayList<OamEntry> oam = new ArrayList<>();
+    private final ArrayList<OamEntry> entryPool = new ArrayList<>();
+    private int nextEntry;
 
     public HardwareFrame(boolean backgroundPriorityEnabled) {
         this(backgroundPriorityEnabled, null);
@@ -81,21 +76,6 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         oam.clear();
         nextEntry = 0;
         observer.reset();
-    }
-
-    HardwareFrameObserver observer() {
-        return observer;
-    }
-
-    void submittingLayer(String name) {
-        submittingLayer = name;
-    }
-
-    /** Retains only the reserved OBJ identity required by the ROM dialog hide rule. */
-    void objectVisibilitySource(RenderLayer layer) {
-        submittingLayer = layer instanceof LinkRenderLayer
-                ? "LinkRenderLayer"
-                : layer instanceof DialogRenderLayer ? "DialogRenderLayer" : "unknown";
     }
 
     /** Call BG first, then window tiles in screen coordinates. */
@@ -136,8 +116,6 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         hideGameplayObjectsUnderWindow(0);
     }
 
-    int inventoryCutoffY = -1;
-
     /** bank1.asm $5F51-$5F67: hide a whole OAM entry when raw Y >= WY+8. */
     public void hideGameplayObjectsUnderWindow(int windowY) {
         inventoryCutoffY = windowY;
@@ -150,11 +128,6 @@ public final class HardwareFrame implements RenderLayer, OamSink {
     public void sprite8x16(linksawakening.gpu.GPU gpu, int tile, int x, int y, boolean fx, boolean fy, int[] palette) {
         int base = tile & 254;
         append8x16(gpu.getTile(fy ? base + 1 : base), gpu.getTile(fy ? base : base + 1), x, y, fx, fy, palette, false);
-    }
-
-    int backgroundRgb(int pixel) {
-        if (backgroundPalettes[pixel] == null) return 0;
-        return transforms.get(bgTransforms[pixel]).applyAsInt(backgroundPalettes[pixel][backgroundIndex[pixel]]);
     }
 
     public void withLayerSource(String name, Runnable submission) {
@@ -185,31 +158,6 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         }
     }
 
-    private IntUnaryOperator combined(IntUnaryOperator first, IntUnaryOperator second) {
-        Objects.requireNonNull(first);
-        Objects.requireNonNull(second);
-        if (nextTransform == transformPool.size()) transformPool.add(new ComposedTransform());
-        ComposedTransform result = transformPool.get(nextTransform++);
-        result.first = first;
-        result.second = second;
-        return result;
-    }
-
-    private static final class ComposedTransform implements IntUnaryOperator {
-        private IntUnaryOperator first, second;
-
-        @Override
-        public int applyAsInt(int value) {
-            return second.applyAsInt(first.applyAsInt(value));
-        }
-    }
-
-    private IntUnaryOperator retainTransform(IntUnaryOperator transform) {
-        if (transform instanceof ComposedTransform composed)
-            return combined(retainTransform(composed.first), retainTransform(composed.second));
-        return transform;
-    }
-
     public void copyBackgroundRows(HardwareFrame source, int rows) {
         if (rows < 0 || rows > HEIGHT) throw new IllegalArgumentException("Background row count");
         if (copiedTransforms.length < source.transforms.size()) copiedTransforms = new int[source.transforms.size()];
@@ -226,10 +174,6 @@ public final class HardwareFrame implements RenderLayer, OamSink {
             bgTransforms[pixel] = copiedTransforms[source.bgTransforms[pixel]];
         }
     }
-
-    private final ArrayList<OamEntry> oam = new ArrayList<>();
-    private final ArrayList<OamEntry> entryPool = new ArrayList<>();
-    private int nextEntry;
 
     @Override
     public void append(Tile tile, int x, int y, boolean flipX, boolean flipY, int[] palette, boolean behindBackground) {
@@ -284,8 +228,56 @@ public final class HardwareFrame implements RenderLayer, OamSink {
         compose(buffer, false);
     }
 
+    RenderContext indexedContext(linksawakening.gpu.GPU gpu) {
+        if (indexedContext == null || indexedContext.gpu() != gpu)
+            indexedContext = new RenderContext(new byte[0], gpu, this);
+        return indexedContext;
+    }
+
+    HardwareFrame backgroundScratch() {
+        if (backgroundScratch == null) backgroundScratch = new HardwareFrame(true);
+        backgroundScratch.reset();
+        return backgroundScratch;
+    }
+
+    HardwareFrameObserver observer() {
+        return observer;
+    }
+
+    void submittingLayer(String name) {
+        submittingLayer = name;
+    }
+
+    /** Retains only the reserved OBJ identity required by the ROM dialog hide rule. */
+    void objectVisibilitySource(RenderLayer layer) {
+        submittingLayer = layer instanceof LinkRenderLayer
+                ? "LinkRenderLayer"
+                : layer instanceof DialogRenderLayer ? "DialogRenderLayer" : "unknown";
+    }
+
+    int backgroundRgb(int pixel) {
+        if (backgroundPalettes[pixel] == null) return 0;
+        return transforms.get(bgTransforms[pixel]).applyAsInt(backgroundPalettes[pixel][backgroundIndex[pixel]]);
+    }
+
     void composeOverlay(byte[] buffer) {
         compose(buffer, true);
+    }
+
+    private IntUnaryOperator combined(IntUnaryOperator first, IntUnaryOperator second) {
+        Objects.requireNonNull(first);
+        Objects.requireNonNull(second);
+        if (nextTransform == transformPool.size()) transformPool.add(new ComposedTransform());
+        ComposedTransform result = transformPool.get(nextTransform++);
+        result.first = first;
+        result.second = second;
+        return result;
+    }
+
+    private IntUnaryOperator retainTransform(IntUnaryOperator transform) {
+        if (transform instanceof ComposedTransform composed)
+            return combined(retainTransform(composed.first), retainTransform(composed.second));
+        return transform;
     }
 
     private void compose(byte[] buffer, boolean overlay) {
@@ -326,5 +318,14 @@ public final class HardwareFrame implements RenderLayer, OamSink {
                             (entry.flipX ? 32 : 0) | (entry.flipY ? 64 : 0) | (entry.behind ? 128 : 0));
                 }
             }
+    }
+
+    private static final class ComposedTransform implements IntUnaryOperator {
+        private IntUnaryOperator first, second;
+
+        @Override
+        public int applyAsInt(int value) {
+            return second.applyAsInt(first.applyAsInt(value));
+        }
     }
 }

@@ -12,15 +12,6 @@ public final class PlayerSounds {
         return pendingSound;
     }
 
-    void write(ResourceSound sound) {
-        pending = sound;
-        pendingSound = true;
-    }
-
-    void clear() {
-        pendingSound = false;
-    }
-
     public ResourceSound takeResourceSound() {
         ResourceSound sound = pendingSound ? pending : null;
         pendingSound = false;
@@ -33,5 +24,14 @@ public final class PlayerSounds {
         ResourceSound sound = pending;
         pendingSound = false;
         return presentation.apply(sound);
+    }
+
+    void write(ResourceSound sound) {
+        pending = sound;
+        pendingSound = true;
+    }
+
+    void clear() {
+        pendingSound = false;
     }
 }

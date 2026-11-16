@@ -16,11 +16,6 @@ final class InventoryRenderLayer implements HardwareRenderLayer {
         this.roomPalettes = roomPalettes;
     }
 
-    void configure(InventoryController inventoryController, int[][] roomPalettes) {
-        this.inventoryController = inventoryController;
-        this.roomPalettes = roomPalettes;
-    }
-
     @Override
     public boolean supportsHardware() {
         return true;
@@ -31,5 +26,10 @@ final class InventoryRenderLayer implements HardwareRenderLayer {
         if (inventoryController.inventoryAppearing())
             frame.hideGameplayObjectsUnderWindow(inventoryController.windowY());
         inventoryController.submit(frame, gpu, roomPalettes);
+    }
+
+    void configure(InventoryController inventoryController, int[][] roomPalettes) {
+        this.inventoryController = inventoryController;
+        this.roomPalettes = roomPalettes;
     }
 }

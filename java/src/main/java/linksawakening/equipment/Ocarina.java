@@ -12,22 +12,6 @@ import linksawakening.state.PlayerState;
  */
 // Integer facing inputs preserve the legacy animation override contract for unknown engine values.
 public final class Ocarina implements EquipmentItem {
-    /** Contract for playback target. */
-    public interface PlaybackTarget {
-        boolean startOcarina(int countdown, int songFlags, int selectedSong);
-
-        boolean ocarinaPlaying();
-
-        /** Mirrors the pre-UseOcarina air/hookshot gate in the ROM. */
-        default boolean canStartOcarina() {
-            return true;
-        }
-
-        /** Returns Link's ROM body animation state, or {@code -1} when idle. */
-        default int ocarinaAnimationState() {
-            return -1;
-        }
-    }
 
     private final PlayerState playerState;
     private final GameplaySoundSink soundSink;
@@ -66,6 +50,22 @@ public final class Ocarina implements EquipmentItem {
     @Override
     public int overrideAnimationState(int direction, int walkFrame) {
         return target.ocarinaAnimationState();
+    }
+    /** Contract for playback target. */
+    public interface PlaybackTarget {
+        boolean startOcarina(int countdown, int songFlags, int selectedSong);
+
+        boolean ocarinaPlaying();
+
+        /** Mirrors the pre-UseOcarina air/hookshot gate in the ROM. */
+        default boolean canStartOcarina() {
+            return true;
+        }
+
+        /** Returns Link's ROM body animation state, or {@code -1} when idle. */
+        default int ocarinaAnimationState() {
+            return -1;
+        }
     }
 
     private record Playback(int countdown, GameplaySoundEvent sound) {

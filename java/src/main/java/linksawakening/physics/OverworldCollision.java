@@ -15,45 +15,24 @@ import linksawakening.world.object.SwitchBlockLinkInteraction;
 public final class OverworldCollision {
     private static final GroundInteractionSample EMPTY_SAMPLE =
             new GroundInteractionSample(0xFF, PhysicsFlags.NONE, 0, 0);
-    // Immutable samples may be retained by callers. Refresh only the changed cell value.
-    private final GroundInteractionSample[] groundSamples = new GroundInteractionSample[256];
 
     private static final int CELL_SIZE = 16;
     private static final int ROOM_OBJECTS_BASE = 0x11;
     private static final int ROOM_OBJECT_ROW_STRIDE = 0x10;
     private static final int OBJECTS_PER_ROW = 10;
     private static final int OBJECTS_PER_COLUMN = 8;
+    // Identity sentinel: no room is bound. A caller-supplied empty buffer remains a distinct room.
+    private static final int[] NO_ROOM = new int[0];
+    // Immutable samples may be retained by callers. Refresh only the changed cell value.
+    private final GroundInteractionSample[] groundSamples = new GroundInteractionSample[256];
 
     private final PhysicsTables physicsTables;
     private final CollisionTables collisionTables;
-    // Identity sentinel: no room is bound. A caller-supplied empty buffer remains a distinct room.
-    private static final int[] NO_ROOM = new int[0];
     private int[] roomObjectsArea = NO_ROOM;
-
-    public boolean hasRoom() {
-        return roomObjectsArea != NO_ROOM;
-    }
 
     private int physicsTableIndex = RomTables.PHYSICS_TABLE_OVERWORLD;
     private int switchBlocksState;
     private boolean linkStandingOnSwitchBlock;
-
-    /**
-     * Java top-left sprite position that aligns Link's ROM-style center/bottom
-     * sample point with the pit cell's center/bottom target.
-     */
-    public record PitCell(int targetTopLeftX, int targetTopLeftY, int physicsFlag) {
-        private static final PitCell NONE = new PitCell(0, 0, PhysicsFlags.NONE);
-
-        // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
-        @SuppressWarnings("ReferenceEquality")
-        public boolean present() {
-            return this != NONE;
-        }
-    }
-
-    /** The complete padded-buffer sample used by entity ground interaction. */
-    public record GroundInteractionSample(int objectId, int physicsFlag, int objectLeft, int objectTop) {}
 
     public OverworldCollision(RomTables romTables) {
         this(
@@ -70,6 +49,10 @@ public final class OverworldCollision {
         this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
         this.collisionTables = Objects.requireNonNull(collisionTables, "collisionTables");
         Arrays.fill(groundSamples, EMPTY_SAMPLE);
+    }
+
+    public boolean hasRoom() {
+        return roomObjectsArea != NO_ROOM;
     }
 
     public void setRoom(int[] roomObjectsArea) {
@@ -371,4 +354,21 @@ public final class OverworldCollision {
         }
         return PhysicsFlags.blocksWalking(physicsTables.objectPhysicsFlag(physicsTableIndex, id));
     }
+
+    /**
+     * Java top-left sprite position that aligns Link's ROM-style center/bottom
+     * sample point with the pit cell's center/bottom target.
+     */
+    public record PitCell(int targetTopLeftX, int targetTopLeftY, int physicsFlag) {
+        private static final PitCell NONE = new PitCell(0, 0, PhysicsFlags.NONE);
+
+        // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+        @SuppressWarnings("ReferenceEquality")
+        public boolean present() {
+            return this != NONE;
+        }
+    }
+
+    /** The complete padded-buffer sample used by entity ground interaction. */
+    public record GroundInteractionSample(int objectId, int physicsFlag, int objectLeft, int objectTop) {}
 }

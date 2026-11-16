@@ -11,20 +11,6 @@ public final class Shovel implements EquipmentItem {
 
     public static final int ACTIVE_TIMER_END = 0x18;
 
-    /** The result of the ROM's adjacent-object probe at the moment of use. */
-    public record StartResult(boolean started, boolean poking) {}
-    /** Contract for dig target. */
-    public interface DigTarget {
-        /** Starts the source shovel state and returns whether the probe was a poke. */
-        StartResult startShovel();
-
-        /** Applies the source Link-side shovel update for the supplied timer value. */
-        void advanceShovel(int timer);
-
-        /** Resolves the ROM Link animation state for the current shovel timer. */
-        int shovelAnimationState(int javaDirection, int timer);
-    }
-
     private final GameplaySoundSink soundSink;
     private final DigTarget target;
     private final BooleanSupplier itemUseAllowed;
@@ -80,5 +66,19 @@ public final class Shovel implements EquipmentItem {
     @Override
     public int overrideAnimationState(int direction, int walkFrame) {
         return active ? target.shovelAnimationState(direction, timer) : -1;
+    }
+
+    /** The result of the ROM's adjacent-object probe at the moment of use. */
+    public record StartResult(boolean started, boolean poking) {}
+    /** Contract for dig target. */
+    public interface DigTarget {
+        /** Starts the source shovel state and returns whether the probe was a poke. */
+        StartResult startShovel();
+
+        /** Applies the source Link-side shovel update for the supplied timer value. */
+        void advanceShovel(int timer);
+
+        /** Resolves the ROM Link animation state for the current shovel timer. */
+        int shovelAnimationState(int javaDirection, int timer);
     }
 }

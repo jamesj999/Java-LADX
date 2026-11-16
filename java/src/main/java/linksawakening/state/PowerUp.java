@@ -12,10 +12,6 @@ public enum PowerUp {
         this.romValue = romValue;
     }
 
-    public int romValue() {
-        return romValue;
-    }
-
     public static PowerUp fromRom(int value) {
         return switch (value) {
             case 0 -> NONE;
@@ -23,5 +19,9 @@ public enum PowerUp {
             case 2 -> GUARDIAN_ACORN;
             default -> throw new IllegalArgumentException("Unknown PowerUp ROM value: " + value);
         };
+    }
+
+    public int romValue() {
+        return romValue;
     }
 }

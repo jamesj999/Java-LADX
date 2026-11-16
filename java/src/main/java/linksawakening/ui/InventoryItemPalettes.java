@@ -24,6 +24,8 @@ final class InventoryItemPalettes {
         {0x02, 0x02}, // BOOMERANG
     };
 
+    private InventoryItemPalettes() {}
+
     static int[] forItem(int itemId, PlayerState player) {
         if (itemId == InventoryItem.MAGIC_POWDER.romValue()
                 && player.ammunition().hasToadstool()) {
@@ -35,8 +37,6 @@ final class InventoryItemPalettes {
         }
         return forItem(itemId);
     }
-
-    private InventoryItemPalettes() {}
 
     static int[] forItem(int itemId) {
         return itemId >= 0 && itemId < INDEXES.length ? INDEXES[itemId] : INDEXES[0];

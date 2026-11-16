@@ -20,10 +20,6 @@ public enum LinkMotionState {
         this.romValue = romValue;
     }
 
-    public int romValue() {
-        return romValue;
-    }
-
     public static LinkMotionState fromRom(int value) {
         return switch (value) {
             case 0 -> DEFAULT;
@@ -39,5 +35,9 @@ public enum LinkMotionState {
             case 10 -> UNKNOWN_0A;
             default -> throw new IllegalArgumentException("Unknown LinkMotionState ROM value: " + value);
         };
+    }
+
+    public int romValue() {
+        return romValue;
     }
 }

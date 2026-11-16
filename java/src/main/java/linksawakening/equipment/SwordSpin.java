@@ -8,7 +8,15 @@ import linksawakening.state.Direction;
 
 /** Owns queued release and sector timing for ROM UpdateSpinAttackAnimation (bank2:46C9-4708). */
 final class SwordSpin {
+
+    private static final int SPIN_ATTACK_FRAMES = 0x20; // wIsUsingSpinAttack initial countdown ($20)
     private final SwordTables swordTables;
+    private int spinFramesRemaining;
+    private int spinFrameCounter;
+    private int spinSector;
+    private int spinBaseDirection = Direction.DOWN.javaIndex();
+    private boolean spinAttackQueued;
+    private int queuedSpinDelayFrames;
 
     SwordSpin(SwordTables swordTables) {
         this.swordTables = Objects.requireNonNull(swordTables, "swordTables");
@@ -79,14 +87,6 @@ final class SwordSpin {
         spinFrameCounter++;
         return state;
     }
-
-    private static final int SPIN_ATTACK_FRAMES = 0x20; // wIsUsingSpinAttack initial countdown ($20)
-    private int spinFramesRemaining;
-    private int spinFrameCounter;
-    private int spinSector;
-    private int spinBaseDirection = Direction.DOWN.javaIndex();
-    private boolean spinAttackQueued;
-    private int queuedSpinDelayFrames;
 
     int effectiveDirection(int direction) {
         if (!active()) {

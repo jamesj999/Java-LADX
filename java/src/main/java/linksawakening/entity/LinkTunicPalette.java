@@ -30,9 +30,21 @@ public final class LinkTunicPalette {
         return new LinkTunicPalette(new EntitySpriteCatalog(romData).loadObjectPalettes());
     }
 
+    /** Fixed green presentation palette for ROM-free actors. */
+    public static LinkTunicPalette green() {
+        int[] green = {0x00000000, 0x00000000, 0x0010A840, 0x00F8B888};
+        return new LinkTunicPalette(
+                new int[][] {green, green.clone(), green.clone(), green.clone(), green.clone(), green.clone()});
+    }
+
     /** Returns the exact four RGB colors selected by the tunic type ROM register. */
     public int[] forTunic(int tunicType) {
         return tunicView(tunicType).clone();
+    }
+
+    /** Returns the ROM object palette selected by an auxiliary OAM attribute. */
+    public int[] forObjectPalette(int paletteIndex) {
+        return objectPaletteView(paletteIndex).clone();
     }
 
     // Borrowed immutable palette rows for immediate OAM consumption.
@@ -43,23 +55,11 @@ public final class LinkTunicPalette {
         return objectPalettes[PALETTE_ROW_FOR_TUNIC[tunicType]];
     }
 
-    /** Returns the ROM object palette selected by an auxiliary OAM attribute. */
-    public int[] forObjectPalette(int paletteIndex) {
-        return objectPaletteView(paletteIndex).clone();
-    }
-
     int[] objectPaletteView(int paletteIndex) {
         if (paletteIndex < 0 || paletteIndex >= objectPalettes.length) {
             throw new IllegalArgumentException("Object palette index out of range: " + paletteIndex);
         }
         return objectPalettes[paletteIndex];
-    }
-
-    /** Fixed green presentation palette for ROM-free actors. */
-    public static LinkTunicPalette green() {
-        int[] green = {0x00000000, 0x00000000, 0x0010A840, 0x00F8B888};
-        return new LinkTunicPalette(
-                new int[][] {green, green.clone(), green.clone(), green.clone(), green.clone(), green.clone()});
     }
 
     private static int[][] clonePalettes(int[][] source) {

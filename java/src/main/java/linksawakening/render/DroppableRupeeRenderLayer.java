@@ -15,11 +15,6 @@ final class DroppableRupeeRenderLayer implements HardwareRenderLayer {
         this.scrollController = scrollController;
     }
 
-    void configure(DroppableRupeeSystem droppableRupeeSystem, ScrollController scrollController) {
-        this.droppableRupeeSystem = droppableRupeeSystem;
-        this.scrollController = scrollController;
-    }
-
     @Override
     public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
         if (scrollController.isActive()) return;
@@ -34,5 +29,10 @@ final class DroppableRupeeRenderLayer implements HardwareRenderLayer {
             int y = droppableRupeeSystem.slotY(i) - (droppableRupeeSystem.slotZSubpixels(i) >> 4) - 16;
             frame.append8x16(gpu.getTile(tile), gpu.getTile(tile + 1), x, y, false, false, palette, false);
         }
+    }
+
+    void configure(DroppableRupeeSystem droppableRupeeSystem, ScrollController scrollController) {
+        this.droppableRupeeSystem = droppableRupeeSystem;
+        this.scrollController = scrollController;
     }
 }

@@ -15,20 +15,7 @@ final class LinkDash {
 
     private int pegasusBootsChargeMeter;
 
-    int pegasusBootsChargeMeter() {
-        return pegasusBootsChargeMeter;
-    }
-
     private int pegasusBootsCollisionCountdown;
-
-    int pegasusBootsCollisionCountdown() {
-        return pegasusBootsCollisionCountdown;
-    }
-
-    int pegasusBootsCollisionCountdown(int value) {
-        pegasusBootsCollisionCountdown = value;
-        return pegasusBootsCollisionCountdown;
-    }
 
     private int pegasusBootsCollisionPosX;
 
@@ -58,6 +45,19 @@ final class LinkDash {
         this.linkMotion = linkMotion;
         this.linkServices = linkServices;
         this.status = status;
+    }
+
+    int pegasusBootsChargeMeter() {
+        return pegasusBootsChargeMeter;
+    }
+
+    int pegasusBootsCollisionCountdown() {
+        return pegasusBootsCollisionCountdown;
+    }
+
+    int pegasusBootsCollisionCountdown(int value) {
+        pegasusBootsCollisionCountdown = value;
+        return pegasusBootsCollisionCountdown;
     }
 
     /** Mirrors CheckItemsToUse's two Pegasus-Boots slot branches and UsePegasusBoots. */

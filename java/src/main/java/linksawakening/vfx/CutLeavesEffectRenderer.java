@@ -8,8 +8,6 @@ import linksawakening.gpu.Tile;
  * ROM-equivalent cut-leaves frame selection and OAM metadata for bush destroys.
  */
 public final class CutLeavesEffectRenderer {
-    /** Immutable sprite placement values. */
-    public record SpritePlacement(int x, int y, int tileId, int attributes, Tile tile) {}
 
     private static final int TILE_ID = 0x28;
     private static final int OAM_X_BIAS = 8;
@@ -238,4 +236,6 @@ public final class CutLeavesEffectRenderer {
         }
         return List.copyOf(placements);
     }
+    /** Immutable sprite placement values. */
+    public record SpritePlacement(int x, int y, int tileId, int attributes, Tile tile) {}
 }

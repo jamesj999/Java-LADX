@@ -25,16 +25,6 @@ public final class SwordPalette {
         return new SwordPalette(new EntitySpriteCatalog(romData).loadObjectPalettes());
     }
 
-    /** Returns the four RGB colors for the normal blade, including OBJ color zero. */
-    public int[] normal() {
-        return normal.clone();
-    }
-
-    /** Returns the four RGB colors for the fully charged blade, including OBJ color zero. */
-    public int[] charged() {
-        return charged.clone();
-    }
-
     /** Compatibility source for isolated sword fixtures without a ROM. */
     static SwordPalette compatibility() {
         return new SwordPalette(new int[][] {
@@ -45,6 +35,16 @@ public final class SwordPalette {
             {0x00000000, 0x00201000, 0x00A89068, 0x00F8F8B8},
             {0, 0, 0, 0}
         });
+    }
+
+    /** Returns the four RGB colors for the normal blade, including OBJ color zero. */
+    public int[] normal() {
+        return normal.clone();
+    }
+
+    /** Returns the four RGB colors for the fully charged blade, including OBJ color zero. */
+    public int[] charged() {
+        return charged.clone();
     }
 
     private static int[] copyRow(int[] row, String description) {

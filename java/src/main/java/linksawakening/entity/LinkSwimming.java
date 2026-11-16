@@ -17,6 +17,11 @@ final class LinkSwimming {
     private final LinkComponentRef<LinkSignals> linkSignals;
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;
 
+    int swimmingSpeedX;
+    int swimmingSpeedY;
+    int swimmingFastCountdown;
+    int divingCountdown;
+
     LinkSwimming(Dependencies dependencies) {
         linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
         linkAnimationState = Objects.requireNonNull(dependencies.linkAnimationState, "linkAnimationState");
@@ -28,23 +33,6 @@ final class LinkSwimming {
         linkSignals = Objects.requireNonNull(dependencies.linkSignals, "linkSignals");
         linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
     }
-
-    static final class Dependencies {
-        LinkComponentRef<LinkAirborne> linkAirborne;
-        LinkComponentRef<LinkAnimationState> linkAnimationState;
-        LinkComponentRef<LinkAnimator> linkAnimator;
-        LinkComponentRef<LinkControls> linkControls;
-        LinkComponentRef<LinkEquipment> linkEquipment;
-        LinkComponentRef<LinkMotion> linkMotion;
-        LinkComponentRef<LinkServices> linkServices;
-        LinkComponentRef<LinkSignals> linkSignals;
-        LinkComponentRef<LinkStateMachine> linkStateMachine;
-    }
-
-    int swimmingSpeedX;
-    int swimmingSpeedY;
-    int swimmingFastCountdown;
-    int divingCountdown;
 
     boolean enterSwimmingIfNeeded() {
 
@@ -99,32 +87,6 @@ final class LinkSwimming {
         linkMotion.get().position().lastRomSpeedX(swimmingSpeedX & 0xFF);
         linkMotion.get().position().lastRomSpeedY(swimmingSpeedY & 0xFF);
         return true;
-    }
-
-    // label_002_7C50: rapids/current movement bypasses swimming entry.
-    private void applyWaterCurrent() {
-        int object = linkServices
-                .get()
-                .collision
-                .objectIdAtPoint(
-                        linkMotion.get().position().pixelX() + 8,
-                        linkMotion.get().position().pixelY() + 12);
-        int index = object - 0xE7;
-        if (object == 0x0E) {
-            index = switch (linkStateMachine.get().roomPhysics().physicsRoomId()) {
-                case 0x3E -> 1;
-                case 0x3D -> 2;
-                case 0x3C, 0x3F -> 3;
-                default -> -1;
-            };
-        }
-        if (index < 0) return;
-        int x = linkServices.get().linkMotionTables.waterCurrentSpeedX(index);
-        int y = linkServices.get().linkMotionTables.waterCurrentSpeedY(index);
-        linkMotion.get().position().lastRomSpeedX(x & 255);
-        linkMotion.get().position().lastRomSpeedY(y & 255);
-        if (x != 0) linkMotion.get().tryMoveAxis(x, true);
-        if (y != 0) linkMotion.get().tryMoveAxis(y, false);
     }
 
     void updateRecover() {
@@ -219,6 +181,55 @@ final class LinkSwimming {
         advanceSwimmingMotion(mask);
     }
 
+    // The signed-byte casts deliberately truncate both ROM speeds before subtraction.
+    @SuppressWarnings("SelfAssignment")
+    static int approachSignedSpeed(int current, int target) {
+        current = (byte) current;
+        target = (byte) target;
+        int difference = target - current;
+        if (difference == 0) {
+            return current;
+        }
+        return (byte) (current + (difference < 0 ? -1 : 1));
+    }
+
+    void leaveSwimming() {
+        linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
+        linkStateMachine.get().roomPhysics().physicsModifier(0);
+        swimmingSpeedX = 0;
+        swimmingSpeedY = 0;
+        swimmingFastCountdown = 0;
+        divingCountdown = 0;
+        linkAnimationState.get().walkTickCounter = 0;
+        linkAnimationState.get().walkFrame = 0;
+    }
+
+    // label_002_7C50: rapids/current movement bypasses swimming entry.
+    private void applyWaterCurrent() {
+        int object = linkServices
+                .get()
+                .collision
+                .objectIdAtPoint(
+                        linkMotion.get().position().pixelX() + 8,
+                        linkMotion.get().position().pixelY() + 12);
+        int index = object - 0xE7;
+        if (object == 0x0E) {
+            index = switch (linkStateMachine.get().roomPhysics().physicsRoomId()) {
+                case 0x3E -> 1;
+                case 0x3D -> 2;
+                case 0x3C, 0x3F -> 3;
+                default -> -1;
+            };
+        }
+        if (index < 0) return;
+        int x = linkServices.get().linkMotionTables.waterCurrentSpeedX(index);
+        int y = linkServices.get().linkMotionTables.waterCurrentSpeedY(index);
+        linkMotion.get().position().lastRomSpeedX(x & 255);
+        linkMotion.get().position().lastRomSpeedY(y & 255);
+        if (x != 0) linkMotion.get().tryMoveAxis(x, true);
+        if (y != 0) linkMotion.get().tryMoveAxis(y, false);
+    }
+
     private void advanceSwimmingMotion(int mask) {
         if (linkMotion.get().position().forcedSpeedPending()) {
             swimmingSpeedX = linkMotion.get().position().forcedSpeedX();
@@ -265,26 +276,15 @@ final class LinkSwimming {
         }
     }
 
-    // The signed-byte casts deliberately truncate both ROM speeds before subtraction.
-    @SuppressWarnings("SelfAssignment")
-    static int approachSignedSpeed(int current, int target) {
-        current = (byte) current;
-        target = (byte) target;
-        int difference = target - current;
-        if (difference == 0) {
-            return current;
-        }
-        return (byte) (current + (difference < 0 ? -1 : 1));
-    }
-
-    void leaveSwimming() {
-        linkStateMachine.get().status().motionState(LinkMotionState.DEFAULT);
-        linkStateMachine.get().roomPhysics().physicsModifier(0);
-        swimmingSpeedX = 0;
-        swimmingSpeedY = 0;
-        swimmingFastCountdown = 0;
-        divingCountdown = 0;
-        linkAnimationState.get().walkTickCounter = 0;
-        linkAnimationState.get().walkFrame = 0;
+    static final class Dependencies {
+        LinkComponentRef<LinkAirborne> linkAirborne;
+        LinkComponentRef<LinkAnimationState> linkAnimationState;
+        LinkComponentRef<LinkAnimator> linkAnimator;
+        LinkComponentRef<LinkControls> linkControls;
+        LinkComponentRef<LinkEquipment> linkEquipment;
+        LinkComponentRef<LinkMotion> linkMotion;
+        LinkComponentRef<LinkServices> linkServices;
+        LinkComponentRef<LinkSignals> linkSignals;
+        LinkComponentRef<LinkStateMachine> linkStateMachine;
     }
 }

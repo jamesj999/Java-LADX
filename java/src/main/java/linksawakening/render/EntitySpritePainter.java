@@ -12,20 +12,6 @@ import linksawakening.world.entity.WingedOctorokOam;
 
 /** Expands ROM entity display-list shapes into ordered OAM entries. */
 final class EntitySpritePainter {
-    DialogController.BoxPosition dialogPosition;
-
-    EntitySpritePainter(DialogController.BoxPosition dialogPosition) {
-        this.dialogPosition = dialogPosition;
-    }
-
-    // AnimateEntity's UpdateEntityTimers ($14:4D73-$4D76) clears the body
-    // tile offset before the shared death handler; $4DE4-$4DF0 retains only
-    // OAMF_PAL1. Apply that view without constructing a replacement RoomEntity.
-    boolean renderingDeath;
-
-    private int flip(RoomEntity entity) {
-        return renderingDeath ? entity.entityFlipAttribute() & 0x10 : entity.entityFlipAttribute();
-    }
 
     private static final int ENTITY_BOMB = 0x02;
     private static final int BOMB_NORMAL_DEFINITION_BANK = RomSymbols.BombSprite.bank();
@@ -39,6 +25,16 @@ final class EntitySpritePainter {
     // written to hardware OAM. The framebuffer stores sprite top-left pixels.
     private static final int OAM_X_SCREEN_ORIGIN = 0x08;
     private static final int OAM_Y_SCREEN_ORIGIN = 0x10;
+    DialogController.BoxPosition dialogPosition;
+
+    // AnimateEntity's UpdateEntityTimers ($14:4D73-$4D76) clears the body
+    // tile offset before the shared death handler; $4DE4-$4DF0 retains only
+    // OAMF_PAL1. Apply that view without constructing a replacement RoomEntity.
+    boolean renderingDeath;
+
+    EntitySpritePainter(DialogController.BoxPosition dialogPosition) {
+        this.dialogPosition = dialogPosition;
+    }
 
     void renderPincerBodyOam(
             RenderContext context,
@@ -181,32 +177,6 @@ final class EntitySpritePainter {
         }
     }
 
-    private void renderPairShape(
-            RenderContext context,
-            RoomEntity entity,
-            EntitySpriteDefinition definition,
-            int spriteVariant,
-            int[][] palettes,
-            EntitySpriteTileSnapshot tiles,
-            int entityX,
-            int entityY,
-            boolean sideScrolling) {
-        EntitySpriteTileSnapshot pairTiles =
-                definition.pairTileSource() == EntitySpriteDefinition.DynamicSprite.TileSource.GPU ? null : tiles;
-        EntitySpriteDefinition.Variant variant = definition.variant(spriteVariant);
-        if (entity.type() == ENTITY_PAIRODD && spriteVariant == 3 && definition.variantCount() > 7) {
-            // Bank $04 temporarily moves hActiveEntityPosX by -$08,
-            // renders variant $06, moves it by +$10, renders variant
-            // $07, and finally restores the source position.
-            renderPair(
-                    context, palettes, pairTiles, definition.variant(6), entity, entityX - 8, entityY, sideScrolling);
-            renderPair(
-                    context, palettes, pairTiles, definition.variant(7), entity, entityX + 8, entityY, sideScrolling);
-            return;
-        }
-        renderPair(context, palettes, pairTiles, variant, entity, entityX, entityY, sideScrolling);
-    }
-
     void renderDynamic(
             RenderContext context,
             List<EntitySpriteDefinition.DynamicSprite> sprites,
@@ -292,10 +262,6 @@ final class EntitySpritePainter {
                 secondX,
                 entityY,
                 true);
-    }
-
-    private int withTileOffset(EntitySpriteDefinition.OamAttribute oam, RoomEntity entity) {
-        return ((oam.tile() + (renderingDeath ? 0 : entity.spriteTileOffset())) & 255) | (oam.attributes() << 8);
     }
 
     final void renderOamSprite(
@@ -386,5 +352,39 @@ final class EntitySpritePainter {
         int rawY = (screenY + OAM_Y_SCREEN_ORIGIN) & 0xFF;
         return (dialogPosition == DialogController.BoxPosition.TOP && rawY < 0x3E)
                 || (dialogPosition == DialogController.BoxPosition.BOTTOM && rawY >= 0x58);
+    }
+
+    private int flip(RoomEntity entity) {
+        return renderingDeath ? entity.entityFlipAttribute() & 0x10 : entity.entityFlipAttribute();
+    }
+
+    private void renderPairShape(
+            RenderContext context,
+            RoomEntity entity,
+            EntitySpriteDefinition definition,
+            int spriteVariant,
+            int[][] palettes,
+            EntitySpriteTileSnapshot tiles,
+            int entityX,
+            int entityY,
+            boolean sideScrolling) {
+        EntitySpriteTileSnapshot pairTiles =
+                definition.pairTileSource() == EntitySpriteDefinition.DynamicSprite.TileSource.GPU ? null : tiles;
+        EntitySpriteDefinition.Variant variant = definition.variant(spriteVariant);
+        if (entity.type() == ENTITY_PAIRODD && spriteVariant == 3 && definition.variantCount() > 7) {
+            // Bank $04 temporarily moves hActiveEntityPosX by -$08,
+            // renders variant $06, moves it by +$10, renders variant
+            // $07, and finally restores the source position.
+            renderPair(
+                    context, palettes, pairTiles, definition.variant(6), entity, entityX - 8, entityY, sideScrolling);
+            renderPair(
+                    context, palettes, pairTiles, definition.variant(7), entity, entityX + 8, entityY, sideScrolling);
+            return;
+        }
+        renderPair(context, palettes, pairTiles, variant, entity, entityX, entityY, sideScrolling);
+    }
+
+    private int withTileOffset(EntitySpriteDefinition.OamAttribute oam, RoomEntity entity) {
+        return ((oam.tile() + (renderingDeath ? 0 : entity.spriteTileOffset())) & 255) | (oam.attributes() << 8);
     }
 }

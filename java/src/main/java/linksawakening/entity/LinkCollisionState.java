@@ -5,6 +5,12 @@ final class LinkCollisionState {
 
     private int romCollisionType;
 
+    private boolean doorWarpPending;
+
+    private final int[] collisionProbePixelX = new int[4];
+
+    private final int[] collisionProbePixelY = new int[4];
+
     int romCollisionType() {
         return romCollisionType;
     }
@@ -13,8 +19,6 @@ final class LinkCollisionState {
         romCollisionType = value;
         return romCollisionType;
     }
-
-    private boolean doorWarpPending;
 
     boolean doorWarpPending() {
         return doorWarpPending;
@@ -25,13 +29,9 @@ final class LinkCollisionState {
         return doorWarpPending;
     }
 
-    private final int[] collisionProbePixelX = new int[4];
-
     int[] collisionProbePixelX() {
         return collisionProbePixelX;
     }
-
-    private final int[] collisionProbePixelY = new int[4];
 
     int[] collisionProbePixelY() {
         return collisionProbePixelY;

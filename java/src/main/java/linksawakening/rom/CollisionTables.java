@@ -10,15 +10,15 @@ public final class CollisionTables {
     private static final int LINK_FINE_COLLISION_SHAPES_LAST_PHYSICS = 0x8F;
     // EntityCollisionPointsX: original loader length.
     private static final int ENTITY_COLLISION_POINTS_X_LENGTH = 16;
-    private final byte[] entityCollisionPointsX;
     // EntityCollisionPointsY: original loader length.
     private static final int ENTITY_COLLISION_POINTS_Y_LENGTH = 16;
-    private final byte[] entityCollisionPointsY;
     // FineCollisionShapes: original loader length.
     private static final int ENTITY_FINE_COLLISION_SHAPES_LENGTH = 72;
-    private final int[] entityFineCollisionShapes;
     // Data_002_49CA: original loader length.
     private static final int LINK_FINE_COLLISION_SHAPES_LENGTH = 80;
+    private final byte[] entityCollisionPointsX;
+    private final byte[] entityCollisionPointsY;
+    private final int[] entityFineCollisionShapes;
     private final int[] linkFineCollisionShapes;
 
     private CollisionTables() {

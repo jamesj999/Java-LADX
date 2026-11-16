@@ -15,6 +15,12 @@ final class LinkDamage {
     private final LinkComponentRef<LinkSideView> linkSideView;
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;
 
+    int collisionIgnoreFramesRemaining;
+    int recoilSpeedX;
+    int recoilSpeedY;
+    boolean normalRecoilRoomBoundaries = true;
+    boolean collisionDamageImmune;
+
     LinkDamage(Dependencies dependencies) {
         linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
         linkAnimationState = Objects.requireNonNull(dependencies.linkAnimationState, "linkAnimationState");
@@ -24,22 +30,6 @@ final class LinkDamage {
         linkSideView = Objects.requireNonNull(dependencies.linkSideView, "linkSideView");
         linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
     }
-
-    static final class Dependencies {
-        LinkComponentRef<LinkAirborne> linkAirborne;
-        LinkComponentRef<LinkAnimationState> linkAnimationState;
-        LinkComponentRef<LinkAnimator> linkAnimator;
-        LinkComponentRef<LinkMotion> linkMotion;
-        LinkComponentRef<LinkServices> linkServices;
-        LinkComponentRef<LinkSideView> linkSideView;
-        LinkComponentRef<LinkStateMachine> linkStateMachine;
-    }
-
-    int collisionIgnoreFramesRemaining;
-    int recoilSpeedX;
-    int recoilSpeedY;
-    boolean normalRecoilRoomBoundaries = true;
-    boolean collisionDamageImmune;
 
     void applySpikeGroundPhysics() {
         if (linkStateMachine.get().status().accessDebugNoClip()
@@ -155,5 +145,15 @@ final class LinkDamage {
 
     boolean accessIsCollisionDamageImmune() {
         return this.collisionDamageImmune || linkAnimator.get().accessDialogGotItemActive();
+    }
+
+    static final class Dependencies {
+        LinkComponentRef<LinkAirborne> linkAirborne;
+        LinkComponentRef<LinkAnimationState> linkAnimationState;
+        LinkComponentRef<LinkAnimator> linkAnimator;
+        LinkComponentRef<LinkMotion> linkMotion;
+        LinkComponentRef<LinkServices> linkServices;
+        LinkComponentRef<LinkSideView> linkSideView;
+        LinkComponentRef<LinkStateMachine> linkStateMachine;
     }
 }

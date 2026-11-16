@@ -8,32 +8,9 @@ final class LinkDoorTraversal {
 
     private int revolvingDoorFrame;
 
-    int revolvingDoorFrame() {
-        return revolvingDoorFrame;
-    }
-
-    int revolvingDoorFrame(int value) {
-        revolvingDoorFrame = value;
-        return revolvingDoorFrame;
-    }
-
     private boolean revolvingDoorTransitionPending;
 
-    boolean revolvingDoorTransitionPending(boolean value) {
-        revolvingDoorTransitionPending = value;
-        return revolvingDoorTransitionPending;
-    }
-
     private int revolvingDoorPaletteVariant = -1;
-
-    int revolvingDoorPaletteVariant() {
-        return revolvingDoorPaletteVariant;
-    }
-
-    int revolvingDoorPaletteVariant(int value) {
-        revolvingDoorPaletteVariant = value;
-        return revolvingDoorPaletteVariant;
-    }
 
     private final LinkComponentRef<LinkAnimationState> linkAnimationState;
     private final LinkComponentRef<LinkAnimator> linkAnimator;
@@ -52,6 +29,29 @@ final class LinkDoorTraversal {
         this.linkMotion = linkMotion;
         this.linkServices = linkServices;
         this.status = status;
+    }
+
+    int revolvingDoorFrame() {
+        return revolvingDoorFrame;
+    }
+
+    int revolvingDoorFrame(int value) {
+        revolvingDoorFrame = value;
+        return revolvingDoorFrame;
+    }
+
+    boolean revolvingDoorTransitionPending(boolean value) {
+        revolvingDoorTransitionPending = value;
+        return revolvingDoorTransitionPending;
+    }
+
+    int revolvingDoorPaletteVariant() {
+        return revolvingDoorPaletteVariant;
+    }
+
+    int revolvingDoorPaletteVariant(int value) {
+        revolvingDoorPaletteVariant = value;
+        return revolvingDoorPaletteVariant;
     }
 
     void tickRevolvingDoor() {

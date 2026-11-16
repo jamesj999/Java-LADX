@@ -17,14 +17,6 @@ final class LinkMotion {
     private final LinkCollisionState collisionState = new LinkCollisionState();
     private final LinkPosition position;
 
-    LinkCollisionState collisionState() {
-        return collisionState;
-    }
-
-    LinkPosition position() {
-        return position;
-    }
-
     private final LinkComponentRef<LinkAirborne> linkAirborne;
     private final LinkComponentRef<LinkAnimationState> linkAnimationState;
     private final LinkComponentRef<LinkAnimator> linkAnimator;
@@ -37,21 +29,6 @@ final class LinkMotion {
     private final LinkComponentRef<LinkServices> linkServices;
     private final LinkComponentRef<LinkSideView> linkSideView;
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;
-
-    static final class Dependencies {
-        LinkComponentRef<LinkAirborne> linkAirborne;
-        LinkComponentRef<LinkAnimationState> linkAnimationState;
-        LinkComponentRef<LinkAnimator> linkAnimator;
-        LinkComponentRef<LinkControls> linkControls;
-        LinkComponentRef<LinkDamage> linkDamage;
-        LinkComponentRef<LinkEntityEffects> linkEntityEffects;
-        LinkComponentRef<LinkEquipment> linkEquipment;
-
-        LinkComponentRef<LinkItemState> linkItemState;
-        LinkComponentRef<LinkServices> linkServices;
-        LinkComponentRef<LinkSideView> linkSideView;
-        LinkComponentRef<LinkStateMachine> linkStateMachine;
-    }
 
     LinkMotion(Dependencies dependencies) {
         linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
@@ -67,6 +44,14 @@ final class LinkMotion {
         linkSideView = Objects.requireNonNull(dependencies.linkSideView, "linkSideView");
         linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
         position = new LinkPosition(linkSideView, collisionState);
+    }
+
+    LinkCollisionState collisionState() {
+        return collisionState;
+    }
+
+    LinkPosition position() {
+        return position;
     }
 
     static boolean isDirectionalLedgePhysics(int physicsFlag) {
@@ -384,5 +369,20 @@ final class LinkMotion {
 
     int romSwordCollisionY() {
         return position.romEntityY() - linkAirborne.get().accessZPixels();
+    }
+
+    static final class Dependencies {
+        LinkComponentRef<LinkAirborne> linkAirborne;
+        LinkComponentRef<LinkAnimationState> linkAnimationState;
+        LinkComponentRef<LinkAnimator> linkAnimator;
+        LinkComponentRef<LinkControls> linkControls;
+        LinkComponentRef<LinkDamage> linkDamage;
+        LinkComponentRef<LinkEntityEffects> linkEntityEffects;
+        LinkComponentRef<LinkEquipment> linkEquipment;
+
+        LinkComponentRef<LinkItemState> linkItemState;
+        LinkComponentRef<LinkServices> linkServices;
+        LinkComponentRef<LinkSideView> linkSideView;
+        LinkComponentRef<LinkStateMachine> linkStateMachine;
     }
 }

@@ -13,6 +13,8 @@ final class LinkSpriteComposer {
     private final LinkComponentRef<LinkServices> linkServices;
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;
 
+    private final Tile[] composedTiles = new Tile[4];
+
     LinkSpriteComposer(
             LinkComponentRef<LinkAirborne> linkAirborne,
             LinkComponentRef<LinkAnimationState> linkAnimationState,
@@ -25,8 +27,6 @@ final class LinkSpriteComposer {
         this.linkServices = linkServices;
         this.linkStateMachine = linkStateMachine;
     }
-
-    private final Tile[] composedTiles = new Tile[4];
 
     static void drawTile(
             byte[] buffer, Tile tile, int screenX, int screenY, boolean flipX, boolean flipY, int[] palette) {
@@ -104,53 +104,6 @@ final class LinkSpriteComposer {
         renderEquippedItems(displayBuffer, offsetX, offsetY, acquisition);
     }
 
-    private void renderEquippedItems(byte[] displayBuffer, int offsetX, int offsetY, boolean acquisition) {
-
-        EquipmentItem a = linkServices
-                .get()
-                .itemRegistry
-                .item(linkServices.get().playerState.inventory().itemA());
-        {
-            a.render(
-                    displayBuffer,
-                    linkMotion.get().position().pixelX(),
-                    linkMotion.get().position().pixelY() - linkAirborne.get().accessZPixels(),
-                    linkAnimationState.get().direction.javaIndex(),
-                    offsetX,
-                    offsetY);
-        }
-        EquipmentItem b = linkServices
-                .get()
-                .itemRegistry
-                .item(linkServices.get().playerState.inventory().itemB());
-        if (b != a) {
-            b.render(
-                    displayBuffer,
-                    linkMotion.get().position().pixelX(),
-                    linkMotion.get().position().pixelY() - linkAirborne.get().accessZPixels(),
-                    linkAnimationState.get().direction.javaIndex(),
-                    offsetX,
-                    offsetY);
-        }
-        if (acquisition) {
-            // ApplyLinkMotionState draws the sword during the pickup spin
-            // before GiveInventoryItem awards it to slot A/B. Reuse the ROM
-            // sword handler from the registry, but do not draw it twice if a
-            // save already has the sword equipped.
-            EquipmentItem acquisitionSword = linkServices.get().itemRegistry.item(InventoryItem.SWORD.romValue());
-            if (acquisitionSword != a && acquisitionSword != b) {
-                acquisitionSword.render(
-                        displayBuffer,
-                        linkMotion.get().position().pixelX(),
-                        linkMotion.get().position().pixelY()
-                                - linkAirborne.get().accessZPixels(),
-                        linkAnimationState.get().direction.javaIndex(),
-                        offsetX,
-                        offsetY);
-            }
-        }
-    }
-
     void submitOam(
             linksawakening.render.OamSink sink,
             int offsetX,
@@ -209,6 +162,53 @@ final class LinkSpriteComposer {
         // DrawLinkSprite writes Link's body to wLinkOAMBuffer slots 1-2 and
         // ApplyLinkMotionState/func_020_4AB3 writes the sword into slots 4-5.
         submitEquippedOam(sink, offsetX, offsetY, acquisition);
+    }
+
+    private void renderEquippedItems(byte[] displayBuffer, int offsetX, int offsetY, boolean acquisition) {
+
+        EquipmentItem a = linkServices
+                .get()
+                .itemRegistry
+                .item(linkServices.get().playerState.inventory().itemA());
+        {
+            a.render(
+                    displayBuffer,
+                    linkMotion.get().position().pixelX(),
+                    linkMotion.get().position().pixelY() - linkAirborne.get().accessZPixels(),
+                    linkAnimationState.get().direction.javaIndex(),
+                    offsetX,
+                    offsetY);
+        }
+        EquipmentItem b = linkServices
+                .get()
+                .itemRegistry
+                .item(linkServices.get().playerState.inventory().itemB());
+        if (b != a) {
+            b.render(
+                    displayBuffer,
+                    linkMotion.get().position().pixelX(),
+                    linkMotion.get().position().pixelY() - linkAirborne.get().accessZPixels(),
+                    linkAnimationState.get().direction.javaIndex(),
+                    offsetX,
+                    offsetY);
+        }
+        if (acquisition) {
+            // ApplyLinkMotionState draws the sword during the pickup spin
+            // before GiveInventoryItem awards it to slot A/B. Reuse the ROM
+            // sword handler from the registry, but do not draw it twice if a
+            // save already has the sword equipped.
+            EquipmentItem acquisitionSword = linkServices.get().itemRegistry.item(InventoryItem.SWORD.romValue());
+            if (acquisitionSword != a && acquisitionSword != b) {
+                acquisitionSword.render(
+                        displayBuffer,
+                        linkMotion.get().position().pixelX(),
+                        linkMotion.get().position().pixelY()
+                                - linkAirborne.get().accessZPixels(),
+                        linkAnimationState.get().direction.javaIndex(),
+                        offsetX,
+                        offsetY);
+            }
+        }
     }
 
     private void submitEquippedOam(linksawakening.render.OamSink sink, int offsetX, int offsetY, boolean acquisition) {

@@ -39,6 +39,10 @@ public final class EquipmentController {
         itemRegistry.tickWithoutInput(playerState, frameCounter);
     }
 
+    public Sword activeSword() {
+        return itemRegistry.activeSword(playerState);
+    }
+
     private void tickEquippedItems(boolean hasFrame, int frameCounter) {
         boolean aHeld = inputState.isDown(inputConfig.aKey());
         boolean bHeld = inputState.isDown(inputConfig.bKey());
@@ -56,10 +60,6 @@ public final class EquipmentController {
                     playerState.inventory().itemB(),
                     frameCounter);
         }
-    }
-
-    public Sword activeSword() {
-        return itemRegistry.activeSword(playerState);
     }
 
     private void dispatchButtonEdges(int glfwKey, int inventoryId) {

@@ -8,6 +8,8 @@ import linksawakening.state.LinkMotionState;
 
 /** Pose selection and scripted presentation for ROM UpdateLinkAnimation ($02:47BC). */
 final class LinkAnimator {
+    // No shield presentation until Tarin supplies the got-item palette.
+    private static final int[] NO_TARIN_SHIELD_PALETTE = new int[0];
 
     private final LinkSpriteComposer sprites;
 
@@ -22,22 +24,7 @@ final class LinkAnimator {
     private final LinkComponentRef<LinkServices> linkServices;
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;
 
-    static final class Dependencies {
-        LinkComponentRef<DialogGotItemSequence> dialogGotItemSequence;
-        LinkComponentRef<LinkAirborne> linkAirborne;
-        LinkComponentRef<LinkAnimationState> linkAnimationState;
-        LinkComponentRef<LinkDamage> linkDamage;
-        LinkComponentRef<LinkEntityEffects> linkEntityEffects;
-        LinkComponentRef<LinkEquipment> linkEquipment;
-        LinkComponentRef<LinkItemState> linkItemState;
-        LinkComponentRef<LinkMotion> linkMotion;
-        LinkComponentRef<LinkServices> linkServices;
-        LinkComponentRef<LinkStateMachine> linkStateMachine;
-    }
-
     private boolean tarinShieldPresentation;
-    // No shield presentation until Tarin supplies the got-item palette.
-    private static final int[] NO_TARIN_SHIELD_PALETTE = new int[0];
     private int[] tarinShieldPalette = NO_TARIN_SHIELD_PALETTE;
     private int romAnimationStateOverride = -1;
     private int swordAcquisitionBaseRomDirection = -1;
@@ -99,56 +86,6 @@ final class LinkAnimator {
             return linkEntityEffects.get().carryingLiftedObjectState;
         }
         return resolveNormalAnimation();
-    }
-
-    private int resolveNormalAnimation() {
-        // ApplyLinkGroundMotion ($02:4503) sets the step counter to $FF
-        // while airborne, selecting the alternate normal pose after the flip.
-        int normalFrame = linkAirborne.get().elevation().airborne()
-                        || (ledgeJumpRenderY != Integer.MIN_VALUE
-                                && linkAnimationState.get().romConsecutiveStepsCount == 0xFF)
-                ? 1
-                : linkAnimationState.get().walkFrame;
-        if (linkEntityEffects.get().carryingLiftedObjectState == 1) {
-            return LinkPoseTables.LIFTING_ANIMATION_STATE[
-                    linkAnimationState.get().direction.javaIndex()][linkAnimationState.get().walkFrame];
-        }
-        int override = queryOverride(linkEquipment.get().itemInSlotA());
-        if (override >= 0) {
-            return override;
-        }
-        override = queryOverride(linkEquipment.get().itemInSlotB());
-        if (override >= 0) {
-            return override;
-        }
-        if (linkAirborne.get().elevation().airborne()
-                && !linkAirborne.get().spinningPitWarpArrival()
-                && jumpAnimationFrame < 3
-                && !linkAirborne.get().swordSuppressesJumpAnimation()) {
-            return LinkPoseTables.JUMP_ANIMATION_STATE[
-                    linkAnimationState.get().direction.javaIndex()][jumpAnimationFrame];
-        }
-        if (pushingAnimationState >= 0) return pushingAnimationState;
-        {
-            int carriedShield = !linkStateMachine.get().status().gelClinging()
-                            && (linkServices.get().playerState.inventory().itemA() == InventoryItem.SHIELD.romValue()
-                                    || linkServices
-                                                    .get()
-                                                    .playerState
-                                                    .inventory()
-                                                    .itemB()
-                                            == InventoryItem.SHIELD.romValue())
-                    ? linkServices.get().playerState.equipmentLevels().shieldLevel()
-                    : 0;
-            return linkServices
-                    .get()
-                    .spriteSheet
-                    .walkingAnimationState(
-                            linkAnimationState.get().direction.romIndex(),
-                            normalFrame,
-                            carriedShield,
-                            linkEquipment.get().isUsingShield());
-        }
     }
 
     /** $02:42C7 selects walking poses before this frame's movement/collisions. */
@@ -402,5 +339,68 @@ final class LinkAnimator {
         int state = resolveAnimationState();
         if (state == 0xFF) return;
         sprites.submitOam(sink, offsetX, offsetY, state, renderY(), swordAcquisitionAnimationState >= 0);
+    }
+
+    private int resolveNormalAnimation() {
+        // ApplyLinkGroundMotion ($02:4503) sets the step counter to $FF
+        // while airborne, selecting the alternate normal pose after the flip.
+        int normalFrame = linkAirborne.get().elevation().airborne()
+                        || (ledgeJumpRenderY != Integer.MIN_VALUE
+                                && linkAnimationState.get().romConsecutiveStepsCount == 0xFF)
+                ? 1
+                : linkAnimationState.get().walkFrame;
+        if (linkEntityEffects.get().carryingLiftedObjectState == 1) {
+            return LinkPoseTables.LIFTING_ANIMATION_STATE[
+                    linkAnimationState.get().direction.javaIndex()][linkAnimationState.get().walkFrame];
+        }
+        int override = queryOverride(linkEquipment.get().itemInSlotA());
+        if (override >= 0) {
+            return override;
+        }
+        override = queryOverride(linkEquipment.get().itemInSlotB());
+        if (override >= 0) {
+            return override;
+        }
+        if (linkAirborne.get().elevation().airborne()
+                && !linkAirborne.get().spinningPitWarpArrival()
+                && jumpAnimationFrame < 3
+                && !linkAirborne.get().swordSuppressesJumpAnimation()) {
+            return LinkPoseTables.JUMP_ANIMATION_STATE[
+                    linkAnimationState.get().direction.javaIndex()][jumpAnimationFrame];
+        }
+        if (pushingAnimationState >= 0) return pushingAnimationState;
+        {
+            int carriedShield = !linkStateMachine.get().status().gelClinging()
+                            && (linkServices.get().playerState.inventory().itemA() == InventoryItem.SHIELD.romValue()
+                                    || linkServices
+                                                    .get()
+                                                    .playerState
+                                                    .inventory()
+                                                    .itemB()
+                                            == InventoryItem.SHIELD.romValue())
+                    ? linkServices.get().playerState.equipmentLevels().shieldLevel()
+                    : 0;
+            return linkServices
+                    .get()
+                    .spriteSheet
+                    .walkingAnimationState(
+                            linkAnimationState.get().direction.romIndex(),
+                            normalFrame,
+                            carriedShield,
+                            linkEquipment.get().isUsingShield());
+        }
+    }
+
+    static final class Dependencies {
+        LinkComponentRef<DialogGotItemSequence> dialogGotItemSequence;
+        LinkComponentRef<LinkAirborne> linkAirborne;
+        LinkComponentRef<LinkAnimationState> linkAnimationState;
+        LinkComponentRef<LinkDamage> linkDamage;
+        LinkComponentRef<LinkEntityEffects> linkEntityEffects;
+        LinkComponentRef<LinkEquipment> linkEquipment;
+        LinkComponentRef<LinkItemState> linkItemState;
+        LinkComponentRef<LinkMotion> linkMotion;
+        LinkComponentRef<LinkServices> linkServices;
+        LinkComponentRef<LinkStateMachine> linkStateMachine;
     }
 }

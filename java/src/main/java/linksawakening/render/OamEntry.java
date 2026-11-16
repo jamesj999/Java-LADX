@@ -7,65 +7,65 @@ import linksawakening.gpu.Tile;
 final class OamEntry {
     Tile tile;
 
+    int x;
+
+    int y;
+
+    boolean flipX;
+
+    boolean flipY;
+
+    int[] palette;
+
+    int order;
+
+    boolean behind;
+
+    String source;
+
+    int entryY;
+
+    IntUnaryOperator transform;
+
     Tile tile() {
         return tile;
     }
-
-    int x;
 
     int x() {
         return x;
     }
 
-    int y;
-
     int y() {
         return y;
     }
-
-    boolean flipX;
 
     boolean flipX() {
         return flipX;
     }
 
-    boolean flipY;
-
     boolean flipY() {
         return flipY;
     }
-
-    int[] palette;
 
     int[] palette() {
         return palette;
     }
 
-    int order;
-
     int order() {
         return order;
     }
-
-    boolean behind;
 
     boolean behind() {
         return behind;
     }
 
-    String source;
-
     String source() {
         return source;
     }
 
-    int entryY;
-
     int entryY() {
         return entryY;
     }
-
-    IntUnaryOperator transform;
 
     IntUnaryOperator transform() {
         return transform;

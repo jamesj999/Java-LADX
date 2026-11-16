@@ -25,6 +25,26 @@ public final class Link {
     public static final int SPRITE_SIZE = 16;
     public static final int SUB_PIXEL_SHIFT = 4;
 
+    final LinkAssembly assembly;
+    final LinkAnimator linkAnimator;
+    final LinkSideView linkSideView;
+    final LinkStateMachine linkStateMachine;
+    final LinkEquipment linkEquipment;
+    final LinkEntityEffects linkEntityEffects;
+    final LinkMotion linkMotion;
+    final LinkAirborne linkAirborne;
+    final LinkSwimming linkSwimming;
+    final LinkDamage linkDamage;
+    final LinkAnimationState linkAnimationState;
+    final LinkItemState linkItemState;
+    final LinkGroundMotion linkGroundMotion;
+    final LinkSignals linkSignals;
+    final LinkRecovery linkRecovery;
+    final LinkServices linkServices;
+    final LinkControls linkControls;
+    final DialogGotItemSequence dialogGotItemSequence;
+    private final LinkRoles roles;
+
     public Link(
             InputState inputState,
             InputConfig inputConfig,
@@ -96,69 +116,10 @@ public final class Link {
 
         roles = new LinkRoles(assembly);
     }
-    /** Immutable water splash values. */
-    public record WaterSplash(int romX, int romY) {}
-    /** Immutable screen shake request values. */
-    public record ScreenShakeRequest(int countdown, int phase) {}
 
     public void apply(LinkCommand command) {
         Objects.requireNonNull(command, "command").applyTo(this);
     }
-
-    static int signedByte(int value) {
-        int normalized = value & 0xFF;
-        return normalized < 0x80 ? normalized : normalized - 0x100;
-    }
-
-    static void validateRomByte(int value, String label) {
-        if ((value & ~0xFF) != 0) {
-            throw new IllegalArgumentException(label + " must be an unsigned byte: " + value);
-        }
-    }
-
-    /** Arguments shared by Link operations. */
-    public record Services(
-            PlayerState playerState,
-            ItemRegistry itemRegistry,
-            GameplaySoundSink soundSink,
-            LinkTunicPalette tunicPalette) {}
-
-    /** Held-Link grab flags, preserving the source write order. */
-    public record GrabFlags(int airborneState, boolean motionBlocked, boolean applyHeldLinkPose) {
-        private static final GrabFlags[] BYTE_VALUES = cachedValues();
-
-        /** Reuses immutable byte combinations; invalid bytes retain downstream validation order. */
-        public static GrabFlags of(int airborneState, boolean motionBlocked, boolean applyHeldLinkPose) {
-            if ((airborneState & ~255) != 0) return new GrabFlags(airborneState, motionBlocked, applyHeldLinkPose);
-            return BYTE_VALUES[(airborneState << 2) | (motionBlocked ? 2 : 0) | (applyHeldLinkPose ? 1 : 0)];
-        }
-
-        private static GrabFlags[] cachedValues() {
-            GrabFlags[] values = new GrabFlags[1024];
-            for (int i = 0; i < values.length; i++) values[i] = new GrabFlags(i >>> 2, (i & 2) != 0, (i & 1) != 0);
-            return values;
-        }
-    }
-
-    final LinkAssembly assembly;
-    final LinkAnimator linkAnimator;
-    final LinkSideView linkSideView;
-    final LinkStateMachine linkStateMachine;
-    final LinkEquipment linkEquipment;
-    final LinkEntityEffects linkEntityEffects;
-    final LinkMotion linkMotion;
-    final LinkAirborne linkAirborne;
-    final LinkSwimming linkSwimming;
-    final LinkDamage linkDamage;
-    final LinkAnimationState linkAnimationState;
-    final LinkItemState linkItemState;
-    final LinkGroundMotion linkGroundMotion;
-    final LinkSignals linkSignals;
-    final LinkRecovery linkRecovery;
-    final LinkServices linkServices;
-    final LinkControls linkControls;
-    final DialogGotItemSequence dialogGotItemSequence;
-    private final LinkRoles roles;
 
     /** Advances one frame through the retained motion orchestration. */
     public void update() {
@@ -199,5 +160,44 @@ public final class Link {
 
     public LinkControlsRole controls() {
         return roles.controls();
+    }
+
+    static int signedByte(int value) {
+        int normalized = value & 0xFF;
+        return normalized < 0x80 ? normalized : normalized - 0x100;
+    }
+
+    static void validateRomByte(int value, String label) {
+        if ((value & ~0xFF) != 0) {
+            throw new IllegalArgumentException(label + " must be an unsigned byte: " + value);
+        }
+    }
+    /** Immutable water splash values. */
+    public record WaterSplash(int romX, int romY) {}
+    /** Immutable screen shake request values. */
+    public record ScreenShakeRequest(int countdown, int phase) {}
+
+    /** Arguments shared by Link operations. */
+    public record Services(
+            PlayerState playerState,
+            ItemRegistry itemRegistry,
+            GameplaySoundSink soundSink,
+            LinkTunicPalette tunicPalette) {}
+
+    /** Held-Link grab flags, preserving the source write order. */
+    public record GrabFlags(int airborneState, boolean motionBlocked, boolean applyHeldLinkPose) {
+        private static final GrabFlags[] BYTE_VALUES = cachedValues();
+
+        /** Reuses immutable byte combinations; invalid bytes retain downstream validation order. */
+        public static GrabFlags of(int airborneState, boolean motionBlocked, boolean applyHeldLinkPose) {
+            if ((airborneState & ~255) != 0) return new GrabFlags(airborneState, motionBlocked, applyHeldLinkPose);
+            return BYTE_VALUES[(airborneState << 2) | (motionBlocked ? 2 : 0) | (applyHeldLinkPose ? 1 : 0)];
+        }
+
+        private static GrabFlags[] cachedValues() {
+            GrabFlags[] values = new GrabFlags[1024];
+            for (int i = 0; i < values.length; i++) values[i] = new GrabFlags(i >>> 2, (i & 2) != 0, (i & 1) != 0);
+            return values;
+        }
     }
 }

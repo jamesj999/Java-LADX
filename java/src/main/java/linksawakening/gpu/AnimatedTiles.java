@@ -8,11 +8,6 @@ import linksawakening.rom.RomSymbols;
 final class AnimatedTiles {
 
     private static final int MAP_COLOR_DUNGEON = 0xFF;
-    private final Vram target;
-
-    AnimatedTiles(Vram target) {
-        this.target = target;
-    }
 
     private static final int ANIMATED_TILES_BANK = GbcBanks.adjust(RomSymbols.AnimatedTiles.bank());
     private static final int ANIMATED_TILES_BASE_ADDR = RomSymbols.AnimatedTiles.address();
@@ -23,11 +18,16 @@ final class AnimatedTiles {
     private static final int COLOR_DUNGEON_SCROLLING_VRAM_INDEX = 0x040;
     private static final int DUNGEON_TWO_SCROLLING_VRAM_INDEX = 0x10C;
     private static final int[] ANIMATED_TILES_PING_PONG = {0x00, 0x40, 0x80, 0xC0, 0xC0, 0xC0, 0x80, 0x40};
+    private final Vram target;
     private int currentAnimatedTilesGroup = 0;
     private int animatedTilesFrameCount = 0;
     private int animatedTilesDataOffset = 0;
     int currentMapId = 0;
     private final byte[] animatedScrollingTiles = new byte[0x40];
+
+    AnimatedTiles(Vram target) {
+        this.target = target;
+    }
 
     public int animatedTilesFrameCount() {
         return animatedTilesFrameCount;
@@ -71,6 +71,19 @@ final class AnimatedTiles {
             animatedTilesDataOffset = newOffset;
         }
         copyAnimatedTilesFrame(romData, newOffset);
+    }
+
+    void stageAnimatedScrollingTiles(Rom romData, int mapId, int roomId) {
+        Rom rom = romData;
+        byte[] staged = rom.bytes(
+                RomSymbols.Items1Tiles.inBank(GbcBanks.adjust(RomSymbols.Items1Tiles.bank()))
+                        .plus(0x3C0),
+                animatedScrollingTiles.length);
+        System.arraycopy(staged, 0, animatedScrollingTiles, 0, staged.length);
+        if (mapId == MAP_COLOR_DUNGEON && roomId == 0x01) {
+            byte[] symbols = rom.bytes(RomSymbols.ColorDungeonNpcTiles.plus(0xF00), 0x20);
+            System.arraycopy(symbols, 0, animatedScrollingTiles, 0, symbols.length);
+        }
     }
 
     private void copyAnimatedScrollingTiles(int destinationTile) {
@@ -119,18 +132,5 @@ final class AnimatedTiles {
             case 0x04, 0x06 -> (frameCount & 0x07) == 0 ? ANIMATED_TILES_PING_PONG[(frameCount >> 3) & 0x07] : -1;
             default -> -1;
         };
-    }
-
-    void stageAnimatedScrollingTiles(Rom romData, int mapId, int roomId) {
-        Rom rom = romData;
-        byte[] staged = rom.bytes(
-                RomSymbols.Items1Tiles.inBank(GbcBanks.adjust(RomSymbols.Items1Tiles.bank()))
-                        .plus(0x3C0),
-                animatedScrollingTiles.length);
-        System.arraycopy(staged, 0, animatedScrollingTiles, 0, staged.length);
-        if (mapId == MAP_COLOR_DUNGEON && roomId == 0x01) {
-            byte[] symbols = rom.bytes(RomSymbols.ColorDungeonNpcTiles.plus(0xF00), 0x20);
-            System.arraycopy(symbols, 0, animatedScrollingTiles, 0, symbols.length);
-        }
     }
 }

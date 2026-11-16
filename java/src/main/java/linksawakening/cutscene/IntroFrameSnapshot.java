@@ -76,14 +76,6 @@ public record IntroFrameSnapshot(
         return lineScrollX[Math.max(0, Math.min(screenY, lineScrollX.length - 1))];
     }
 
-    private static int[] copyScroll(int[] scroll) {
-        return scroll == null ? null : scroll.clone();
-    }
-
-    private static byte[] copyAnimatedTiles(byte[] tiles) {
-        return tiles == null ? null : tiles.clone();
-    }
-
     @Override
     public int[] lineScrollX() {
         return copyScroll(lineScrollX);
@@ -117,6 +109,14 @@ public record IntroFrameSnapshot(
     @Override
     public int[][] objPalettes() {
         return copyPalettes(objPalettes);
+    }
+
+    private static int[] copyScroll(int[] scroll) {
+        return scroll == null ? null : scroll.clone();
+    }
+
+    private static byte[] copyAnimatedTiles(byte[] tiles) {
+        return tiles == null ? null : tiles.clone();
     }
 
     private static int[][] copyPalettes(int[][] source) {

@@ -31,24 +31,6 @@ final class InventoryDungeonPanel implements InventoryGraphics.Dungeon {
             tiles.writeVRAM(0xD00 + i, (byte) data.u8(linksawakening.rom.RomAddress.fromOffset(source + i)));
     }
 
-    private int read(int bank, int address) {
-        return data.u8(linksawakening.rom.RomAddress.fromOffset(RomBank.romOffset(bank, address)));
-    }
-
-    int minimapTile(int base, int status, boolean map, boolean compass) {
-        if (base == 0x7D) return base;
-        if ((base == 0xED || base == 0xEE) && !compass) base = 0xEF;
-        if (!map && !((base == 0xED || base == 0xEE) && compass)) return 0x7D;
-        if ((status & 0x80) == 0) return base;
-        if ((base == 0xED && (status & 0x10) == 0) || (base == 0xEE && (status & 0x20) == 0)) return base;
-        return map
-                ? 0xD0
-                        + read(
-                                linksawakening.rom.RomSymbols.Data_002_66F9.bank(),
-                                linksawakening.rom.RomSymbols.Data_002_66F9.address() + (status & 15))
-                : 0x7D;
-    }
-
     @Override
     public void apply(
             int[] tilemap, int[] attrs, int mapId, boolean collapsed, byte[] items, byte[] roomStatusByPosition) {
@@ -138,31 +120,6 @@ final class InventoryDungeonPanel implements InventoryGraphics.Dungeon {
                 buffer, tiles, 0x3E, x, y + offsetY, false, false, objectPalettes[(frame & 8) == 0 ? 1 : 4]);
     }
 
-    private int[] bytes(int bank, int address, int length) {
-        int[] result = new int[length];
-        for (int i = 0; i < length; i++) result[i] = read(bank, address + i);
-        return result;
-    }
-
-    private void commands(int[] map, int[] stream) {
-        for (int p = 0; p < stream.length && stream[p] != 0; ) {
-            int address = stream[p++] * 256 + stream[p++];
-            int length = stream[p++];
-            int count = (length & 0x3F) + 1;
-            int bytes = (length & 0x40) != 0 ? 1 : count;
-            command(map, address, length, Arrays.copyOfRange(stream, p, p + bytes));
-            p += bytes;
-        }
-    }
-
-    private void command(int[] map, int address, int length, int[] values) {
-        for (int i = 0; i <= (length & 0x3F); i++) {
-            int at = address - 0x9C00 + i * ((length & 0x80) != 0 ? 32 : 1);
-            int x = at & 31, y = at >>> 5;
-            if (address >= 0x9C00 && x < 20 && y < 18) map[y * 20 + x] = values[(length & 0x40) != 0 ? 0 : i];
-        }
-    }
-
     @Override
     public void submit(
             linksawakening.render.HardwareFrame frameModel,
@@ -194,6 +151,49 @@ final class InventoryDungeonPanel implements InventoryGraphics.Dungeon {
         frameModel.sprite8x16(tiles, 0x3E, x, y + offsetY, false, false, objectPalettes[(frame & 8) == 0 ? 1 : 4]);
     }
 
+    int minimapTile(int base, int status, boolean map, boolean compass) {
+        if (base == 0x7D) return base;
+        if ((base == 0xED || base == 0xEE) && !compass) base = 0xEF;
+        if (!map && !((base == 0xED || base == 0xEE) && compass)) return 0x7D;
+        if ((status & 0x80) == 0) return base;
+        if ((base == 0xED && (status & 0x10) == 0) || (base == 0xEE && (status & 0x20) == 0)) return base;
+        return map
+                ? 0xD0
+                        + read(
+                                linksawakening.rom.RomSymbols.Data_002_66F9.bank(),
+                                linksawakening.rom.RomSymbols.Data_002_66F9.address() + (status & 15))
+                : 0x7D;
+    }
+
+    private int read(int bank, int address) {
+        return data.u8(linksawakening.rom.RomAddress.fromOffset(RomBank.romOffset(bank, address)));
+    }
+
+    private int[] bytes(int bank, int address, int length) {
+        int[] result = new int[length];
+        for (int i = 0; i < length; i++) result[i] = read(bank, address + i);
+        return result;
+    }
+
+    private void commands(int[] map, int[] stream) {
+        for (int p = 0; p < stream.length && stream[p] != 0; ) {
+            int address = stream[p++] * 256 + stream[p++];
+            int length = stream[p++];
+            int count = (length & 0x3F) + 1;
+            int bytes = (length & 0x40) != 0 ? 1 : count;
+            command(map, address, length, Arrays.copyOfRange(stream, p, p + bytes));
+            p += bytes;
+        }
+    }
+
+    private void command(int[] map, int address, int length, int[] values) {
+        for (int i = 0; i <= (length & 0x3F); i++) {
+            int at = address - 0x9C00 + i * ((length & 0x80) != 0 ? 32 : 1);
+            int x = at & 31, y = at >>> 5;
+            if (address >= 0x9C00 && x < 20 && y < 18) map[y * 20 + x] = values[(length & 0x40) != 0 ? 0 : i];
+        }
+    }
+
     private static void copyRow(int[] source, int offset, int[] destination) {
         int count = Math.min(11, source.length - offset);
         System.arraycopy(source, offset, destination, 0, count);
@@ -211,14 +211,6 @@ final class InventoryDungeonPanel implements InventoryGraphics.Dungeon {
             set(mapId, position, frame, objectPalettes);
         }
 
-        Presentation set(int mapId, int position, int frame, int[][] objectPalettes) {
-            this.mapId = mapId;
-            this.position = position;
-            this.frame = frame;
-            this.objectPalettes = objectPalettes;
-            return this;
-        }
-
         public int mapId() {
             return mapId;
         }
@@ -233,6 +225,14 @@ final class InventoryDungeonPanel implements InventoryGraphics.Dungeon {
 
         public int[][] objectPalettes() {
             return objectPalettes;
+        }
+
+        Presentation set(int mapId, int position, int frame, int[][] objectPalettes) {
+            this.mapId = mapId;
+            this.position = position;
+            this.frame = frame;
+            this.objectPalettes = objectPalettes;
+            return this;
         }
     }
 }

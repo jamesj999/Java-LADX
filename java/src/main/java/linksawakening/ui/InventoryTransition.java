@@ -11,26 +11,6 @@ package linksawakening.ui;
  * than the house trace's 7 frames in WORLD_TILESET.
  */
 public final class InventoryTransition {
-    /** Named state values. */
-    public enum State {
-        WORLD,
-        INITIAL,
-        MAP_FADE_OUT,
-        LOAD1,
-        LOAD2,
-        LOAD3,
-        LOAD4,
-        LOAD5,
-        FADE_IN,
-        INTERACTIVE,
-        FADE_OUT,
-        WORLD_TILESET,
-        WORLD_TILEMAP,
-        WORLD_HUD,
-        WORLD_BUTTONS,
-        WORLD_FINISH,
-        WORLD_FADE_IN
-    }
 
     private State state = State.WORLD;
     private int frames, fadeCalls;
@@ -82,11 +62,6 @@ public final class InventoryTransition {
         enter(State.FADE_OUT);
         fadeCalls = 0; // CloseInventory $20:6436-$20:6443.
         firstTick = true;
-    }
-
-    private void enter(State next) {
-        state = next;
-        frames = 0;
     }
 
     public void tick() {
@@ -167,5 +142,30 @@ public final class InventoryTransition {
             result |= ((value << 3) | (value >> 2)) << shift;
         }
         return result;
+    }
+
+    private void enter(State next) {
+        state = next;
+        frames = 0;
+    }
+    /** Named state values. */
+    public enum State {
+        WORLD,
+        INITIAL,
+        MAP_FADE_OUT,
+        LOAD1,
+        LOAD2,
+        LOAD3,
+        LOAD4,
+        LOAD5,
+        FADE_IN,
+        INTERACTIVE,
+        FADE_OUT,
+        WORLD_TILESET,
+        WORLD_TILEMAP,
+        WORLD_HUD,
+        WORLD_BUTTONS,
+        WORLD_FINISH,
+        WORLD_FADE_IN
     }
 }

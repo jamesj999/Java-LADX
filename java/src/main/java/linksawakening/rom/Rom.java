@@ -32,25 +32,6 @@ public final class Rom {
         return data.length;
     }
 
-    int unsignedByteAt(int offset) {
-        return Byte.toUnsignedInt(data[offset]);
-    }
-
-    int signedByteAt(int offset) {
-        return data[offset];
-    }
-
-    int checkedOffset(RomAddress address, int length) {
-        Objects.requireNonNull(address, "address");
-        int offset = address.offset();
-        if (length < 0 || offset > data.length || length > data.length - offset) {
-            throw new IndexOutOfBoundsException(String.format(
-                    "ROM %02X:%04X length %d exceeds ROM length %d",
-                    address.bank(), address.address(), length, data.length));
-        }
-        return offset;
-    }
-
     public int u8(RomAddress address) {
         return Byte.toUnsignedInt(data[checkedOffset(address, 1)]);
     }
@@ -113,5 +94,24 @@ public final class Rom {
 
     public RomCursor cursor(RomAddress address) {
         return new RomCursor(view(address, size() - checkedOffset(address, 0)));
+    }
+
+    int unsignedByteAt(int offset) {
+        return Byte.toUnsignedInt(data[offset]);
+    }
+
+    int signedByteAt(int offset) {
+        return data[offset];
+    }
+
+    int checkedOffset(RomAddress address, int length) {
+        Objects.requireNonNull(address, "address");
+        int offset = address.offset();
+        if (length < 0 || offset > data.length || length > data.length - offset) {
+            throw new IndexOutOfBoundsException(String.format(
+                    "ROM %02X:%04X length %d exceeds ROM length %d",
+                    address.bank(), address.address(), length, data.length));
+        }
+        return offset;
     }
 }

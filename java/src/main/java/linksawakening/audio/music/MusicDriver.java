@@ -22,32 +22,23 @@ public final class MusicDriver {
     IntPredicate sfxOwnsChannel = channel -> false;
     BooleanSupplier takeWaveRestoreRequest = () -> false;
 
-    public void setSoundEffectState(IntPredicate ownsChannel, BooleanSupplier waveRestoreRequest) {
-        sfxOwnsChannel = Objects.requireNonNull(ownsChannel);
-        takeWaveRestoreRequest = Objects.requireNonNull(waveRestoreRequest);
-    }
-
-    void writeRegister(int register, int value) {
-        int channel = register <= GameBoyApu.NR14
-                ? 1
-                : register <= GameBoyApu.NR24
-                        ? 2
-                        : register <= GameBoyApu.NR34 ? 3 : register <= GameBoyApu.NR44 ? 4 : 0;
-        // Music continues sequencing while bit 7 of D3xF inhibits hardware writes.
-        // WriteChannelRegisters (1B:46BF), func_01B_4787 (1B:47A4).
-        if (channel == 0 || !sfxOwnsChannel.test(channel)) apu.writeRegister(register, value);
-    }
-
     private boolean playing;
     int trackBank;
     private int speedTablePointer;
     private int musicTranspose;
+
+    private final ParsePositions visited = new ParsePositions();
 
     public MusicDriver(Rom romData, GameBoyApu apu) {
         Objects.requireNonNull(romData, "romData");
         romBytes = romData.view(linksawakening.rom.RomAddress.fromOffset(0), romData.size());
         this.apu = Objects.requireNonNull(apu, "apu");
         voice = new MusicVoiceEmitter(this, apu);
+    }
+
+    public void setSoundEffectState(IntPredicate ownsChannel, BooleanSupplier waveRestoreRequest) {
+        sfxOwnsChannel = Objects.requireNonNull(ownsChannel);
+        takeWaveRestoreRequest = Objects.requireNonNull(waveRestoreRequest);
     }
 
     public void start(MusicTrack track) {
@@ -115,7 +106,28 @@ public final class MusicDriver {
         return channels[channel - 1].active;
     }
 
-    private final ParsePositions visited = new ParsePositions();
+    void writeRegister(int register, int value) {
+        int channel = register <= GameBoyApu.NR14
+                ? 1
+                : register <= GameBoyApu.NR24
+                        ? 2
+                        : register <= GameBoyApu.NR34 ? 3 : register <= GameBoyApu.NR44 ? 4 : 0;
+        // Music continues sequencing while bit 7 of D3xF inhibits hardware writes.
+        // WriteChannelRegisters (1B:46BF), func_01B_4787 (1B:47A4).
+        if (channel == 0 || !sfxOwnsChannel.test(channel)) apu.writeRegister(register, value);
+    }
+
+    int readByte(int bank, int address) {
+        if (bank < 0) throw new IllegalArgumentException("Bank cannot be negative");
+        // Preserve flat bank-relative addressing, including legacy non-CPU-window pointers.
+        int offset = (bank == 0 ? address : bank * 0x4000 + (address - 0x4000));
+        requireReadable(offset, 1, bank, address);
+        return romBytes.u8(offset);
+    }
+
+    static String hex(int value) {
+        return "0x" + Integer.toHexString(value).toUpperCase(java.util.Locale.ROOT);
+    }
 
     private void parseUntilTimeConsumed(MusicChannelState state) {
         visited.clear();
@@ -228,14 +240,6 @@ public final class MusicDriver {
         return readByte(trackBank, speedTablePointer + index);
     }
 
-    int readByte(int bank, int address) {
-        if (bank < 0) throw new IllegalArgumentException("Bank cannot be negative");
-        // Preserve flat bank-relative addressing, including legacy non-CPU-window pointers.
-        int offset = (bank == 0 ? address : bank * 0x4000 + (address - 0x4000));
-        requireReadable(offset, 1, bank, address);
-        return romBytes.u8(offset);
-    }
-
     private int readWord(int bank, int address) {
         if (bank < 0) throw new IllegalArgumentException("Bank cannot be negative");
         // Preserve flat bank-relative addressing, including legacy non-CPU-window pointers.
@@ -292,9 +296,5 @@ public final class MusicDriver {
         return new IllegalStateException("Unsupported music opcode " + hex(opcode)
                 + " on channel " + state.channel + " bank " + hex(trackBank)
                 + " address " + hex(address));
-    }
-
-    static String hex(int value) {
-        return "0x" + Integer.toHexString(value).toUpperCase(java.util.Locale.ROOT);
     }
 }

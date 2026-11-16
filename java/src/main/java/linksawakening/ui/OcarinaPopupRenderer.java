@@ -75,36 +75,6 @@ public final class OcarinaPopupRenderer {
                 SELECTION_FLIPPED_PALETTE);
     }
 
-    private static int menuPlayerSelectedSong(OcarinaSongMenu menu) {
-        // OcarinaSongMenu intentionally exposes the persistent selection
-        // through its song-selection behavior; this helper keeps rendering
-        // independent of the menu's transition fields.
-        return menu.selectedSongIndex();
-    }
-
-    private static void drawOamEntry(
-            byte[] displayBuffer, GPU gpu, int[][] objectPalettes, int oamY, int oamX, int tile, int attributes) {
-        int paletteIndex = attributes & 0x07;
-        int[] palette = objectPalettes[Math.min(paletteIndex, objectPalettes.length - 1)];
-        IndexedRenderer.drawSpriteTile(
-                displayBuffer,
-                gpu.getTile(tile),
-                oamX - OAM_X_SCREEN_OFFSET,
-                oamY - OAM_Y_SCREEN_OFFSET,
-                (attributes & 0x20) != 0,
-                (attributes & 0x40) != 0,
-                palette);
-    }
-
-    private static int songIndexForTile(int tile) {
-        return switch (tile) {
-            case 0x22 -> 0;
-            case 0x24 -> 1;
-            case 0x26 -> 2;
-            default -> -1;
-        };
-    }
-
     public void submit(
             linksawakening.render.HardwareFrame frameModel, GPU gpu, int[][] objectPalettes, OcarinaSongMenu menu) {
         Objects.requireNonNull(frameModel, "displayBuffer");
@@ -139,6 +109,36 @@ public final class OcarinaPopupRenderer {
         drawOamEntry(frameModel, gpu, objectPalettes, SELECTION_Y, markerX, SELECTION_TILE, SELECTION_PALETTE);
         drawOamEntry(
                 frameModel, gpu, objectPalettes, SELECTION_Y, markerX + 8, SELECTION_TILE, SELECTION_FLIPPED_PALETTE);
+    }
+
+    private static int menuPlayerSelectedSong(OcarinaSongMenu menu) {
+        // OcarinaSongMenu intentionally exposes the persistent selection
+        // through its song-selection behavior; this helper keeps rendering
+        // independent of the menu's transition fields.
+        return menu.selectedSongIndex();
+    }
+
+    private static void drawOamEntry(
+            byte[] displayBuffer, GPU gpu, int[][] objectPalettes, int oamY, int oamX, int tile, int attributes) {
+        int paletteIndex = attributes & 0x07;
+        int[] palette = objectPalettes[Math.min(paletteIndex, objectPalettes.length - 1)];
+        IndexedRenderer.drawSpriteTile(
+                displayBuffer,
+                gpu.getTile(tile),
+                oamX - OAM_X_SCREEN_OFFSET,
+                oamY - OAM_Y_SCREEN_OFFSET,
+                (attributes & 0x20) != 0,
+                (attributes & 0x40) != 0,
+                palette);
+    }
+
+    private static int songIndexForTile(int tile) {
+        return switch (tile) {
+            case 0x22 -> 0;
+            case 0x24 -> 1;
+            case 0x26 -> 2;
+            default -> -1;
+        };
     }
 
     private static void drawOamEntry(

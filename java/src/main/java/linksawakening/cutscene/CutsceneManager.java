@@ -18,11 +18,6 @@ public final class CutsceneManager implements CutsceneContext {
     private final IntroPlayback playback;
     private IntConsumer noiseSound = id -> {};
 
-    public void setIntroNoiseSound(IntConsumer sink) {
-        noiseSound = Objects.requireNonNull(sink);
-        playback.setNoiseSound(noiseSound);
-    }
-
     private String currentScene = "";
 
     public CutsceneManager(DialogController dialogController, Consumer<String> sceneLoader) {
@@ -30,6 +25,11 @@ public final class CutsceneManager implements CutsceneContext {
         this.sceneLoader = Objects.requireNonNull(sceneLoader);
         this.controller = new CutsceneController(this);
         playback = new IntroPlayback(this::setScene);
+    }
+
+    public void setIntroNoiseSound(IntConsumer sink) {
+        noiseSound = Objects.requireNonNull(sink);
+        playback.setNoiseSound(noiseSound);
     }
 
     public void startIntro() {

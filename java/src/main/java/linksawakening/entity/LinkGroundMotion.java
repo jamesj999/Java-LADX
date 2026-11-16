@@ -12,6 +12,10 @@ final class LinkGroundMotion {
     private final LinkComponentRef<LinkSideView> linkSideView;
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;
 
+    int groundMotionCounter;
+    int worldMotionFrame = -1;
+    boolean grassGroundEffectActive;
+
     LinkGroundMotion(Dependencies dependencies) {
         linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
         linkDamage = Objects.requireNonNull(dependencies.linkDamage, "linkDamage");
@@ -20,19 +24,6 @@ final class LinkGroundMotion {
         linkSideView = Objects.requireNonNull(dependencies.linkSideView, "linkSideView");
         linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
     }
-
-    static final class Dependencies {
-        LinkComponentRef<LinkAirborne> linkAirborne;
-        LinkComponentRef<LinkDamage> linkDamage;
-        LinkComponentRef<LinkMotion> linkMotion;
-        LinkComponentRef<LinkServices> linkServices;
-        LinkComponentRef<LinkSideView> linkSideView;
-        LinkComponentRef<LinkStateMachine> linkStateMachine;
-    }
-
-    int groundMotionCounter;
-    int worldMotionFrame = -1;
-    boolean grassGroundEffectActive;
 
     void accessUpdate() {
         linkStateMachine.get().update();
@@ -77,5 +68,14 @@ final class LinkGroundMotion {
         // Isolated Link callers without a session clock retain their local tick.
         int frame = worldMotionFrame >= 0 ? worldMotionFrame : groundMotionCounter;
         return (frame & 0x03) != 0;
+    }
+
+    static final class Dependencies {
+        LinkComponentRef<LinkAirborne> linkAirborne;
+        LinkComponentRef<LinkDamage> linkDamage;
+        LinkComponentRef<LinkMotion> linkMotion;
+        LinkComponentRef<LinkServices> linkServices;
+        LinkComponentRef<LinkSideView> linkSideView;
+        LinkComponentRef<LinkStateMachine> linkStateMachine;
     }
 }

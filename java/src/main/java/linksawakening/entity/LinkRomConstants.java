@@ -4,7 +4,6 @@ import linksawakening.state.Direction;
 
 /** Constants and lookup tables mirroring the ROM Link motion paths. */
 final class LinkRomConstants {
-    private LinkRomConstants() {}
 
     // Bit order matches JoypadToLinkDirection (bank2.asm:1183): entry 1 = right,
     // 2 = left, 4 = up, 8 = down.
@@ -86,4 +85,6 @@ final class LinkRomConstants {
         {9, 12}, // LEFT — middle-left
         {9, 12}, // RIGHT — middle-right
     };
+
+    private LinkRomConstants() {}
 }

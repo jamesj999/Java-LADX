@@ -29,14 +29,6 @@ final class RomSoundEffectTables {
         return handlerAddress(effect.namespace(), effect.id(), false);
     }
 
-    int tableBase(SoundEffectNamespace namespace, boolean begin) {
-        return switch (namespace) {
-            case JINGLE -> begin ? JINGLE_BEGIN_TABLE : JINGLE_CONTINUE_TABLE;
-            case WAVE -> begin ? WAVE_BEGIN_TABLE : WAVE_CONTINUE_TABLE;
-            case NOISE -> begin ? NOISE_BEGIN_TABLE : NOISE_CONTINUE_TABLE;
-        };
-    }
-
     public int handlerAddress(SoundEffectNamespace namespace, int id, boolean begin) {
         Objects.requireNonNull(namespace, "namespace");
         if (id <= 0 || id > 0xFF) {
@@ -46,6 +38,14 @@ final class RomSoundEffectTables {
         int offset = new RomAddress(SFX_BANK, table + ((id - 1) * 2)).offset();
         requireReadable(offset, 2);
         return romData.u16le(new RomAddress(SFX_BANK, table + ((id - 1) * 2)));
+    }
+
+    int tableBase(SoundEffectNamespace namespace, boolean begin) {
+        return switch (namespace) {
+            case JINGLE -> begin ? JINGLE_BEGIN_TABLE : JINGLE_CONTINUE_TABLE;
+            case WAVE -> begin ? WAVE_BEGIN_TABLE : WAVE_CONTINUE_TABLE;
+            case NOISE -> begin ? NOISE_BEGIN_TABLE : NOISE_CONTINUE_TABLE;
+        };
     }
 
     private void requireReadable(int offset, int length) {

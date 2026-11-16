@@ -20,6 +20,18 @@ final class LinkEntityEffects {
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;
     private final LinkComponentRef<LinkSwimming> linkSwimming;
 
+    boolean likeLikeCaptured;
+    boolean likeLikeCapturePinsPosition;
+    int likeLikeCaptureSubX;
+    int likeLikeCaptureSubY;
+    int carryingLiftedObjectState;
+    int carryingLiftedObjectRomDirection = 3;
+    boolean roosterCarryActive;
+    boolean grabbingObject;
+    boolean pullingObject;
+    /** Mirrors wC10A while Marin's scripted bed-exit jump owns Link motion. */
+    boolean marinBedJumpMotionLocked;
+
     LinkEntityEffects(Dependencies dependencies) {
         linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
         linkAnimationState = Objects.requireNonNull(dependencies.linkAnimationState, "linkAnimationState");
@@ -32,31 +44,6 @@ final class LinkEntityEffects {
         linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
         linkSwimming = Objects.requireNonNull(dependencies.linkSwimming, "linkSwimming");
     }
-
-    static final class Dependencies {
-        LinkComponentRef<LinkAirborne> linkAirborne;
-        LinkComponentRef<LinkAnimationState> linkAnimationState;
-        LinkComponentRef<LinkAnimator> linkAnimator;
-        LinkComponentRef<LinkDamage> linkDamage;
-        LinkComponentRef<LinkGroundMotion> linkGroundMotion;
-        LinkComponentRef<LinkItemState> linkItemState;
-        LinkComponentRef<LinkMotion> linkMotion;
-        LinkComponentRef<LinkServices> linkServices;
-        LinkComponentRef<LinkStateMachine> linkStateMachine;
-        LinkComponentRef<LinkSwimming> linkSwimming;
-    }
-
-    boolean likeLikeCaptured;
-    boolean likeLikeCapturePinsPosition;
-    int likeLikeCaptureSubX;
-    int likeLikeCaptureSubY;
-    int carryingLiftedObjectState;
-    int carryingLiftedObjectRomDirection = 3;
-    boolean roosterCarryActive;
-    boolean grabbingObject;
-    boolean pullingObject;
-    /** Mirrors wC10A while Marin's scripted bed-exit jump owns Link motion. */
-    boolean marinBedJumpMotionLocked;
 
     /** Hiding and shield theft precede the ROM's default-motion position gate. */
     void applyLikeLikeCapture(int romEntityX, int romEntityY) {
@@ -350,5 +337,18 @@ final class LinkEntityEffects {
     void accessSetGrabbingObject(boolean grabbing, boolean pulling) {
         this.grabbingObject = grabbing;
         this.pullingObject = grabbing && pulling;
+    }
+
+    static final class Dependencies {
+        LinkComponentRef<LinkAirborne> linkAirborne;
+        LinkComponentRef<LinkAnimationState> linkAnimationState;
+        LinkComponentRef<LinkAnimator> linkAnimator;
+        LinkComponentRef<LinkDamage> linkDamage;
+        LinkComponentRef<LinkGroundMotion> linkGroundMotion;
+        LinkComponentRef<LinkItemState> linkItemState;
+        LinkComponentRef<LinkMotion> linkMotion;
+        LinkComponentRef<LinkServices> linkServices;
+        LinkComponentRef<LinkStateMachine> linkStateMachine;
+        LinkComponentRef<LinkSwimming> linkSwimming;
     }
 }

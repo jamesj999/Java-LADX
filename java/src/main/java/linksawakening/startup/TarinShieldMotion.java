@@ -2,13 +2,6 @@ package linksawakening.startup;
 
 /** Source-timed state for TarinEntityHandler's indoor shield sequence. */
 public final class TarinShieldMotion {
-    /** Named state values. */
-    public enum State {
-        IDLE,
-        OFFER,
-        ITEM,
-        COMPLETE
-    }
 
     private static final int DOOR_Y = 0x7B;
     private static final int DOOR_DIALOG = 0x00;
@@ -102,6 +95,13 @@ public final class TarinShieldMotion {
         }
         return directionToLink == (linkDirection ^ 0x01);
     }
+    /** Named state values. */
+    public enum State {
+        IDLE,
+        OFFER,
+        ITEM,
+        COMPLETE
+    }
     /** Immutable update values. */
     public record Update(
             int linkY,
@@ -112,6 +112,10 @@ public final class TarinShieldMotion {
             boolean presentShield) {
         // All inputs are validated ROM bytes. These immutable values may be retained by callers.
         private static final Update[][] VALUES = values();
+
+        private static Update unblocked(int linkY) {
+            return VALUES[UNBLOCKED][linkY];
+        }
 
         private static Update[][] values() {
             Update[][] values = new Update[7][256];
@@ -125,10 +129,6 @@ public final class TarinShieldMotion {
                 values[PRESENT_SHIELD][y] = new Update(y, -1, true, false, false, true);
             }
             return values;
-        }
-
-        private static Update unblocked(int linkY) {
-            return VALUES[UNBLOCKED][linkY];
         }
     }
 }

@@ -16,12 +16,12 @@ import linksawakening.scene.BackgroundSceneCatalog;
  * with the d-pad and A, B, or Start confirms the current option.</p>
  */
 public final class FileSaveController {
-    private final FileMenuFrameSnapshot.Builder snapshotBuilder = new FileMenuFrameSnapshot.Builder();
 
     private static final int OPTION_COUNT = 2;
     private static final int SAVE_ARROW_TILE = 0xBE;
     private static final int SAVE_ARROW_OAM_X = 0x24;
     private static final int[] SAVE_OPTION_OAM_Y = {0x48, 0x58};
+    private final FileMenuFrameSnapshot.Builder snapshotBuilder = new FileMenuFrameSnapshot.Builder();
 
     private final BackgroundScene scene;
     private int selectedOption;

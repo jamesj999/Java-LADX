@@ -14,26 +14,6 @@ public final class AppConfig {
 
     private static final String RESOURCE_PATH = "config/config.json";
 
-    /** Supported configured starting map categories. */
-    public enum StartLocationType {
-        OVERWORLD
-    }
-
-    /** Selects the startup location policy. */
-    public enum StartMode {
-        CONFIGURED_LOCATION,
-        NORMAL
-    }
-
-    /** Initial player inventory policy. */
-    public enum ItemProfile {
-        DEBUG_ALL_ITEMS,
-        NEW_GAME
-    }
-
-    /** Configured map category and room identifier. */
-    public record StartLocation(StartLocationType type, int roomId) {}
-
     private final boolean showTitleScreen;
     private final boolean playIntroStory;
     private final boolean debugEnabled;
@@ -57,34 +37,6 @@ public final class AppConfig {
         this.startLocation = startLocation;
         this.itemProfile = itemProfile;
         this.inputConfig = inputConfig;
-    }
-
-    public boolean showTitleScreen() {
-        return showTitleScreen;
-    }
-
-    public boolean playIntroStory() {
-        return playIntroStory;
-    }
-
-    public boolean debugEnabled() {
-        return debugEnabled;
-    }
-
-    public StartMode startMode() {
-        return startMode;
-    }
-
-    public StartLocation startLocation() {
-        return startLocation;
-    }
-
-    public ItemProfile itemProfile() {
-        return itemProfile;
-    }
-
-    public InputConfig inputConfig() {
-        return inputConfig;
     }
 
     public static AppConfig defaults() {
@@ -132,6 +84,34 @@ public final class AppConfig {
 
         return new AppConfig(
                 showTitleScreen, playIntroStory, debugEnabled, startMode, startLocation, itemProfile, inputConfig);
+    }
+
+    public boolean showTitleScreen() {
+        return showTitleScreen;
+    }
+
+    public boolean playIntroStory() {
+        return playIntroStory;
+    }
+
+    public boolean debugEnabled() {
+        return debugEnabled;
+    }
+
+    public StartMode startMode() {
+        return startMode;
+    }
+
+    public StartLocation startLocation() {
+        return startLocation;
+    }
+
+    public ItemProfile itemProfile() {
+        return itemProfile;
+    }
+
+    public InputConfig inputConfig() {
+        return inputConfig;
     }
 
     private static StartMode parseStartMode(String value, StartMode fallback) {
@@ -224,4 +204,24 @@ public final class AppConfig {
         }
         return result;
     }
+
+    /** Supported configured starting map categories. */
+    public enum StartLocationType {
+        OVERWORLD
+    }
+
+    /** Selects the startup location policy. */
+    public enum StartMode {
+        CONFIGURED_LOCATION,
+        NORMAL
+    }
+
+    /** Initial player inventory policy. */
+    public enum ItemProfile {
+        DEBUG_ALL_ITEMS,
+        NEW_GAME
+    }
+
+    /** Configured map category and room identifier. */
+    public record StartLocation(StartLocationType type, int roomId) {}
 }

@@ -20,6 +20,8 @@ final class LinkEquipment {
     private final LinkComponentRef<LinkServices> linkServices;
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;
 
+    BooleanSupplier shieldInputAllowed = () -> true;
+
     LinkEquipment(Dependencies dependencies) {
         linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
         linkAnimationState = Objects.requireNonNull(dependencies.linkAnimationState, "linkAnimationState");
@@ -29,18 +31,6 @@ final class LinkEquipment {
         linkServices = Objects.requireNonNull(dependencies.linkServices, "linkServices");
         linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
     }
-
-    static final class Dependencies {
-        LinkComponentRef<LinkAirborne> linkAirborne;
-        LinkComponentRef<LinkAnimationState> linkAnimationState;
-        LinkComponentRef<LinkControls> linkControls;
-        LinkComponentRef<LinkEntityEffects> linkEntityEffects;
-        LinkComponentRef<LinkItemState> linkItemState;
-        LinkComponentRef<LinkServices> linkServices;
-        LinkComponentRef<LinkStateMachine> linkStateMachine;
-    }
-
-    BooleanSupplier shieldInputAllowed = () -> true;
 
     /**
      * Mirrors the leading CheckItemsToUse gate used before an equipped item
@@ -224,5 +214,15 @@ final class LinkEquipment {
 
     int accessApplyRomItemDirectionFromInput() {
         return this.applyRomItemDirectionFromInput();
+    }
+
+    static final class Dependencies {
+        LinkComponentRef<LinkAirborne> linkAirborne;
+        LinkComponentRef<LinkAnimationState> linkAnimationState;
+        LinkComponentRef<LinkControls> linkControls;
+        LinkComponentRef<LinkEntityEffects> linkEntityEffects;
+        LinkComponentRef<LinkItemState> linkItemState;
+        LinkComponentRef<LinkServices> linkServices;
+        LinkComponentRef<LinkStateMachine> linkStateMachine;
     }
 }
