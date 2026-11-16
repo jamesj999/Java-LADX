@@ -39,7 +39,7 @@ final class VfxPoseCache {
 
     // Indexes private tables built from the same enum; ordinals are never persisted or used as ROM bytes.
     @SuppressWarnings("EnumOrdinal")
-    List<CutLeavesEffectRenderer.SpritePlacement> pose(TransientVfxSystem.Slot slot, int frame) {
+    List<CutLeavesEffectRenderer.SpritePlacement> pose(TransientVfxSystem.SlotView slot, int frame) {
         int countdown = slot.countdown();
         int index =
                 switch (slot.type()) {

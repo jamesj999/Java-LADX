@@ -8,12 +8,12 @@ final class RoomTerrainView implements RoomTerrain {
     }
 
     @Override
-    public boolean tickCrackedFloor(LinkGroundFrame frame, boolean dialogGotItemActive) {
+    public boolean tickCrackedFloor(LinkGroundInputs frame, boolean dialogGotItemActive) {
         return session.tickCrackedFloor(frame, dialogGotItemActive);
     }
 
     @Override
-    public boolean tickCrackedFloorOnLanding(LinkGroundFrame frame, boolean dialogGotItemActive) {
+    public boolean tickCrackedFloorOnLanding(LinkGroundInputs frame, boolean dialogGotItemActive) {
         return session.tickCrackedFloorOnLanding(frame, dialogGotItemActive);
     }
 

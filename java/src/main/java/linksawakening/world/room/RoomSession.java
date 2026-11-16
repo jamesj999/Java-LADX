@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.Link;
 import linksawakening.state.Direction;
+import linksawakening.world.entity.EnemyCombatInputs;
 import linksawakening.world.entity.EnemyProjectileCollision;
+import linksawakening.world.entity.EntityPickupFrameInputs;
 import linksawakening.world.entity.FollowingNpcState;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -33,7 +35,7 @@ import linksawakening.world.transition.Warp;
 public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOperations {
 
     /** Applies the live frame inputs in source order before ticking slots. */
-    public List<EntityProjectileEvent> tickEntities(EntityFrameInputs inputs) {
+    public List<EntityProjectileEvent> tickEntities(EntityFrameValues inputs) {
         return frameInputs.tick(inputs);
     }
 
@@ -113,7 +115,7 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
                 new PresentationOutputs(this));
     }
 
-    public List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs) {
+    public List<EntityProjectileEvent> tickEntities(EntityTickValues inputs) {
 
         int linkEntityX = inputs.position().x();
         int linkEntityY = inputs.position().y();
@@ -160,8 +162,9 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
         return hasRoom() && loadedRoom.entities.inspection().inBossBattle();
     }
 
-    java.util.List<linksawakening.world.entity.event.EntityCombatEvent> resolveEntityCombat(EntityCombatInputs inputs) {
-        java.util.Objects.requireNonNull(inputs.sword(), "sword");
+    java.util.List<linksawakening.world.entity.event.EntityCombatEvent> resolveEntityCombat(EnemyCombatInputs inputs) {
+        if (inputs instanceof EntityCombatInputs owned) java.util.Objects.requireNonNull(owned.sword(), "sword");
+        else inputs.swordCollisionActive();
         return !hasRoom()
                 ? java.util.List.of()
                 : components.entityCombatBridge().resolveEntityCombat(loadedRoom, inputs);
@@ -175,9 +178,15 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
         return !hasRoom() ? 0 : components.entityCombatBridge().clearEntity(loadedRoom, slot);
     }
 
-    linksawakening.world.entity.EntityPickupEvent collectEntityIfNeeded(EntityPickupInputs inputs) {
-        java.util.Objects.requireNonNull(inputs.link(), "link");
-        java.util.Objects.requireNonNull(inputs.sword(), "sword");
+    linksawakening.world.entity.EntityPickupEvent collectEntityIfNeeded(EntityPickupFrameInputs inputs) {
+        // Evaluate both required groups before the no-room default, preserving boundary validation.
+        if (inputs instanceof EntityPickupInputs owned) {
+            java.util.Objects.requireNonNull(owned.link(), "link");
+            java.util.Objects.requireNonNull(owned.sword(), "sword");
+        } else {
+            inputs.linkDirection();
+            inputs.swordActive();
+        }
         return !hasRoom() ? null : components.entityCombatBridge().collectEntityIfNeeded(loadedRoom, inputs);
     }
 
@@ -731,11 +740,11 @@ public final class RoomSession implements RoomEntityOutputSource, RoomBoundaryOp
         return List.copyOf(requests);
     }
 
-    boolean tickCrackedFloor(LinkGroundFrame frame, boolean dialogGotItemActive) {
+    boolean tickCrackedFloor(LinkGroundInputs frame, boolean dialogGotItemActive) {
         return hasRoom() && components.roomObjectMutations().tickCrackedFloor(loadedRoom, frame, dialogGotItemActive);
     }
 
-    boolean tickCrackedFloorOnLanding(LinkGroundFrame frame, boolean dialogGotItemActive) {
+    boolean tickCrackedFloorOnLanding(LinkGroundInputs frame, boolean dialogGotItemActive) {
         return hasRoom()
                 && components
                         .roomObjectMutations()

@@ -39,7 +39,7 @@ public final class EntityPhase {
     private final EntityFrameStages stages = new EntityFrameStages() {
         @Override
         public List<EntityProjectileEvent> tickEntities(GameplaySimulation c, Sword.CollisionBox b) {
-            return c.roomSession().tickEntities(inputs.create(c, b));
+            return c.roomSession().tickEntities(inputs.borrow(c, b));
         }
 
         @Override

@@ -43,10 +43,10 @@ final class SessionAllocationTest {
             assertEquals(70, session.diagnostics().link().position().romEntityX(), "Left the bed");
             long bytesPerFrame = measure(session);
             System.out.println("Active simulation allocation bytes/frame: " + bytesPerFrame);
-            // Round 7 EA-off achieved 433; +25% headroom.
+            // EA-off achieved 137; +25% headroom.
             // Remaining costs are changed immutable app/world frame values;
             // this total-step budget is not an app-only attribution claim.
-            assertTrue(bytesPerFrame <= 542, "Active simulation bytes/frame: " + bytesPerFrame);
+            assertTrue(bytesPerFrame <= 172, "Active simulation bytes/frame: " + bytesPerFrame);
         } finally {
             session.cleanup();
         }

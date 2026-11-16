@@ -1,6 +1,7 @@
 package linksawakening.world.room;
 
 import linksawakening.world.entity.EnemyAttackContext;
+import linksawakening.world.entity.EnemyCombatInputs;
 
 public record EntityCombatInputs(
         int frameCounter,
@@ -11,7 +12,7 @@ public record EntityCombatInputs(
         boolean linkInteractive,
         SwordBox sword,
         EnemyAttackContext attackContext)
-        implements linksawakening.world.entity.EnemyCombatInputs {
+        implements EnemyCombatInputs {
     @Override
     public boolean swordCollisionActive() {
         return sword.active();

@@ -22,7 +22,7 @@ import linksawakening.world.entity.PairoddProjectileObjectCollision;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityGroundInteraction;
 import linksawakening.world.entity.RoomEntityObjectSample;
-import linksawakening.world.transition.RoomBoundaryState;
+import linksawakening.world.transition.RoomBoundaryView;
 import linksawakening.world.transition.Warp;
 
 /** ApplyLinkMotionState ground probes and entity collision queries over current room state. */
@@ -33,37 +33,31 @@ final class RoomCollisionQueries {
         this.dependencies = dependencies;
     }
 
-    RoomBoundaryState boundaryState(RoomRuntime loaded, int linkX, int linkY) {
-        return boundaryState(loaded, linkX, linkY, false);
+    RoomBoundaryView boundaryView(RoomRuntime loaded, int linkX, int linkY) {
+        return boundaryView(loaded, linkX, linkY, false);
     }
 
-    RoomBoundaryState boundaryState(RoomRuntime loaded, int linkX, int linkY, boolean linkAirborne) {
-        return boundaryState(loaded, linkX, linkY, linkAirborne, 0);
+    RoomBoundaryView boundaryView(RoomRuntime loaded, int linkX, int linkY, boolean linkAirborne) {
+        return boundaryView(loaded, linkX, linkY, linkAirborne, 0);
     }
 
-    RoomBoundaryState boundaryState(
+    RoomBoundaryView boundaryView(
             RoomRuntime loaded, int linkX, int linkY, boolean linkAirborne, int linkPhysicsModifier) {
         boolean sideViewEntityActive = !loaded.room.entityView().slots().isEmpty()
                 && loaded.room.entityView().slots().get(0).status() != EntityStatus.DISABLED;
-        var active = loaded.room;
-        if (loaded.collisions.boundary == null
-                || loaded.collisions.boundary.mapCategory() != active.mapCategory()
-                || loaded.collisions.boundary.roomId() != active.roomId()
-                || loaded.collisions.boundary.indoorHasSouthEntrance() != active.indoorHasSouthEntrance()
-                || loaded.collisions.boundary.hasWarps() != active.hasWarps()
-                || loaded.collisions.boundary.shutterDoorMask() != loaded.contents.puzzles.closedShutterMask
-                || loaded.collisions.boundary.mapId() != active.mapId())
-            loaded.collisions.boundary = new linksawakening.world.transition.RoomBoundaryInputs.Room(
-                    loaded.room.mapCategory(),
-                    loaded.room.roomId(),
-                    loaded.room.indoorHasSouthEntrance(),
-                    loaded.room.hasWarps(),
-                    loaded.contents.puzzles.closedShutterMask,
-                    loaded.room.mapId());
-        return new RoomBoundaryState(new linksawakening.world.transition.RoomBoundaryInputs(
-                loaded.collisions.boundary,
-                new linksawakening.world.transition.RoomBoundaryInputs.Link(
-                        linkX, linkY, linkAirborne, linkPhysicsModifier, sideViewEntityActive)));
+        var view = loaded.collisions.boundary;
+        view.mapCategory = loaded.room.mapCategory();
+        view.roomId = loaded.room.roomId();
+        view.indoorHasSouthEntrance = loaded.room.indoorHasSouthEntrance();
+        view.hasWarps = loaded.room.hasWarps();
+        view.shutterDoorMask = loaded.contents.puzzles.closedShutterMask;
+        view.mapId = loaded.room.mapId();
+        view.linkX = linkX;
+        view.linkY = linkY;
+        view.linkAirborne = linkAirborne;
+        view.linkPhysicsModifier = linkPhysicsModifier;
+        view.sideViewEntityActive = sideViewEntityActive;
+        return view;
     }
 
     RoomEntityObjectSample entityObjectSample(RoomRuntime loaded, RoomEntity entity) {

@@ -1,9 +1,9 @@
 package linksawakening.world.room;
 
 import linksawakening.state.Direction;
+import linksawakening.world.entity.EntityPickupFrameInputs;
 
-public record EntityPickupInputs(int frameCounter, Link link, SwordBox sword)
-        implements linksawakening.world.entity.EntityPickupFrameInputs {
+public record EntityPickupInputs(int frameCounter, Link link, SwordBox sword) implements EntityPickupFrameInputs {
     @Override
     public int linkEntityX() {
         return link.x();

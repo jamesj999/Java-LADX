@@ -30,6 +30,21 @@ class EntityAllocationTest {
     }
 
     @Test
+    void borrowedFrameInputsAllocation() throws Exception {
+        try (var session = AllocationSessions.active()) {
+            var c = session.flows().simulation();
+            var sword = Sword.CollisionBox.inactive();
+            var inputs = new EntityFrameInputsFactory();
+            double bytes = AllocationProbe.bytesPerIteration(600, 120, () -> {
+                session.frameClock().advance();
+                observed = inputs.borrow(c, sword);
+            });
+            System.out.println("Borrowed entity inputs bytes/frame: " + bytes);
+            assertTrue(bytes == 0, "Borrowed entity frame input bytes: " + bytes);
+        }
+    }
+
+    @Test
     void resultApplicationWithoutWorldTickAllocation() throws Exception {
         try (var session = AllocationSessions.active()) {
             var c = session.flows().simulation();

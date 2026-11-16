@@ -1,7 +1,9 @@
 package linksawakening.world.room;
 
 import java.util.List;
+import linksawakening.world.entity.EnemyCombatInputs;
 import linksawakening.world.entity.EntityPickupEvent;
+import linksawakening.world.entity.EntityPickupFrameInputs;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 
@@ -55,7 +57,7 @@ final class RoomEntitiesView implements RoomEntities {
     }
 
     @Override
-    public EntityPickupEvent collectEntityIfNeeded(EntityPickupInputs inputs) {
+    public EntityPickupEvent collectEntityIfNeeded(EntityPickupFrameInputs inputs) {
         return dependencies.session().collectEntityIfNeeded(inputs);
     }
 
@@ -104,7 +106,7 @@ final class RoomEntitiesView implements RoomEntities {
     }
 
     @Override
-    public List<EntityCombatEvent> resolveEntityCombat(EntityCombatInputs inputs) {
+    public List<EntityCombatEvent> resolveEntityCombat(EnemyCombatInputs inputs) {
         return dependencies.session().resolveEntityCombat(inputs);
     }
 
@@ -137,7 +139,7 @@ final class RoomEntitiesView implements RoomEntities {
     }
 
     @Override
-    public List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs) {
+    public List<EntityProjectileEvent> tickEntities(EntityTickValues inputs) {
         return dependencies.session().tickEntities(inputs);
     }
 

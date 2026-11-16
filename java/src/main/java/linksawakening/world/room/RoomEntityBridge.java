@@ -56,7 +56,7 @@ final class RoomEntityBridge {
         dependencies.entityFrame().boomerangSoundClockProvided = true;
     }
 
-    List<EntityProjectileEvent> tickEntities(RoomRuntime loaded, EntityTickInputs inputs) {
+    List<EntityProjectileEvent> tickEntities(RoomRuntime loaded, EntityTickValues inputs) {
         return roomEntitySimulation.tickEntities(loaded, inputs);
     }
 

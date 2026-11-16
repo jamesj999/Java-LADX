@@ -13,11 +13,14 @@ public record LinkGroundFrame(
         boolean roomTransitionActive,
         int rawMotionState,
         int slowWalkingSpeed,
-        int itemUsageContext) {
+        int itemUsageContext)
+        implements LinkGroundInputs {
+    @Override
     public Optional<LinkMotionState> knownState() {
         return Optional.ofNullable(motionState());
     }
     /** Legacy nullable classification, absent for an unknown dispatch byte. */
+    @Override
     public LinkMotionState motionState() {
         return LinkMotion.stateForRomByte(rawMotionState);
     }

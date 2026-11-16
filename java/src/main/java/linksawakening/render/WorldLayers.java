@@ -11,7 +11,7 @@ final class WorldLayers {
     private final LinkRenderLayer link = new LinkRenderLayer(null, null);
     private final InventoryRenderLayer inventory = new InventoryRenderLayer(null, null);
     private final DialogRenderLayer dialog = new DialogRenderLayer(null, null, null, 0);
-    private final TransientVfxRenderLayer vfx = new TransientVfxRenderLayer(null, null, null, null);
+    private final TransientVfxRenderLayer vfx = new TransientVfxRenderLayer();
     private final DroppableRupeeRenderLayer rupees = new DroppableRupeeRenderLayer(null, null);
     private final StoryLayer shadow = new StoryLayer(StoryLayer.Kind.SHADOW),
             grass = new StoryLayer(StoryLayer.Kind.GRASS),

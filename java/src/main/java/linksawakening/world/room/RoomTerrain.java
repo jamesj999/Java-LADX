@@ -1,9 +1,9 @@
 package linksawakening.world.room;
 
 public interface RoomTerrain {
-    boolean tickCrackedFloor(LinkGroundFrame frame, boolean dialogGotItemActive);
+    boolean tickCrackedFloor(LinkGroundInputs frame, boolean dialogGotItemActive);
 
-    boolean tickCrackedFloorOnLanding(LinkGroundFrame frame, boolean dialogGotItemActive);
+    boolean tickCrackedFloorOnLanding(LinkGroundInputs frame, boolean dialogGotItemActive);
 
     boolean breakIndoorSwordCrystal(int location);
 }

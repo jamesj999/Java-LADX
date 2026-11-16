@@ -1,6 +1,6 @@
 package linksawakening.app.gameplay;
 
-import linksawakening.world.room.LinkGroundFrame;
+import linksawakening.world.room.LinkGroundInputs;
 
 /**
  * Ground sampling at the pre- and post-motion ROM positions. Stateless utility; no session state is
@@ -29,7 +29,8 @@ final class LinkGroundPhase {
                 || context.roomSession().entityState().gotItemPresentationActive();
     }
 
-    static LinkGroundFrame groundFrame(GameplaySimulation context, int pixelX, int pixelY, boolean interactionBlocked) {
+    static LinkGroundInputs groundFrame(
+            GameplaySimulation context, int pixelX, int pixelY, boolean interactionBlocked) {
         return context.frameInputs().ground(context, pixelX, pixelY, interactionBlocked);
     }
 }

@@ -31,8 +31,8 @@ final class SceneConstructionAllocationTest {
             builder.build(state).drawTo(fixture.output, fixture.gpu);
         });
         System.out.println("Representative build+draw bytes/frame=" + bytes);
-        // Measured 328 with EA disabled; the budget adds 25% headroom.
-        assertTrue(bytes < 410, "Build+draw bytes/frame=" + bytes);
+        // Live VFX observations remove the last owned slot snapshots; EA-off measured zero.
+        assertTrue(bytes == 0, "Build+draw bytes/frame=" + bytes);
     }
 
     @Test

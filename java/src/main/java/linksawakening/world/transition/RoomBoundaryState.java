@@ -1,6 +1,7 @@
 package linksawakening.world.transition;
 
-public record RoomBoundaryState(RoomBoundaryInputs.Room room, RoomBoundaryInputs.Link link) {
+public record RoomBoundaryState(RoomBoundaryInputs.Room room, RoomBoundaryInputs.Link link)
+        implements RoomBoundaryView {
     public RoomBoundaryState(RoomBoundaryInputs inputs) {
         this(inputs.room(), inputs.link());
     }
@@ -42,46 +43,57 @@ public record RoomBoundaryState(RoomBoundaryInputs.Room room, RoomBoundaryInputs
                 new linksawakening.world.transition.RoomBoundaryInputs.Link(linkX, linkY, false, 0, false)));
     }
 
+    @Override
     public int mapCategory() {
         return room.mapCategory();
     }
 
+    @Override
     public int roomId() {
         return room.roomId();
     }
 
+    @Override
     public boolean indoorHasSouthEntrance() {
         return room.indoorHasSouthEntrance();
     }
 
+    @Override
     public boolean hasWarps() {
         return room.hasWarps();
     }
 
+    @Override
     public int shutterDoorMask() {
         return room.shutterDoorMask();
     }
 
+    @Override
     public int linkX() {
         return link.x();
     }
 
+    @Override
     public int linkY() {
         return link.y();
     }
 
+    @Override
     public int mapId() {
         return room.mapId();
     }
 
+    @Override
     public boolean linkAirborne() {
         return link.airborne();
     }
 
+    @Override
     public int linkPhysicsModifier() {
         return link.physicsModifier();
     }
 
+    @Override
     public boolean sideViewEntityActive() {
         return link.sideViewEntityActive();
     }

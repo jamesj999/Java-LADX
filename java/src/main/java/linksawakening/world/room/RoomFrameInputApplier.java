@@ -30,7 +30,7 @@ final class RoomFrameInputApplier {
         this.session = session;
     }
 
-    List<EntityProjectileEvent> tick(EntityFrameInputs inputs) {
+    List<EntityProjectileEvent> tick(EntityFrameValues inputs) {
         entityState.setEntityDialogActive(inputs.ui().dialogActive());
         entityState.setEntityTalkState(
                 inputs.ui().inventoryAppearing(),
@@ -70,12 +70,8 @@ final class RoomFrameInputApplier {
                 inputs.player().health().lowHealth());
         session.setFreeMovementMode(inputs.link().freeMovement());
         entityInputs.setEntityLinkVelocityZ(inputs.link().velocityZ());
-        return session.tickEntities(new EntityTickInputs(
-                inputs.frameCounter(),
-                inputs.link().position(),
-                inputs.link().motion(),
-                inputs.player().levels().shield(),
-                inputs.sword()));
+        // Inputs have already been applied; select the low-level tick overload without a new wrapper.
+        return session.tickEntities((EntityTickValues) inputs);
     }
 
     private void setLiftStrengthBoost(boolean redTunic, boolean pieceOfPower) {

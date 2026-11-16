@@ -5,7 +5,7 @@ import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityGroundInteraction;
 import linksawakening.world.entity.RoomEntityObjectSample;
 import linksawakening.world.entity.RoomEntityRuntime;
-import linksawakening.world.transition.RoomBoundaryInputs;
+import linksawakening.world.transition.RoomBoundaryView;
 
 /** One loaded-room generation. Never represents absence; borrowed only until room replacement. */
 final class RoomRuntime {
@@ -55,11 +55,80 @@ final class RoomRuntime {
 
     /** Scratch results belong to this room, never to the session or an unloaded-room sentinel. */
     static final class CollisionCache {
-        // Absent until a probe with this room's boundary metadata is requested.
-        RoomBoundaryInputs.Room boundary;
+        final BoundaryProbe boundary = new BoundaryProbe();
         final RoomEntityObjectSample[] objectSamples = new RoomEntityObjectSample[RoomEntity.SLOT_COUNT];
         final RoomEntityGroundInteraction.Result[] groundResults =
                 new RoomEntityGroundInteraction.Result[RoomEntity.SLOT_COUNT];
+    }
+
+    /** Per-room synchronous boundary registers; no consumer keeps them after decide(). */
+    static final class BoundaryProbe implements RoomBoundaryView {
+        int mapCategory;
+        int roomId;
+        boolean indoorHasSouthEntrance;
+        boolean hasWarps;
+        int shutterDoorMask;
+        int linkX;
+        int linkY;
+        int mapId;
+        boolean linkAirborne;
+        int linkPhysicsModifier;
+        boolean sideViewEntityActive;
+
+        @Override
+        public int mapCategory() {
+            return mapCategory;
+        }
+
+        @Override
+        public int roomId() {
+            return roomId;
+        }
+
+        @Override
+        public boolean indoorHasSouthEntrance() {
+            return indoorHasSouthEntrance;
+        }
+
+        @Override
+        public boolean hasWarps() {
+            return hasWarps;
+        }
+
+        @Override
+        public int shutterDoorMask() {
+            return shutterDoorMask;
+        }
+
+        @Override
+        public int linkX() {
+            return linkX;
+        }
+
+        @Override
+        public int linkY() {
+            return linkY;
+        }
+
+        @Override
+        public int mapId() {
+            return mapId;
+        }
+
+        @Override
+        public boolean linkAirborne() {
+            return linkAirborne;
+        }
+
+        @Override
+        public int linkPhysicsModifier() {
+            return linkPhysicsModifier;
+        }
+
+        @Override
+        public boolean sideViewEntityActive() {
+            return sideViewEntityActive;
+        }
     }
 
     RoomRenderSnapshot renderSnapshot() {

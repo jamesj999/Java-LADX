@@ -143,4 +143,28 @@ class EntityFrameSessionTest {
             assertTrue(actual.stream().map(f -> f.link().position()).distinct().count() > 1);
         }
     }
+
+    @Test
+    void borrowedCaptureReusesRegistersWithoutMutatingOwnedHistory() throws Exception {
+        try (var game = AllocationSessions.active()) {
+            var c = game.flows().simulation();
+            var factory = new EntityFrameInputsFactory();
+            var sword = Sword.CollisionBox.inactive();
+            var owned = factory.create(c, sword);
+            var borrowed = factory.borrow(c, sword);
+            int originalX = owned.link().position().x();
+            int originalFrame = owned.frameCounter();
+            c.link()
+                    .position()
+                    .setPixelPosition(
+                            c.link().position().pixelX() + 7,
+                            c.link().position().pixelY());
+            game.frameClock().advance();
+            org.junit.jupiter.api.Assertions.assertSame(borrowed, factory.borrow(c, sword));
+            assertEquals(originalX + 7, borrowed.link().position().x());
+            assertEquals(c.frameCounter(), borrowed.frameCounter());
+            assertEquals(originalX, owned.link().position().x());
+            assertEquals(originalFrame, owned.frameCounter());
+        }
+    }
 }

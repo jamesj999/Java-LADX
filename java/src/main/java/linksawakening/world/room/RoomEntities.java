@@ -1,7 +1,9 @@
 package linksawakening.world.room;
 
 import java.util.List;
+import linksawakening.world.entity.EnemyCombatInputs;
 import linksawakening.world.entity.EntityPickupEvent;
+import linksawakening.world.entity.EntityPickupFrameInputs;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 
@@ -28,7 +30,7 @@ public interface RoomEntities {
             int linkDirection,
             int linkZ);
 
-    EntityPickupEvent collectEntityIfNeeded(EntityPickupInputs inputs);
+    EntityPickupEvent collectEntityIfNeeded(EntityPickupFrameInputs inputs);
 
     List<EntityProjectileEvent> tickEntitiesWithProjectileEvents(
             int frameCounter,
@@ -49,7 +51,7 @@ public interface RoomEntities {
             int linkDirection,
             boolean usingShield);
 
-    List<EntityCombatEvent> resolveEntityCombat(EntityCombatInputs inputs);
+    List<EntityCombatEvent> resolveEntityCombat(EnemyCombatInputs inputs);
 
     void tickEntities(int frameCounter);
 
@@ -65,5 +67,5 @@ public interface RoomEntities {
             boolean linkAirborne,
             int linkDirection);
 
-    List<EntityProjectileEvent> tickEntities(EntityTickInputs inputs);
+    List<EntityProjectileEvent> tickEntities(EntityTickValues inputs);
 }
