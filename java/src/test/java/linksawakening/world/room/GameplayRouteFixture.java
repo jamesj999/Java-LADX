@@ -2,6 +2,7 @@ package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomNavigationFixture.PowderApproach;
 import static linksawakening.world.room.RoomNavigationFixture.SwordApproach;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,7 @@ import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.RomTables;
 import linksawakening.startup.NewGameStartProfile;
 import linksawakening.startup.TarinShieldMotion;
+import linksawakening.state.Direction;
 import linksawakening.state.PlayerState;
 import linksawakening.world.entity.EntityPickupEvent;
 import linksawakening.world.entity.RoomEntity;
@@ -24,8 +26,18 @@ import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
 import linksawakening.world.transition.Warp;
 
-/** Shared state of the single continuous physical traversal test. */
-final class GameplayRouteState {
+/** Retained state and navigation steps for one continuous physical traversal; never reset between goals. */
+final class GameplayRouteFixture {
+    static final int CENTRAL_APPROACH_X = 0x50;
+    static final int CENTRAL_APPROACH_Y = 0x50;
+    static final int BEACH_SWORD_X = 0x58;
+    static final int BEACH_SWORD_Y = 0x60;
+    static final int TAIL_CAVE_KEYHOLE_X = 0x5A;
+    static final int TAIL_CAVE_KEYHOLE_Y = 0x4A;
+    static final int TAIL_CAVE_ENTRANCE_TILE = 0x16;
+    static final int TAIL_CAVE_MAP_ID = 0x00;
+    static final int TAIL_CAVE_ENTRY_ROOM = 0x17;
+
     byte[] rom;
     RomTables romTables;
     OverworldCollision collision;
@@ -349,4 +361,42 @@ final class GameplayRouteState {
     List<RoomEntity> genieEntities;
     RoomEntity genie;
     List<RoomEntity> clearedBossSlots;
+
+    void crossIndoorBoundary(int direction) {
+        RoomNavigationFixture.walkToAndCrossIndoorBoundary(coordinator, transition, scroll, collision, link, direction);
+    }
+
+    void crossOverworldBoundary(int direction) {
+        RoomNavigationFixture.walkToAndCrossOverworldBoundary(session, coordinator, scroll, collision, link, direction);
+    }
+
+    void crossOverworldBoundary(int direction, int nextDirection) {
+        RoomNavigationFixture.walkToAndCrossOverworldBoundary(
+                session, coordinator, scroll, collision, link, direction, nextDirection);
+    }
+
+    void finishTransition() {
+        while (transition.isActive()) transition.tick();
+    }
+
+    void finishScroll() {
+        while (scroll.isActive()) scroll.tick(8);
+    }
+
+    void assertInRoom(int expectedRoom) {
+        assertEquals(expectedRoom, session.rooms().currentRoomId());
+    }
+
+    void tickInteractiveAtCentralApproach() {
+        RoomNavigationFixture.tickInteractiveEntities(session, frame++, CENTRAL_APPROACH_X, CENTRAL_APPROACH_Y);
+    }
+
+    void tickInteractiveAtLink() {
+        RoomNavigationFixture.tickInteractiveEntities(
+                session, frame++, link.position().romEntityX(), link.position().romEntityY());
+    }
+
+    void tickEntitiesAtOriginFacingDown() {
+        session.entities().tickEntitiesWithProjectileEvents(frame++, 0, 0, 0, 0, Direction.DOWN.javaIndex(), false);
+    }
 }
