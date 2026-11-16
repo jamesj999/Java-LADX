@@ -106,17 +106,19 @@ final class RoomSessionContext {
         values.entityInputs = new RoomEntityInputs();
         values.roomRuntimeServices = new RoomRuntime.Services(
                 values.roomCollisionQueries, values.roomObjectMutations, values.entityFrame, transientVfxSystem);
-        values.roomPlayerItemActions = new RoomPlayerItemActions(new RoomPlayerItemActions.Dependencies(
-                values.followers,
-                values.items,
-                values.location,
-                values.entityFrame,
-                values.overworldBushInteraction,
-                values.overworldCollision,
-                values.romTables,
-                values.roomObjectMutations,
-                values.roomSessionViews,
-                values.roomObjectMutations));
+        values.roomPlayerItemActions = new RoomPlayerItemActions(
+                loadedRooms,
+                new RoomPlayerItemActions.Dependencies(
+                        values.followers,
+                        values.items,
+                        values.location,
+                        values.entityFrame,
+                        values.overworldBushInteraction,
+                        values.overworldCollision,
+                        values.romTables,
+                        values.roomObjectMutations,
+                        values.roomSessionViews,
+                        values.roomObjectMutations));
         values.roomPuzzleController = new RoomPuzzleController(new RoomPuzzleController.Dependencies(
                 values.entityFrame,
                 values.puzzles,
