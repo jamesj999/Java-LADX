@@ -3,7 +3,7 @@ package linksawakening.world.room;
 import java.util.List;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 
-/** Fluent fixture for the legacy tick-only path: does not overwrite cached room inputs. */
+/** Fluent tick-only fixture that preserves cached room inputs. */
 final class RoomEntityTickBuilder {
     private int frame, x, y, z, motion, direction, collision, shieldLevel, invincibility;
     private int swordX, swordY, swordWidth, swordHeight, speedX, speedY;

@@ -13,7 +13,7 @@ public interface RoomEntityBackgroundCollision {
     /** Open space: the former absent-collision path never blocks movement. */
     RoomEntityBackgroundCollision OPEN = (entity, direction, x, y) -> false;
 
-    /** Compatibility boundary for callers predating explicit room defaults. */
+    /** An absent geometry probe selects the explicit open-space policy. */
     static RoomEntityBackgroundCollision orOpen(RoomEntityBackgroundCollision value) {
         return Objects.requireNonNullElse(value, OPEN);
     }

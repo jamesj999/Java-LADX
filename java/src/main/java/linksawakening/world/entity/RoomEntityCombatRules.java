@@ -205,7 +205,7 @@ public final class RoomEntityCombatRules {
     }
 
     /**
-     * Compatibility predicate for callers that need to identify the
+     * Identifies the
      * non-damaging PushLinkOutOfEntity handlers. The policy table is the
      * source of truth; enemy handlers remain available through
      * {@link #supportsEnemyCollision(int)} as well.

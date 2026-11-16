@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-/** Keeps the app wiring migration source-compatible while its owners switch to Rom. */
+/** World construction accepts typed ROM resources without raw-byte adapters. */
 class WorldRomEntryPointsTest {
     private record Entry(Class<?> owner, String method, Class<?>[] parameters) {
         Executable resolve(Class<?> romType) throws Exception {

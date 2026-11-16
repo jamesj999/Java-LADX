@@ -24,7 +24,7 @@ class RoomFacadeCompatibilityTest {
         assertEquals(
                 RoomSessionConfig.class, RoomSession.class.getConstructors()[0].getParameterTypes()[0]);
         assertEquals(Object.class, RoomSession.class.getSuperclass());
-        // These operation ports carry drains/boundary dispatch, never legacy API or a current-runtime getter.
+        // Operation ports carry drains/boundary dispatch; the facade owns lifecycle and role accessors.
         assertTrue(RoomEntityOutputSource.class.isAssignableFrom(RoomEntityBridge.class));
         assertFalse(RoomEntityOutputSource.class.isAssignableFrom(RoomSession.class));
         assertTrue(RoomBoundaryOperations.class.isAssignableFrom(RoomTransitionController.class));

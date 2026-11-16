@@ -11,7 +11,7 @@ public interface RoomEntityObjectQuery {
         return Objects.requireNonNullElse(query, NONE);
     }
 
-    /** Normalizes legacy query implementations that use null to signal no sample. */
+    /** Normalize a query reporting no sample to the explicit absence value. */
     default RoomEntityObjectSample sampleOrAbsent(RoomEntity entity) {
         return Objects.requireNonNullElse(sample(entity), RoomEntityObjectSample.UNSAMPLED);
     }

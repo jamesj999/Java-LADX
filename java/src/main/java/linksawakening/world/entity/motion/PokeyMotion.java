@@ -110,7 +110,7 @@ public final class PokeyMotion {
         // PokeyEntityHandler calls ApplyEntityInteractionWithBackground after
         // its position update. The room runtime owns the authoritative probe;
         // retain the probe ordering without inventing a snap coordinate in
-        // this boolean-only motion seam.
+        // this boolean-only background probe.
         collisionMask(moved, backgroundCollision);
         return new Update(
                 moved,

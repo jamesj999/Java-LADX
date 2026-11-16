@@ -41,7 +41,7 @@ public record EntityCombatEvent(
                 LinkCollisionResponse.NONE);
     }
 
-    /** Compatibility constructor for callers that already provide raw sound. */
+    /** Combat result with one raw sound request. */
     public EntityCombatEvent(
             int slot, int type, int linkDamage, boolean swordHit, SoundChannel soundChannel, int soundId) {
         this(
@@ -60,7 +60,7 @@ public record EntityCombatEvent(
                 LinkCollisionResponse.NONE);
     }
 
-    /** Compatibility constructor for callers that provide combat data and one raw sound. */
+    /** Combat damage and special action with one raw sound request. */
     public EntityCombatEvent(
             int slot,
             int type,
@@ -86,7 +86,7 @@ public record EntityCombatEvent(
                 LinkCollisionResponse.NONE);
     }
 
-    /** Compatibility constructor for a generic Link collision response. */
+    /** Combat result carrying a generic Link collision response. */
     public EntityCombatEvent {
         if (slot < 0 || slot >= RoomEntity.SLOT_COUNT) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);

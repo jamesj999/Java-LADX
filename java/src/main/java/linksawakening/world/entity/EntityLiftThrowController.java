@@ -336,7 +336,7 @@ public final class EntityLiftThrowController {
             RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, int frame) {
         int slot = entity.slot();
         if (!this.bombInteractions.readEnemyBombMotionInitialized(slot)) {
-            // Room-loaded type-$02 entities and legacy test-created enemy
+            // Room-loaded type-$02 entities and uninitialized enemy
             // bombs have no source speed tables to advance.
             return entity;
         }

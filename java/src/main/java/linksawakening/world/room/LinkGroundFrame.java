@@ -19,7 +19,7 @@ public record LinkGroundFrame(
     public Optional<LinkMotionState> knownState() {
         return Optional.ofNullable(motionState());
     }
-    /** Legacy nullable classification, absent for an unknown dispatch byte. */
+    /** Nullable classification, absent for an unknown dispatch byte. */
     @Override
     public LinkMotionState motionState() {
         return LinkMotion.stateForRomByte(rawMotionState);

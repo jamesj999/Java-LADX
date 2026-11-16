@@ -58,7 +58,7 @@ final class PolsVoiceHandler {
             // ignore-hits byte after moving, so the background helper sees
             // $01, then clears it with B (zero) before the default enemy
             // collision pass. The shared Java movement probe is the
-            // handler's background-interaction seam, so bracket it here.
+            // handler's background probe, so bracket it here.
             state.slot().setIgnoreHits(slotState.entity().slot(), 0x01);
             try {
                 PolsVoiceMotion.Update polsVoiceUpdate = state.motion(PolsVoiceMotion.class, PolsVoiceMotion::new)
