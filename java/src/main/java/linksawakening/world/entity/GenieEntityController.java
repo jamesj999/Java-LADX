@@ -451,9 +451,9 @@ public final class GenieEntityController {
         final int[] genieSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
         final int[] genieSpeedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
         final boolean[] genieImpactRegisteredThisFrame = new boolean[EntityRoomLoader.MAX_ENTITIES];
-        int genieControllerSlot = -1;
-        int genieSharedBodySpeedX;
-        int genieSharedBodySpeedY;
+        private int genieControllerSlot = -1;
+        private int genieSharedBodySpeedX;
+        private int genieSharedBodySpeedY;
 
         public int geniePrivateCountdown1(int slot) {
             return geniePrivateCountdown1[slot];

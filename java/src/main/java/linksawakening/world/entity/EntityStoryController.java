@@ -151,8 +151,8 @@ public final class EntityStoryController {
                 }
                 this.slots.replace(slot, withZ(this.slots.get(slot), z));
                 int xDistance = Math.abs(signedByte((linkEntityX - entity.x()) & 0xFF));
-                if (this.linkState.actionButtonsHeld
-                        && !this.linkState.dialogActive
+                if (this.linkState.readActionButtonsHeld()
+                        && !this.linkState.readDialogActive()
                         && xDistance < 0x18
                         && Math.abs(yDistance) < 0x18) {
                     this.events.pendingDialogRequests.add(new DialogRequest(2, 0x20));
@@ -174,16 +174,16 @@ public final class EntityStoryController {
         int direction = Math.abs(xDistance) >= Math.abs(yDistance) ? (xDistance < 0 ? 1 : 0) : (yDistance < 0 ? 2 : 3);
         int variant = direction * 2 + ((frameCounter >>> 4) & 0x01);
         runtime.slots.replace(entity.slot(), withVariant(entity, variant));
-        boolean linkFacingMadam = (runtime.linkState.lastRomLinkDirection ^ 0x01) == direction;
+        boolean linkFacingMadam = (runtime.linkState.readLastRomLinkDirection() ^ 0x01) == direction;
         boolean interactionWindow = ((yDistance + 0x14) & 0xFF) < 0x28 && ((xDistance + 0x10) & 0xFF) < 0x20;
-        if (runtime.linkState.actionButtonAHeld
+        if (runtime.linkState.readActionButtonAHeld()
                 && interactionWindow
                 && linkFacingMadam
-                && !runtime.linkState.dialogActive
-                && !runtime.linkState.inventoryAppearing
+                && !runtime.linkState.readDialogActive()
+                && !runtime.linkState.readInventoryAppearing()
                 && !linkAirborne
-                && runtime.linkState.dialogCooldown == 0
-                && runtime.linkState.windowY == 0x80) {
+                && runtime.linkState.readDialogCooldown() == 0
+                && runtime.linkState.readWindowY() == 0x80) {
             if ((runtime.roomVariables.readInstrument2Flags() & 0x02) != 0
                     && runtime.motions
                                     .get(BowWowMotion.class, BowWowMotion::new)
@@ -218,8 +218,8 @@ public final class EntityStoryController {
         }
         if (!this.roomVariables.readGameplayWorld()
                 || this.roomVariables.readTransitionSequenceCounter() != 0x04
-                || this.linkState.dialogActive
-                || this.linkState.inventoryAppearing
+                || this.linkState.readDialogActive()
+                || this.linkState.readInventoryAppearing()
                 || this.roomVariables.readRoomTransitionActive()
                 || this.inspection.witchGotItemPresentationActive()
                 || this.state.owlState().readOwlStatueDialogId() < 0) {
@@ -282,7 +282,7 @@ public final class EntityStoryController {
             return;
         }
         this.playerCommands.presentWitchGotItem(slot);
-        if (this.linkState.dialogActive) {
+        if (this.linkState.readDialogActive()) {
             return;
         }
         countdown--;
@@ -578,7 +578,7 @@ public final class EntityStoryController {
             }
             owner.blockLinkForOwl(slot);
             owner.slots.replace(slot, owner.roomInspection.owlPresentation(entity, frameCounter));
-            if (owner.linkState.dialogActive) {
+            if (owner.linkState.readDialogActive()) {
                 if (owner.physicsTables.readEnemyTransitionCountdown(slot) > 0) {
                     owner.physicsTables.postEnemyTransitionCountdown(slot, 1);
                 }
@@ -662,8 +662,8 @@ public final class EntityStoryController {
             slot = entity.slot();
             if (!owner.roomVariables.readGameplayWorld()
                     || owner.roomVariables.readTransitionSequenceCounter() != 0x04
-                    || owner.linkState.dialogActive
-                    || owner.linkState.inventoryAppearing
+                    || owner.linkState.readDialogActive()
+                    || owner.linkState.readInventoryAppearing()
                     || owner.roomVariables.readRoomTransitionActive()
                     || owner.inspection.witchGotItemPresentationActive()) {
                 return;
@@ -753,12 +753,12 @@ public final class EntityStoryController {
         }
 
         private boolean advanceState2() {
-            if (owner.linkState.dialogActive || owner.linkState.inventoryAppearing) {
+            if (owner.linkState.readDialogActive() || owner.linkState.readInventoryAppearing()) {
                 owner.slots.replace(slot, updated);
                 return false;
             }
             owner.events.pendingDialogRequests.add(
-                    new DialogRequest(1, owner.linkState.dialogAskSelectionIndex == 0 ? 0x3B : 0x3C));
+                    new DialogRequest(1, owner.linkState.readDialogAskSelectionIndex() == 0 ? 0x3B : 0x3C));
             owner.state.writeRichardState(slot, 1);
 
             return true;
@@ -953,11 +953,11 @@ public final class EntityStoryController {
 
         private boolean openKidDialog() {
 
-            if (owner.linkState.actionButtonAHeld
-                    && !owner.linkState.dialogActive
-                    && owner.linkState.dialogCooldown == 0
-                    && !owner.linkState.inventoryAppearing
-                    && owner.linkState.windowY == 0x80
+            if (owner.linkState.readActionButtonAHeld()
+                    && !owner.linkState.readDialogActive()
+                    && owner.linkState.readDialogCooldown() == 0
+                    && !owner.linkState.readInventoryAppearing()
+                    && owner.linkState.readWindowY() == 0x80
                     && Math.abs(signedByte(linkX - entity.x())) < 0x10
                     && Math.abs(signedByte(linkY - entity.y())) < 0x14) {
                 int dialog = (owner.roomVariables.readInstrument1Flags() & 2) == 0

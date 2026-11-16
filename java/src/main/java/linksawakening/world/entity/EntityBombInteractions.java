@@ -239,8 +239,12 @@ public final class EntityBombInteractions {
                 false,
                 0,
                 0,
-                collisionProtected ? (runtime.linkState.currentLinkSpeedX << 1) & 0xFF : (linkResponse.x() << 1) & 0xFF,
-                collisionProtected ? (runtime.linkState.currentLinkSpeedY << 1) & 0xFF : (linkResponse.y() << 1) & 0xFF,
+                collisionProtected
+                        ? (runtime.linkState.readCurrentLinkSpeedX() << 1) & 0xFF
+                        : (linkResponse.x() << 1) & 0xFF,
+                collisionProtected
+                        ? (runtime.linkState.readCurrentLinkSpeedY() << 1) & 0xFF
+                        : (linkResponse.y() << 1) & 0xFF,
                 collisionProtected ? 0 : 0x10));
     }
 

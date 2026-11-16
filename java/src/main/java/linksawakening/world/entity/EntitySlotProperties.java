@@ -197,15 +197,15 @@ public final class EntitySlotProperties {
         // chain. Its sequence check only returns early on the unpaused path.
         if (runtime.roomVariables.readTransitionSequenceCounter() != 4
                 && !runtime.roomVariables.readRoomTransitionActive()
-                && !runtime.linkState.dialogActive
-                && !runtime.linkState.inventoryAppearing
+                && !runtime.linkState.readDialogActive()
+                && !runtime.linkState.readInventoryAppearing()
                 && !runtime.inspection.witchGotItemPresentationActive()) {
             this.state.writeBowWowChainOam(List.of());
             return;
         }
-        boolean moving = (runtime.linkState.currentLinkSpeedX
-                        | runtime.linkState.currentLinkSpeedY
-                        | runtime.linkState.currentLinkVelocityZ)
+        boolean moving = (runtime.linkState.readCurrentLinkSpeedX()
+                        | runtime.linkState.readCurrentLinkSpeedY()
+                        | runtime.linkState.readCurrentLinkVelocityZ())
                 != 0;
         for (int slot = 0; slot < runtime.slots.size(); slot++) {
             RoomEntity entity = runtime.slots.get(slot);

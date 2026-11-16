@@ -158,20 +158,20 @@ public final class EntityRoomInspection {
 
     public boolean tarinTransformationHandlerInteractive() {
         return this.roomVariables.readTransitionSequenceCounter() == 0x04
-                && !this.linkState.dialogActive
-                && !this.linkState.inventoryAppearing;
+                && !this.linkState.readDialogActive()
+                && !this.linkState.readInventoryAppearing();
     }
 
     boolean tarinTransformationTimersInteractive() {
-        return tarinTransformationHandlerInteractive() && this.linkState.linkPlayingOcarinaCountdown == 0;
+        return tarinTransformationHandlerInteractive() && this.linkState.readLinkPlayingOcarinaCountdown() == 0;
     }
 
     public boolean genieState0Interactive(boolean creditsGameplay) {
         return !creditsGameplay
                 && this.roomVariables.readGameplayWorld()
                 && this.roomVariables.readTransitionSequenceCounter() == 0x04
-                && !this.linkState.dialogActive
-                && !this.linkState.inventoryAppearing
+                && !this.linkState.readDialogActive()
+                && !this.linkState.readInventoryAppearing()
                 && !witchGotItemPresentationActive()
                 && !this.roomVariables.readRoomTransitionActive();
     }
@@ -339,15 +339,15 @@ public final class EntityRoomInspection {
     }
 
     boolean sourceNpcInteractionAllowed(int xDistance, int yDistance, boolean linkAirborne, int entityDirection) {
-        return this.linkState.actionButtonAHeld
+        return this.linkState.readActionButtonAHeld()
                 && ((yDistance + 0x14) & 0xFF) < 0x28
                 && ((xDistance + 0x10) & 0xFF) < 0x20
-                && (this.linkState.lastRomLinkDirection ^ 0x01) == entityDirection
-                && !this.linkState.dialogActive
-                && !this.linkState.inventoryAppearing
+                && (this.linkState.readLastRomLinkDirection() ^ 0x01) == entityDirection
+                && !this.linkState.readDialogActive()
+                && !this.linkState.readInventoryAppearing()
                 && !linkAirborne
-                && this.linkState.dialogCooldown == 0
-                && this.linkState.windowY == 0x80;
+                && this.linkState.readDialogCooldown() == 0
+                && this.linkState.readWindowY() == 0x80;
     }
 
     public boolean heartPiecePickupActive() {

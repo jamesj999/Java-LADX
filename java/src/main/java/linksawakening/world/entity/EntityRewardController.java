@@ -176,7 +176,7 @@ public final class EntityRewardController {
     public void advanceToadstoolPickup(RoomEntity entity, int linkEntityX, int linkEntityY, int linkZ) {
         int slot = entity.slot();
         int countdown = this.physicsTables.readEnemyTransitionCountdown(slot);
-        if (this.linkState.dialogActive) {
+        if (this.linkState.readDialogActive()) {
             // UpdateEntityTimers is paused while a dialogue is open in the
             // ROM. Undo this runtime's generic tick before holding the item.
             if (countdown > 0) this.physicsTables.postEnemyTransitionCountdown(slot, 1);
@@ -217,7 +217,7 @@ public final class EntityRewardController {
                         variant));
             }
         }
-        if (!this.linkState.dialogActive) {
+        if (!this.linkState.readDialogActive()) {
             int countdown = this.state.prePowerUpPickupCountdown(slot, -1);
             if (countdown == 0x2E) {
                 this.events.pendingEntityEvents.add(new EntityCombatEvent(
@@ -571,7 +571,7 @@ public final class EntityRewardController {
                 owner.events.pendingInstrumentRewards.add(new InstrumentRewardEvent(slot));
             } else if (owner.state.readInstrumentPickupState(slot) == 1
                     && !owner.presentationState.readActiveMusic()
-                    && !owner.linkState.dialogActive) {
+                    && !owner.linkState.readDialogActive()) {
                 int mapId = owner.roomVariables.readEntityMapId() & 0xFF;
                 if (mapId < EntityRomConstants.INSTRUMENT_MUSIC_TRACKS.length) {
                     owner.presentationState.writePendingMusicTrack(EntityRomConstants.INSTRUMENT_MUSIC_TRACKS[mapId]);
@@ -600,8 +600,8 @@ public final class EntityRewardController {
                             randomByteSupplier.getAsInt() & 0x01);
                 }
             } else if (owner.state.readInstrumentPickupState(slot) == 3
-                    && !owner.linkState.dialogActive
-                    && !owner.linkState.inventoryAppearing
+                    && !owner.linkState.readDialogActive()
+                    && !owner.linkState.readInventoryAppearing()
                     && !owner.roomVariables.readRoomTransitionActive()) {
                 return advanceWarpFade();
             }
@@ -721,7 +721,7 @@ public final class EntityRewardController {
         void run() {
 
             slot = entity.slot();
-            if (owner.linkState.dialogActive) {
+            if (owner.linkState.readDialogActive()) {
                 if (owner.physicsTables.readEnemyTransitionCountdown(slot) > 0) {
                     owner.physicsTables.postEnemyTransitionCountdown(slot, 1);
                 }

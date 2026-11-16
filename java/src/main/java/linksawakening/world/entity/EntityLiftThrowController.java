@@ -102,7 +102,7 @@ public final class EntityLiftThrowController {
                 this.state.readLiftedLinkC13B(),
                 entity.type(),
                 this.physicsTables.readGroundInteractionSideScrolling(),
-                this.pickups.readChestPowerBraceletLevel() >= 2 || this.linkState.fastLiftTransition,
+                this.pickups.readChestPowerBraceletLevel() >= 2 || this.linkState.readFastLiftTransition(),
                 entity.z()));
         this.state.writeLiftedPhase(slot, update.phase());
         this.physicsTables.writeEnemyTransitionCountdown(slot, update.transitionCountdown());
@@ -388,10 +388,10 @@ public final class EntityLiftThrowController {
     }
 
     public boolean cuccoPowerBraceletHeld() {
-        if (this.linkState.linkItemB == 0x03) {
-            return this.linkState.actionButtonBHeld;
+        if (this.linkState.readLinkItemB() == 0x03) {
+            return this.linkState.readActionButtonBHeld();
         }
-        return this.linkState.linkItemA == 0x03 && this.linkState.actionButtonAHeld;
+        return this.linkState.readLinkItemA() == 0x03 && this.linkState.readActionButtonAHeld();
     }
 
     public boolean beginBushCrawlerLift(int index, RoomEntity source, int privateState4, int romLinkDirection) {
@@ -503,7 +503,7 @@ public final class EntityLiftThrowController {
             int linkEntityY,
             int linkZ,
             int romLinkDirection) {
-        if (decision.phase() != BombMotion.Phase.NORMAL || !this.linkState.bombButtonHeld) {
+        if (decision.phase() != BombMotion.Phase.NORMAL || !this.linkState.readBombButtonHeld()) {
             return false;
         }
         RoomEntity entity = this.slots.get(index);
@@ -533,15 +533,15 @@ public final class EntityLiftThrowController {
     }
 
     public boolean sideViewPotPowerBraceletHeld() {
-        if (!this.linkState.linkInventoryConfigured) {
-            return this.linkState.powerBraceletButtonHeld;
+        if (!this.linkState.readLinkInventoryConfigured()) {
+            return this.linkState.readPowerBraceletButtonHeld();
         }
         // EntityGetLiftedUp checks the B slot first. An equipped bracelet in
         // B suppresses the A-slot branch even when A also contains one.
-        if (this.linkState.linkItemB == 0x03) {
-            return this.linkState.actionButtonBHeld;
+        if (this.linkState.readLinkItemB() == 0x03) {
+            return this.linkState.readActionButtonBHeld();
         }
-        return this.linkState.linkItemA == 0x03 && this.linkState.actionButtonAHeld;
+        return this.linkState.readLinkItemA() == 0x03 && this.linkState.readActionButtonAHeld();
     }
 
     public void pendingLinkPotContact(int sourceSlot, SideViewPotContact.Result contact) {

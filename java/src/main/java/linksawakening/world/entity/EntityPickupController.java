@@ -253,7 +253,7 @@ public final class EntityPickupController {
                 .readHeartPiecePickup(slot)
                 .advance(
                         this.physicsTables.readEnemyTransitionCountdown(slot),
-                        this.linkState.dialogActive,
+                        this.linkState.readDialogActive(),
                         this.state.readHeartPiecesCount());
         this.events.heartPieceUpdates.add(update);
         if (update.incrementPiece()) this.state.postHeartPiecesCount(1);
@@ -310,7 +310,7 @@ public final class EntityPickupController {
 
         // ChestWithItemEntityHandler ($07:7C5E) renders before this gate,
         // but does not move, advance inertia, or unload while text is open.
-        if (this.linkState.dialogActive) {
+        if (this.linkState.readDialogActive()) {
             return false;
         }
 

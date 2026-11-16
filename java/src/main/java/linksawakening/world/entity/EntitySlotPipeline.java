@@ -59,14 +59,14 @@ final class EntitySlotPipeline {
     List<EntityProjectileEvent> tick(EntityFrameContext context) {
         EntitySlotValidation.validateByte(context.linkSpeedX(), "Link X speed");
         EntitySlotValidation.validateByte(context.linkSpeedY(), "Link Y speed");
-        frameExecution.linkState().currentLinkSpeedX = context.linkSpeedX();
-        frameExecution.linkState().currentLinkSpeedY = context.linkSpeedY();
+        frameExecution.linkState().writeCurrentLinkSpeedX(context.linkSpeedX());
+        frameExecution.linkState().writeCurrentLinkSpeedY(context.linkSpeedY());
         try {
             return advanceFrame(frameExecution, context);
         } finally {
             frameExecution.combat().clearDeferredContactRecoil();
-            frameExecution.linkState().currentLinkSpeedX = 0;
-            frameExecution.linkState().currentLinkSpeedY = 0;
+            frameExecution.linkState().writeCurrentLinkSpeedX(0);
+            frameExecution.linkState().writeCurrentLinkSpeedY(0);
         }
     }
 
@@ -143,11 +143,11 @@ final class EntitySlotPipeline {
         state.motion(ZolGelMotion.class, ZolGelMotion::new)
                 .writeGelClingingToLink(false); // AnimateEntities clears wIsGelClingingToLink each pass.
         state.gates().countdownBlocksInteraction(state.roomVariables().readEntityInteractionCountdown() != 0);
-        if (!state.linkState().dialogActive && state.roomVariables().readEntityInteractionCountdown() > 0)
+        if (!state.linkState().readDialogActive() && state.roomVariables().readEntityInteractionCountdown() > 0)
             state.roomVariables().postEntityInteractionCountdown(-1);
         state.gates()
                 .handlerLinkCollisionEnabled(state.gates().handlerLinkCollisionEnabled()
-                        && !state.linkState().inventoryAppearing
+                        && !state.linkState().readInventoryAppearing()
                         && !state.gates().countdownBlocksInteraction());
         state.gates()
                 .threeOfAKindInteractive(state.gates().handlerLinkCollisionEnabled()
@@ -158,8 +158,8 @@ final class EntitySlotPipeline {
         state.gates()
                 .bowWowHandlerInteractive(state.roomVariables().readTransitionSequenceCounter() == 0x04
                         && !state.roomVariables().readRoomTransitionActive()
-                        && !state.linkState().dialogActive
-                        && !state.linkState().inventoryAppearing
+                        && !state.linkState().readDialogActive()
+                        && !state.linkState().readInventoryAppearing()
                         && !state.roomInspection().witchGotItemPresentationActive());
         state.gates()
                 .projectileTimersInteractive(state.background()
@@ -285,13 +285,13 @@ final class EntitySlotPipeline {
         state.events().pendingBombExplosionEvents.clear();
         state.events().hookshotBridgeUpdates.clear();
         state.roomVariables().writePendingSwitchBlockAnimationRequest(false);
-        if (state.linkState().linkPlayingOcarinaCountdown >= 0x10
-                && state.linkState().ocarinaAnimationCounter == 0x14) {
+        if (state.linkState().readLinkPlayingOcarinaCountdown() >= 0x10
+                && state.linkState().readOcarinaAnimationCounter() == 0x14) {
             state.playerSpawns()
                     .spawnMusicalNote(
                             state.inputs().linkEntityX(),
                             state.inputs().linkEntityY(),
-                            state.linkState().ocarinaAnimationPhase);
+                            state.linkState().readOcarinaAnimationPhase());
         }
         state.inputs().projectileEvents(state.events().outbox.channel(EntityProjectileEvent.class, "projectileEvents"));
         state.inputs().projectileEvents().clear();
@@ -303,14 +303,14 @@ final class EntitySlotPipeline {
             state.motion(FollowingNpcMotion.class, FollowingNpcMotion::new)
                     .writeFollowingLinkPositionHistory(state.inputs().linkPositionHistory());
         }
-        state.linkState().followingLinkZ = state.inputs().linkZ() & 0xFF;
-        state.linkState().followingLinkDirection = state.inputs().linkDirection() & 0xFF;
-        state.linkState().followingEntityYOffset = state.inputs().entityYOffset() & 0xFF;
+        state.linkState().writeFollowingLinkZ(state.inputs().linkZ() & 0xFF);
+        state.linkState().writeFollowingLinkDirection(state.inputs().linkDirection() & 0xFF);
+        state.linkState().writeFollowingEntityYOffset(state.inputs().entityYOffset() & 0xFF);
         state.slotFrame()
                 .carryingEntity(state.roomInspection().liftedEntityState().carryState() != 0);
         state.inputs()
                 .romLinkDirection(romDirectionForJavaDirection(state.inputs().linkDirection()));
-        state.linkState().lastRomLinkDirection = state.inputs().romLinkDirection();
+        state.linkState().writeLastRomLinkDirection(state.inputs().romLinkDirection());
     }
 
     private static boolean prepareSlotAndTimers(EntityFrameExecution state) {
@@ -709,7 +709,7 @@ final class EntitySlotPipeline {
         var frameInput = state.inputs();
 
         if (!state.handlers().tick(EntityTickStage.PHASE_2_STUNNED, state)) return false;
-        if (state.linkState().powerBraceletButtonHeld
+        if (state.linkState().readPowerBraceletButtonHeld()
                 && isLiftableEntity(slotState.entity())
                 && (slotState.entity().type() == EntityRomConstants.ENTITY_BOMB
                         || (state.physicsTables()
@@ -963,7 +963,7 @@ final class EntitySlotPipeline {
                                 frameInput.frame(),
                                 frameInput.linkEntityX(),
                                 frameInput.linkEntityY(),
-                                state.linkState().followingLinkZ,
+                                state.linkState().readFollowingLinkZ(),
                                 frameInput.randomByteSupplier(),
                                 frameInput.backgroundCollision(),
                                 state.slots().view(),
@@ -983,9 +983,9 @@ final class EntitySlotPipeline {
                                 frameInput.frame(),
                                 frameInput.linkEntityX(),
                                 frameInput.linkEntityY(),
-                                state.linkState().followingLinkZ,
-                                state.linkState().followingLinkDirection,
-                                state.linkState().followingEntityYOffset,
+                                state.linkState().readFollowingLinkZ(),
+                                state.linkState().readFollowingLinkDirection(),
+                                state.linkState().readFollowingEntityYOffset(),
                                 state.motion(FollowingNpcMotion.class, FollowingNpcMotion::new)
                                         .readFollowingLinkPositionHistory(),
                                 frameInput.backgroundCollision())));

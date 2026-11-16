@@ -108,9 +108,9 @@ public final class EntityEnemyInspection {
     }
 
     public boolean polsVoiceBalladOcarinaTrigger() {
-        return this.linkState.linkPlayingOcarinaCountdown == 0x01
-                && (this.linkState.ocarinaSongFlags & 0x04) != 0
-                && this.linkState.selectedSongIndex == 0;
+        return this.linkState.readLinkPlayingOcarinaCountdown() == 0x01
+                && (this.linkState.readOcarinaSongFlags() & 0x04) != 0
+                && this.linkState.readSelectedSongIndex() == 0;
     }
 
     boolean shouldDisappear(RoomEntity entity) {
@@ -153,16 +153,16 @@ public final class EntityEnemyInspection {
                         || this.roomVariables.readTransitionSequenceCounter() != 0x04)) {
             return false;
         }
-        return !this.linkState.dialogActive
-                && !this.linkState.inventoryAppearing
+        return !this.linkState.readDialogActive()
+                && !this.linkState.readInventoryAppearing()
                 && !this.inspection.witchGotItemPresentationActive()
                 && !this.roomVariables.readRoomTransitionActive();
     }
 
     boolean entityTimersInteractive() {
-        return !this.linkState.dialogActive
-                && !this.linkState.inventoryAppearing
-                && this.linkState.linkPlayingOcarinaCountdown == 0;
+        return !this.linkState.readDialogActive()
+                && !this.linkState.readInventoryAppearing()
+                && this.linkState.readLinkPlayingOcarinaCountdown() == 0;
     }
 
     public boolean gelClingingToLink() {

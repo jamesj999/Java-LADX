@@ -44,7 +44,7 @@ public final class SlimeEyeController {
     final State encounter;
     // The ROM-free reader retains the original encounter-table precondition.
     private final java.util.function.ToIntFunction<RomAddress> readByte;
-    int screenShakeCountdown;
+    private int screenShakeCountdown;
 
     SlimeEyeController(
             State encounter,

@@ -432,7 +432,7 @@ public final class EntityBossRewards {
 
         if (target.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) {
             if (this.physicsTables.readEntityPrivateState4(targetSlot) == 0
-                    || this.linkState.dialogActive
+                    || this.linkState.readDialogActive()
                     || this.motions.get(BowWowMotion.class, BowWowMotion::new).privateCountdown2(source.slot()) != 0) {
                 return;
             }

@@ -341,8 +341,8 @@ final class EntityDebugConfigurationFixture {
         if (animationPhase < 0 || animationPhase > 1) {
             throw new IllegalArgumentException("Ocarina animation phase must be 0 or 1");
         }
-        runtime.inspection().linkState.ocarinaAnimationCounter = animationCounter;
-        runtime.inspection().linkState.ocarinaAnimationPhase = animationPhase;
+        runtime.inspection().linkState.writeOcarinaAnimationCounter(animationCounter);
+        runtime.inspection().linkState.writeOcarinaAnimationPhase(animationPhase);
     }
 
     void setHitboxFlagsForTest(int slot, int value) {
