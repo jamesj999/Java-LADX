@@ -44,7 +44,12 @@ public final class BushCrawlerMotion {
             int visualYOffset,
             boolean liftRequested,
             boolean specialState,
-            boolean crawlOverlayRendered) {}
+            boolean crawlOverlayRendered) {
+        /** wEntitiesPrivateState4Table is the crawling form's heading. */
+        public int crawlHeading() {
+            return privateState4;
+        }
+    }
 
     public void initialize(int slot) {
         clear(slot);

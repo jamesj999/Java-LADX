@@ -295,6 +295,34 @@ public final class GenieEntityController {
         return withStatus(jar, EntityStatus.ACTIVE);
     }
 
+    /** wEntitiesPrivateCountdown1Table times the current jar/body attack phase. */
+    public int phaseCountdown(int slot) {
+        return encounter.geniePrivateCountdown1[slot];
+    }
+
+    public void decrementPhaseCountdown(int slot) {
+        encounter.geniePrivateCountdown1[slot]--;
+    }
+
+    /** wEntitiesPrivateCountdown2Table holds the firing sprite after a body attack. */
+    public int attackFlashCountdown(int slot) {
+        return encounter.geniePrivateCountdown2[slot];
+    }
+
+    public void decrementAttackFlashCountdown(int slot) {
+        encounter.geniePrivateCountdown2[slot]--;
+    }
+
+    /** wEntitiesPrivateState1Table selects the Genie jar/body/projectile handler. */
+    public int phase(int slot) {
+        return encounter.handlerState[slot];
+    }
+
+    /** wEntitiesPrivateState4Table accumulates damage to the jar. */
+    public int jarDamageCounter(int slot) {
+        return encounter.romPrivateState4[slot];
+    }
+
     public int geniePrivateCountdown1(int slot) {
         return encounter.geniePrivateCountdown1[slot];
     }

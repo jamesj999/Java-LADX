@@ -14,6 +14,20 @@ import org.junit.jupiter.api.Test;
 /** Checks compiled references, including descriptors and generic signatures. */
 class WorldDependencyTest {
     @Test
+    void handlersUseNamedSlotRegisterOperations() throws Exception {
+        var violations = new ArrayList<String>();
+        for (var type : classes()) {
+            if (!type.name().startsWith("linksawakening/world/entity/handler/")) continue;
+            for (var method : type.methods()) {
+                if (method.name().matches(".*[pP]rivate(State|Countdown)[1-4].*")) {
+                    violations.add(type.name() + " -> " + method.owner() + "." + method.name());
+                }
+            }
+        }
+        assertTrue(violations.isEmpty(), String.join("\n", violations));
+    }
+
+    @Test
     void worldFieldsArePrivateOrStaticFinal() throws Exception {
         var violations = new ArrayList<String>();
         for (var type : classes()) {

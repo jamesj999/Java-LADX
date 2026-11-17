@@ -40,7 +40,7 @@ final class GoombaHandler {
                 // table and the runtime death countdown synchronized;
                 // the latter drives the shared Java death presentation.
                 state.lifecycle().setDroppedItemBySlot(slotState.entity().slot(), 0x2D);
-                state.lifecycle().setDropPrivateCountdown3(slotState.entity().slot(), 0x0C);
+                state.lifecycle().setDropDeathWindow(slotState.entity().slot(), 0x0C);
                 state.lifecycle().setDyingCountdown(slotState.entity().slot(), 0x0C);
                 state.slot().setPhysicsFlags(slotState.entity().slot(), 0x04);
                 slotState.status(EntityStatus.DYING);

@@ -96,7 +96,7 @@ final class CommonDroppableTypeHandler {
         var presentationFlags = state.presentation();
 
         if (slotState.wasInitializing()
-                && state.lifecycle().droppablePrivateState3(slotState.entity().slot()) != 0) {
+                && state.lifecycle().dropStartsHidden(slotState.entity().slot())) {
             // The init handler has already set the hidden options. The
             // corresponding active handler will be entered on the next
             // entity tick, so suppress this first display-list pass too.

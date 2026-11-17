@@ -32,7 +32,12 @@ public final class BombiteMotion {
             int privateCountdown1,
             int spriteVariant,
             boolean explode,
-            boolean bumpJingle) {}
+            boolean bumpJingle) {
+        /** wEntitiesPrivateCountdown1Table gates repeated collision responses. */
+        public int collisionGraceCountdown() {
+            return privateCountdown1;
+        }
+    }
 
     public void initialize(int slot) {
         state[slot] = 0;
@@ -191,6 +196,11 @@ public final class BombiteMotion {
             boolean runningWithPegasusBoots,
             IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision) {
+        /** Collision grace copied from wEntitiesPrivateCountdown1Table for this slot. */
+        public int collisionGraceCountdown() {
+            return privateCountdown1;
+        }
+
         public BombiteFrame {
             backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         }
@@ -297,7 +307,7 @@ public final class BombiteMotion {
             linkEntityY = inputs.linkEntityY();
             transitionCountdown = inputs.transitionCountdown();
             slowTransitionCountdown = inputs.slowTransitionCountdown();
-            privateCountdown1 = inputs.privateCountdown1();
+            privateCountdown1 = inputs.collisionGraceCountdown();
             enemyIgnoreHitsCountdown = inputs.enemyIgnoreHitsCountdown();
             runningWithPegasusBoots = inputs.runningWithPegasusBoots();
             randomByteSupplier = inputs.randomByteSupplier();

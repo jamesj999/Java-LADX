@@ -24,8 +24,7 @@ final class IronMaskHandler {
 
         if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
             // ROM wEntitiesPrivateState2Table selects the masked/unmasked presentation.
-            int maskState =
-                    state.slot().ironMaskPrivateState2(slotState.entity().slot());
+            int maskState = state.slot().ironMaskRemovalState(slotState.entity().slot());
             int variant = maskState == 0 ? slotState.updated().spriteVariant() : ((frameInput.frame() >>> 4) & 0x01);
             {
                 slotState.updated(state.sprites()

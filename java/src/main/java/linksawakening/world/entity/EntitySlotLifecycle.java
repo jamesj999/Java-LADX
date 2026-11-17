@@ -944,4 +944,13 @@ public final class EntitySlotLifecycle {
         var thrownEntityMotion = runtime.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
         thrownEntityMotion.clear(slot);
     }
+    /** wEntitiesPrivateState3Table marks a droppable's initially hidden presentation. */
+    public boolean dropStartsHidden(int slot) {
+        return bossRewards.readDroppablePrivateState3(slot) != 0;
+    }
+
+    /** wEntitiesPrivateCountdown3Table preserves the squashed Goomba's drop/death window. */
+    public void setDropDeathWindow(int slot, int countdown) {
+        bossRewards.writeDropPrivateCountdown3(slot, countdown);
+    }
 }
