@@ -127,11 +127,9 @@ public final class InputConfig {
         return selectKey;
     }
 
-    // Suspected defect: ASCII key parsing depends on the default locale; propose Locale.ROOT with a Turkish-locale
-    // regression separately.
-    @SuppressWarnings("StringCaseLocaleUsage")
+    // Key names are ASCII identifiers: upper-case them independently of the user's locale.
     private static int resolveKey(String name) {
-        int glfwKey = KEY_NAME_TO_CODE.getOrDefault(name.toUpperCase(), UNKNOWN_KEY);
+        int glfwKey = KEY_NAME_TO_CODE.getOrDefault(name.toUpperCase(Locale.ROOT), UNKNOWN_KEY);
         if (glfwKey == UNKNOWN_KEY) {
             DebugLog.warning("Unknown key name in input config: " + name + " (falling back to ENTER)");
             return KEY_ENTER;
