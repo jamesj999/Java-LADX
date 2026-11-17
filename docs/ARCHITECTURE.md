@@ -200,10 +200,29 @@ pending batch. Input completion still happens only at its original frame gate.
 ### `app.gameplay`
 
 `GameplaySimulation`, its phase instances, `GameplayFrame` and `TransitionPhase`
-are built once. Phases read live state through simulation accessors.
-`GameplayFrame.tick()` runs transitions, simulation and input completion;
-`SimulationStages` preserves story/recovery early exits. `EntityFrameStages`
-ticks the world and then applies results in their original order, passing the
+are built once. GameplayWiring constructs the phases with the specific
+collaborators below. Each phase keeps validated final references, never a
+GameplaySimulation or session/service bundle. Wider constructors consume named,
+phase-local Inputs once; those construction builders are not retained. Clock,
+debug and replaceable sound values are still read at the original operations.
+
+| Phase | Constructor dependencies |
+| --- | --- |
+| DialogStoryPhase | DebugState, DialogController, DialogSoundRouting, DialogTextLoader, InventoryMenu, Link, PlayerState, RoomSession, ScrollController, OpeningStory, TransitionController |
+| LinkEquipmentPhase | DialogController, DialogTextLoader, DroppableRupeeSystem, FrameClock, GameplaySounds, GPU, InventoryController, Link, PassOutController, PlayerState, Rom, RoomSession, ScrollController, TransientVfxSystem, TransitionController, ActiveLinkPhase, LinkGroundPhase, GameOverActions |
+| ActiveLinkPhase | BushInteraction, DebugState, DebugScroll, EquipmentController, FrameClock, FrameInputCache, LiftInteraction, Link, MusicDirector, PlayerState, RoomSession, RoomTransitionCoordinator, ScrollController, TransientVfxSystem, LinkGroundPhase, LinkMotionDriver |
+| LinkGroundPhase | FrameInputCache, Link, RoomSession |
+| CombatPhase | EquipmentController, FrameInputCache, GameplaySounds, InventoryController, Link, MusicDirector, PlayerState, RoomSession, ScrollController, TransientVfxSystem, TransitionController |
+| EntityPhase | GameplaySounds, InventoryController, InventoryMenu, Link, PlayerState, RoomSession, ScrollController, TransitionController, EntityFrameInputsFactory, EntityRewardApplier, LinkWriteApplier, GameplayCombatEvents, EntityDialogRouting |
+| AnimatedTilesPhase | InventoryController, RoomSession, ScrollController, TransitionController |
+| TransitionPhase | ScrollController, TransitionController, Link and the configured scroll speed (unchanged) |
+
+`GameplaySimulation` only gates inventory handling and sequences the phases.
+Its phase calls carry per-frame booleans or the sword collision result.
+`GameplayFrame.tick()` runs transitions, simulation and input completion.
+GameplaySimulation directly implements `SimulationStages`; the ordering interface
+survives because recording fakes prove story/recovery early exits and phase order.
+`EntityFrameStages` ticks the world and then applies results in their original order, passing the
 same sword box and projectile events through consumers without dispatch-list
 or closure allocation.
 
@@ -213,8 +232,10 @@ immutable EntityFrameInputs snapshot. Its unchanged player/UI/button/sword leave
 are shared safely through EntityInputCache. FrameInputCache owns borrowed combat,
 pickup and ground registers; their consumers finish before the next refill.
 `LinkWriteApplier` translates ordered Link requests, `EntityRewardApplier` drains
-synchronous reward batches, and `GameplayCombatEvents` implements damage outcomes
-and the room combat drain. `LinkCommandAdapter` is the world-to-Link command
+synchronous reward batches. These visitors retain their specific collaborators;
+no drain publishes a temporary simulation back-reference. EntityFrameInputsFactory
+and FrameInputCache likewise capture through their own final dependencies.
+`GameplayCombatEvents` implements damage outcomes and the room combat drain. `LinkCommandAdapter` is the world-to-Link command
 translation boundary. The world tick itself remains world-owned.
 
 `LinkEquipmentPhase` retains `ActiveLinkPhase` for lifting, equipment, motion,
@@ -222,7 +243,16 @@ doors, pickup and transition work; `LinkGroundPhase` preserves pre/post-motion
 ground sampling. Interaction policy lives in `app.gameplay.interaction`, including
 `LiftButtons` for edge/B-slot priority. Pass-out animation and game-over dispatch
 live in `app.gameplay.recovery`. `app.wiring.RoomBombPlacement` adapts successful
-bomb placement to Link's animation write.
+bomb placement to Link's animation write. Recovery receives concrete Link,
+player, ROM, input, music and world dependencies. The game-over menu is still
+constructed on its original transition frame; its completion action comes from
+the wired Link/equipment phase, preserving reset/save/effect order without a
+recovery-to-simulation back-reference.
+
+PhaseFixture is test-source construction support for the same live collaborators.
+SimulationOrderTest, EntityFrameOrderTest and the recording EntityDialogRouting
+fake retain their assertions about early exits, exact event identity and
+music/dialog/warp order. The signature architecture guard remains unchanged.
 
 ### `app.story`
 
@@ -603,8 +633,10 @@ INPUT_COMPLETION in that order. Simulation can return early at story gates;
 normal completion still advances input edges. `FrameInputCompletion` ticks edges
 before clearing the consumed-input flag. Exceptions do not advance them.
 `GameplaySimulation` runs dialog/story, Link/equipment, combat, entities,
-dialog gameplay cooldown and animated tiles in source order.
-Scrolling, transitions and inventory state gate entity ticking.
+dialog gameplay cooldown and animated tiles in source order. The phase
+orchestrator passes no service locator into those calls; each phase reads its
+injected live state at the same point as before. Scrolling, transitions and
+inventory state gate entity ticking.
 
 The runtime iterates slots from highest index to zero. Each slot passes five named methods in EntitySlotPipeline; a phase can end that slot's work.
 `app.gameplay.entity.EntityPhase` borrows read-only `EntityFrameValues` from Link, player,
@@ -667,7 +699,7 @@ buffers; UI setters retain their original copying contracts. Historical scroll
 rooms continue to use owned snapshots.
 
 With escape analysis disabled, whole-frame idle/walking/inventory measure
-0 / approximately 139.5 / 0 B/frame. Update-only idle/active measure 0 / approximately 138.
+0 / approximately 139.5 / 0 B/frame. Update-only idle/active measure 0 / approximately 137.
 Their budgets are 0/175/0 and 0/172 respectively. Reusable assembly, construction
 and representative VFX composition measure zero. Recording disabled contributes
 no steady frame allocation. EntityFrameContext and its LinkState remain immutable
