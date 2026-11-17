@@ -128,9 +128,7 @@ final class EntityRoomInitialization {
 
     void initializeRoomSlots(RoomEntitySnapshot initial) {
 
-        this.slotProperties.state.writeHookshotChainOam(initial.hookshotChainOam());
-        this.slotProperties.state.writePincerBodyOam(initial.pincerBodyOam());
-        this.slotProperties.state.writeWingedOctorokOam(initial.wingedOctorokOam());
+        slotProperties.initializeOam(initial);
         Arrays.fill(this.story.storageKidBall(), false);
         Arrays.fill(this.story.storageKidPlayTimer(), 0);
         Arrays.fill(this.story.storageKidPlayState(), 0);

@@ -9,6 +9,7 @@ import linksawakening.world.entity.event.ChestRewardEvent;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.DungeonWarpRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.event.EntityEvent;
 import linksawakening.world.entity.event.HeartContainerRewardEvent;
 import linksawakening.world.entity.event.HeartPiecePickupUpdate;
 import linksawakening.world.entity.event.HinoxLinkEffectRequest;
@@ -49,7 +50,7 @@ import linksawakening.world.entity.motion.RoamingEnemyMotion;
 
 /** One entity outbox and its stable typed channel views. */
 final class EntityEventChannels {
-    final EntityOutbox outbox = new EntityOutbox();
+    private final EntityOutbox outbox = new EntityOutbox();
     private final List<RoamingEnemyMotion.LaunchRequest> projectileLaunchRequests =
             outbox.channel(RoamingEnemyMotion.LaunchRequest.class, "projectileLaunchRequests");
     private final List<TransientVfxRequest> transientVfxRequests =
@@ -677,5 +678,13 @@ final class EntityEventChannels {
 
     void linkFacing(int sourceSlot, int direction, boolean preserveWalkingPhase) {
         linkFacing(new LinkFacingRequest(sourceSlot, direction, preserveWalkingPhase));
+    }
+
+    <T extends EntityEvent> List<T> drainChannel(Class<T> type, String channel) {
+        return outbox.drain(type, channel);
+    }
+
+    <T extends EntityEvent> List<T> channel(Class<T> type, String channel) {
+        return outbox.channel(type, channel);
     }
 }

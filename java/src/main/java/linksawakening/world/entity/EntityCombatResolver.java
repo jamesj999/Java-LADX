@@ -163,7 +163,7 @@ public final class EntityCombatResolver {
             throw new IllegalArgumentException("Enemy attack context cannot be null");
         }
         this.linkState.writeRunningWithPegasusBoots(attackContext.pegasusBoots());
-        List<EntityCombatEvent> events = this.events.outbox.channel(EntityCombatEvent.class, "resolvedCombat");
+        List<EntityCombatEvent> events = this.events.channel(EntityCombatEvent.class, "resolvedCombat");
         events.clear();
         EntityCombatSlot slot = this.acquireSlot();
         try {
@@ -174,7 +174,7 @@ public final class EntityCombatResolver {
         } finally {
             this.releaseSlot(slot);
         }
-        return this.events.outbox.drain(EntityCombatEvent.class, "resolvedCombat");
+        return this.events.drainChannel(EntityCombatEvent.class, "resolvedCombat");
     }
 
     static boolean entityCombatGatesAcceptInitialStatus(EntityCombatSlot slot) {
@@ -334,7 +334,7 @@ public final class EntityCombatResolver {
         var wingedOctorokMotion = runtime.motions.get(WingedOctorokMotion.class, WingedOctorokMotion::new);
         if (slot.entity.type() == EntityRomConstants.ENTITY_WINGED_OCTOROK
                 && (wingedOctorokMotion.state(slot.entity.slot()) == 2
-                        || runtime.slotProperties.state.readWingedStateTwoThisFrame(slot.entity.slot()))) {
+                        || runtime.slotProperties.readWingedStateTwoThisFrame(slot.entity.slot()))) {
             // WingedOctorokEntityHandler returns directly from its jump
             // state instead of calling DefaultEnemyDamageCollisionHandler.
             return false;
@@ -371,7 +371,7 @@ public final class EntityCombatResolver {
         if ((slot.entity.type() == EntityRomConstants.ENTITY_TIMER_BOMBITE
                         && bombiteMotion.state(slot.entity.slot()) == 1)
                 || (slot.entity.type() == EntityRomConstants.ENTITY_BOUNCING_BOMBITE
-                        && runtime.bombInteractions.state.readBombCollisionGraceCountdown(slot.entity.slot()) > 0)) {
+                        && runtime.bombInteractions.readBombCollisionGraceCountdown(slot.entity.slot()) > 0)) {
             return false;
         }
         return true;
@@ -400,7 +400,7 @@ public final class EntityCombatResolver {
         var likeLikeMotion = runtime.motions.get(LikeLikeMotion.class, LikeLikeMotion::new);
         slot.swordHit = frame.swordCollisionActive()
                 && slot.booBuddyAllowsSwordCollision
-                && !runtime.slotProperties.state.readWingedSwordAttackThisFrame(slot.entity.slot())
+                && !runtime.slotProperties.readWingedSwordAttackThisFrame(slot.entity.slot())
                 && (slot.entity.type() != EntityRomConstants.ENTITY_LIKE_LIKE
                         || likeLikeMotion.state(slot.entity.slot()) == 0)
                 && slot.hidingZolSwordCollision
@@ -682,7 +682,7 @@ public final class EntityCombatResolver {
         bombiteMotion.enterBouncingLitFromSword(
                 slot.entity.slot(), slot.entity, frame.linkEntityX(), frame.linkEntityY());
         runtime.physicsTables.writeEnemyTransitionCountdown(slot.entity.slot(), 0x40);
-        runtime.bombInteractions.state.writeBombCollisionGraceCountdown(slot.entity.slot(), 0x08);
+        runtime.bombInteractions.writeBombCollisionGraceCountdown(slot.entity.slot(), 0x08);
         var enemyRecoilMotion = runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
         enemyRecoilMotion.clear(slot.entity.slot());
     }
@@ -752,12 +752,12 @@ public final class EntityCombatResolver {
                         ? 0
                         : (frame.attackContext().powerRecoil() ? 0x40 : 0x2F));
         if (slot.entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
-            runtime.bossRewards.state.writeBossDeathProducerState(slot.entity.slot(), 0);
+            runtime.bossRewards.writeBossDeathProducerState(slot.entity.slot(), 0);
             var moblinKingMotion = runtime.motions.get(MoblinKingMotion.class, MoblinKingMotion::new);
             moblinKingMotion.setLethalHitFrame(slot.entity.slot(), (frame.frameCounter() & 255) + 1);
         }
         if (slot.entity.type() == EntityRomConstants.ENTITY_MOLDORM) {
-            runtime.bossRewards.state.writeBossDeathProducerState(slot.entity.slot(), 0);
+            runtime.bossRewards.writeBossDeathProducerState(slot.entity.slot(), 0);
             var moldormMotion = runtime.motions.get(MoldormMotion.class, MoldormMotion::new);
             moldormMotion.setDestructionTailState(slot.entity.slot(), 0);
         }

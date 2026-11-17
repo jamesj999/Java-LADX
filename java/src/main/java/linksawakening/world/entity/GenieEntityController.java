@@ -129,8 +129,8 @@ public final class GenieEntityController {
         if (!this.encounter.genieDeathInitialized[slot]) {
             this.encounter.genieDeathInitialized[slot] = true;
             this.encounter.genieActiveState[slot] = 0;
-            this.bossRewards.state.writeBossAgonySfxCountdown(0x03);
-            this.bossRewards.state.writeBossAgonySourceSlot(slot);
+            this.bossRewards.writeBossAgonySfxCountdown(0x03);
+            this.bossRewards.writeBossAgonySourceSlot(slot);
         }
         this.combatTables.writeEnemyFlashCountdown(slot, frameCounter & 0xFF);
         switch (this.encounter.genieActiveState[slot]) {

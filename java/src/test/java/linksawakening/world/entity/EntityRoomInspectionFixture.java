@@ -13,17 +13,17 @@ final class EntityRoomInspectionFixture {
     }
 
     int bombArrowCooldownForTest() {
-        return runtime.execution().bombInteractions().state.readBombArrowCooldown();
+        return runtime.execution().bombInteractions().readBombArrowCooldown();
     }
 
     boolean isBombArrowForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.execution().bombInteractions().state.readPlayerArrowBombArrow(slot);
+        return runtime.execution().bombInteractions().readPlayerArrowBombArrow(slot);
     }
 
     int bombCollisionGraceCountdownForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.execution().bombInteractions().state.readBombCollisionGraceCountdown(slot) & 0xFF;
+        return runtime.execution().bombInteractions().readBombCollisionGraceCountdown(slot) & 0xFF;
     }
 
     int swordPickupStateForTest(int slot) {
@@ -88,7 +88,7 @@ final class EntityRoomInspectionFixture {
 
     int bombOriginForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.execution().bombInteractions().state.readBombOrigin(slot) & 0xFF;
+        return runtime.execution().bombInteractions().readBombOrigin(slot) & 0xFF;
     }
 
     int entityRoomStatusForTest() {
@@ -102,12 +102,12 @@ final class EntityRoomInspectionFixture {
 
     int owlEventStateForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.execution().story().state.owlState().readOwlEventState(slot);
+        return runtime.execution().story().owlState().readOwlEventState(slot);
     }
 
     int owlPrivateCountdown1ForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.execution().story().state.owlState().readOwlPrivateCountdown1(slot);
+        return runtime.execution().story().owlState().readOwlPrivateCountdown1(slot);
     }
 
     int sideViewPlatformSpeedYForTest(int slot) {
@@ -140,6 +140,6 @@ final class EntityRoomInspectionFixture {
 
     int droppedItemForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.execution().bossRewards().state.readDroppedItemBySlot(slot);
+        return runtime.execution().bossRewards().readDroppedItemBySlot(slot);
     }
 }

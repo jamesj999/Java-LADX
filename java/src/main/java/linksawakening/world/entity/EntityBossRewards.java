@@ -35,7 +35,7 @@ public final class EntityBossRewards {
                 : state.readEnemyDropResolver().resolve(context, state.readEnemyDropLowHealth());
     }
 
-    final EntityBossState state;
+    private final EntityBossState state;
     final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBackgroundMechanics backgroundMechanics;
     final EntityCombatTables combatTables;
@@ -110,8 +110,7 @@ public final class EntityBossRewards {
             // permanently opening the east rescue-room path.
             this.roomVariables.writePendingRoomStatusMask(this.roomVariables.readPendingRoomStatusMask() | 0x20);
         }
-        if (entity.sourceLoadOrder() < 0
-                || (!this.state.readEnemyDropResolver().recordsDefeats() && !swallowedShield)) {
+        if (entity.sourceLoadOrder() < 0 || (!this.readEnemyDropResolver().recordsDefeats() && !swallowedShield)) {
             if (entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
                 this.roomVariables.writePendingClearedEntityMask(
                         this.roomVariables.readPendingClearedEntityMask() | persistentClearMask(entity));
@@ -128,11 +127,11 @@ public final class EntityBossRewards {
             EnemyDropResolver.Context context = new EnemyDropResolver.Context(
                     entity.type(),
                     this.roomInspection.enemyDropHealthGroup(entity.slot()),
-                    this.state.readDroppedItemBySlot(entity.slot()),
-                    this.state.readEnemyDropMaxHearts(),
-                    this.state.readEnemyDropHealth(),
-                    this.state.readInBossBattle(),
-                    this.state.readEnemyDropActivePowerUp(),
+                    this.readDroppedItemBySlot(entity.slot()),
+                    this.readEnemyDropMaxHearts(),
+                    this.readEnemyDropHealth(),
+                    this.readInBossBattle(),
+                    this.readEnemyDropActivePowerUp(),
                     this.physicsTables.readGroundInteractionSideScrolling(),
                     this.state.readEnemyDropCounters(),
                     randomByteSupplier);
@@ -140,9 +139,9 @@ public final class EntityBossRewards {
             this.state.writeEnemyDropCounters(result.counters());
         }
 
-        int killIndex = this.state.readKillCount() & 0xFF;
-        this.state.writeKillOrder(killIndex, entity.sourceLoadOrder() & 0xFF);
-        this.state.writeKillCount((this.state.readKillCount() + 1) & 0xFF);
+        int killIndex = this.readKillCount() & 0xFF;
+        this.writeKillOrder(killIndex, entity.sourceLoadOrder() & 0xFF);
+        this.writeKillCount((this.readKillCount() + 1) & 0xFF);
         this.roomVariables.writePendingClearedEntityMask(
                 this.roomVariables.readPendingClearedEntityMask() | persistentClearMask(entity));
         if (result.dropped()) {
@@ -165,24 +164,24 @@ public final class EntityBossRewards {
         if (countdown == 0) {
             // $06:6CC1 calls DidKillEnemy, including SpawnEnemyDrop. The
             // ROM health-group tables select the miniboss healing fairy.
-            if (this.state.readEnemyDropResolver().recordsDefeats()) {
+            if (this.readEnemyDropResolver().recordsDefeats()) {
                 EnemyDropResolver.Result drop = this.resolveDrop(new EnemyDropResolver.Context(
                         entity.type(),
                         this.roomInspection.enemyDropHealthGroup(entity.slot()),
-                        this.state.readDroppedItemBySlot(slot),
-                        this.state.readEnemyDropMaxHearts(),
-                        this.state.readEnemyDropHealth(),
-                        this.state.readInBossBattle(),
-                        this.state.readEnemyDropActivePowerUp(),
+                        this.readDroppedItemBySlot(slot),
+                        this.readEnemyDropMaxHearts(),
+                        this.readEnemyDropHealth(),
+                        this.readInBossBattle(),
+                        this.readEnemyDropActivePowerUp(),
                         this.physicsTables.readGroundInteractionSideScrolling(),
                         this.state.readEnemyDropCounters(),
                         randomByteSupplier));
                 this.state.writeEnemyDropCounters(drop.counters());
                 if (drop.dropped()) this.pickups.spawnEnemyDrop(entity, drop.itemType());
             }
-            int killIndex = this.state.readKillCount() & 0xFF;
-            this.state.writeKillOrder(killIndex, entity.sourceLoadOrder() & 0xFF);
-            this.state.writeKillCount((this.state.readKillCount() + 1) & 0xFF);
+            int killIndex = this.readKillCount() & 0xFF;
+            this.writeKillOrder(killIndex, entity.sourceLoadOrder() & 0xFF);
+            this.writeKillCount((this.readKillCount() + 1) & 0xFF);
             this.roomVariables.writePendingClearedEntityMask(
                     this.roomVariables.readPendingClearedEntityMask() | persistentClearMask(entity));
             if (this.roomVariables.readEntityMapId() != 0x07) {
@@ -217,15 +216,15 @@ public final class EntityBossRewards {
                         source,
                         this.physicsTables.readBaseEntityFlipAttribute(slot)
                                 ^ ((this.combatTables.readEnemyFlashCountdown(slot) << 2) & 0x10)));
-        if (this.state.readBossDeathProducerState(slot) == 0) {
+        if (this.readBossDeathProducerState(slot) == 0) {
             this.physicsTables.writeEnemyTransitionCountdown(slot, 0xA0);
             this.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
-            this.state.writeBossDeathProducerState(slot, 1);
-        } else if (this.state.readBossDeathProducerState(slot) == 1) {
+            this.writeBossDeathProducerState(slot, 1);
+        } else if (this.readBossDeathProducerState(slot) == 1) {
             if (this.physicsTables.readEnemyTransitionCountdown(slot) == 0) {
                 this.physicsTables.writeEnemyTransitionCountdown(slot, 0xC0);
                 this.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
-                this.state.writeBossDeathProducerState(slot, 2);
+                this.writeBossDeathProducerState(slot, 2);
             }
         } else if (this.physicsTables.readEnemyTransitionCountdown(slot) == 0) {
             this.events.sound(slot, source.type(), EntityCombatEvent.SoundChannel.NOISE, 0x0C);
@@ -265,17 +264,17 @@ public final class EntityBossRewards {
                                     ^ ((this.combatTables.readEnemyFlashCountdown(slot) << 2) & 0x10)));
         }
 
-        switch (this.state.readBossDeathProducerState(slot)) {
+        switch (this.readBossDeathProducerState(slot)) {
             case 0 -> {
                 this.physicsTables.writeEnemyTransitionCountdown(slot, 0x60);
                 this.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
-                this.state.writeBossDeathProducerState(slot, 1);
+                this.writeBossDeathProducerState(slot, 1);
             }
             case 1 -> {
                 if (this.physicsTables.readEnemyTransitionCountdown(slot) == 0) {
                     this.physicsTables.writeEnemyTransitionCountdown(slot, 0xFF);
                     this.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
-                    this.state.writeBossDeathProducerState(slot, 2);
+                    this.writeBossDeathProducerState(slot, 2);
                 }
             }
             case 2 -> {
@@ -284,7 +283,7 @@ public final class EntityBossRewards {
                 }
                 if (tailState == 4) {
                     this.physicsTables.writeEnemyTransitionCountdown(slot, 0x30);
-                    this.state.writeBossDeathProducerState(slot, 3);
+                    this.writeBossDeathProducerState(slot, 3);
                     return;
                 }
                 var moldormMotion = this.motions.get(MoldormMotion.class, MoldormMotion::new);
@@ -350,7 +349,7 @@ public final class EntityBossRewards {
         this.pickups.resetEnemyDropState(freeSlot);
         var enemyDropMotion = this.motions.get(EnemyDropMotion.class, EnemyDropMotion::new);
         enemyDropMotion.initialize(freeSlot, this.physicsTables.readGroundInteractionSideScrolling(), 0x10);
-        this.state.writeEnemyDropActive(freeSlot, true);
+        this.writeEnemyDropActive(freeSlot, true);
         this.physicsTables.writeSlowTransitionCountdown(freeSlot, 0);
         this.physicsTables.writeSlowTimerInitialized(freeSlot, false);
         this.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
@@ -452,7 +451,7 @@ public final class EntityBossRewards {
                 return;
             }
 
-            state = owner.state.readBossDeathProducerState(slot);
+            state = owner.readBossDeathProducerState(slot);
             if (source.type() == EntityRomConstants.ENTITY_DESERT_LANMOLA) {
                 switch (state) {
                     case 0 -> {
@@ -499,14 +498,14 @@ public final class EntityBossRewards {
 
         private boolean advanceState0() {
             // func_006_5629: transition $60, then private state 2++.
-            owner.state.writeBossDeathProducerState(slot, 1);
+            owner.writeBossDeathProducerState(slot, 1);
             owner.physicsTables.writeEnemyTransitionCountdown(slot, 0x60);
             return false;
         }
 
         private boolean advanceState1() {
             // func_006_563A: transition $CF, then private state 2++.
-            owner.state.writeBossDeathProducerState(slot, 2);
+            owner.writeBossDeathProducerState(slot, 2);
             owner.physicsTables.writeEnemyTransitionCountdown(slot, 0xCF);
             return false;
         }
@@ -524,7 +523,7 @@ public final class EntityBossRewards {
         private boolean advanceState02() {
             // ArmosKnightPrivateState0Handler: transition $A0 and
             // the first full flash countdown.
-            owner.state.writeBossDeathProducerState(slot, 1);
+            owner.writeBossDeathProducerState(slot, 1);
             owner.physicsTables.writeEnemyTransitionCountdown(slot, 0xA0);
             owner.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
             return false;
@@ -533,7 +532,7 @@ public final class EntityBossRewards {
         private boolean advanceState12() {
             // ArmosKnightPrivateState1Handler: the second flash
             // begins only after the first countdown reaches zero.
-            owner.state.writeBossDeathProducerState(slot, 2);
+            owner.writeBossDeathProducerState(slot, 2);
             owner.physicsTables.writeEnemyTransitionCountdown(slot, 0xC0);
             owner.combatTables.writeEnemyFlashCountdown(slot, 0xFF);
             return false;
@@ -544,9 +543,9 @@ public final class EntityBossRewards {
             // then calls DidKillEnemy. Armos has pre-forced the key;
             // Hinox uses the ordinary drop resolver here.
             if (source.type() == EntityRomConstants.ENTITY_ARMOS_KNIGHT) {
-                int killIndex = owner.state.readKillCount() & 0xFF;
-                owner.state.writeKillOrder(killIndex, source.sourceLoadOrder() & 0xFF);
-                owner.state.writeKillCount((owner.state.readKillCount() + 1) & 0xFF);
+                int killIndex = owner.readKillCount() & 0xFF;
+                owner.writeKillOrder(killIndex, source.sourceLoadOrder() & 0xFF);
+                owner.writeKillCount((owner.readKillCount() + 1) & 0xFF);
                 owner.roomVariables.writePendingClearedEntityMask(
                         owner.roomVariables.readPendingClearedEntityMask() | persistentClearMask(source));
                 owner.pickups.spawnEnemyDrop(source, EntityRomConstants.ENTITY_KEY_DROP_POINT);
@@ -567,7 +566,7 @@ public final class EntityBossRewards {
 
         private boolean advanceState03() {
             // func_007_7EB6: transition $A0, then private state 2++.
-            owner.state.writeBossDeathProducerState(slot, 1);
+            owner.writeBossDeathProducerState(slot, 1);
             owner.physicsTables.writeEnemyTransitionCountdown(slot, 0xA0);
 
             return true;
@@ -575,7 +574,7 @@ public final class EntityBossRewards {
 
         private boolean advanceState13() {
             // func_007_7EC7: transition $C0, then private state 2++.
-            owner.state.writeBossDeathProducerState(slot, 2);
+            owner.writeBossDeathProducerState(slot, 2);
             owner.physicsTables.writeEnemyTransitionCountdown(slot, 0xC0);
 
             return true;
@@ -618,5 +617,101 @@ public final class EntityBossRewards {
 
     void resetRoomVariables() {
         state.writeInBossBattle(false);
+    }
+
+    int postBossAgonySfxCountdown(int delta) {
+        return state.postBossAgonySfxCountdown(delta);
+    }
+
+    int readBossAgonySfxCountdown() {
+        return state.readBossAgonySfxCountdown();
+    }
+
+    int readBossAgonySourceSlot() {
+        return state.readBossAgonySourceSlot();
+    }
+
+    int readBossDeathProducerState(int slot) {
+        return state.readBossDeathProducerState(slot);
+    }
+
+    int readDroppedItemBySlot(int slot) {
+        return state.readDroppedItemBySlot(slot);
+    }
+
+    boolean readEnemyDropActive(int slot) {
+        return state.readEnemyDropActive(slot);
+    }
+
+    boolean readEnemyDropActivePowerUp() {
+        return state.readEnemyDropActivePowerUp();
+    }
+
+    int readEnemyDropHealth() {
+        return state.readEnemyDropHealth();
+    }
+
+    int readEnemyDropMaxHearts() {
+        return state.readEnemyDropMaxHearts();
+    }
+
+    EnemyDropResolver readEnemyDropResolver() {
+        return state.readEnemyDropResolver();
+    }
+
+    boolean readInBossBattle() {
+        return state.readInBossBattle();
+    }
+
+    int readKillCount() {
+        return state.readKillCount();
+    }
+
+    int writeBossAgonySfxCountdown(int value) {
+        return state.writeBossAgonySfxCountdown(value);
+    }
+
+    int writeBossAgonySourceSlot(int value) {
+        return state.writeBossAgonySourceSlot(value);
+    }
+
+    int writeBossDeathProducerState(int slot, int value) {
+        return state.writeBossDeathProducerState(slot, value);
+    }
+
+    int writeDroppablePrivateState3(int slot, int value) {
+        return state.writeDroppablePrivateState3(slot, value);
+    }
+
+    int writeDroppablePrivateState4(int slot, int value) {
+        return state.writeDroppablePrivateState4(slot, value);
+    }
+
+    int writeDroppedItemBySlot(int slot, int value) {
+        return state.writeDroppedItemBySlot(slot, value);
+    }
+
+    boolean writeEnemyDropActive(int slot, boolean value) {
+        return state.writeEnemyDropActive(slot, value);
+    }
+
+    EnemyDropResolver writeEnemyDropResolver(EnemyDropResolver value) {
+        return state.writeEnemyDropResolver(value);
+    }
+
+    boolean writeInBossBattle(boolean value) {
+        return state.writeInBossBattle(value);
+    }
+
+    int writeKillCount(int value) {
+        return state.writeKillCount(value);
+    }
+
+    int writeKillOrder(int slot, int value) {
+        return state.writeKillOrder(slot, value);
+    }
+
+    void setEnemyDropCounters(EnemyDropResolver.CounterState counters) {
+        state.writeEnemyDropCounters(counters);
     }
 }

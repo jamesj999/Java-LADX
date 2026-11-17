@@ -53,7 +53,7 @@ public final class EntityProjectileController {
     final EntitySlotProperties slotProperties;
     final RomEnemyCombatTables enemyCombatTables;
     final EntitySlots slots;
-    final EntityProjectileState state;
+    private final EntityProjectileState state;
 
     EntityProjectileController(
             boolean indoorRoom,
@@ -587,11 +587,11 @@ public final class EntityProjectileController {
     }
 
     public void setWingedStateTwoThisFrame(int slot, boolean value) {
-        this.slotProperties.state.writeWingedStateTwoThisFrame(slot, value);
+        this.slotProperties.writeWingedStateTwoThisFrame(slot, value);
     }
 
     public void setWingedSwordAttackThisFrame(int slot, boolean value) {
-        this.slotProperties.state.writeWingedSwordAttackThisFrame(slot, value);
+        this.slotProperties.writeWingedSwordAttackThisFrame(slot, value);
     }
 
     public int swordMoblinAlertingSoundCounter() {
@@ -826,7 +826,7 @@ public final class EntityProjectileController {
                 return false;
             }
 
-            if (owner.state.readMagicPowderState(slot) != 0) {
+            if (owner.readMagicPowderState(slot) != 0) {
                 // State one has no ordinary sprinkle rectangle: the source emits
                 // its short torch pair only at the state transition boundaries.
                 if (owner.physicsTables.readSlowTransitionCountdown(slot) != 0) {
@@ -841,11 +841,10 @@ public final class EntityProjectileController {
                         slot, location, objectLeft, objectTop, MagicPowderObjectAction.EXTINGUISH_TORCH));
                 // Keep the palette state visible to later powder handlers in
                 // this pass, before RoomSession applies their object requests.
-                if (owner.roomVariables.readEntityRoomId() != 0x74
-                        && owner.state.readTorchPaletteTargetAddress() < 0x0C) {
-                    owner.state.writeTorchPaletteTargetAddress(owner.state.readTorchPaletteTargetAddress() + 4);
+                if (owner.roomVariables.readEntityRoomId() != 0x74 && owner.readTorchPaletteTargetAddress() < 0x0C) {
+                    owner.writeTorchPaletteTargetAddress(owner.readTorchPaletteTargetAddress() + 4);
                     if (linkMotionState != 0x05) {
-                        owner.state.writeTorchPaletteTransitionActive(true);
+                        owner.writeTorchPaletteTransitionActive(true);
                     }
                 }
                 owner.lifecycle.clearEntity(slot);
@@ -862,7 +861,7 @@ public final class EntityProjectileController {
         private boolean prepareObjectInteraction() {
 
             if (transitionCountdown != 0x07) {
-                if (transitionCountdown < 0x10 && owner.state.readPowderSpent(slot) == 0) {
+                if (transitionCountdown < 0x10 && owner.readPowderSpent(slot) == 0) {
                     owner.collideMagicPowderWithEntities(entity, frame);
                 }
                 return false;
@@ -898,15 +897,14 @@ public final class EntityProjectileController {
 
             if (owner.indoorRoom && objectId == EntityRomConstants.OBJECT_TORCH_UNLIT) {
                 // This motion-state check belongs only to GBC torch ignition.
-                if (linkMotionState == 0x05 || owner.state.readTorchPaletteTransitionActive()) {
+                if (linkMotionState == 0x05 || owner.readTorchPaletteTransitionActive()) {
                     return false;
                 }
-                if (owner.state.readTorchPaletteTargetAddress() != 0) {
-                    owner.state.writeTorchPaletteTargetAddress(
-                            (owner.state.readTorchPaletteTargetAddress() - 4) & 0xFF);
-                    owner.state.writeTorchPaletteTransitionActive(true);
+                if (owner.readTorchPaletteTargetAddress() != 0) {
+                    owner.writeTorchPaletteTargetAddress((owner.readTorchPaletteTargetAddress() - 4) & 0xFF);
+                    owner.writeTorchPaletteTransitionActive(true);
                 }
-                owner.state.writeMagicPowderState(slot, 1);
+                owner.writeMagicPowderState(slot, 1);
                 owner.physicsTables.writeSlowTransitionCountdown(
                         slot, EntityRomConstants.MAGIC_POWDER_SLOW_TRANSITION_COUNTDOWN);
                 owner.physicsTables.writeSlowTimerInitialized(slot, true);
@@ -930,7 +928,7 @@ public final class EntityProjectileController {
             // final sixteen transition ticks and only when private state 4 is 0.
             // $79DA returns for non-torch indoor objects. Outdoors, $79CF leaves
             // A=0 and jumps to the collision branch regardless of the object id.
-            if (!owner.indoorRoom && owner.state.readPowderSpent(slot) == 0) {
+            if (!owner.indoorRoom && owner.readPowderSpent(slot) == 0) {
                 owner.collideMagicPowderWithEntities(entity, frame);
             }
             return true;
@@ -1289,4 +1287,52 @@ public final class EntityProjectileController {
             int linkMotionState,
             boolean handlerInteractive,
             boolean timersInteractive) {}
+
+    int readBoomerangSfxCounter() {
+        return state.readBoomerangSfxCounter();
+    }
+
+    boolean readBoomerangSoundClockProvided() {
+        return state.readBoomerangSoundClockProvided();
+    }
+
+    int readMagicPowderState(int slot) {
+        return state.readMagicPowderState(slot);
+    }
+
+    int readMusicalNoteInertia(int slot) {
+        return state.readMusicalNoteInertia(slot);
+    }
+
+    int readPowderSpent(int slot) {
+        return state.readPowderSpent(slot);
+    }
+
+    int readTorchPaletteTargetAddress() {
+        return state.readTorchPaletteTargetAddress();
+    }
+
+    boolean readTorchPaletteTransitionActive() {
+        return state.readTorchPaletteTransitionActive();
+    }
+
+    int writeBoomerangSfxCounter(int value) {
+        return state.writeBoomerangSfxCounter(value);
+    }
+
+    boolean writeBoomerangSoundClockProvided(boolean value) {
+        return state.writeBoomerangSoundClockProvided(value);
+    }
+
+    int writeMagicPowderState(int slot, int value) {
+        return state.writeMagicPowderState(slot, value);
+    }
+
+    int writeTorchPaletteTargetAddress(int value) {
+        return state.writeTorchPaletteTargetAddress(value);
+    }
+
+    boolean writeTorchPaletteTransitionActive(boolean value) {
+        return state.writeTorchPaletteTransitionActive(value);
+    }
 }

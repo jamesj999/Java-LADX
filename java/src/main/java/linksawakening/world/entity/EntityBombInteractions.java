@@ -23,7 +23,7 @@ import linksawakening.world.entity.motion.ThrownEntityMotion;
 
 /** ROM bomb explosion, damage and delayed presentation ordering. */
 public final class EntityBombInteractions {
-    final EntityBombState state;
+    private final EntityBombState state;
     final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBackgroundMechanics backgroundMechanics;
     final EntityCombatTables combatTables;
@@ -143,7 +143,7 @@ public final class EntityBombInteractions {
         this.queueBombExplosionInteractions(
                 updated, decision, projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
         if (decision.unloadAfterPresentation()) {
-            this.state.setBombFinalPresentationPending(slot, true);
+            this.setBombFinalPresentationPending(slot, true);
         }
         return decision;
     }
@@ -163,7 +163,7 @@ public final class EntityBombInteractions {
         // BombExplosionHandler returns before every interaction for Tarin's
         // transformation explosion. All other bomb variants, including
         // enemy bombs, still run the shared destroyable-object checks.
-        if (this.state.readBombOrigin(bombSlot) == 0x4C) {
+        if (this.readBombOrigin(bombSlot) == 0x4C) {
             return;
         }
         if (countdown < 0x0E || countdown > 0x16) {
@@ -182,7 +182,7 @@ public final class EntityBombInteractions {
         if (countdown != 0x12) {
             return;
         }
-        if (this.state.readBombOrigin(bombSlot) != 0) {
+        if (this.readBombOrigin(bombSlot) != 0) {
             this.queueEnemyBombLinkCollision(bomb, projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
             return;
         }
@@ -351,5 +351,73 @@ public final class EntityBombInteractions {
 
     public int bombOrigin(int slot) {
         return state.readBombOrigin(slot);
+    }
+
+    boolean bombFinalPresentationPending(int slot) {
+        return state.bombFinalPresentationPending(slot);
+    }
+
+    int postBombArrowCooldown(int delta) {
+        return state.postBombArrowCooldown(delta);
+    }
+
+    int readBombArrowCooldown() {
+        return state.readBombArrowCooldown();
+    }
+
+    int readBombCollisionGraceCountdown(int slot) {
+        return state.readBombCollisionGraceCountdown(slot);
+    }
+
+    int readBombOrigin(int slot) {
+        return state.readBombOrigin(slot);
+    }
+
+    int readLatestDroppedBombEntityIndex() {
+        return state.readLatestDroppedBombEntityIndex();
+    }
+
+    boolean readPlayerArrowBombArrow(int slot) {
+        return state.readPlayerArrowBombArrow(slot);
+    }
+
+    void setBombFinalPresentationPending(int slot, boolean value) {
+        state.setBombFinalPresentationPending(slot, value);
+    }
+
+    int writeBombArrowCooldown(int value) {
+        return state.writeBombArrowCooldown(value);
+    }
+
+    int writeBombCollisionGraceCountdown(int slot, int value) {
+        return state.writeBombCollisionGraceCountdown(slot, value);
+    }
+
+    int writeBombDirection(int slot, int value) {
+        return state.writeBombDirection(slot, value);
+    }
+
+    int writeBombLiftDelay(int slot, int value) {
+        return state.writeBombLiftDelay(slot, value);
+    }
+
+    int writeBombOrigin(int slot, int value) {
+        return state.writeBombOrigin(slot, value);
+    }
+
+    boolean writeLastBombPlacementPlayedBump(boolean value) {
+        return state.writeLastBombPlacementPlayedBump(value);
+    }
+
+    int writeLatestDroppedBombEntityIndex(int value) {
+        return state.writeLatestDroppedBombEntityIndex(value);
+    }
+
+    boolean writePlacedBombMotionInitialized(int slot, boolean value) {
+        return state.writePlacedBombMotionInitialized(slot, value);
+    }
+
+    boolean writePlayerArrowBombArrow(int slot, boolean value) {
+        return state.writePlayerArrowBombArrow(slot, value);
     }
 }

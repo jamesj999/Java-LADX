@@ -109,7 +109,7 @@ final class EntitySlotPipeline {
         state.slotProperties().updatePincerBodyOam();
         state.slotProperties().updateWingedOctorokOam();
         state.slotProperties().updateBowWowChain(state.inputs().frame());
-        return state.events().outbox.drain(EntityProjectileEvent.class, "projectileEvents");
+        return state.events().drainChannel(EntityProjectileEvent.class, "projectileEvents");
     }
 
     private static void copyInputs(EntityFrameExecution state) {
@@ -170,7 +170,7 @@ final class EntitySlotPipeline {
                         && state.gates().handlerLinkCollisionEnabled()
                         && state.inputs().projectileLinkState().motionState()
                                 < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
-        state.story().state.writeShouldGetLostInMysteriousWoods(false);
+        state.story().writeShouldGetLostInMysteriousWoods(false);
         state.bombInteractions().finalizePendingBombPresentations();
         state.inputs().frame(state.inputs().frameCounter() & 0xFF);
         state.inputs().romCollisionType(state.inputs().collisionType() & 0xFF);
@@ -180,20 +180,19 @@ final class EntitySlotPipeline {
 
         // WorldHandler runs $14:4B21 before AnimateEntities, even when no
         // boomerang exists or dialogs/room transitions suspend its handler.
-        if (!state.projectiles().state.readBoomerangSoundClockProvided()
+        if (!state.projectiles().readBoomerangSoundClockProvided()
                 && state.roomVariables().readGameplayWorld()
                 && !state.inputs().creditsGameplay()) {
             state.projectiles()
-                    .state
-                    .writeBoomerangSfxCounter((state.projectiles().state.readBoomerangSfxCounter() + 1)
+                    .writeBoomerangSfxCounter((state.projectiles().readBoomerangSfxCounter() + 1)
                             % EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD);
         }
-        state.projectiles().state.writeBoomerangSoundClockProvided(false);
+        state.projectiles().writeBoomerangSoundClockProvided(false);
         if (state.motion(MoblinSwordMotion.class, MoblinSwordMotion::new).readSwordMoblinAlertingSoundCounter() > 0) {
             state.motion(MoblinSwordMotion.class, MoblinSwordMotion::new).postSwordMoblinAlertingSoundCounter(-1);
         }
-        if (state.bombInteractions().state.readBombArrowCooldown() > 0) {
-            state.bombInteractions().state.postBombArrowCooldown(-1);
+        if (state.bombInteractions().readBombArrowCooldown() > 0) {
+            state.bombInteractions().postBombArrowCooldown(-1);
         }
     }
 
@@ -217,8 +216,8 @@ final class EntitySlotPipeline {
         state.physicsTables().clearEnemyProjectileSpawnedThisFrame();
         state.physicsTables().clearDynamicEntitySpawnedThisFrame();
         state.genie().beginFrame();
-        Arrays.fill(state.slotProperties().state.storageWingedSwordAttackThisFrame(), false);
-        Arrays.fill(state.slotProperties().state.storageWingedStateTwoThisFrame(), false);
+        Arrays.fill(state.slotProperties().storageWingedSwordAttackThisFrame(), false);
+        Arrays.fill(state.slotProperties().storageWingedStateTwoThisFrame(), false);
         state.events().clearTransientVfxRequests();
         state.events().clearPendingLinkFinalPositionRequests();
         state.events().clearPendingRoosterLinkStateRequests();
@@ -262,12 +261,12 @@ final class EntitySlotPipeline {
 
     private static void prepareLateFrameEvents(EntityFrameExecution state) {
 
-        if (state.bossRewards().state.readBossAgonySfxCountdown() > 0) {
-            state.bossRewards().state.postBossAgonySfxCountdown(-1);
-            if (state.bossRewards().state.readBossAgonySfxCountdown() == 0) {
+        if (state.bossRewards().readBossAgonySfxCountdown() > 0) {
+            state.bossRewards().postBossAgonySfxCountdown(-1);
+            if (state.bossRewards().readBossAgonySfxCountdown() == 0) {
                 state.events()
                         .sound(
-                                state.bossRewards().state.readBossAgonySourceSlot(),
+                                state.bossRewards().readBossAgonySourceSlot(),
                                 EntityRomConstants.ENTITY_GENIE,
                                 EntityCombatEvent.SoundChannel.WAVE,
                                 0x10);
@@ -290,7 +289,7 @@ final class EntitySlotPipeline {
                             state.inputs().linkEntityY(),
                             state.linkState().readOcarinaAnimationPhase());
         }
-        state.inputs().projectileEvents(state.events().outbox.channel(EntityProjectileEvent.class, "projectileEvents"));
+        state.inputs().projectileEvents(state.events().channel(EntityProjectileEvent.class, "projectileEvents"));
         state.inputs().projectileEvents().clear();
     }
 
@@ -358,7 +357,6 @@ final class EntitySlotPipeline {
                 return false;
             }
             state.bossRewards()
-                    .state
                     .writeDroppedItemBySlot(slotState.entity().slot(), EntityRomConstants.ENTITY_HIDING_SLIME_KEY);
             if (slotState.entity().sourceLoadOrder() != 0xFF) {
                 slotState.entity(withSourceLoadOrder(slotState.entity(), 0xFF));
@@ -992,9 +990,7 @@ final class EntitySlotPipeline {
         if (slotState.status() == EntityStatus.ACTIVE
                 && !slotState.wasInitializing()
                 && !slotState.keyDropTransitionActive()
-                && state.bossRewards()
-                        .state
-                        .readEnemyDropActive(slotState.updated().slot())) {
+                && state.bossRewards().readEnemyDropActive(slotState.updated().slot())) {
             slotState.updated(state.motion(EnemyDropMotion.class, EnemyDropMotion::new)
                     .advance(
                             slotState.updated(),
@@ -1014,9 +1010,7 @@ final class EntitySlotPipeline {
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         if (slotState.status() == EntityStatus.ACTIVE
-                && state.bossRewards()
-                        .state
-                        .readEnemyDropActive(slotState.updated().slot())) {
+                && state.bossRewards().readEnemyDropActive(slotState.updated().slot())) {
             // BouncingEntityPhysics calls the complete background helper before
             // bouncing. Ground effects alone omit the neighbouring bush walls.
             RoomEntityBackgroundInteraction dropBackground = frameInput.hinoxBackgroundInteraction();
@@ -1177,7 +1171,6 @@ final class EntitySlotPipeline {
                 && slotState.updated().type() == EntityRomConstants.ENTITY_TIMER_BOMBITE) {
             slotState.renderFlipAttribute(slotState.renderFlipAttribute()
                     | ((state.bombInteractions()
-                                            .state
                                             .readBombCollisionGraceCountdown(
                                                     slotState.updated().slot())
                                     << 3)

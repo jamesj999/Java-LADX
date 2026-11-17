@@ -153,17 +153,17 @@ final class BombPlacementAndSlotReuseTest {
         EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(slot, 0x01);
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
 
-        assertTrue(runtime.execution().bombInteractions().state.bombFinalPresentationPending(slot));
+        assertTrue(runtime.execution().bombInteractions().bombFinalPresentationPending(slot));
 
         EntityRuntimeFixture.disableWithoutPersistence(runtime, slot);
 
-        assertFalse(runtime.execution().bombInteractions().state.bombFinalPresentationPending(slot));
+        assertFalse(runtime.execution().bombInteractions().bombFinalPresentationPending(slot));
         assertEquals(0xFF, runtime.inspection().bombDirection(slot));
         assertEquals(
                 EntityStatus.DISABLED,
                 runtime.inspection().snapshot().slots().get(slot).status());
         assertEquals(slot, runtime.spawns().spawnBomb(0x44, 0x54, 0, 1));
         assertEquals(1, runtime.inspection().bombDirection(slot));
-        assertFalse(runtime.execution().bombInteractions().state.bombFinalPresentationPending(slot));
+        assertFalse(runtime.execution().bombInteractions().bombFinalPresentationPending(slot));
     }
 }
