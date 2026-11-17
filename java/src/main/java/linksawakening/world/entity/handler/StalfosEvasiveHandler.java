@@ -69,7 +69,7 @@ final class StalfosEvasiveHandler {
             {
                 EntitySpriteDefinition evasiveDefinition = state.spriteViews()
                         .forStalfosEvasiveState(state.motion(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
-                                .privateState1(slotState.entity().slot()));
+                                .cloneMode(slotState.entity().slot()));
                 slotState.updated(state.sprites()
                         .present(
                                 slotState.updated(),

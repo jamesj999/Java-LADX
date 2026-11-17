@@ -23,6 +23,7 @@ final class IronMaskHandler {
         var presentationFlags = state.presentation();
 
         if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            // ROM privateState2: handler-dependent register; a narrower meaning has not been established.
             int privateState2 =
                     state.slot().ironMaskPrivateState2(slotState.entity().slot());
             int variant =

@@ -297,7 +297,7 @@ public final class EntityCombatResolver {
         // the jump's initial $08 transition countdown, not all airtime.
         var stalfosEvasiveMotion = runtime.motions.get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new);
         if (slot.entity.type() == EntityRomConstants.ENTITY_STALFOS_EVASIVE
-                && stalfosEvasiveMotion.privateState1(slot.entity.slot()) == 0
+                && stalfosEvasiveMotion.cloneMode(slot.entity.slot()) == 0
                 && runtime.physicsTables.readEnemyTransitionCountdown(slot.entity.slot()) != 0) {
             return false;
         }
@@ -371,7 +371,7 @@ public final class EntityCombatResolver {
         if ((slot.entity.type() == EntityRomConstants.ENTITY_TIMER_BOMBITE
                         && bombiteMotion.state(slot.entity.slot()) == 1)
                 || (slot.entity.type() == EntityRomConstants.ENTITY_BOUNCING_BOMBITE
-                        && runtime.bombInteractions.state.readBombPrivateCountdown1(slot.entity.slot()) > 0)) {
+                        && runtime.bombInteractions.state.readBombCollisionGraceCountdown(slot.entity.slot()) > 0)) {
             return false;
         }
         return true;
@@ -682,7 +682,7 @@ public final class EntityCombatResolver {
         bombiteMotion.enterBouncingLitFromSword(
                 slot.entity.slot(), slot.entity, frame.linkEntityX(), frame.linkEntityY());
         runtime.physicsTables.writeEnemyTransitionCountdown(slot.entity.slot(), 0x40);
-        runtime.bombInteractions.state.writeBombPrivateCountdown1(slot.entity.slot(), 0x08);
+        runtime.bombInteractions.state.writeBombCollisionGraceCountdown(slot.entity.slot(), 0x08);
         var enemyRecoilMotion = runtime.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
         enemyRecoilMotion.clear(slot.entity.slot());
     }

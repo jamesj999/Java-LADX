@@ -98,7 +98,7 @@ final class EntityRuntimeBombArrowsTest extends EntityRuntimeTestSupport {
         assertTrue(runtime.inspection().snapshot().slots().get(bombSlot).loaded());
         assertTrue(EntityRuntimeFixture.inspection(runtime).isBombArrowForTest(arrowSlot));
         assertEquals(0, EntityRuntimeFixture.inspection(runtime).bombArrowCooldownForTest());
-        assertEquals(0x10, EntityRuntimeFixture.inspection(runtime).bombPrivateCountdown1ForTest(bombSlot));
+        assertEquals(0x10, EntityRuntimeFixture.inspection(runtime).bombCollisionGraceCountdownForTest(bombSlot));
     }
 
     @Test

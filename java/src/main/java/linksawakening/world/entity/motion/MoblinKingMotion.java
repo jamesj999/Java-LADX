@@ -48,7 +48,8 @@ public final class MoblinKingMotion {
     final int[] zAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown1Table: hop-and-shoot pause; emits the arrow at $0C.
     final int[] hopShotCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown2Table.
+    final int[] chargePauseCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] bodyVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] weaponFrame = new int[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] weaponVisible = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -86,7 +87,7 @@ public final class MoblinKingMotion {
         yAccumulator[slot] = 0;
         zAccumulator[slot] = 0;
         hopShotCountdown[slot] = 0;
-        privateCountdown2[slot] = 0;
+        chargePauseCountdown[slot] = 0;
         bodyVariant[slot] = 0;
         weaponFrame[slot] = 0;
         weaponVisible[slot] = true;
@@ -283,8 +284,8 @@ public final class MoblinKingMotion {
                 variant = (frameCounter >>> 4) & 1;
                 owner.weaponFrame[slot] = variant;
                 owner.direction[slot] = MoblinKingMotion.directionToLink(x, linkX);
-                if (owner.privateCountdown2[slot] == 0) {
-                    owner.privateCountdown2[slot] = (randomByteSupplier.getAsInt() & 0x3F) + 0x30;
+                if (owner.chargePauseCountdown[slot] == 0) {
+                    owner.chargePauseCountdown[slot] = (randomByteSupplier.getAsInt() & 0x3F) + 0x30;
                     owner.hopShotCountdown[slot] = 0x18;
                 }
             }
@@ -420,8 +421,8 @@ public final class MoblinKingMotion {
             if (owner.hopShotCountdown[slot] > 0) {
                 owner.hopShotCountdown[slot]--;
             }
-            if (owner.privateCountdown2[slot] > 0) {
-                owner.privateCountdown2[slot]--;
+            if (owner.chargePauseCountdown[slot] > 0) {
+                owner.chargePauseCountdown[slot]--;
             }
 
             x = entity.x();

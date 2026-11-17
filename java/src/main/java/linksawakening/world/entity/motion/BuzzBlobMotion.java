@@ -22,7 +22,9 @@ public final class BuzzBlobMotion {
     private static final int[] PRIVATE_STATE_VARIANTS = {0x06, 0x07, 0x08, 0x07};
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM privateState1: handler-dependent register; a narrower meaning has not been established.
     private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM privateState2: handler-dependent register; a narrower meaning has not been established.
     private final int[] privateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];

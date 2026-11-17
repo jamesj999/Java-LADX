@@ -23,6 +23,7 @@ public final class ZombieMotion {
 
     final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState1Table: zero for the hidden room marker, nonzero for its spawned Zombie.
+    // ROM wEntitiesPrivateState1Table.
     final int[] spawnedZombieFlag = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -69,7 +70,7 @@ public final class ZombieMotion {
         return state[slot];
     }
 
-    int privateState1(int slot) {
+    int spawnedZombieFlag(int slot) {
         return spawnedZombieFlag[slot];
     }
 

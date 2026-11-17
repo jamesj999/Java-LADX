@@ -73,7 +73,7 @@ public final class EntityBombInteractions {
                 slot,
                 withPositionAndVariant(
                         this.slots.get(slot), x, y, this.slots.get(slot).spriteVariant()));
-        state.writeBombPrivateCountdown3(slot, 0x03);
+        state.writeBombLiftDelay(slot, 0x03);
         state.writeLastBombPlacementPlayedBump(!this.physicsTables.readGroundInteractionSideScrolling());
         if (this.physicsTables.readGroundInteractionSideScrolling()) {
             this.slots.replace(slot, withZ(this.slots.get(slot), 0));
@@ -163,7 +163,7 @@ public final class EntityBombInteractions {
         // BombExplosionHandler returns before every interaction for Tarin's
         // transformation explosion. All other bomb variants, including
         // enemy bombs, still run the shared destroyable-object checks.
-        if (this.state.readBombPrivateState4(bombSlot) == 0x4C) {
+        if (this.state.readBombOrigin(bombSlot) == 0x4C) {
             return;
         }
         if (countdown < 0x0E || countdown > 0x16) {
@@ -182,7 +182,7 @@ public final class EntityBombInteractions {
         if (countdown != 0x12) {
             return;
         }
-        if (this.state.readBombPrivateState4(bombSlot) != 0) {
+        if (this.state.readBombOrigin(bombSlot) != 0) {
             this.queueEnemyBombLinkCollision(bomb, projectileEvents, linkEntityX, linkEntityY, projectileLinkState);
             return;
         }
@@ -341,15 +341,15 @@ public final class EntityBombInteractions {
         return withStatus(moved, stunned.status());
     }
 
-    public int bombPrivateCountdown1(int slot) {
-        return state.readBombPrivateCountdown1(slot);
+    public int bombCollisionGraceCountdown(int slot) {
+        return state.readBombCollisionGraceCountdown(slot);
     }
 
-    public void setBombPrivateCountdown1(int slot, int value) {
-        state.writeBombPrivateCountdown1(slot, value);
+    public void setBombCollisionGraceCountdown(int slot, int value) {
+        state.writeBombCollisionGraceCountdown(slot, value);
     }
 
-    public int bombPrivateState4(int slot) {
-        return state.readBombPrivateState4(slot);
+    public int bombOrigin(int slot) {
+        return state.readBombOrigin(slot);
     }
 }

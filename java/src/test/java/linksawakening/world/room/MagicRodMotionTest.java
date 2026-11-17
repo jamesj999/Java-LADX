@@ -41,18 +41,19 @@ final class MagicRodMotionTest {
 
         motion.beginFireTransition(0);
 
-        assertEquals(MotionTestAccess.MagicRodFireballMotion_FIRE_TRANSITION_COUNTDOWN, motion.privateCountdown1(0));
+        assertEquals(
+                MotionTestAccess.MagicRodFireballMotion_FIRE_TRANSITION_COUNTDOWN, motion.fireTransitionCountdown(0));
         assertEquals(0, linksawakening.world.entity.motion.MotionTestAccess.frameVariant(0));
         assertEquals(1, linksawakening.world.entity.motion.MotionTestAccess.frameVariant(8));
         assertEquals(false, motion.tickFireTransition(0));
-        assertEquals(0x2F, motion.privateCountdown1(0));
+        assertEquals(0x2F, motion.fireTransitionCountdown(0));
 
         for (int tick = 0; tick < 0x2D; tick++) {
             assertEquals(false, motion.tickFireTransition(0));
         }
-        assertEquals(0x02, motion.privateCountdown1(0));
+        assertEquals(0x02, motion.fireTransitionCountdown(0));
         assertEquals(true, motion.tickFireTransition(0));
-        assertEquals(1, motion.privateCountdown1(0));
+        assertEquals(1, motion.fireTransitionCountdown(0));
     }
 
     private static void assertSpawnData(int direction, int offsetX, int offsetY, int speedX, int speedY) {

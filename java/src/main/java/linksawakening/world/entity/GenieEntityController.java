@@ -424,12 +424,17 @@ public final class GenieEntityController {
         // ROM wEntitiesPrivateState1Table; selects GenieState0Handler through GenieState4Handler.
         final int[] handlerState = new int[EntityRoomLoader.MAX_ENTITIES];
         // ROM wEntitiesPrivateState2Table; interpretation follows the selected Genie handler.
+        // ROM romPrivateState2: handler-dependent register; a narrower meaning has not been established.
         final int[] romPrivateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
         // ROM wEntitiesPrivateState3Table; interpretation follows the selected Genie handler.
+        // ROM romPrivateState3: handler-dependent register; a narrower meaning has not been established.
         final int[] romPrivateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
         // ROM wEntitiesPrivateState4Table; interpretation follows the selected Genie handler.
+        // ROM romPrivateState4: handler-dependent register; a narrower meaning has not been established.
         final int[] romPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
+        // ROM geniePrivateCountdown1: handler-dependent register; a narrower meaning has not been established.
         final int[] geniePrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+        // ROM geniePrivateCountdown2: handler-dependent register; a narrower meaning has not been established.
         final int[] geniePrivateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
         final int[] genieDirection = new int[EntityRoomLoader.MAX_ENTITIES];
         final boolean[] genieDeathInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];

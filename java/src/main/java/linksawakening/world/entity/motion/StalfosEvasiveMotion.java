@@ -10,9 +10,11 @@ import linksawakening.world.entity.RoomEntityBackgroundCollision;
 /** Bank-$15 StalfosEvasiveEntityHandler's normal and airborne states. */
 public final class StalfosEvasiveMotion {
     private static final int[] RANDOM_DIRECTION_SPEEDS = {0x00, 0x06, 0xFA, 0xFA, 0x06};
+    // ROM wEntitiesPrivateState1Table.
 
-    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] cloneMode = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown1Table: post-hit delay gating the clone response.
+    // ROM wEntitiesPrivateCountdown1Table.
     final int[] hitResponseCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -46,7 +48,7 @@ public final class StalfosEvasiveMotion {
     }
 
     void reset(int slot) {
-        privateState1[slot] = 0;
+        cloneMode[slot] = 0;
         hitResponseCountdown[slot] = 0;
         state[slot] = 0;
         inertia[slot] = 0;
@@ -110,7 +112,7 @@ public final class StalfosEvasiveMotion {
     }
 
     public void clear(int slot) {
-        privateState1[slot] = 0;
+        cloneMode[slot] = 0;
         hitResponseCountdown[slot] = 0;
         state[slot] = 0;
         inertia[slot] = 0;
@@ -123,11 +125,11 @@ public final class StalfosEvasiveMotion {
         initialized[slot] = false;
     }
 
-    public int privateState1(int slot) {
-        return privateState1[slot];
+    public int cloneMode(int slot) {
+        return cloneMode[slot];
     }
 
-    public int privateCountdown1(int slot) {
+    public int hitResponseCountdown(int slot) {
         return hitResponseCountdown[slot];
     }
 
@@ -154,7 +156,7 @@ public final class StalfosEvasiveMotion {
     public void initializeClone(int slot, int newSpeedX, int newSpeedY) {
         reset(slot);
         initialized[slot] = true;
-        privateState1[slot] = 1;
+        cloneMode[slot] = 1;
         speedX[slot] = newSpeedX & 0xFF;
         speedY[slot] = newSpeedY & 0xFF;
     }
@@ -352,7 +354,7 @@ public final class StalfosEvasiveMotion {
             }
 
             frame = frameCounter & 0xFF;
-            if (owner.privateState1[slot] != 0) {
+            if (owner.cloneMode[slot] != 0) {
 
                 completedResult = owner.advanceFleeing(
                         entity, frame, transitionCountdown, ignoreHitsCountdown, backgroundCollision);

@@ -23,6 +23,7 @@ final class EntityPhysicsTables {
     private final int[] entityOptions1Override = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] enemyProjectileSpawnedThisFrame = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] dynamicEntitySpawnedThisFrame = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    // ROM entityPrivateState4: handler-dependent register; a narrower meaning has not been established.
     private final int[] entityPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] entityInertia = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] entityUnknownJ = new int[EntityRoomLoader.MAX_ENTITIES];

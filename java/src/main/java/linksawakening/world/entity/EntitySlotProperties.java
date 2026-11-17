@@ -219,11 +219,7 @@ public final class EntitySlotProperties {
             }
             var wingedOctorokMotion = this.motions.get(WingedOctorokMotion.class, WingedOctorokMotion::new);
             entries.addAll(WingedOctorokOam.entries(
-                    entity.slot(),
-                    wingedOctorokMotion.privateState2(entity.slot()),
-                    entity.x(),
-                    entity.y(),
-                    entity.z()));
+                    entity.slot(), wingedOctorokMotion.wingPhase(entity.slot()), entity.x(), entity.y(), entity.z()));
         }
         state.writeWingedOctorokOam(List.copyOf(entries));
     }

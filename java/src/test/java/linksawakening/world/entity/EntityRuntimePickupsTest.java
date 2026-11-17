@@ -45,8 +45,8 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
                 runtime, 0, 0x20, 0x30, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN));
 
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
-        assertEquals(0x02, runtime.pickupState().secretSeashellPrivateState3(0));
-        assertEquals(0x00, runtime.pickupState().secretSeashellPrivateState4(0));
+        assertEquals(0x02, runtime.pickupState().seashellHiddenMode(0));
+        assertEquals(0x00, runtime.pickupState().seashellShovelRevealPending(0));
 
         runtime.configuration().setObjectQuery(entity -> new RoomEntityObjectSample(0x04, 0, 0x40, 0x40));
         runtime.tick(EntityTestFrames.frame(
@@ -54,9 +54,9 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
 
         RoomEntity revealed = runtime.inspection().snapshot().slots().get(0);
         assertEquals(0, revealed.spriteVariant());
-        assertEquals(0, runtime.pickupState().secretSeashellPrivateState3(0));
-        assertEquals(0, runtime.pickupState().secretSeashellPrivateState4(0));
-        assertEquals(0x18, runtime.pickupState().secretSeashellPrivateCountdown1(0));
+        assertEquals(0, runtime.pickupState().seashellHiddenMode(0));
+        assertEquals(0, runtime.pickupState().seashellShovelRevealPending(0));
+        assertEquals(0x18, runtime.pickupState().seashellRevealCountdown(0));
         assertEquals(0x80, runtime.pickupState().secretSeashellSlowTransitionCountdown(0));
         assertEquals(0x0C, runtime.pickupState().secretSeashellSpeedX(0));
         assertEquals(0x0C, runtime.pickupState().secretSeashellSpeedY(0));
@@ -86,8 +86,8 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
                 runtime, 0, 0x20, 0x30, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN));
 
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
-        assertEquals(0x02, runtime.pickupState().secretSeashellPrivateState3(0));
-        assertEquals(0x01, runtime.pickupState().secretSeashellPrivateState4(0));
+        assertEquals(0x02, runtime.pickupState().seashellHiddenMode(0));
+        assertEquals(0x01, runtime.pickupState().seashellShovelRevealPending(0));
     }
 
     @Test
@@ -112,21 +112,21 @@ final class EntityRuntimePickupsTest extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(
                 runtime, 0, 0x20, 0x30, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN));
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
-        assertEquals(0x01, runtime.pickupState().secretSeashellPrivateState3(0));
+        assertEquals(0x01, runtime.pickupState().seashellHiddenMode(0));
 
         EntityRuntimeFixture.debug(runtime).setSecretSeashellPegasusCollisionForTest(true, true, 0x90, 0x90);
         runtime.tick(EntityTestFrames.frame(
                 runtime, 1, 0x20, 0x30, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN));
 
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
-        assertEquals(0x01, runtime.pickupState().secretSeashellPrivateState3(0));
+        assertEquals(0x01, runtime.pickupState().seashellHiddenMode(0));
 
         EntityRuntimeFixture.debug(runtime).setSecretSeashellPegasusCollisionForTest(true, true, 0x48, 0x58);
         runtime.tick(EntityTestFrames.frame(
                 runtime, 2, 0x20, 0x30, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN));
 
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
-        assertEquals(0, runtime.pickupState().secretSeashellPrivateState3(0));
+        assertEquals(0, runtime.pickupState().seashellHiddenMode(0));
     }
 
     @Test

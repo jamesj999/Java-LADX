@@ -40,8 +40,10 @@ public final class ArmosKnightMotion {
     final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown1Table.
+    final int[] linkHoldCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState1Table.
+    final int[] previousHealth = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
@@ -53,8 +55,8 @@ public final class ArmosKnightMotion {
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
         speedZAccumulator[slot] = 0;
-        privateCountdown1[slot] = 0;
-        privateState1[slot] = 0;
+        linkHoldCountdown[slot] = 0;
+        previousHealth[slot] = 0;
         inertia[slot] = 0;
         initialized[slot] = true;
     }
@@ -84,8 +86,8 @@ public final class ArmosKnightMotion {
         return speedZ[slot];
     }
 
-    public int privateCountdown1(int slot) {
-        return privateCountdown1[slot];
+    public int linkHoldCountdown(int slot) {
+        return linkHoldCountdown[slot];
     }
 
     public int inertia(int slot) {
@@ -311,7 +313,7 @@ public final class ArmosKnightMotion {
                 jingleId = 0x0B;
                 screenShakeRequest = new ArmosKnightMotion.ScreenShakeRequest(0x30, 0x04);
                 if (linkZ == 0) {
-                    owner.privateCountdown1[slot] = 0x40;
+                    owner.linkHoldCountdown[slot] = 0x40;
                 }
                 owner.state[slot] = ArmosKnightMotion.STATE_BOUNCE_DELAY;
             }
@@ -352,10 +354,10 @@ public final class ArmosKnightMotion {
                 owner.initialize(slot);
             }
 
-            if (owner.privateCountdown1[slot] > 0) {
-                owner.privateCountdown1[slot]--;
+            if (owner.linkHoldCountdown[slot] > 0) {
+                owner.linkHoldCountdown[slot]--;
             }
-            linkMotionBlocked = owner.privateCountdown1[slot] != 0;
+            linkMotionBlocked = owner.linkHoldCountdown[slot] != 0;
             x = entity.x();
             y = entity.y();
             z = entity.z();
@@ -381,8 +383,8 @@ public final class ArmosKnightMotion {
 
         private boolean advanceCombatState() {
 
-            if ((health & 0xFF) != owner.privateState1[slot]) {
-                owner.privateState1[slot] = health & 0xFF;
+            if ((health & 0xFF) != owner.previousHealth[slot]) {
+                owner.previousHealth[slot] = health & 0xFF;
                 if ((health & 0xFF) < 0x08) {
                     int maximumInertia = (health & 0xFF) < 0x04 ? 2 : 1;
                     if (owner.inertia[slot] < maximumInertia) {

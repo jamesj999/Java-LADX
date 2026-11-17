@@ -43,7 +43,7 @@ final class MoblinSwordMotionTest {
         assertEquals(source.y(), update.entity().y());
         assertEquals(2, motion.state(0));
         assertEquals(0x80, motion.transitionCountdown(0));
-        assertEquals(0x10, motion.privateCountdown1(0));
+        assertEquals(0x10, motion.attackCountdown(0));
         assertEquals(0, motion.direction(0));
     }
 
@@ -123,7 +123,7 @@ final class MoblinSwordMotionTest {
                 0x04,
                 2));
         assertTrue(dialogFrame.dialogRequested());
-        assertEquals(1, motion.privateState3(0));
+        assertEquals(1, motion.hideoutDialogShown(0));
 
         MoblinSwordMotion.Update followingFrame = motion.advance(new MoblinSwordFrame(
                 dialogFrame.entity(),
@@ -136,7 +136,7 @@ final class MoblinSwordMotionTest {
                 0x04,
                 3));
         assertFalse(followingFrame.dialogRequested());
-        assertEquals(1, motion.privateState3(0));
+        assertEquals(1, motion.hideoutDialogShown(0));
     }
 
     @Test
@@ -149,7 +149,7 @@ final class MoblinSwordMotionTest {
         assertEquals(source.x(), update.entity().x());
         assertEquals(source.y(), update.entity().y());
         assertEquals(2, motion.state(0));
-        assertEquals(0x10, motion.privateCountdown1(0));
+        assertEquals(0x10, motion.attackCountdown(0));
     }
 
     private static RoomEntity entity(int slot, int x, int y) {

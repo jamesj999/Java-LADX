@@ -23,8 +23,10 @@ public final class SpikeTrapMotion {
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState1Table.
+    private final int[] homeX = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState2Table.
+    private final int[] homeY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     /** Mirrors EntityInitWithRandomDirection in bank $03. */
@@ -83,17 +85,17 @@ public final class SpikeTrapMotion {
         return speedY[slot];
     }
 
-    public int privateState1(int slot) {
-        return privateState1[slot];
+    public int homeX(int slot) {
+        return homeX[slot];
     }
 
-    public int privateState2(int slot) {
-        return privateState2[slot];
+    public int homeY(int slot) {
+        return homeY[slot];
     }
 
     private Update captureStart(RoomEntity entity, int slot) {
-        privateState1[slot] = entity.x() & 0xFF;
-        privateState2[slot] = (entity.y() - entity.z()) & 0xFF;
+        homeX[slot] = entity.x() & 0xFF;
+        homeY[slot] = (entity.y() - entity.z()) & 0xFF;
         state[slot] = 1;
         return Update.silent(entity);
     }
@@ -169,7 +171,7 @@ public final class SpikeTrapMotion {
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         RoomEntity moved = withPosition(entity, x, y);
         // The ROM compares the saved visual Y against raw wEntitiesPosYTable.
-        if (x == privateState1[slot] && y == privateState2[slot]) {
+        if (x == homeX[slot] && y == homeY[slot]) {
             transitionCountdown[slot] = 0x20;
             state[slot] = 1;
         }
@@ -214,8 +216,8 @@ public final class SpikeTrapMotion {
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
-        privateState1[slot] = 0;
-        privateState2[slot] = 0;
+        homeX[slot] = 0;
+        homeY[slot] = 0;
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {

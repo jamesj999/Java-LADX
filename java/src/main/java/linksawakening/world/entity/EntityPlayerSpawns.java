@@ -530,9 +530,9 @@ public final class EntityPlayerSpawns {
         this.bombInteractions.state.writePlacedBombMotionInitialized(freeSlot, true);
         this.bombInteractions.state.writePlayerArrowBombArrow(freeSlot, false);
         this.bombInteractions.state.setBombFinalPresentationPending(freeSlot, false);
-        this.bombInteractions.state.writeBombPrivateState4(freeSlot, 0);
-        this.bombInteractions.state.writeBombPrivateCountdown1(freeSlot, 0x10);
-        this.bombInteractions.state.writeBombPrivateCountdown3(freeSlot, 0);
+        this.bombInteractions.state.writeBombOrigin(freeSlot, 0);
+        this.bombInteractions.state.writeBombCollisionGraceCountdown(freeSlot, 0x10);
+        this.bombInteractions.state.writeBombLiftDelay(freeSlot, 0);
         this.combatTables.writeEnemyHitboxFlags(freeSlot, 0);
         this.physicsTables.writeEnemyTransitionCountdown(freeSlot, BombMotion.INITIAL_COUNTDOWN);
         this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
@@ -619,9 +619,9 @@ public final class EntityPlayerSpawns {
         var playerArrowMotion = this.motions.get(PlayerArrowMotion.class, PlayerArrowMotion::new);
         this.bombInteractions.state.writeBombDirection(freeSlot, playerArrowMotion.direction(arrow.slot()));
         this.bombInteractions.state.setBombFinalPresentationPending(freeSlot, false);
-        this.bombInteractions.state.writeBombPrivateState4(freeSlot, 0);
-        this.bombInteractions.state.writeBombPrivateCountdown1(freeSlot, 0);
-        this.bombInteractions.state.writeBombPrivateCountdown3(freeSlot, 0);
+        this.bombInteractions.state.writeBombOrigin(freeSlot, 0);
+        this.bombInteractions.state.writeBombCollisionGraceCountdown(freeSlot, 0);
+        this.bombInteractions.state.writeBombLiftDelay(freeSlot, 0);
         this.combatTables.writeEnemyHitboxFlags(freeSlot, 0);
         this.physicsTables.writeEnemyTransitionCountdown(freeSlot, EntityRomConstants.BOMB_ARROW_EXPLOSION_COUNTDOWN);
         this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);

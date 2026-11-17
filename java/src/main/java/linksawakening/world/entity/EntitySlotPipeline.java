@@ -1178,7 +1178,7 @@ final class EntitySlotPipeline {
             slotState.renderFlipAttribute(slotState.renderFlipAttribute()
                     | ((state.bombInteractions()
                                             .state
-                                            .readBombPrivateCountdown1(
+                                            .readBombCollisionGraceCountdown(
                                                     slotState.updated().slot())
                                     << 3)
                             & 0x10));

@@ -379,11 +379,11 @@ public final class EntitySlotLifecycle {
         if (this.combatTables.readDyingCountdown(slot) > 0) {
             this.combatTables.postDyingCountdown(slot, -1);
         }
-        if (this.bombInteractions.readBombPrivateCountdown1(slot) > 0) {
-            this.bombInteractions.postBombPrivateCountdown1(slot, -1);
+        if (this.bombInteractions.readBombCollisionGraceCountdown(slot) > 0) {
+            this.bombInteractions.postBombCollisionGraceCountdown(slot, -1);
         }
-        if (this.bombInteractions.readBombPrivateCountdown3(slot) > 0) {
-            this.bombInteractions.postBombPrivateCountdown3(slot, -1);
+        if (this.bombInteractions.readBombLiftDelay(slot) > 0) {
+            this.bombInteractions.postBombLiftDelay(slot, -1);
         }
         if (this.story.owlState().readOwlPrivateCountdown1(slot) > 0 && this.linkState.entityTimersInteractive()) {
             this.story.owlState().postOwlPrivateCountdown1(slot, -1);
@@ -480,10 +480,10 @@ public final class EntitySlotLifecycle {
         runtime.bombInteractions.setBombFinalPresentationPending(slot, false);
         runtime.combatTables.writeEnemyHitboxFlags(slot, 0);
         runtime.bombInteractions.writePlayerArrowBombArrow(slot, false);
-        runtime.bombInteractions.writeBombPrivateCountdown1(slot, 0);
-        runtime.bombInteractions.writeBombPrivateCountdown3(slot, 0);
+        runtime.bombInteractions.writeBombCollisionGraceCountdown(slot, 0);
+        runtime.bombInteractions.writeBombLiftDelay(slot, 0);
         runtime.projectiles.writeMagicPowderState(slot, 0);
-        runtime.projectiles.writeMagicPowderPrivateState4(slot, 0);
+        runtime.projectiles.writePowderSpent(slot, 0);
         var secretSeashellMotion = runtime.motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
         secretSeashellMotion.clear(slot);
         runtime.physicsTables.writeEntityPrivateState4(slot, 0);
@@ -568,11 +568,11 @@ public final class EntitySlotLifecycle {
         runtime.liftThrow.writeLiftedStateInitialized(slot, false);
         runtime.liftThrow.writeThrownDirection(slot, 0xFF);
         runtime.bombInteractions.writeBombDirection(slot, 0xFF);
-        runtime.bombInteractions.writeBombPrivateState4(slot, 0);
+        runtime.bombInteractions.writeBombOrigin(slot, 0);
         runtime.projectiles.writeMagicPowderState(slot, 0);
-        runtime.projectiles.writeMagicPowderPrivateState4(slot, 0);
-        runtime.bombInteractions.writeBombPrivateCountdown1(slot, 0);
-        runtime.bombInteractions.writeBombPrivateCountdown3(slot, 0);
+        runtime.projectiles.writePowderSpent(slot, 0);
+        runtime.bombInteractions.writeBombCollisionGraceCountdown(slot, 0);
+        runtime.bombInteractions.writeBombLiftDelay(slot, 0);
         runtime.bombInteractions.writePlacedBombMotionInitialized(slot, false);
         runtime.liftThrow.writeLedgeTransitionTimer(slot, 0);
         runtime.liftThrow.writeThrownMotionInitialized(slot, false);
@@ -793,11 +793,11 @@ public final class EntitySlotLifecycle {
         runtime.liftThrow.writeLiftedStateInitialized(slot, false);
         runtime.liftThrow.writeThrownDirection(slot, 0xFF);
         runtime.bombInteractions.writeBombDirection(slot, 0xFF);
-        runtime.bombInteractions.writeBombPrivateState4(slot, 0);
+        runtime.bombInteractions.writeBombOrigin(slot, 0);
         runtime.projectiles.writeMagicPowderState(slot, 0);
-        runtime.projectiles.writeMagicPowderPrivateState4(slot, 0);
-        runtime.bombInteractions.writeBombPrivateCountdown1(slot, 0);
-        runtime.bombInteractions.writeBombPrivateCountdown3(slot, 0);
+        runtime.projectiles.writePowderSpent(slot, 0);
+        runtime.bombInteractions.writeBombCollisionGraceCountdown(slot, 0);
+        runtime.bombInteractions.writeBombLiftDelay(slot, 0);
         var unmaskedIronMaskMotion = runtime.motions.get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new);
         unmaskedIronMaskMotion.setMaskRemovalState(slot, 0);
         unmaskedIronMaskMotion.setMaskSourceHookshotSlot(slot, 0);

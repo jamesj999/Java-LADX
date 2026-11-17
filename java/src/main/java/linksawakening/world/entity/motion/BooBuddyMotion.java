@@ -29,8 +29,10 @@ public final class BooBuddyMotion {
     final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState1Table.
+    final int[] orbitPhase = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown1Table: movement and contact pause after reflecting around the room center.
+    // ROM wEntitiesPrivateCountdown1Table.
     final int[] reflectionCooldown = new int[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
@@ -42,7 +44,7 @@ public final class BooBuddyMotion {
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
-        privateState1[slot] = 0;
+        orbitPhase[slot] = 0;
         reflectionCooldown[slot] = 0;
         initialized[slot] = true;
     }
@@ -136,7 +138,7 @@ public final class BooBuddyMotion {
         return speedY[slot];
     }
 
-    int privateCountdown1(int slot) {
+    int reflectionCooldown(int slot) {
         return reflectionCooldown[slot];
     }
 
@@ -171,7 +173,7 @@ public final class BooBuddyMotion {
             int direction = signedByte((linkEntityX - x) & 0xFF) < 0 ? 1 : 0;
             variant = direction == 0 ? 0x06 : 0x07;
         }
-        privateState1[slot] = countdown == 1 ? 1 : 0;
+        orbitPhase[slot] = countdown == 1 ? 1 : 0;
         return variant;
     }
 
@@ -378,11 +380,11 @@ public final class BooBuddyMotion {
                 owner.speedX[slot] = 0;
                 owner.speedY[slot] = 0;
                 variant = owner.animateTransition(frameCounter, x, linkEntityX, slot, countdown);
-                if (owner.privateState1[slot] != 0) {
+                if (owner.orbitPhase[slot] != 0) {
                     // func_006_7AB0 sets this flag at countdown one, then
                     // func_006_7A8C reflects the position around ($50,$48).
                     owner.reflectionCooldown[slot] = 0x20;
-                    owner.privateState1[slot] = 0;
+                    owner.orbitPhase[slot] = 0;
                     x = (0xA0 - x) & 0xFF;
                     y = (0x90 - y) & 0xFF;
                     variant = owner.animateTransition(frameCounter, x, linkEntityX, slot, countdown);

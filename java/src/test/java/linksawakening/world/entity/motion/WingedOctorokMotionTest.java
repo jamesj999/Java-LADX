@@ -87,7 +87,7 @@ final class WingedOctorokMotionTest {
         assertEquals(1, update.state());
         assertEquals(0x20, update.transitionCountdown());
         assertEquals(0, update.entity().z());
-        assertEquals(1, motion.privateState2(0));
+        assertEquals(1, motion.wingPhase(0));
         assertEquals(0, motion.speedZ(0));
         assertTrue(update.skippedDefaultCollision());
     }

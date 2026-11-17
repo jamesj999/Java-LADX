@@ -17,9 +17,12 @@ public final class WingedOctorokMotion {
 
     final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState1Table.
+    final int[] landingCount = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState2Table.
+    final int[] wingPhase = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown2Table.
+    final int[] wingCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -85,8 +88,8 @@ public final class WingedOctorokMotion {
     }
 
     public void decrementPrivateCountdown2(int slot) {
-        if (privateCountdown2[slot] > 0) {
-            privateCountdown2[slot]--;
+        if (wingCountdown[slot] > 0) {
+            wingCountdown[slot]--;
         }
     }
 
@@ -98,8 +101,8 @@ public final class WingedOctorokMotion {
         return direction[slot];
     }
 
-    public int privateState2(int slot) {
-        return privateState2[slot];
+    public int wingPhase(int slot) {
+        return wingPhase[slot];
     }
 
     public int speedX(int slot) {
@@ -117,9 +120,9 @@ public final class WingedOctorokMotion {
     public void clear(int slot) {
         state[slot] = 0;
         direction[slot] = 0;
-        privateState1[slot] = 0;
-        privateState2[slot] = 0;
-        privateCountdown2[slot] = 0;
+        landingCount[slot] = 0;
+        wingPhase[slot] = 0;
+        wingCountdown[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
         speedZ[slot] = 0;
@@ -337,8 +340,8 @@ public final class WingedOctorokMotion {
             } else {
                 countdown = 0x20 | (randomByteSupplier.getAsInt() & 0x1F);
                 owner.state[slot] = 0;
-                owner.privateState1[slot] = (owner.privateState1[slot] + 1) & 0x03;
-                if (owner.privateState1[slot] == 0) {
+                owner.landingCount[slot] = (owner.landingCount[slot] + 1) & 0x03;
+                if (owner.landingCount[slot] == 0) {
                     owner.direction[slot] = WingedOctorokMotion.directionToLink(x, y, linkEntityX, linkEntityY);
                 } else {
                     owner.direction[slot] = randomByteSupplier.getAsInt() & 0x03;
@@ -351,7 +354,7 @@ public final class WingedOctorokMotion {
         }
 
         private boolean advanceState2() {
-            owner.privateState2[slot] = (frameCounter >>> 2) & 0x01;
+            owner.wingPhase[slot] = (frameCounter >>> 2) & 0x01;
             owner.direction[slot] = WingedOctorokMotion.directionToLink(x, y, linkEntityX, linkEntityY);
             owner.setVariantForDirection(slot);
             if (landed) {
@@ -422,7 +425,7 @@ public final class WingedOctorokMotion {
                 z = 0;
                 owner.zPosition[slot] = 0;
                 owner.speedZ[slot] = 0;
-                owner.privateState2[slot] = 0;
+                owner.wingPhase[slot] = 0;
             }
 
             stateTwoHandler = owner.state[slot] == 2;
@@ -442,7 +445,7 @@ public final class WingedOctorokMotion {
             }
 
             if (!stateTwoHandler
-                    && owner.privateCountdown2[slot] == 0
+                    && owner.wingCountdown[slot] == 0
                     && WingedOctorokMotion.withinSignedWindow(linkEntityX - x)
                     && WingedOctorokMotion.withinSignedWindow(linkEntityY - y)
                     && WingedOctorokMotion.swordAttackHeld(actionButtonAHeld, actionButtonBHeld, linkItemA, linkItemB)

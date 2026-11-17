@@ -21,9 +21,9 @@ final class EntityRoomInspectionFixture {
         return runtime.execution().bombInteractions().state.readPlayerArrowBombArrow(slot);
     }
 
-    int bombPrivateCountdown1ForTest(int slot) {
+    int bombCollisionGraceCountdownForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.execution().bombInteractions().state.readBombPrivateCountdown1(slot) & 0xFF;
+        return runtime.execution().bombInteractions().state.readBombCollisionGraceCountdown(slot) & 0xFF;
     }
 
     int swordPickupStateForTest(int slot) {
@@ -86,9 +86,9 @@ final class EntityRoomInspectionFixture {
                 .state(slot);
     }
 
-    int bombPrivateState4ForTest(int slot) {
+    int bombOriginForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.execution().bombInteractions().state.readBombPrivateState4(slot) & 0xFF;
+        return runtime.execution().bombInteractions().state.readBombOrigin(slot) & 0xFF;
     }
 
     int entityRoomStatusForTest() {
@@ -128,14 +128,14 @@ final class EntityRoomInspectionFixture {
         return runtime.inspection()
                 .motions
                 .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
-                .privateState2(slot);
+                .rumbleCountdown(slot);
     }
 
     int sideViewPlatformPrivateState4ForTest(int slot) {
         return runtime.inspection()
                 .motions
                 .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
-                .privateState4(slot);
+                .pressureTicks(slot);
     }
 
     int droppedItemForTest(int slot) {

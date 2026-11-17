@@ -34,6 +34,7 @@ public final class CuccoMotion {
     final int[] spriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState1Table: flashed-frame buildup saturating at $23 before angry spawns.
+    // ROM wEntitiesPrivateState1Table.
     final int[] angerBuildup = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -112,7 +113,7 @@ public final class CuccoMotion {
         return direction[slot];
     }
 
-    int privateState1(int slot) {
+    int angerBuildup(int slot) {
         return angerBuildup[slot];
     }
 

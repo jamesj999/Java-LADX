@@ -15,7 +15,8 @@ public final class HidingZolMotion {
 
     final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState1Table.
+    final int[] jumpsRemaining = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -29,7 +30,7 @@ public final class HidingZolMotion {
     public void initialize(int slot) {
         state[slot] = 0;
         transitionCountdown[slot] = 0;
-        privateState1[slot] = 0;
+        jumpsRemaining[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
         speedZ[slot] = 0;
@@ -76,7 +77,7 @@ public final class HidingZolMotion {
     public void clear(int slot) {
         state[slot] = 0;
         transitionCountdown[slot] = 0;
-        privateState1[slot] = 0;
+        jumpsRemaining[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
         speedZ[slot] = 0;
@@ -96,8 +97,8 @@ public final class HidingZolMotion {
         return transitionCountdown[slot];
     }
 
-    public int privateState1(int slot) {
-        return privateState1[slot];
+    public int jumpsRemaining(int slot) {
+        return jumpsRemaining[slot];
     }
 
     public int speedX(int slot) {
@@ -302,7 +303,7 @@ public final class HidingZolMotion {
                     && HidingZolMotion.isWithinRevealWindow(entity.x(), entity.y(), linkEntityX, linkEntityY)) {
                 owner.state[slot] = 1;
                 owner.transitionCountdown[slot] = 0x20;
-                owner.privateState1[slot] = 3 + (randomByteSupplier.getAsInt() & 0x03);
+                owner.jumpsRemaining[slot] = 3 + (randomByteSupplier.getAsInt() & 0x03);
             }
 
             return true;
@@ -376,8 +377,8 @@ public final class HidingZolMotion {
                 owner.speedY[slot] = 0;
                 owner.state[slot] = 4;
                 owner.transitionCountdown[slot] = 0x20;
-                owner.privateState1[slot]--;
-                if (owner.privateState1[slot] == 0) {
+                owner.jumpsRemaining[slot]--;
+                if (owner.jumpsRemaining[slot] == 0) {
                     owner.state[slot] = 6;
                     owner.transitionCountdown[slot] = 0x30;
                     physicsFlags = 0xD2;

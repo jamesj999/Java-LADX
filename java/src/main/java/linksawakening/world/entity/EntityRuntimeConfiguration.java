@@ -230,7 +230,7 @@ public final class EntityRuntimeConfiguration {
             if (!entity.loaded() || entity.type() != EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL) continue;
             SecretSeashellMotion seashell = this.motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
             seashell.ensureInitialized(entity.slot(), roomId);
-            boolean hidden = seashell.privateState3(entity.slot()) != 0;
+            boolean hidden = seashell.hiddenMode(entity.slot()) != 0;
             this.physicsTables.writeEntityOptions1Override(
                     entity.slot(),
                     hidden

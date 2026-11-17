@@ -470,8 +470,8 @@ public final class EntityLiftThrowController {
         RoomEntity entity = this.slots.get(index);
         if (!entity.loaded()
                 || entity.type() != EntityRomConstants.ENTITY_BOMB
-                || this.bombInteractions.readBombPrivateState4(entity.slot()) != 0
-                || this.bombInteractions.readBombPrivateCountdown1(entity.slot()) != 0
+                || this.bombInteractions.readBombOrigin(entity.slot()) != 0
+                || this.bombInteractions.readBombCollisionGraceCountdown(entity.slot()) != 0
                 || !RoomEntityPickupRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
             return false;
         }

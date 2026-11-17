@@ -33,10 +33,7 @@ final class BombHandler {
             slotState.entity(state.entityAt(slotState.index()));
             if (bombDecision.phase() == BombMotion.Phase.NORMAL) {
                 state.replaceEntity(
-                        state.bombInteractions()
-                                                .bombPrivateState4(
-                                                        slotState.entity().slot())
-                                        != 0
+                        state.bombInteractions().bombOrigin(slotState.entity().slot()) != 0
                                 ? state.liftThrow()
                                         .advanceEnemyBombEntity(
                                                 slotState.entity(),

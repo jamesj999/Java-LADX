@@ -104,7 +104,7 @@ public final class EntityBossRewards {
     void handleTerminalEnemyDeath(RoomEntity entity, IntSupplier randomByteSupplier) {
         var likeLikeMotion = this.motions.get(LikeLikeMotion.class, LikeLikeMotion::new);
         boolean swallowedShield = entity.type() == EntityRomConstants.ENTITY_LIKE_LIKE
-                && likeLikeMotion.privateState1(entity.slot()) != 0;
+                && likeLikeMotion.swallowedShieldLevel(entity.slot()) != 0;
         if (entity.type() == EntityRomConstants.ENTITY_MOBLIN_KING) {
             // The mini-boss option reaches DidKillEnemy's room-event branch,
             // permanently opening the east rescue-room path.
@@ -410,7 +410,7 @@ public final class EntityBossRewards {
             var bowWowMotion = this.motions.get(BowWowMotion.class, BowWowMotion::new);
             if (this.physicsTables.readEntityPrivateState4(targetSlot) == 0
                     || this.linkState.readDialogActive()
-                    || bowWowMotion.privateCountdown2(source.slot()) != 0) {
+                    || bowWowMotion.biteCountdown(source.slot()) != 0) {
                 return;
             }
             bowWowMotion.setTransitionCountdown(source.slot(), 0);

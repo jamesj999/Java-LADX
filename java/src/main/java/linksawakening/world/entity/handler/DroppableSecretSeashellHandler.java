@@ -61,7 +61,7 @@ final class DroppableSecretSeashellHandler {
                     .setOptions1Override(
                             slotState.entity().slot(),
                             state.motion(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                                                    .privateState3(
+                                                    .hiddenMode(
                                                             slotState.entity().slot())
                                             != 0
                                     ? SECRET_SEASHELL_HIDDEN_OPTIONS1

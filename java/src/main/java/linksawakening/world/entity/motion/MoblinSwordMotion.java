@@ -35,6 +35,7 @@ public final class MoblinSwordMotion {
     // GetEntityPrivateCountdown1: pause facing Link before the pursuit movement.
     private final int[] alertCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     // wEntitiesPrivateState3Table, func_007_79D7: one-time hideout dialog latch.
+    // ROM wEntitiesPrivateState3Table.
     private final int[] hideoutDialogShown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -200,11 +201,11 @@ public final class MoblinSwordMotion {
         return transitionCountdown[slot];
     }
 
-    public int privateCountdown1(int slot) {
+    public int attackCountdown(int slot) {
         return alertCountdown[slot];
     }
 
-    public int privateState3(int slot) {
+    public int hideoutDialogShown(int slot) {
         return hideoutDialogShown[slot];
     }
 

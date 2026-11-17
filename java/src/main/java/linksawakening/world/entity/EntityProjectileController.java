@@ -515,7 +515,7 @@ public final class EntityProjectileController {
             if (target.type() == EntityRomConstants.ENTITY_BOUNCING_BOMBITE) {
                 bombiteMotion.enterBouncingLitFromEntityCollision(targetSlot, sourceSpeedX, sourceSpeedY);
                 this.physicsTables.writeEnemyTransitionCountdown(targetSlot, 0x40);
-                this.bombInteractions.writeBombPrivateCountdown1(targetSlot, 0x08);
+                this.bombInteractions.writeBombCollisionGraceCountdown(targetSlot, 0x08);
             }
         }
         return collided;
@@ -862,7 +862,7 @@ public final class EntityProjectileController {
         private boolean prepareObjectInteraction() {
 
             if (transitionCountdown != 0x07) {
-                if (transitionCountdown < 0x10 && owner.state.readMagicPowderPrivateState4(slot) == 0) {
+                if (transitionCountdown < 0x10 && owner.state.readPowderSpent(slot) == 0) {
                     owner.collideMagicPowderWithEntities(entity, frame);
                 }
                 return false;
@@ -930,7 +930,7 @@ public final class EntityProjectileController {
             // final sixteen transition ticks and only when private state 4 is 0.
             // $79DA returns for non-torch indoor objects. Outdoors, $79CF leaves
             // A=0 and jumps to the collision branch regardless of the object id.
-            if (!owner.indoorRoom && owner.state.readMagicPowderPrivateState4(slot) == 0) {
+            if (!owner.indoorRoom && owner.state.readPowderSpent(slot) == 0) {
                 owner.collideMagicPowderWithEntities(entity, frame);
             }
             return true;
@@ -1024,7 +1024,7 @@ public final class EntityProjectileController {
             }
             var magicRodFireballMotion = owner.motions.get(MagicRodFireballMotion.class, MagicRodFireballMotion::new);
             variant = magicRodFireballMotion.advanceSpriteVariant(slot, frame);
-            if (magicRodFireballMotion.privateCountdown1(slot) != 0) {
+            if (magicRodFireballMotion.fireTransitionCountdown(slot) != 0) {
                 if (magicRodFireballMotion.tickFireTransition(slot, timersInteractive)) {
                     owner.lifecycle.clearEntity(slot);
                     return false;

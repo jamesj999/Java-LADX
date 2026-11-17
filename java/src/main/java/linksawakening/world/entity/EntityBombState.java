@@ -8,9 +8,9 @@ final class EntityBombState {
 
     private final int[] bombDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] playerArrowBombArrow = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] bombPrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] bombPrivateCountdown3 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] bombPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] bombCollisionGraceCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] bombLiftDelay = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] bombOrigin = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] placedBombMotionInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] enemyBombMotionInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private int bombArrowCooldown;
@@ -39,43 +39,43 @@ final class EntityBombState {
         return playerArrowBombArrow[slot];
     }
 
-    int readBombPrivateCountdown1(int slot) {
-        return bombPrivateCountdown1[slot];
+    int readBombCollisionGraceCountdown(int slot) {
+        return bombCollisionGraceCountdown[slot];
     }
 
-    int writeBombPrivateCountdown1(int slot, int value) {
-        bombPrivateCountdown1[slot] = value;
-        return bombPrivateCountdown1[slot];
+    int writeBombCollisionGraceCountdown(int slot, int value) {
+        bombCollisionGraceCountdown[slot] = value;
+        return bombCollisionGraceCountdown[slot];
     }
 
-    int postBombPrivateCountdown1(int slot, int delta) {
-        int previous = bombPrivateCountdown1[slot];
-        bombPrivateCountdown1[slot] += delta;
+    int postBombCollisionGraceCountdown(int slot, int delta) {
+        int previous = bombCollisionGraceCountdown[slot];
+        bombCollisionGraceCountdown[slot] += delta;
         return previous;
     }
 
-    int readBombPrivateCountdown3(int slot) {
-        return bombPrivateCountdown3[slot];
+    int readBombLiftDelay(int slot) {
+        return bombLiftDelay[slot];
     }
 
-    int writeBombPrivateCountdown3(int slot, int value) {
-        bombPrivateCountdown3[slot] = value;
-        return bombPrivateCountdown3[slot];
+    int writeBombLiftDelay(int slot, int value) {
+        bombLiftDelay[slot] = value;
+        return bombLiftDelay[slot];
     }
 
-    int postBombPrivateCountdown3(int slot, int delta) {
-        int previous = bombPrivateCountdown3[slot];
-        bombPrivateCountdown3[slot] += delta;
+    int postBombLiftDelay(int slot, int delta) {
+        int previous = bombLiftDelay[slot];
+        bombLiftDelay[slot] += delta;
         return previous;
     }
 
-    int readBombPrivateState4(int slot) {
-        return bombPrivateState4[slot];
+    int readBombOrigin(int slot) {
+        return bombOrigin[slot];
     }
 
-    int writeBombPrivateState4(int slot, int value) {
-        bombPrivateState4[slot] = value;
-        return bombPrivateState4[slot];
+    int writeBombOrigin(int slot, int value) {
+        bombOrigin[slot] = value;
+        return bombOrigin[slot];
     }
 
     boolean readPlacedBombMotionInitialized(int slot) {
