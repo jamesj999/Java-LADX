@@ -19,8 +19,8 @@ public final class NoClipControl {
     }
 
     public void toggleNoClip() {
-        state.setNoClip(!state.debugNoClip);
-        link.motion().setDebugNoClip(state.debugNoClip);
-        DebugLog.log("Debug no-clip: " + (state.debugNoClip ? "ON" : "OFF"));
+        state.setNoClip(!state.debugNoClip());
+        link.motion().setDebugNoClip(state.debugNoClip());
+        DebugLog.log("Debug no-clip: " + (state.debugNoClip() ? "ON" : "OFF"));
     }
 }

@@ -5,9 +5,10 @@ package linksawakening.gameplay;
  * tests.
  */
 public interface GameplaySoundSink {
-    void play(GameplaySoundEvent event);
 
     static GameplaySoundSink none() {
         return event -> {};
     }
+
+    void play(GameplaySoundEvent event);
 }

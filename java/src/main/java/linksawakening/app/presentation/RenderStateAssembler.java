@@ -75,7 +75,15 @@ public final class RenderStateAssembler {
             }
         }
         if (screen != RenderScreen.OVERWORLD && ui.dialogController().isActive()) fillRoomView();
-        return state.screens().currentScreen.renderState(inputs);
+        return state.screens().currentScreen().renderState(inputs);
+    }
+
+    public RenderScreen currentRenderScreen() {
+        return renderScreenFor(state.screens().currentScreen());
+    }
+
+    public RenderScreen renderScreenFor(Screen screen) {
+        return screen.renderScreen();
     }
 
     private void fillRoomView() {
@@ -94,19 +102,11 @@ public final class RenderStateAssembler {
 
     private void fillBackground() {
         inputs.withBackground(
-                        state.scene().currentTilemap,
-                        state.scene().currentAttrmap,
-                        state.scene().bgPalettes,
-                        state.scene().objPalettes)
+                        state.scene().currentTilemap(),
+                        state.scene().currentAttrmap(),
+                        state.scene().bgPalettes(),
+                        state.scene().objPalettes())
                 .withCutsceneManager(ui.cutsceneManager())
                 .withIntroFrameSnapshot(ui.cutsceneManager().frameSnapshot());
-    }
-
-    public RenderScreen currentRenderScreen() {
-        return renderScreenFor(state.screens().currentScreen);
-    }
-
-    public RenderScreen renderScreenFor(Screen screen) {
-        return screen.renderScreen();
     }
 }

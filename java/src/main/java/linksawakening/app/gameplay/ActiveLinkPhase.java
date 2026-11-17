@@ -1,55 +1,92 @@
 package linksawakening.app.gameplay;
 
-import static linksawakening.app.gameplay.LinkGroundPhase.dialogGotItemActive;
-import static linksawakening.app.gameplay.LinkGroundPhase.groundFrame;
-import static linksawakening.app.gameplay.LinkGroundPhase.tickCrackedFloor;
 import static linksawakening.state.Direction.LEFT;
 import static linksawakening.state.Direction.RIGHT;
 import static linksawakening.state.Direction.UP;
 
 import java.util.Objects;
+import linksawakening.app.audio.MusicDirector;
+import linksawakening.app.gameplay.interaction.BushInteraction;
+import linksawakening.app.gameplay.interaction.LiftInteraction;
+import linksawakening.app.state.DebugState;
+import linksawakening.app.state.FrameClock;
 import linksawakening.entity.Link;
+import linksawakening.equipment.EquipmentController;
 import linksawakening.equipment.Sword;
 import linksawakening.state.Direction;
+import linksawakening.state.PlayerState;
 import linksawakening.state.PowerUp;
+import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.EntityPickupEvent;
+import linksawakening.world.room.RoomSession;
+import linksawakening.world.room.RoomTransitionCoordinator;
+import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.Warp;
 
 /**
  * Link's active-frame work in ROM order, between gating and transition checks. One instance is retained for
  * the owning session.
  */
-final class ActiveLinkPhase {
-    private static final Sword.CollisionBox NO_SWORD = Sword.CollisionBox.inactive();
+public final class ActiveLinkPhase {
+    private final BushInteraction bush;
+    private final DebugState debugState;
+    private final DebugScroll debugScroll;
+    private final EquipmentController equipmentController;
+    private final FrameClock clock;
+    private final FrameInputCache frameInputs;
+    private final LiftInteraction lift;
+    private final Link playerLink;
+    private final MusicDirector musicDirector;
+    private final PlayerState playerState;
+    private final RoomSession rooms;
+    private final RoomTransitionCoordinator roomTransitionCoordinator;
+    private final ScrollController scrollController;
+    private final TransientVfxSystem transientVfxSystem;
+    private final LinkGroundPhase ground;
     private final LinkMotionDriver motion;
 
-    ActiveLinkPhase(LinkMotionDriver motion) {
-        this.motion = Objects.requireNonNull(motion);
+    private final Sword.CollisionBox NO_SWORD = Sword.CollisionBox.inactive();
+
+    public ActiveLinkPhase(Inputs inputs) {
+        this.bush = Objects.requireNonNull(inputs.bush);
+        this.debugState = Objects.requireNonNull(inputs.debugNoClip);
+        this.debugScroll = Objects.requireNonNull(inputs.debugScroll);
+        this.equipmentController = Objects.requireNonNull(inputs.equipmentController);
+        this.clock = Objects.requireNonNull(inputs.frameCounter);
+        this.frameInputs = Objects.requireNonNull(inputs.frameInputs);
+        this.lift = Objects.requireNonNull(inputs.lift);
+        this.playerLink = Objects.requireNonNull(inputs.link);
+        this.musicDirector = Objects.requireNonNull(inputs.musicDirector);
+        this.playerState = Objects.requireNonNull(inputs.playerState);
+        this.rooms = Objects.requireNonNull(inputs.roomSession);
+        this.roomTransitionCoordinator = Objects.requireNonNull(inputs.roomTransitionCoordinator);
+        this.scrollController = Objects.requireNonNull(inputs.scrollController);
+        this.transientVfxSystem = Objects.requireNonNull(inputs.transientVfxSystem);
+        this.ground = Objects.requireNonNull(inputs.ground);
+        this.motion = Objects.requireNonNull(inputs.motion);
     }
 
-    void tick(GameplaySimulation context, boolean swordPickupSequenceActive) {
+    public void tick(boolean swordPickupSequenceActive) {
         // AnimateEntities runs after Link motion and its normal NPC
         // handlers restore hLinkFinalPosition when they push Link.
         // The ROM seeds that shadow from hLinkPosition before the
         // frame's motion work (bank0.asm:$0F97), so capture it before
         // any Link movement can change the position.
-        configureRoomMotion(context);
-        context.link()
-                .motion()
-                .setGelClinging(context.roomSession().entityState().gelClingingToLink(), context.frameCounter());
-        motion.capture(context.link());
-        boolean keyholeSequenceActive = context.roomSession().doors().tailCaveKeyholeSequenceActive();
+        configureRoomMotion();
+        playerLink.motion().setGelClinging(this.rooms.entityState().gelClingingToLink(), this.clock.value());
+        this.motion.capture(this.playerLink);
+        boolean keyholeSequenceActive = this.rooms.doors().tailCaveKeyholeSequenceActive();
         if (keyholeSequenceActive) {
-            context.link().motion().blockNextRomMotionFrame();
+            this.playerLink.motion().blockNextRomMotionFrame();
         }
-        updateLifting(context, keyholeSequenceActive);
-        tickEquipment(context, keyholeSequenceActive, swordPickupSequenceActive);
-        moveLink(context);
-        interactWithDoors(context);
-        updateScreenShake(context);
-        collectPickups(context);
-        context.bush().maybeCutBushWithSword();
+        updateLifting(keyholeSequenceActive);
+        tickEquipment(keyholeSequenceActive, swordPickupSequenceActive);
+        moveLink();
+        interactWithDoors();
+        updateScreenShake();
+        collectPickups();
+        this.bush.maybeCutBushWithSword();
         // Warp-transition check runs BEFORE edge-scroll/clamp:
         // indoor rooms clamp Link at y=112 (== ROOM_PIXEL_HEIGHT −
         // SPRITE_SIZE) in the edge-scroll fallback, but the
@@ -59,69 +96,61 @@ final class ActiveLinkPhase {
         // The source performs this ordinary Link check before
         // AnimateEntities; a standing platform handler performs its
         // own explicit check again after moving Link below.
-        context.roomTransitionCoordinator().handleWarpAndIndoorBoundaries(context.link());
-        context.roomTransitionCoordinator().handleOverworldBoundary(context.link());
+        this.roomTransitionCoordinator.handleWarpAndIndoorBoundaries(this.playerLink);
+        this.roomTransitionCoordinator.handleOverworldBoundary(this.playerLink);
     }
 
-    private static void configureRoomMotion(GameplaySimulation context) {
+    private void configureRoomMotion() {
         {
-            int roomId = context.roomSession().rooms().currentRoomId();
-            context.link()
-                    .sideView()
-                    .setSideScrolling(context.roomSession().rooms().mapCategory() == Warp.CATEGORY_SIDESCROLL);
+            int roomId = this.rooms.rooms().currentRoomId();
+            playerLink.sideView().setSideScrolling(this.rooms.rooms().mapCategory() == Warp.CATEGORY_SIDESCROLL);
             // $02:6CB6's manual exits precede the normal recoil gate.
-            boolean sideViewManualExit = context.roomSession().rooms().mapCategory() == Warp.CATEGORY_SIDESCROLL
-                    && roomId != 0xE8
-                    && roomId != 0xF8;
-            boolean caveManualExit =
-                    context.roomSession().rooms().mapId() == 0x1F && (roomId == 0xF2 || roomId == 0xF5);
-            context.link().status().setNormalRecoilRoomBoundaries(!sideViewManualExit && !caveManualExit);
+            boolean sideViewManualExit =
+                    this.rooms.rooms().mapCategory() == Warp.CATEGORY_SIDESCROLL && roomId != 0xE8 && roomId != 0xF8;
+            boolean caveManualExit = this.rooms.rooms().mapId() == 0x1F && (roomId == 0xF2 || roomId == 0xF5);
+            this.playerLink.status().setNormalRecoilRoomBoundaries(!sideViewManualExit && !caveManualExit);
         }
     }
 
-    private static void updateLifting(GameplaySimulation context, boolean keyholeSequenceActive) {
+    private void updateLifting(boolean keyholeSequenceActive) {
         boolean powerBraceletButtonHeld =
-                !context.link().status().recoveryBlocksInput() && context.lift().isPowerBraceletButtonHeld();
-        boolean bombButtonHeld =
-                !context.link().status().recoveryBlocksInput() && context.lift().isBombButtonHeld();
+                !this.playerLink.status().recoveryBlocksInput() && this.lift.isPowerBraceletButtonHeld();
+        boolean bombButtonHeld = !this.playerLink.status().recoveryBlocksInput() && this.lift.isBombButtonHeld();
         if (!keyholeSequenceActive) {
-            context.roomSession().entityState().setEntityPowerBraceletButtonHeld(powerBraceletButtonHeld);
-            context.roomSession().entityState().setEntityBombButtonHeld(bombButtonHeld);
-            var liftedState = context.roomSession().rooms().liftedEntityState();
+            this.rooms.entityState().setEntityPowerBraceletButtonHeld(powerBraceletButtonHeld);
+            this.rooms.entityState().setEntityBombButtonHeld(bombButtonHeld);
+            var liftedState = this.rooms.rooms().liftedEntityState();
             boolean bombBeingThrown = liftedState.type() == 0x02;
-            boolean throwPressed = !context.link().status().recoveryBlocksInput()
-                    && context.lift().isThrowButtonPressed(bombBeingThrown);
+            boolean throwPressed =
+                    !this.playerLink.status().recoveryBlocksInput() && this.lift.isThrowButtonPressed(bombBeingThrown);
             if (throwPressed && liftedState.carryState() == 0x01) {
-                context.roomSession()
-                        .playerItems()
-                        .throwLiftedEntity(linksawakening.state.Direction.fromJava(
-                                context.link().animation().direction()));
+                rooms.playerItems()
+                        .throwLiftedEntity(
+                                Direction.fromJava(this.playerLink.animation().direction()));
             }
         }
         boolean canGrab = !keyholeSequenceActive
-                && !context.link().airborne().isAirborne()
-                && context.link().airborne().romMotionState() == 0
-                && !context.playerState().equipmentLevels().runningWithPegasusBoots()
-                && !context.link().actions().isCarryingLiftedObject();
-        boolean grabbing = context.roomSession()
-                .doors()
+                && !this.playerLink.airborne().isAirborne()
+                && this.playerLink.airborne().romMotionState() == 0
+                && !this.playerState.equipmentLevels().runningWithPegasusBoots()
+                && !this.playerLink.actions().isCarryingLiftedObject();
+        boolean grabbing = rooms.doors()
                 .tryLiftObject(
-                        context.link().position().pixelX(),
-                        context.link().position().pixelY(),
-                        linksawakening.state.Direction.fromJavaOrUnknown(
-                                context.link().animation().direction()),
+                        this.playerLink.position().pixelX(),
+                        this.playerLink.position().pixelY(),
+                        Direction.fromJavaOrUnknown(this.playerLink.animation().direction()),
                         powerBraceletButtonHeld && canGrab,
-                        context.link().controls().romPressedButtonsMask(),
-                        context.playerState().equipmentLevels().activePowerUp() == PowerUp.PIECE_OF_POWER.romValue(),
-                        context.playerState().equipmentLevels().powerBraceletLevel(),
-                        context.playerState().equipmentLevels().activePowerUp() != PowerUp.NONE.romValue());
-        context.link()
+                        this.playerLink.controls().romPressedButtonsMask(),
+                        this.playerState.equipmentLevels().activePowerUp() == PowerUp.PIECE_OF_POWER.romValue(),
+                        this.playerState.equipmentLevels().powerBraceletLevel(),
+                        this.playerState.equipmentLevels().activePowerUp() != PowerUp.NONE.romValue());
+        playerLink
                 .actions()
                 .setGrabbingObject(
                         grabbing,
-                        (context.link().controls().romPressedButtonsMask()
+                        (this.playerLink.controls().romPressedButtonsMask()
                                         & switch (Direction.fromJavaOrUnknown(
-                                                context.link().animation().direction())) {
+                                                playerLink.animation().direction())) {
                                             case RIGHT -> 2;
                                             case LEFT -> 1;
                                             case UP -> 8;
@@ -130,153 +159,238 @@ final class ActiveLinkPhase {
                                 != 0);
     }
 
-    private static void tickEquipment(
-            GameplaySimulation context, boolean keyholeSequenceActive, boolean swordPickupSequenceActive) {
+    private void tickEquipment(boolean keyholeSequenceActive, boolean swordPickupSequenceActive) {
         if (!keyholeSequenceActive
-                && !context.link().status().recoveryBlocksInput()
-                && !context.link().actions().isCarryingLiftedObject()
-                && !context.link().sideView().romItemAnimationFrameBlocked()) {
-            if (context.link().airborne().romMotionState() == 0x05
-                    || context.roomSession().entityState().gelClingingToLink()) {
-                context.equipmentController().tickEquippedItemsWithoutInput(context.frameCounter());
+                && !this.playerLink.status().recoveryBlocksInput()
+                && !this.playerLink.actions().isCarryingLiftedObject()
+                && !this.playerLink.sideView().romItemAnimationFrameBlocked()) {
+            if (this.playerLink.airborne().romMotionState() == 0x05
+                    || this.rooms.entityState().gelClingingToLink()) {
+                this.equipmentController.tickEquippedItemsWithoutInput(this.clock.value());
             } else {
                 if (!swordPickupSequenceActive
-                        && (!context.roomSession().entityState().powerUpPickupSequenceActive()
-                                && !context.roomSession().rooms().heartPiecePickupActive()))
-                    context.equipmentController().dispatchButtonEdges();
-                context.equipmentController().tickEquippedItems(context.frameCounter());
+                        && (!this.rooms.entityState().powerUpPickupSequenceActive()
+                                && !this.rooms.rooms().heartPiecePickupActive()))
+                    this.equipmentController.dispatchButtonEdges();
+                this.equipmentController.tickEquippedItems(this.clock.value());
             }
         }
     }
 
-    private void moveLink(GameplaySimulation context) {
-        if (context.debugNoClip() && context.debugScroll().tryDebugScreenScroll()) {
-            context.link().animation().tickAnimation();
+    private void moveLink() {
+        if (this.debugState.debugNoClip() && this.debugScroll.tryDebugScreenScroll()) {
+            this.playerLink.animation().tickAnimation();
         } else {
-            context.link().equipment().tickRomLinkPushing();
-            boolean groundInteractionBlocked = context.link().motion().romInteractiveMotionBlockValue() != 0;
-            boolean wasAirborne = context.link().airborne().isAirborne();
-            int beforeMotionX = context.link().position().pixelX(),
-                    beforeMotionY = context.link().position().pixelY();
-            motion.update(context.link());
+            this.playerLink.equipment().tickRomLinkPushing();
+            boolean groundInteractionBlocked = this.playerLink.motion().romInteractiveMotionBlockValue() != 0;
+            boolean wasAirborne = this.playerLink.airborne().isAirborne();
+            int beforeMotionX = this.playerLink.position().pixelX(),
+                    beforeMotionY = this.playerLink.position().pixelY();
+            this.motion.update(this.playerLink);
             if (wasAirborne
-                    && !context.link().airborne().isAirborne()
-                    && !context.link().airborne().isFallingIntoPit()
-                    && context.roomSession().rooms().mapCategory() != Warp.CATEGORY_SIDESCROLL) {
+                    && !this.playerLink.airborne().isAirborne()
+                    && !this.playerLink.airborne().isFallingIntoPit()
+                    && this.rooms.rooms().mapCategory() != Warp.CATEGORY_SIDESCROLL) {
                 // ApplyLinkGroundMotion $02:4588 probes the landing tile
                 // before func_002_434A applies XY. $00:1794 probes again
                 // after XY and copies that first sample at $02:7589.
-                context.roomSession()
-                        .terrain()
+                rooms.terrain()
                         .tickCrackedFloorOnLanding(
-                                groundFrame(context, beforeMotionX, beforeMotionY, groundInteractionBlocked),
-                                dialogGotItemActive(context));
+                                this.ground.groundFrame(beforeMotionX, beforeMotionY, groundInteractionBlocked),
+                                this.ground.dialogGotItemActive());
             }
-            tickCrackedFloor(context, groundInteractionBlocked);
-            var splash = context.link().status().consumeWaterSplash();
+            this.ground.tickCrackedFloor(groundInteractionBlocked);
+            var splash = this.playerLink.status().consumeWaterSplash();
             if (splash != null) {
                 // VFX stores ROM/OAM coordinates, as entity VFX requests do.
-                context.transientVfxSystem().spawn(TransientVfxType.WATER_SPLASH, splash.romX(), splash.romY());
+                this.transientVfxSystem.spawn(TransientVfxType.WATER_SPLASH, splash.romX(), splash.romY());
             }
         }
     }
 
-    private static void interactWithDoors(GameplaySimulation context) {
+    private void interactWithDoors() {
         {
-            int collisionProbeX = context.link().position().romCollisionProbePixelX();
-            int collisionProbeY = context.link().position().romCollisionProbePixelY();
-            context.roomSession()
-                    .doors()
+            int collisionProbeX = this.playerLink.position().romCollisionProbePixelX();
+            int collisionProbeY = this.playerLink.position().romCollisionProbePixelY();
+            rooms.doors()
                     .tryUnlockTailCaveKeyhole(
                             collisionProbeX,
                             collisionProbeY,
-                            linksawakening.state.Direction.fromJavaOrUnknown(
-                                    context.link().animation().direction()),
-                            context.link().position().romCollisionType(),
-                            context.playerState().progression().tailKeyCount() != 0);
-            context.roomSession()
-                    .doors()
+                            Direction.fromJavaOrUnknown(
+                                    this.playerLink.animation().direction()),
+                            this.playerLink.position().romCollisionType(),
+                            this.playerState.progression().tailKeyCount() != 0);
+            rooms.doors()
                     .tryUnlockKeyCavernKeyhole(
                             collisionProbeX,
                             collisionProbeY,
-                            linksawakening.state.Direction.fromJavaOrUnknown(
-                                    context.link().animation().direction()),
-                            context.link().position().romCollisionType(),
-                            context.playerState().progression().goldenLeavesCount());
-            context.roomSession()
-                    .doors()
+                            Direction.fromJavaOrUnknown(
+                                    this.playerLink.animation().direction()),
+                            this.playerLink.position().romCollisionType(),
+                            this.playerState.progression().goldenLeavesCount());
+            rooms.doors()
                     .tryUnlockIndoorKeyDoor(
                             collisionProbeX,
                             collisionProbeY,
-                            linksawakening.state.Direction.fromJavaOrUnknown(
-                                    context.link().animation().direction()),
-                            context.link().position().romCollisionType());
-            context.roomSession()
-                    .doors()
+                            Direction.fromJavaOrUnknown(
+                                    this.playerLink.animation().direction()),
+                            this.playerLink.position().romCollisionType());
+            rooms.doors()
                     .tryInteractWithIndoorBlock(
                             collisionProbeX,
                             collisionProbeY,
-                            linksawakening.state.Direction.fromJavaOrUnknown(
-                                    context.link().animation().direction()),
-                            context.link().position().romCollisionType());
+                            Direction.fromJavaOrUnknown(
+                                    this.playerLink.animation().direction()),
+                            this.playerLink.position().romCollisionType());
         }
     }
 
-    private static void updateScreenShake(GameplaySimulation context) {
-        Link.ScreenShakeRequest pegasusShake = context.link().motion().consumePegasusScreenShakeRequest();
+    private void updateScreenShake() {
+        Link.ScreenShakeRequest pegasusShake = this.playerLink.motion().consumePegasusScreenShakeRequest();
         if (pegasusShake != null) {
-            context.scrollController().startScreenShake(pegasusShake.countdown(), pegasusShake.phase());
+            this.scrollController.startScreenShake(pegasusShake.countdown(), pegasusShake.phase());
         }
         {
-            context.roomSession()
-                    .entityState()
-                    .setEntityScreenShakeCountdown(context.scrollController().screenShakeCountdown());
-            context.roomSession()
-                    .entityState()
+            rooms.entityState().setEntityScreenShakeCountdown(this.scrollController.screenShakeCountdown());
+            rooms.entityState()
                     .setSecretSeashellPegasusCollisionState(
-                            context.scrollController().screenShakeCountdown() != 0,
-                            context.link().motion().pegasusBootsCollisionCountdown() != 0,
-                            context.link().motion().pegasusBootsCollisionPosX(),
-                            context.link().motion().pegasusBootsCollisionPosY());
+                            this.scrollController.screenShakeCountdown() != 0,
+                            this.playerLink.motion().pegasusBootsCollisionCountdown() != 0,
+                            this.playerLink.motion().pegasusBootsCollisionPosX(),
+                            this.playerLink.motion().pegasusBootsCollisionPosY());
         }
     }
 
-    private static void collectPickups(GameplaySimulation context) {
+    private void collectPickups() {
         {
-            context.roomSession()
-                    .story()
+            rooms.story()
                     .setChestPlayerLevels(
-                            context.playerState().equipmentLevels().shieldLevel(),
-                            context.playerState().equipmentLevels().swordLevel(),
-                            context.playerState().equipmentLevels().powerBraceletLevel());
-            context.roomSession()
-                    .entityState()
+                            playerState.equipmentLevels().shieldLevel(),
+                            playerState.equipmentLevels().swordLevel(),
+                            playerState.equipmentLevels().powerBraceletLevel());
+            rooms.entityState()
                     .setToadstoolPlayerState(
-                            context.playerState().ammunition().hasToadstool(),
-                            context.playerState().ammunition().magicPowderCount());
-            var sword = context.equipmentController().activeSword();
+                            this.playerState.ammunition().hasToadstool(),
+                            this.playerState.ammunition().magicPowderCount());
+            var sword = this.equipmentController.activeSword();
             var box = sword == null
                     ? NO_SWORD
                     : sword.enemyCollisionBox(
-                            context.link().position().romEntityX(),
-                            context.link().position().romSwordCollisionY(),
-                            context.link().animation().direction(),
-                            context.playerState().equipmentLevels().runningWithPegasusBoots());
-            EntityPickupEvent pickup = context.roomSession()
-                    .entities()
-                    .collectEntityIfNeeded(context.frameInputs().pickup(context, box));
+                            this.playerLink.position().romEntityX(),
+                            this.playerLink.position().romSwordCollisionY(),
+                            this.playerLink.animation().direction(),
+                            playerState.equipmentLevels().runningWithPegasusBoots());
+            EntityPickupEvent pickup = rooms.entities().collectEntityIfNeeded(this.frameInputs.pickup(box));
             if (pickup != null) {
                 if (pickup.type() == 0x36) {
-                    context.playerState().equipmentLevels().setActivePowerUp(PowerUp.NONE.romValue());
-                    context.musicDirector().playDirectMusic(0x25);
+                    this.playerState.equipmentLevels().setActivePowerUp(PowerUp.NONE.romValue());
+                    this.musicDirector.playDirectMusic(0x25);
                 } else if (pickup.sourceVariant() >= 0) {
-                    context.playerState()
-                            .playerRewards()
-                            .applyFloatingItemPickup(pickup.type(), pickup.sourceVariant());
+                    playerState.playerRewards().applyFloatingItemPickup(pickup.type(), pickup.sourceVariant());
                 } else {
-                    context.playerState().playerRewards().applyEntityPickup(pickup.type());
+                    this.playerState.playerRewards().applyEntityPickup(pickup.type());
                 }
             }
+        }
+    }
+
+    /** Named construction inputs, consumed once by the phase constructor. */
+    public static final class Inputs {
+        private BushInteraction bush;
+        private DebugState debugNoClip;
+        private DebugScroll debugScroll;
+        private EquipmentController equipmentController;
+        private FrameClock frameCounter;
+        private FrameInputCache frameInputs;
+        private LiftInteraction lift;
+        private Link link;
+        private MusicDirector musicDirector;
+        private PlayerState playerState;
+        private RoomSession roomSession;
+        private RoomTransitionCoordinator roomTransitionCoordinator;
+        private ScrollController scrollController;
+        private TransientVfxSystem transientVfxSystem;
+        private LinkGroundPhase ground;
+        private LinkMotionDriver motion;
+
+        public Inputs bush(BushInteraction value) {
+            this.bush = value;
+            return this;
+        }
+
+        public Inputs debugNoClip(DebugState value) {
+            this.debugNoClip = value;
+            return this;
+        }
+
+        public Inputs debugScroll(DebugScroll value) {
+            this.debugScroll = value;
+            return this;
+        }
+
+        public Inputs equipmentController(EquipmentController value) {
+            this.equipmentController = value;
+            return this;
+        }
+
+        public Inputs frameCounter(FrameClock value) {
+            this.frameCounter = value;
+            return this;
+        }
+
+        public Inputs frameInputs(FrameInputCache value) {
+            this.frameInputs = value;
+            return this;
+        }
+
+        public Inputs lift(LiftInteraction value) {
+            this.lift = value;
+            return this;
+        }
+
+        public Inputs link(Link value) {
+            this.link = value;
+            return this;
+        }
+
+        public Inputs musicDirector(MusicDirector value) {
+            this.musicDirector = value;
+            return this;
+        }
+
+        public Inputs playerState(PlayerState value) {
+            this.playerState = value;
+            return this;
+        }
+
+        public Inputs roomSession(RoomSession value) {
+            this.roomSession = value;
+            return this;
+        }
+
+        public Inputs roomTransitionCoordinator(RoomTransitionCoordinator value) {
+            this.roomTransitionCoordinator = value;
+            return this;
+        }
+
+        public Inputs scrollController(ScrollController value) {
+            this.scrollController = value;
+            return this;
+        }
+
+        public Inputs transientVfxSystem(TransientVfxSystem value) {
+            this.transientVfxSystem = value;
+            return this;
+        }
+
+        public Inputs ground(LinkGroundPhase value) {
+            this.ground = value;
+            return this;
+        }
+
+        public Inputs motion(LinkMotionDriver value) {
+            this.motion = value;
+            return this;
         }
     }
 }

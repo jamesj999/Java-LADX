@@ -40,6 +40,10 @@ import linksawakening.world.transition.Warp;
  */
 // Menu direction is a signed selection step, not a cardinal facing.
 public final class InputRouter implements DebugScroll {
+
+    private static final int ROOM_PIXEL_WIDTH = 160;
+
+    private static final int ROOM_PIXEL_HEIGHT = 128;
     private final InputServices input;
     private final WorldServices world;
     private final PlayerServices player;
@@ -61,10 +65,6 @@ public final class InputRouter implements DebugScroll {
         this.state = Objects.requireNonNull(state);
         this.actions = Objects.requireNonNull(actions);
     }
-
-    private static final int ROOM_PIXEL_WIDTH = 160;
-
-    private static final int ROOM_PIXEL_HEIGHT = 128;
 
     public void onKeyEvent(int key, int action) {
         // Desktop shortcut only: Escape never enters the Game Boy button state.

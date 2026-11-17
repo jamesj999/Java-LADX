@@ -189,7 +189,7 @@ public class GameSession implements AutoCloseable {
 
         context.runtime().flows().music().tick();
 
-        context.state().screens().currentScreen.tick();
+        context.state().screens().currentScreen().tick();
     }
 
     void cleanup() {
@@ -206,7 +206,7 @@ public class GameSession implements AutoCloseable {
         if (key >= 0 && key == context.services().input().inputConfig().recordingKey()) {
             if (action == linksawakening.input.KeyCodes.PRESS
                     && (recording.active()
-                            || context.state().screens().currentScreen
+                            || context.state().screens().currentScreen()
                                     instanceof linksawakening.app.screen.GameplayScreen)) {
                 recording.toggle();
             }

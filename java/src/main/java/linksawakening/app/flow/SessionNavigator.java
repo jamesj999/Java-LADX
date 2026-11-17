@@ -20,8 +20,6 @@ public final class SessionNavigator implements ScreenNavigator, RoomLoadListener
     private final ScreenState state;
     private Targets targets;
 
-    private record Targets(ScreenSet screens, ScreenRouter router, RoomMusicSelection music) {}
-
     public SessionNavigator(ScreenState state) {
         this.state = Objects.requireNonNull(state);
     }
@@ -32,13 +30,9 @@ public final class SessionNavigator implements ScreenNavigator, RoomLoadListener
                 Objects.requireNonNull(screens), Objects.requireNonNull(router), Objects.requireNonNull(music));
     }
 
-    private Targets targets() {
-        return Objects.requireNonNull(targets, "Navigator not attached");
-    }
-
     @Override
     public Screen current() {
-        return state.currentScreen;
+        return state.currentScreen();
     }
 
     @Override
@@ -75,4 +69,10 @@ public final class SessionNavigator implements ScreenNavigator, RoomLoadListener
     public void roomLoaded(ActiveRoom room) {
         targets().music().roomLoaded(room);
     }
+
+    private Targets targets() {
+        return Objects.requireNonNull(targets, "Navigator not attached");
+    }
+
+    private record Targets(ScreenSet screens, ScreenRouter router, RoomMusicSelection music) {}
 }

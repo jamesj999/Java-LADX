@@ -8,7 +8,6 @@ import linksawakening.world.room.RoomSession;
  * session state is retained.
  */
 final class DebugMenuPages {
-    private DebugMenuPages() {}
 
     private static final String[] ITEMS = {
         "Empty",
@@ -44,6 +43,8 @@ final class DebugMenuPages {
         "Scale",
         "Magnifying lens"
     };
+
+    private DebugMenuPages() {}
 
     static void inventory(DebugMenu menu, PlayerState p) {
         menu.add(1, "A", p.inventory()::itemA, p.inventory()::setItemA, 0, 13, v -> ITEMS[v]);

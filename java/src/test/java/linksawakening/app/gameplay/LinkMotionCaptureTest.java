@@ -11,6 +11,7 @@ import linksawakening.app.GameSession;
 import linksawakening.app.SessionTestAccess;
 import linksawakening.entity.Link;
 import linksawakening.testing.RequiresRom;
+import linksawakening.testing.TestRom;
 import org.junit.jupiter.api.Test;
 
 @RequiresRom
@@ -18,14 +19,14 @@ class LinkMotionCaptureTest {
     @Test
     void finalPositionIsCapturedBeforeRealLinkMotion() {
         var game = new GameSession();
-        try (var rom = linksawakening.testing.TestRom.open()) {
+        try (var rom = TestRom.open()) {
             assertTrue(rom.read() >= 0);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
         game.initializeHeadlessNewGame();
         try {
-            var c = SessionTestAccess.context(game).runtime().flows().simulation();
+            var c = new PhaseFixture(game);
             var order = new ArrayList<String>();
             var driver = new LinkMotionDriver() {
                 @Override
@@ -41,7 +42,7 @@ class LinkMotionCaptureTest {
                     LinkMotionDriver.DIRECT.update(l);
                 }
             };
-            new LinkEquipmentPhase(driver).tick(c, false, false);
+            c.linkEquipment(driver).tick(false, false);
             assertEquals(List.of("capture", "update"), order);
         } finally {
             SessionTestAccess.cleanup(game);

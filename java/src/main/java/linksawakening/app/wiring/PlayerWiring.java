@@ -28,8 +28,6 @@ import linksawakening.world.room.RoomSession;
 final class PlayerWiring {
     private PlayerWiring() {}
 
-    record PlayerWorld(RoomSession roomSession, OverworldCollision overworldCollision) {}
-
     static PlayerGraphics graphics(Rom rom) {
         return new PlayerGraphics(
                 LinkSpriteSheet.loadFromRom(rom),
@@ -94,6 +92,8 @@ final class PlayerWiring {
         EquipmentWiring.hookshot(c, registry);
         EquipmentWiring.boomerang(c, registry);
     }
+
+    record PlayerWorld(RoomSession roomSession, OverworldCollision overworldCollision) {}
 
     /** ROM-backed player and equipment graphics loaded during wiring. */
     record PlayerGraphics(

@@ -39,18 +39,6 @@ public final class DebugMenu {
     private int page, selected, category, map, room, x, y, dungeon;
     private String message = "";
 
-    /** A debug editor binding; reads and writes a field without session navigation callbacks. */
-    public record Entry(
-            String label, IntSupplier read, IntConsumer write, int min, int max, IntFunction<String> format) {
-        public void change(int delta) {
-            write.accept(Math.clamp(read.getAsInt() + delta, min, max));
-        }
-
-        public String text() {
-            return label + ": " + format.apply(read.getAsInt());
-        }
-    }
-
     public DebugMenu(PlayerState p, RoomSession world, DebugTeleporter teleport) {
         this.teleport = teleport;
         for (String ignored : PAGES) pages.add(new ArrayList<>());
@@ -66,50 +54,6 @@ public final class DebugMenu {
         DebugMenuPages.questItems(this, p, world);
         DebugMenuPages.questProgress(this, p, world);
         buildDungeons(world);
-    }
-
-    private void buildDungeons(RoomSession world) {
-        add(4, "Dungeon", () -> dungeon, v -> dungeon = v, 0, 8, v -> v == 8 ? "Color" : Integer.toString(v + 1));
-        String[] flags = {"Map", "Compass", "Stone beak", "Boss key", "Small keys"};
-        for (int i = 0; i < flags.length; i++) {
-            final int index = i;
-            add(
-                    4,
-                    flags[i],
-                    () -> Byte.toUnsignedInt(
-                            dungeon == 8
-                                    ? world.dungeon().colorDungeonItemFlagsSnapshot()[index]
-                                    : world.dungeon().dungeonItemFlagsSnapshot()[dungeon * 5 + index]),
-                    v -> world.dungeon().setDungeonItemForDebug(dungeon == 8 ? 255 : dungeon, index, v),
-                    0,
-                    i == 4 ? 255 : 1);
-        }
-        for (int i = 0; i < 8; i++) {
-            final int index = i;
-            add(
-                    4,
-                    "Instrument " + (i + 1),
-                    () -> Byte.toUnsignedInt(world.dungeon().dungeonProgressFlagsSnapshot()[index]),
-                    v -> {
-                        byte[] flagsCopy = world.dungeon().dungeonProgressFlagsSnapshot();
-                        flagsCopy[index] = (byte) v;
-                        world.dungeon().restoreDungeonProgressFlags(flagsCopy);
-                    },
-                    0,
-                    3);
-        }
-    }
-
-    void add(int page, String name, IntSupplier get, IntConsumer set, int min, int max) {
-        add(page, name, get, set, min, max, Integer::toString);
-    }
-
-    void add(int page, String name, IntSupplier get, IntConsumer set, int min, int max, IntFunction<String> format) {
-        pages.get(page).add(new Entry(name, get, set, min, max, format));
-    }
-
-    private void hex(int page, String name, IntSupplier get, IntConsumer set) {
-        add(page, name, get, set, 0, 255, v -> String.format("%02X", v));
     }
 
     public boolean isOpen() {
@@ -197,5 +141,61 @@ public final class DebugMenu {
 
     public String message() {
         return message;
+    }
+
+    void add(int page, String name, IntSupplier get, IntConsumer set, int min, int max) {
+        add(page, name, get, set, min, max, Integer::toString);
+    }
+
+    void add(int page, String name, IntSupplier get, IntConsumer set, int min, int max, IntFunction<String> format) {
+        pages.get(page).add(new Entry(name, get, set, min, max, format));
+    }
+
+    private void buildDungeons(RoomSession world) {
+        add(4, "Dungeon", () -> dungeon, v -> dungeon = v, 0, 8, v -> v == 8 ? "Color" : Integer.toString(v + 1));
+        String[] flags = {"Map", "Compass", "Stone beak", "Boss key", "Small keys"};
+        for (int i = 0; i < flags.length; i++) {
+            final int index = i;
+            add(
+                    4,
+                    flags[i],
+                    () -> Byte.toUnsignedInt(
+                            dungeon == 8
+                                    ? world.dungeon().colorDungeonItemFlagsSnapshot()[index]
+                                    : world.dungeon().dungeonItemFlagsSnapshot()[dungeon * 5 + index]),
+                    v -> world.dungeon().setDungeonItemForDebug(dungeon == 8 ? 255 : dungeon, index, v),
+                    0,
+                    i == 4 ? 255 : 1);
+        }
+        for (int i = 0; i < 8; i++) {
+            final int index = i;
+            add(
+                    4,
+                    "Instrument " + (i + 1),
+                    () -> Byte.toUnsignedInt(world.dungeon().dungeonProgressFlagsSnapshot()[index]),
+                    v -> {
+                        byte[] flagsCopy = world.dungeon().dungeonProgressFlagsSnapshot();
+                        flagsCopy[index] = (byte) v;
+                        world.dungeon().restoreDungeonProgressFlags(flagsCopy);
+                    },
+                    0,
+                    3);
+        }
+    }
+
+    private void hex(int page, String name, IntSupplier get, IntConsumer set) {
+        add(page, name, get, set, 0, 255, v -> String.format("%02X", v));
+    }
+
+    /** A debug editor binding; reads and writes a field without session navigation callbacks. */
+    public record Entry(
+            String label, IntSupplier read, IntConsumer write, int min, int max, IntFunction<String> format) {
+        public void change(int delta) {
+            write.accept(Math.clamp(read.getAsInt() + delta, min, max));
+        }
+
+        public String text() {
+            return label + ": " + format.apply(read.getAsInt());
+        }
     }
 }

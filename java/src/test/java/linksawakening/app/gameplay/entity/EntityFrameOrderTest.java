@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
-import linksawakening.app.gameplay.GameplaySimulation;
 import linksawakening.equipment.Sword;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 import org.junit.jupiter.api.Test;
@@ -18,65 +17,65 @@ class EntityFrameOrderTest {
         final Sword.CollisionBox box = new Sword.CollisionBox(true, 1, 2, 3, 4);
 
         @Override
-        public List<EntityProjectileEvent> tickEntities(GameplaySimulation c, Sword.CollisionBox b) {
+        public List<EntityProjectileEvent> tickEntities(Sword.CollisionBox b) {
             assertSame(box, b);
             calls.add("tick");
             return events;
         }
 
         @Override
-        public void positions(GameplaySimulation c) {
+        public void positions() {
             calls.add("positions");
         }
 
         @Override
-        public void motion(GameplaySimulation c) {
+        public void motion() {
             calls.add("motion");
         }
 
         @Override
-        public void attacks(GameplaySimulation c) {
+        public void attacks() {
             calls.add("attacks");
         }
 
         @Override
-        public void sword(GameplaySimulation c) {
+        public void sword() {
             calls.add("sword");
         }
 
         @Override
-        public void chests(GameplaySimulation c) {
+        public void chests() {
             calls.add("chests");
         }
 
         @Override
-        public void progress(GameplaySimulation c) {
+        public void progress() {
             calls.add("progress");
         }
 
         @Override
-        public void witch(GameplaySimulation c) {
+        public void witch() {
             calls.add("witch");
         }
 
         @Override
-        public void dialogs(GameplaySimulation c) {
+        public void dialogs() {
             calls.add("dialogs");
         }
 
         @Override
-        public void finalEffects(GameplaySimulation c) {
+        public void finalEffects() {
             calls.add("finalEffects");
         }
 
         @Override
-        public void combat(GameplaySimulation c, List<EntityProjectileEvent> events) {
+        public void combat(List<EntityProjectileEvent> events) {
             assertSame(this.events, events);
             calls.add("combat");
         }
 
         @Override
-        public void projectiles(GameplaySimulation c, List<EntityProjectileEvent> events) {
+        public void projectiles(List<EntityProjectileEvent> events) {
             assertSame(this.events, events);
             calls.add("projectiles");
         }
@@ -85,7 +84,7 @@ class EntityFrameOrderTest {
     @Test
     void drainsWritesThenCombatRewardsDialogsAndProjectileResponses() {
         var r = new Recording();
-        r.run(null, r.box);
+        r.run(r.box);
         assertEquals(
                 List.of(
                         "tick",
@@ -106,7 +105,7 @@ class EntityFrameOrderTest {
     @Test
     void projectileConsumersReceiveTheExactTickEvents() {
         var r = new Recording();
-        r.run(null, r.box);
+        r.run(r.box);
         assertTrue(r.calls.indexOf("tick") < r.calls.indexOf("combat"));
         assertTrue(r.calls.indexOf("dialogs") < r.calls.indexOf("projectiles"));
     }
@@ -114,7 +113,7 @@ class EntityFrameOrderTest {
     @Test
     void entityAttackRequestsApplyAfterTheTickThatCanThrowABomb() {
         var r = new Recording();
-        r.run(null, r.box);
+        r.run(r.box);
         assertEquals(List.of("tick", "positions", "motion", "attacks"), r.calls.subList(0, 4));
     }
 }

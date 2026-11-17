@@ -56,26 +56,6 @@ final class EquipmentWiring {
                         inputs.link().equipment()::canUseItems));
     }
 
-    /** Dependencies shared by equipment target adapters; no session reference is retained. */
-    record EquipmentInputs(
-            PlayerState playerState,
-            Link link,
-            RoomSession roomSession,
-            RomTables romTables,
-            PlayerGraphics graphics,
-            GameplaySoundSink gameplaySoundSink,
-            RomRandomByteSource random) {
-        EquipmentInputs {
-            Objects.requireNonNull(playerState);
-            Objects.requireNonNull(link);
-            Objects.requireNonNull(roomSession);
-            Objects.requireNonNull(romTables);
-            Objects.requireNonNull(graphics);
-            Objects.requireNonNull(gameplaySoundSink);
-            Objects.requireNonNull(random);
-        }
-    }
-
     static void sword(EquipmentInputs inputs, ItemRegistry registry) {
         registry.register(
                 InventoryItem.SWORD.romValue(),
@@ -357,5 +337,25 @@ final class EquipmentWiring {
                             }
                         },
                         inputs.link().equipment()::canUseItems));
+    }
+
+    /** Dependencies shared by equipment target adapters; no session reference is retained. */
+    record EquipmentInputs(
+            PlayerState playerState,
+            Link link,
+            RoomSession roomSession,
+            RomTables romTables,
+            PlayerGraphics graphics,
+            GameplaySoundSink gameplaySoundSink,
+            RomRandomByteSource random) {
+        EquipmentInputs {
+            Objects.requireNonNull(playerState);
+            Objects.requireNonNull(link);
+            Objects.requireNonNull(roomSession);
+            Objects.requireNonNull(romTables);
+            Objects.requireNonNull(graphics);
+            Objects.requireNonNull(gameplaySoundSink);
+            Objects.requireNonNull(random);
+        }
     }
 }

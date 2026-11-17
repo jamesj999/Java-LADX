@@ -4,149 +4,145 @@ import static linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntit
 
 import java.util.List;
 import java.util.Objects;
-import linksawakening.app.audio.MusicDirector;
-import linksawakening.app.gameplay.GameplaySimulation;
 import linksawakening.app.state.GameplaySounds;
 import linksawakening.entity.Link;
 import linksawakening.equipment.Sword;
 import linksawakening.gameplay.EnemyProjectileEventConsumer;
 import linksawakening.state.InventoryItem;
-import linksawakening.vfx.TransientVfxSystem;
+import linksawakening.state.PlayerState;
+import linksawakening.ui.InventoryController;
+import linksawakening.ui.InventoryMenu;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 import linksawakening.world.entity.event.LikeLikeEvent;
 import linksawakening.world.entity.event.ScreenShakeRequest;
 import linksawakening.world.room.RoomSession;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
 
 /** Ticks room entities and applies their results in source order. Retained for one simulation. */
 public final class EntityPhase {
-    private final EntityFrameInputsFactory inputs = new EntityFrameInputsFactory();
-    private final EntityRewardApplier rewards = new EntityRewardApplier();
+    private final GameplaySounds sounds;
+    private final InventoryController inventoryController;
+    private final InventoryMenu inventoryMenu;
+    private final Link playerLink;
+    private final PlayerState playerState;
+    private final RoomSession rooms;
+    private final ScrollController scrollController;
+    private final TransitionController transitionController;
+    private final EntityFrameInputsFactory inputs;
+    private final EntityRewardApplier rewards;
+    private final LinkWriteApplier linkWrites;
     private final GameplayCombatEvents combatEvents;
-    private final LinkWriteApplier linkWrites = new LinkWriteApplier();
     private final EntityDialogRouting routing;
 
     /** Creates the retained entity phase and its combat-event drain for one session. */
-    public EntityPhase(
-            RoomSession rooms, Link link, GameplaySounds sounds, TransientVfxSystem effects, MusicDirector music) {
-        this(new GameplayCombatEvents(rooms, link, sounds, effects, music), EntityDialogRouting.DIRECT);
-    }
-
-    EntityPhase(GameplayCombatEvents combatEvents, EntityDialogRouting routing) {
-        this.combatEvents = Objects.requireNonNull(combatEvents);
-        this.routing = Objects.requireNonNull(routing);
-    }
-
     private final EntityFrameStages stages = new EntityFrameStages() {
         @Override
-        public List<EntityProjectileEvent> tickEntities(GameplaySimulation c, Sword.CollisionBox b) {
-            return c.roomSession().tickEntities(inputs.borrow(c, b));
+        public List<EntityProjectileEvent> tickEntities(Sword.CollisionBox b) {
+            return rooms.tickEntities(inputs.borrow(b));
         }
 
         @Override
-        public void positions(GameplaySimulation c) {
-            linkWrites.applyPositionWrites(c);
+        public void positions() {
+            linkWrites.applyPositionWrites();
         }
 
         @Override
-        public void motion(GameplaySimulation c) {
-            LinkWriteApplier.applyMotionWrites(c);
+        public void motion() {
+            linkWrites.applyMotionWrites();
         }
 
         @Override
-        public void attacks(GameplaySimulation c) {
-            linkWrites.applyAttackWrites(c);
+        public void attacks() {
+            linkWrites.applyAttackWrites();
         }
 
         @Override
-        public void sword(GameplaySimulation c) {
-            LinkWriteApplier.applySwordWrites(c);
+        public void sword() {
+            linkWrites.applySwordWrites();
         }
 
         @Override
-        public void combat(GameplaySimulation c, List<EntityProjectileEvent> events) {
-            applyCombat(c, events);
+        public void combat(List<EntityProjectileEvent> events) {
+            applyCombat(events);
         }
 
         @Override
-        public void chests(GameplaySimulation c) {
-            applyChestRewards(c);
+        public void chests() {
+            applyChestRewards();
         }
 
         @Override
-        public void progress(GameplaySimulation c) {
-            applyProgressRewards(c);
+        public void progress() {
+            applyProgressRewards();
         }
 
         @Override
-        public void witch(GameplaySimulation c) {
-            applyWitchRewards(c);
+        public void witch() {
+            applyWitchRewards();
         }
 
         @Override
-        public void dialogs(GameplaySimulation c) {
-            routeDialogs(c);
+        public void dialogs() {
+            routeDialogs();
         }
 
         @Override
-        public void projectiles(GameplaySimulation c, List<EntityProjectileEvent> events) {
-            LinkWriteApplier.applyProjectileResponses(c, events);
+        public void projectiles(List<EntityProjectileEvent> events) {
+            linkWrites.applyProjectileResponses(events);
         }
 
         @Override
-        public void finalEffects(GameplaySimulation c) {
-            LinkWriteApplier.applyFinalEffects(c);
+        public void finalEffects() {
+            linkWrites.applyFinalEffects();
         }
     };
 
-    public void tick(GameplaySimulation c, Sword.CollisionBox b) {
+    public EntityPhase(Inputs inputs) {
+        this.sounds = Objects.requireNonNull(inputs.gameplaySoundSink);
+        this.inventoryController = Objects.requireNonNull(inputs.inventoryController);
+        this.inventoryMenu = Objects.requireNonNull(inputs.inventoryMenu);
+        this.playerLink = Objects.requireNonNull(inputs.link);
+        this.playerState = Objects.requireNonNull(inputs.playerState);
+        this.rooms = Objects.requireNonNull(inputs.roomSession);
+        this.scrollController = Objects.requireNonNull(inputs.scrollController);
+        this.transitionController = Objects.requireNonNull(inputs.transitionController);
+        this.inputs = Objects.requireNonNull(inputs.inputs);
+        this.rewards = Objects.requireNonNull(inputs.rewards);
+        this.linkWrites = Objects.requireNonNull(inputs.linkWrites);
+        this.combatEvents = Objects.requireNonNull(inputs.combatEvents);
+        this.routing = Objects.requireNonNull(inputs.routing);
+    }
+
+    public void tick(Sword.CollisionBox b) {
         // The original calls AnimateEntities after Link movement and
         // room-transition application. Give handlers the same current
         // position and active-room snapshot.
         if (shouldTickRoomEntities(
-                c.scrollController().isActive(),
-                c.transitionController().isInputBlocked(),
-                c.inventoryController().shouldBlockOverworldInput()
-                        && !c.inventoryMenu().transition().worldHandlerActive(),
-                c.inventoryMenu().isTransitioning())) {
-            stages.run(c, b);
+                scrollController.isActive(),
+                transitionController.isInputBlocked(),
+                inventoryController.shouldBlockOverworldInput()
+                        && !inventoryMenu.transition().worldHandlerActive(),
+                inventoryMenu.isTransitioning())) {
+            stages.run(b);
         }
     }
 
-    void applyResults(GameplaySimulation c, List<EntityProjectileEvent> events) {
-        stages.applyResults(c, events);
+    public void applyResults(List<EntityProjectileEvent> events) {
+        stages.applyResults(events);
     }
 
-    private void applyCombat(GameplaySimulation c, List<EntityProjectileEvent> projectileEvents) {
-        var results = c.roomSession().entityFrameResults();
-        var screenShakeRequests = results.presentation().consumeScreenShakeRequests();
-        for (int requestIndex = 0; requestIndex < screenShakeRequests.size(); requestIndex++) {
-            ScreenShakeRequest request = screenShakeRequests.get(requestIndex);
-            c.scrollController().startScreenShake(request.countdown(), request.phase());
-        }
-        EnemyProjectileEventConsumer.consume(
-                projectileEvents, c.playerState(), c.link(), c.gameplaySoundSink(), combatEvents);
-        results.presentation().drainEntityEvents(combatEvents);
+    public void applyChestRewards() {
+        rewards.applyChestRewards();
     }
 
-    void applyChestRewards(GameplaySimulation c) {
-        rewards.applyChestRewards(c);
-    }
-
-    private void applyProgressRewards(GameplaySimulation c) {
-        rewards.applyProgressRewards(c);
-    }
-
-    private void applyWitchRewards(GameplaySimulation c) {
-        rewards.applyWitchRewards(c);
-    }
-
-    void routeDialogs(GameplaySimulation c) {
-        var results = c.roomSession().entityFrameResults();
-        c.roomSession().story().setBirdKeyOwned(c.playerState().progression().birdKeyCount() != 0);
-        c.roomSession().story().setTailKeyOwned(c.playerState().progression().tailKeyCount() != 0);
+    public void routeDialogs() {
+        var results = rooms.entityFrameResults();
+        rooms.story().setBirdKeyOwned(playerState.progression().birdKeyCount() != 0);
+        rooms.story().setTailKeyOwned(playerState.progression().tailKeyCount() != 0);
         int chestMusicTrack = results.presentation().consumePendingMusicTrack();
         if (chestMusicTrack >= 0) {
-            routing.music(c, chestMusicTrack);
+            routing.music(chestMusicTrack);
         }
         var likeLikeEvents = results.presentation().consumeLikeLikeEvents();
         for (int eventIndex = 0; eventIndex < likeLikeEvents.size(); eventIndex++) {
@@ -154,15 +150,116 @@ public final class EntityPhase {
 
             if (event.kind() == LikeLikeEvent.Kind.CAPTURE) {
                 if (event.stolenInventorySlot() == 0) {
-                    c.playerState().inventory().setItemB(InventoryItem.EMPTY.romValue());
+                    playerState.inventory().setItemB(InventoryItem.EMPTY.romValue());
                 } else if (event.stolenInventorySlot() == 1) {
-                    c.playerState().inventory().setItemA(InventoryItem.EMPTY.romValue());
+                    playerState.inventory().setItemA(InventoryItem.EMPTY.romValue());
                 }
-                c.link().apply(LinkCommandAdapter.from(event));
-            } else c.link().apply(LinkCommandAdapter.from(event));
+                playerLink.apply(LinkCommandAdapter.from(event));
+            } else playerLink.apply(LinkCommandAdapter.from(event));
         }
-        routing.dialogs(c);
-        routing.manbo(c);
-        routing.instrument(c);
+        routing.dialogs();
+        routing.manbo();
+        routing.instrument();
+    }
+
+    private void applyCombat(List<EntityProjectileEvent> projectileEvents) {
+        var results = rooms.entityFrameResults();
+        var screenShakeRequests = results.presentation().consumeScreenShakeRequests();
+        for (int requestIndex = 0; requestIndex < screenShakeRequests.size(); requestIndex++) {
+            ScreenShakeRequest request = screenShakeRequests.get(requestIndex);
+            scrollController.startScreenShake(request.countdown(), request.phase());
+        }
+        EnemyProjectileEventConsumer.consume(projectileEvents, playerState, playerLink, sounds.sink(), combatEvents);
+        results.presentation().drainEntityEvents(combatEvents);
+    }
+
+    private void applyProgressRewards() {
+        rewards.applyProgressRewards();
+    }
+
+    private void applyWitchRewards() {
+        rewards.applyWitchRewards();
+    }
+
+    /** Named construction inputs, consumed once by the phase constructor. */
+    public static final class Inputs {
+        private GameplaySounds gameplaySoundSink;
+        private InventoryController inventoryController;
+        private InventoryMenu inventoryMenu;
+        private Link link;
+        private PlayerState playerState;
+        private RoomSession roomSession;
+        private ScrollController scrollController;
+        private TransitionController transitionController;
+        private EntityFrameInputsFactory inputs;
+        private EntityRewardApplier rewards;
+        private LinkWriteApplier linkWrites;
+        private GameplayCombatEvents combatEvents;
+        private EntityDialogRouting routing;
+
+        public Inputs gameplaySoundSink(GameplaySounds value) {
+            this.gameplaySoundSink = value;
+            return this;
+        }
+
+        public Inputs inventoryController(InventoryController value) {
+            this.inventoryController = value;
+            return this;
+        }
+
+        public Inputs inventoryMenu(InventoryMenu value) {
+            this.inventoryMenu = value;
+            return this;
+        }
+
+        public Inputs link(Link value) {
+            this.link = value;
+            return this;
+        }
+
+        public Inputs playerState(PlayerState value) {
+            this.playerState = value;
+            return this;
+        }
+
+        public Inputs roomSession(RoomSession value) {
+            this.roomSession = value;
+            return this;
+        }
+
+        public Inputs scrollController(ScrollController value) {
+            this.scrollController = value;
+            return this;
+        }
+
+        public Inputs transitionController(TransitionController value) {
+            this.transitionController = value;
+            return this;
+        }
+
+        public Inputs inputs(EntityFrameInputsFactory value) {
+            this.inputs = value;
+            return this;
+        }
+
+        public Inputs rewards(EntityRewardApplier value) {
+            this.rewards = value;
+            return this;
+        }
+
+        public Inputs linkWrites(LinkWriteApplier value) {
+            this.linkWrites = value;
+            return this;
+        }
+
+        public Inputs combatEvents(GameplayCombatEvents value) {
+            this.combatEvents = value;
+            return this;
+        }
+
+        public Inputs routing(EntityDialogRouting value) {
+            this.routing = value;
+            return this;
+        }
     }
 }

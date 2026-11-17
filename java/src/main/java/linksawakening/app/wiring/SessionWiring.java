@@ -63,9 +63,10 @@ public final class SessionWiring {
             UnaryOperator<Host> decorateHost) {
         var screens = new ScreenState();
         var navigator = new SessionNavigator(screens);
-        Host host = headless
-                ? (headlessPcm == null ? new HeadlessHost() : new HeadlessHost(headlessPcm))
-                : new DesktopHost();
+        Host host;
+        if (!headless) host = new DesktopHost();
+        else if (headlessPcm == null) host = new HeadlessHost();
+        else host = new HeadlessHost(headlessPcm);
         host = decorateHost.apply(host);
         var built = SubsystemWiring.build(
                 random, new GPU(), new TransitionController(), new ScrollController(), navigator, host, headless);

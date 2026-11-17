@@ -3,6 +3,7 @@ package linksawakening.app.gameplay;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.app.AllocationSessions;
+import linksawakening.app.screen.GameplayScreen;
 import linksawakening.testing.AllocationProbe;
 import linksawakening.testing.RequiresRom;
 import org.junit.jupiter.api.Test;
@@ -22,19 +23,18 @@ class PhaseAllocationTest {
     @Test
     void retainedGameplayPhasesReportPerStepAllocation() throws Exception {
         try (var session = AllocationSessions.active()) {
-            var c = session.flows().simulation();
-            var story = new DialogStoryPhase();
-            var link = new LinkEquipmentPhase();
-            var combat = new CombatPhase();
-            var tiles = new AnimatedTilesPhase();
-            report("dialog/story", () -> story.tick(c));
-            report("link/equipment", () -> link.tick(c, false, false));
-            report("combat", () -> observed = combat.tick(c, false));
-            report("animated tiles", () -> tiles.tick(c, false));
+            var c = new PhaseFixture(session);
+            var story = c.dialogStory();
+            var link = c.linkEquipment();
+            var combat = c.combat();
+            var tiles = c.tiles();
+            report("dialog/story", () -> story.tick());
+            report("link/equipment", () -> link.tick(false, false));
+            report("combat", () -> observed = combat.tick(false));
+            report("animated tiles", () -> tiles.tick(false));
             report("music", () -> session.flows().music().tick());
             report("input", () -> session.flows().inputRouter().tryPresentFileSave());
-            var screen =
-                    (linksawakening.app.screen.GameplayScreen) session.state().screens().currentScreen;
+            var screen = (GameplayScreen) session.state().screens().currentScreen;
             report("queued input", () -> {
                 session.headlessButton("right", true);
                 session.headlessButton("right", false);

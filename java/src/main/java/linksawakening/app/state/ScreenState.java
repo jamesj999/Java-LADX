@@ -17,4 +17,20 @@ public final class ScreenState {
     public void selectSaveSlot(int slot) {
         currentSaveSlot = slot;
     }
+
+    public Screen currentScreen() {
+        return currentScreen;
+    }
+
+    public FileMenuState fileMenu() {
+        return fileMenu;
+    }
+
+    public FileSaveState fileSave() {
+        return fileSave;
+    }
+
+    public int currentSaveSlot() {
+        return currentSaveSlot;
+    }
 }

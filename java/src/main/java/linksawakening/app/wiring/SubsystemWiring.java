@@ -29,9 +29,6 @@ import linksawakening.world.transition.TransitionController;
 final class SubsystemWiring {
     private SubsystemWiring() {}
 
-    /** Initial services, scene state, and save storage produced by subsystem wiring. */
-    public record Built(SessionServices services, SceneState scene, SaveState saves) {}
-
     public static Built build(
             RomRandomByteSource random,
             GPU gpu,
@@ -80,4 +77,7 @@ final class SubsystemWiring {
             throw new IllegalStateException("Failed to open save image", e);
         }
     }
+
+    /** Initial services, scene state, and save storage produced by subsystem wiring. */
+    public record Built(SessionServices services, SceneState scene, SaveState saves) {}
 }
