@@ -16,15 +16,15 @@ public final class BomberMotion {
     // the contiguous bytes with the same 0..7 value.
     static final int[] SPEED_Y_BY_RANDOM = {0xF8, 0xFA, 0x00, 0x06, 0x08, 0x06, 0x00, 0xFA};
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState1Table.
-    final int[] spawnAttemptCount = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] spawnAttemptCount = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record BombSpawn(int x, int y, int z, int speedX, int speedY, int speedZ, int transitionCountdown) {}
 
@@ -178,7 +178,7 @@ public final class BomberMotion {
 
     record Vector(int x, int y) {}
 
-    final BomberFrameStep bomberFrameStep = new BomberFrameStep(this);
+    private final BomberFrameStep bomberFrameStep = new BomberFrameStep(this);
 
     record BomberFrame(
             linksawakening.world.entity.RoomEntity entity,

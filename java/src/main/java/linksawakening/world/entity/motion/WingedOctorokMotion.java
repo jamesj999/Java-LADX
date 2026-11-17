@@ -15,25 +15,25 @@ public final class WingedOctorokMotion {
     static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xF8, 0x08};
     private static final int[] BASE_VARIANT_BY_DIRECTION = {6, 4, 2, 0};
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState1Table.
-    final int[] landingCount = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] landingCount = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState2Table.
-    final int[] wingPhase = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] wingPhase = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown2Table.
-    final int[] wingCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] zPosition = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] presentationVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] zInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] wingCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] zPosition = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] presentationVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] zInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record RockSpawn(int direction) {
         public RockSpawn {
@@ -233,7 +233,7 @@ public final class WingedOctorokMotion {
 
     record Vector(int y, int x) {}
 
-    final WingedOctorokStep wingedOctorokStep = new WingedOctorokStep(this);
+    private final WingedOctorokStep wingedOctorokStep = new WingedOctorokStep(this);
 
     record WingedOctorokFrame(
             RoomEntity entity,
@@ -516,5 +516,69 @@ public final class WingedOctorokMotion {
                 this.completedResult = null;
             }
         }
+    }
+
+    int[] state() {
+        return this.state;
+    }
+
+    int[] direction() {
+        return this.direction;
+    }
+
+    int[] landingCount() {
+        return this.landingCount;
+    }
+
+    int[] wingPhase() {
+        return this.wingPhase;
+    }
+
+    int[] wingCountdown() {
+        return this.wingCountdown;
+    }
+
+    int[] speedX() {
+        return this.speedX;
+    }
+
+    int[] speedY() {
+        return this.speedY;
+    }
+
+    int[] speedZ() {
+        return this.speedZ;
+    }
+
+    int[] zPosition() {
+        return this.zPosition;
+    }
+
+    int[] speedXAccumulator() {
+        return this.speedXAccumulator;
+    }
+
+    int[] speedYAccumulator() {
+        return this.speedYAccumulator;
+    }
+
+    int[] speedZAccumulator() {
+        return this.speedZAccumulator;
+    }
+
+    int[] inertia() {
+        return this.inertia;
+    }
+
+    int[] presentationVariant() {
+        return this.presentationVariant;
+    }
+
+    boolean[] initialized() {
+        return this.initialized;
+    }
+
+    boolean[] zInitialized() {
+        return this.zInitialized;
     }
 }

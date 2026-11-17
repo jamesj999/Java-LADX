@@ -30,23 +30,23 @@ import linksawakening.world.entity.motion.WitchMotion;
  */
 public final class EntityStoryController {
     private final EntityStoryState state;
-    final EntityMotionRegistry motions;
-    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
-    final EntityBackgroundMechanics backgroundMechanics;
-    final EntityBossState bossRewards;
-    final EntityCombatTables combatTables;
-    final EntityEventChannels events;
-    final EntityLinkState linkState;
-    final EntityPhysicsTables physicsTables;
-    final EntityPickupState pickups;
-    final EntityPresentationState presentationState;
-    final EntityRoomInspection inspection;
-    final EntityRoomInspection roomInspection;
-    final EntityRoomVariables roomVariables;
-    final EntitySlotLifecycle lifecycle;
-    final EntitySlots slots;
-    final EntitySpriteViews spriteViews;
-    final EntityPlayerCommands playerCommands;
+    private final EntityMotionRegistry motions;
+    private final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
+    private final EntityBackgroundMechanics backgroundMechanics;
+    private final EntityBossState bossRewards;
+    private final EntityCombatTables combatTables;
+    private final EntityEventChannels events;
+    private final EntityLinkState linkState;
+    private final EntityPhysicsTables physicsTables;
+    private final EntityPickupState pickups;
+    private final EntityPresentationState presentationState;
+    private final EntityRoomInspection inspection;
+    private final EntityRoomInspection roomInspection;
+    private final EntityRoomVariables roomVariables;
+    private final EntitySlotLifecycle lifecycle;
+    private final EntitySlots slots;
+    private final EntitySpriteViews spriteViews;
+    private final EntityPlayerCommands playerCommands;
 
     EntityStoryController(
             EntityStoryState state,
@@ -335,9 +335,9 @@ public final class EntityStoryController {
         state.writeShouldGetLostInMysteriousWoods(value);
     }
 
-    final RichardStep richardStep = new RichardStep(this);
-    final VillageNpcFrameStep villageNpcFrameStep = new VillageNpcFrameStep(this);
-    final OwlEventStep owlEventStep = new OwlEventStep(this);
+    private final RichardStep richardStep = new RichardStep(this);
+    private final VillageNpcFrameStep villageNpcFrameStep = new VillageNpcFrameStep(this);
+    private final OwlEventStep owlEventStep = new OwlEventStep(this);
 
     void blockLinkForOwl(int slot) {
         events.linkMotionBlock(new linksawakening.world.entity.event.LinkMotionBlockRequest(slot));

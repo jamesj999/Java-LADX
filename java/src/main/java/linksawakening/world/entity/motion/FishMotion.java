@@ -15,13 +15,13 @@ public final class FishMotion {
     public static final int INITIAL_PHYSICS_FLAGS = 0x02 | 0x10 | 0x40;
     static final int JUMP_PHYSICS_FLAGS = 0x02 | 0x10;
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] physicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] physicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     /** Entity $CC uses EntityInitNoop; the handler seeds its own state. */
     public void initialize(int slot) {
@@ -106,7 +106,7 @@ public final class FishMotion {
 
     public record Update(RoomEntity entity, int transitionCountdown, int physicsFlags, boolean waterSplash) {}
 
-    final FishFrameStep fishFrameStep = new FishFrameStep(this);
+    private final FishFrameStep fishFrameStep = new FishFrameStep(this);
 
     static final class FishFrameStep {
         private final FishMotion owner;

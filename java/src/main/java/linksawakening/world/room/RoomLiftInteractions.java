@@ -80,10 +80,10 @@ final class RoomLiftInteractions {
             boolean pieceOfPowerActive,
             int braceletLevel,
             boolean anyPowerUpActive) {
-        if (loaded.room.mapCategory() == Warp.CATEGORY_SIDESCROLL
+        if (loaded.room().mapCategory() == Warp.CATEGORY_SIDESCROLL
                 || !braceletButtonHeld
-                || loaded.entities.inspection().liftedEntityState().active()) {
-            loaded.contents.puzzles.indoorPotPullFrames = 0;
+                || loaded.entities().inspection().liftedEntityState().active()) {
+            loaded.contents().puzzles().indoorPotPullFrames(0);
             return false;
         }
         var target = probeLiftTarget(loaded, linkPixelX, linkPixelY, linkDirection);
@@ -101,7 +101,7 @@ final class RoomLiftInteractions {
     }
 
     private void publishEntityView(RoomRuntime loaded) {
-        loaded.room.replaceEntities(loaded.entities.inspection().view());
+        loaded.room().replaceEntities(loaded.entities().inspection().view());
     }
 
     record Dependencies(
@@ -149,12 +149,12 @@ final class RoomLiftInteractions {
         int objectLeft = (linkPixelX + probeOffsetX) & 0xF0;
         int objectTop = (linkPixelY + probeOffsetY) & 0xF0;
         int touchedLocation = objectTop | (objectLeft >>> 4);
-        int touchedObject = dependencies.roomSessionViews().objectAtRoomLocation(loaded.room, touchedLocation);
-        boolean outdoor = loaded.room.mapCategory() == Warp.CATEGORY_OVERWORLD;
+        int touchedObject = dependencies.roomSessionViews().objectAtRoomLocation(loaded.room(), touchedLocation);
+        boolean outdoor = loaded.room().mapCategory() == Warp.CATEGORY_OVERWORLD;
         // Statue standing handler, $19:4076: asymmetric 32 by 48 contact window.
         linksawakening.world.entity.RoomEntity statue = null;
         if (!outdoor) {
-            for (var entity : loaded.entities.inspection().view().loadedEntities()) {
+            for (var entity : loaded.entities().inspection().view().loadedEntities()) {
                 if (entity.type() == 0x9D
                         && entity.status() == linksawakening.world.entity.EntityStatus.ACTIVE
                         && (((linkPixelX + 8) - entity.x() + 0x10) & 0xFF) < 0x20
@@ -173,30 +173,30 @@ final class RoomLiftInteractions {
                 && target.touchedObject() != OBJECT_LIFTABLE_POT
                 && !(target.outdoor() && target.touchedObject() == 0x5C)
                 && target.touchedObject() != OBJECT_POT_WITH_SWITCH) {
-            loaded.contents.puzzles.indoorPotPullFrames = 0;
+            loaded.contents().puzzles().indoorPotPullFrames(0);
             return false;
         }
         if (target.oppositeButton() == 0
                 || (request.pressedButtonsMask() & target.oppositeButton()) == 0
                 || (target.statue() != null && request.braceletLevel() != 2)) {
-            loaded.contents.puzzles.indoorPotPullFrames = 0;
+            loaded.contents().puzzles().indoorPotPullFrames(0);
             return true;
         }
-        dependencies.followers().followingEntityYOffset = request.linkDirection() == Direction.UP ? 4 : 0;
-        loaded.contents.puzzles.indoorPotPullFrames++;
+        dependencies.followers().followingEntityYOffset(request.linkDirection() == Direction.UP ? 4 : 0);
+        loaded.contents().puzzles().postIncrementIndoorPotPullFrames();
         int pullFrames = (target.statue() != null ? request.anyPowerUpActive() : request.pieceOfPowerActive())
                 ? 0x03
                 : INDOOR_POT_PULL_FRAMES;
-        if (loaded.contents.puzzles.indoorPotPullFrames < pullFrames) {
+        if (loaded.contents().puzzles().indoorPotPullFrames() < pullFrames) {
             return true;
         }
-        loaded.contents.puzzles.indoorPotPullFrames = 0;
+        loaded.contents().puzzles().indoorPotPullFrames(0);
 
         if (target.statue() != null) {
             completeStatueLift(loaded, target.statue(), request.linkDirection());
             return true;
         }
-        replaceLiftedObject(loaded.contents, target);
+        replaceLiftedObject(loaded.contents(), target);
         spawnLiftedObject(loaded, request, target);
         return true;
     }
@@ -204,13 +204,13 @@ final class RoomLiftInteractions {
     private void completeStatueLift(
             RoomRuntime loaded, linksawakening.world.entity.RoomEntity statue, Direction linkDirection) {
 
-        loaded.entities
+        loaded.entities()
                 .commands()
                 .beginLift(statue.slot(), RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection));
         dependencies
                 .entityRuntimeState()
-                .outbox
-                .pendingRoomEntityEvents
+                .outbox()
+                .pendingRoomEntityEvents()
                 .add(new linksawakening.world.entity.event.EntityCombatEvent(
                         statue.slot(),
                         0x9D,
@@ -228,15 +228,15 @@ final class RoomLiftInteractions {
                         .overworldBushInteraction()
                         .revealObjectAtLocation(
                                 target.touchedLocation(),
-                                contents.room.roomId(),
+                                contents.room().roomId(),
                                 true,
-                                contents.room.roomObjectsArea(),
-                                contents.room.renderValues(),
-                                contents.room.gbcOverlay(),
-                                contents.room.tileIds(),
-                                contents.room.tileAttrs());
+                                contents.room().roomObjectsArea(),
+                                contents.room().renderValues(),
+                                contents.room().gbcOverlay(),
+                                contents.room().tileIds(),
+                                contents.room().tileAttrs());
             } else {
-                int room = contents.room.roomId();
+                int room = contents.room().roomId();
                 int replacement =
                         room < 0x20 || room == 0xE0 || room == 0xE1 || room == 0xE3 || room == 0xE4 || (room == 0x75)
                                 ? 3
@@ -248,10 +248,10 @@ final class RoomLiftInteractions {
             }
             dependencies.roomObjectMutations().refreshOverworldCollisionAfterObjectMutation(contents);
         } else {
-            contents.room.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + target.touchedLocation()] =
+            contents.room().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + target.touchedLocation()] =
                     target.touchedObject() == OBJECT_POT_WITH_SWITCH ? OBJECT_SWITCH_BUTTON : 0x0D;
             dependencies.roomTileRedraw().refreshActiveRoomTilemap(contents);
-            dependencies.overworldCollision().setRoom(contents.room.roomObjectsArea());
+            dependencies.overworldCollision().setRoom(contents.room().roomObjectsArea());
             dependencies.overworldCollision().setGbcOverlay(null);
         }
     }
@@ -259,7 +259,7 @@ final class RoomLiftInteractions {
     private void spawnLiftedObject(RoomRuntime loaded, LiftRequest request, LiftTarget target) {
         int x = request.linkPixelX() + 0x08;
         int y = request.linkPixelY() + 0x10;
-        loaded.entities
+        loaded.entities()
                 .spawns()
                 .spawnLiftedRoomObject(
                         x,

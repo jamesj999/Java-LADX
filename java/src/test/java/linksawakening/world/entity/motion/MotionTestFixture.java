@@ -6,32 +6,32 @@ public final class MotionTestFixture {
 
     public static void setStateForTest(CrowMotion motion, int slot, int value) {
         motion.ensureInitialized(slot);
-        motion.state[slot] = value & 0xFF;
+        motion.state()[slot] = value & 0xFF;
     }
 
     public static void setSpeedForTest(CrowMotion motion, int slot, int x, int y, int z) {
         motion.ensureInitialized(slot);
-        motion.speedX[slot] = x & 0xFF;
-        motion.speedY[slot] = y & 0xFF;
-        motion.speedZ[slot] = z & 0xFF;
+        motion.speedX()[slot] = x & 0xFF;
+        motion.speedY()[slot] = y & 0xFF;
+        motion.speedZ()[slot] = z & 0xFF;
     }
 
     public static void setPrivateCountdown1ForTest(StalfosEvasiveMotion motion, int slot, int value) {
-        motion.initialized[slot] = true;
-        motion.hitResponseCountdown[slot] = value & 0xFF;
+        motion.initialized()[slot] = true;
+        motion.hitResponseCountdown()[slot] = value & 0xFF;
     }
 
     public static void setFleeingForTest(StalfosEvasiveMotion motion, int slot, int newSpeedX, int newSpeedY) {
         motion.reset(slot);
-        motion.initialized[slot] = true;
-        motion.cloneMode[slot] = 1;
-        motion.speedX[slot] = newSpeedX & 0xFF;
-        motion.speedY[slot] = newSpeedY & 0xFF;
+        motion.initialized()[slot] = true;
+        motion.cloneMode()[slot] = 1;
+        motion.speedX()[slot] = newSpeedX & 0xFF;
+        motion.speedY()[slot] = newSpeedY & 0xFF;
     }
 
     public static void setPrivateCountdownsForTest(MoblinKingMotion motion, int slot, int countdown1, int countdown2) {
-        motion.hopShotCountdown[slot] = countdown1 & 0xFF;
-        motion.shotIntervalCountdown[slot] = countdown2 & 0xFF;
+        motion.hopShotCountdown()[slot] = countdown1 & 0xFF;
+        motion.shotIntervalCountdown()[slot] = countdown2 & 0xFF;
     }
 
     public static void setStateForTest(
@@ -42,23 +42,23 @@ public final class MotionTestFixture {
             int nextSpeedX,
             int nextSpeedY,
             int nextSpeedZ) {
-        motion.state[slot] = nextState;
-        motion.direction[slot] = nextDirection & 1;
-        motion.speedX[slot] = MoblinKingMotion.signedByte(nextSpeedX);
-        motion.speedY[slot] = MoblinKingMotion.signedByte(nextSpeedY);
-        motion.speedZ[slot] = MoblinKingMotion.signedByte(nextSpeedZ);
+        motion.state()[slot] = nextState;
+        motion.direction()[slot] = nextDirection & 1;
+        motion.speedX()[slot] = MoblinKingMotion.signedByte(nextSpeedX);
+        motion.speedY()[slot] = MoblinKingMotion.signedByte(nextSpeedY);
+        motion.speedZ()[slot] = MoblinKingMotion.signedByte(nextSpeedZ);
     }
 
     public static int stateForTest(WitchMotion motion, int slot) {
-        return motion.state[slot];
+        return motion.state()[slot];
     }
 
     public static void setStateForTest(WitchMotion motion, int slot, int value) {
-        motion.state[slot] = value;
+        motion.state()[slot] = value;
     }
 
     public static void setInertiaForTest(WitchMotion motion, int slot, int value) {
-        motion.inertia[slot] = value & 0xFF;
+        motion.inertia()[slot] = value & 0xFF;
     }
 
     public static void setForTest(
@@ -68,26 +68,26 @@ public final class MotionTestFixture {
         }
         WizrobeProjectileMotion.checkDirection(newDirection);
         motion.reset(slot);
-        motion.speedX[slot] = newSpeedX;
-        motion.speedY[slot] = newSpeedY;
-        motion.direction[slot] = newDirection;
-        motion.initialized[slot] = true;
+        motion.speedX()[slot] = newSpeedX;
+        motion.speedY()[slot] = newSpeedY;
+        motion.direction()[slot] = newDirection;
+        motion.initialized()[slot] = true;
     }
 
     public static void forceStateForTest(
             PincerMotion motion, int slot, int newState, int transitionCountdown, int physicsFlags) {
-        motion.state[slot] = newState & 0xFF;
-        motion.lungeVariant[slot] = 2;
-        motion.speedX[slot] = 0;
-        motion.speedY[slot] = 0;
-        motion.speedXAccumulator[slot] = 0;
-        motion.speedYAccumulator[slot] = 0;
-        motion.initialized[slot] = true;
+        motion.state()[slot] = newState & 0xFF;
+        motion.lungeVariant()[slot] = 2;
+        motion.speedX()[slot] = 0;
+        motion.speedY()[slot] = 0;
+        motion.speedXAccumulator()[slot] = 0;
+        motion.speedYAccumulator()[slot] = 0;
+        motion.initialized()[slot] = true;
     }
 
     public static void setHoleForTest(PincerMotion motion, int slot, int x, int y) {
-        motion.holeX[slot] = x & 0xFF;
-        motion.holeY[slot] = y & 0xFF;
+        motion.holeX()[slot] = x & 0xFF;
+        motion.holeY()[slot] = y & 0xFF;
     }
 
     public static void setSpeedForTest(FairyMotion motion, int slot, int newSpeedX, int newSpeedY, int ignoredSpeedZ) {
@@ -116,12 +116,12 @@ public final class MotionTestFixture {
         if (spriteVariant < -1 || spriteVariant > 4) {
             throw new IllegalArgumentException("Wizrobe sprite variant out of range: " + spriteVariant);
         }
-        motion.state[slot] = newState;
-        motion.phaseStep[slot] = newPrivateState1;
-        motion.phaseCountdown[slot] = newPrivateCountdown1;
-        motion.direction[slot] = newDirection;
-        motion.currentSpriteVariant[slot] = spriteVariant;
-        motion.initialized[slot] = true;
+        motion.state()[slot] = newState;
+        motion.phaseStep()[slot] = newPrivateState1;
+        motion.phaseCountdown()[slot] = newPrivateCountdown1;
+        motion.direction()[slot] = newDirection;
+        motion.currentSpriteVariant()[slot] = spriteVariant;
+        motion.initialized()[slot] = true;
     }
 
     public static void forceStateForTest(
@@ -132,22 +132,22 @@ public final class MotionTestFixture {
             int newPrivateCountdown2,
             int z,
             int newSpeedZ) {
-        motion.state[slot] = newState & 0xFF;
-        motion.direction[slot] = 0;
-        motion.landingCount[slot] = 0;
-        motion.wingPhase[slot] = 0;
-        motion.wingCountdown[slot] = newPrivateCountdown2 & 0xFF;
-        motion.speedX[slot] = 0;
-        motion.speedY[slot] = 0;
-        motion.speedZ[slot] = newSpeedZ & 0xFF;
-        motion.zPosition[slot] = z & 0xFF;
-        motion.speedXAccumulator[slot] = 0;
-        motion.speedYAccumulator[slot] = 0;
-        motion.speedZAccumulator[slot] = 0;
-        motion.inertia[slot] = 0;
-        motion.presentationVariant[slot] = 0;
-        motion.initialized[slot] = true;
-        motion.zInitialized[slot] = true;
+        motion.state()[slot] = newState & 0xFF;
+        motion.direction()[slot] = 0;
+        motion.landingCount()[slot] = 0;
+        motion.wingPhase()[slot] = 0;
+        motion.wingCountdown()[slot] = newPrivateCountdown2 & 0xFF;
+        motion.speedX()[slot] = 0;
+        motion.speedY()[slot] = 0;
+        motion.speedZ()[slot] = newSpeedZ & 0xFF;
+        motion.zPosition()[slot] = z & 0xFF;
+        motion.speedXAccumulator()[slot] = 0;
+        motion.speedYAccumulator()[slot] = 0;
+        motion.speedZAccumulator()[slot] = 0;
+        motion.inertia()[slot] = 0;
+        motion.presentationVariant()[slot] = 0;
+        motion.initialized()[slot] = true;
+        motion.zInitialized()[slot] = true;
     }
 
     public static void setStateForTest(
@@ -160,76 +160,76 @@ public final class MotionTestFixture {
             int newSpeedY,
             int newSpeedZ) {
         motion.ensureInitialized(slot);
-        motion.state[slot] = newState & 0xFF;
-        motion.angerBuildup[slot] = newPrivateState1 & 0xFF;
-        motion.speedX[slot] = newSpeedX & 0xFF;
-        motion.speedY[slot] = newSpeedY & 0xFF;
-        motion.speedZ[slot] = newSpeedZ & 0xFF;
-        motion.speedXAccumulator[slot] = 0;
-        motion.speedYAccumulator[slot] = 0;
-        motion.speedZAccumulator[slot] = 0;
+        motion.state()[slot] = newState & 0xFF;
+        motion.angerBuildup()[slot] = newPrivateState1 & 0xFF;
+        motion.speedX()[slot] = newSpeedX & 0xFF;
+        motion.speedY()[slot] = newSpeedY & 0xFF;
+        motion.speedZ()[slot] = newSpeedZ & 0xFF;
+        motion.speedXAccumulator()[slot] = 0;
+        motion.speedYAccumulator()[slot] = 0;
+        motion.speedZAccumulator()[slot] = 0;
     }
 
     public static void setPrivateStateForTest(CuccoMotion motion, int slot, int value) {
         motion.ensureInitialized(slot);
-        motion.angerBuildup[slot] = value & 0xFF;
+        motion.angerBuildup()[slot] = value & 0xFF;
     }
 
     public static void setSpeedForTest(MimicMotion motion, int slot, int newSpeedX, int newSpeedY) {
         MimicMotion.validateSlot(slot);
         MimicMotion.validateByte(newSpeedX, "Mimic X speed");
         MimicMotion.validateByte(newSpeedY, "Mimic Y speed");
-        motion.speedX[slot] = newSpeedX;
-        motion.speedY[slot] = newSpeedY;
-        motion.speedXAccumulator[slot] = 0;
-        motion.speedYAccumulator[slot] = 0;
+        motion.speedX()[slot] = newSpeedX;
+        motion.speedY()[slot] = newSpeedY;
+        motion.speedXAccumulator()[slot] = 0;
+        motion.speedYAccumulator()[slot] = 0;
     }
 
     public static void setPrivateCountdown1ForTest(ZolGelMotion motion, int slot, int value) {
-        motion.backgroundCollisionBypassCountdown[slot] = value & 0xFF;
+        motion.backgroundCollisionBypassCountdown()[slot] = value & 0xFF;
     }
 
     public static void setStateForTest(
             HinoxMotion motion, int slot, int value, int privateState1Value, int privateState3Value) {
         HinoxMotion.validateSlot(slot);
         if (value < 0 || value > HinoxMotion.STATE_BOMB) throw new IllegalArgumentException("Invalid Hinox state");
-        motion.state[slot] = value;
-        motion.wanderTurnCount[slot] = privateState1Value & 0x03;
-        motion.wanderStepCount[slot] = privateState3Value & 0xFF;
-        motion.initialized[slot] = true;
+        motion.state()[slot] = value;
+        motion.wanderTurnCount()[slot] = privateState1Value & 0x03;
+        motion.wanderStepCount()[slot] = privateState3Value & 0xFF;
+        motion.initialized()[slot] = true;
     }
 
     public static void setSpeedForTest(HinoxMotion motion, int slot, int x, int y) {
         HinoxMotion.validateSlot(slot);
-        motion.speedX[slot] = x & 0xFF;
-        motion.speedY[slot] = y & 0xFF;
+        motion.speedX()[slot] = x & 0xFF;
+        motion.speedY()[slot] = y & 0xFF;
     }
 
     public static void setInertiaForTest(HinoxMotion motion, int slot, int value) {
         HinoxMotion.validateSlot(slot);
-        motion.inertia[slot] = value & 0xFF;
+        motion.inertia()[slot] = value & 0xFF;
     }
 
     public static void setEntityCollisionForTest(HinoxMotion motion, int slot, int value) {
         HinoxMotion.validateSlot(slot);
-        motion.entityCollisionFlags[slot] = value & 0xFF;
+        motion.entityCollisionFlags()[slot] = value & 0xFF;
     }
 
     public static void setPrivateState3ForTest(HinoxMotion motion, int slot, int value) {
         HinoxMotion.validateSlot(slot);
-        motion.wanderStepCount[slot] = value & 0xFF;
+        motion.wanderStepCount()[slot] = value & 0xFF;
     }
 
     public static void setPrivateCountdown1ForTest(HinoxMotion motion, int slot, int value) {
         HinoxMotion.validateSlot(slot);
-        motion.linkHoldCountdown[slot] = value & 0xFF;
+        motion.linkHoldCountdown()[slot] = value & 0xFF;
     }
 
     public static void setParentForTest(LaserMotion motion, int slot, int countdown, int newSpeedX, int newSpeedY) {
         motion.initializeParent(slot);
-        motion.transitionCountdown[slot] = countdown & 0xFF;
-        motion.speedX[slot] = newSpeedX & 0xFF;
-        motion.speedY[slot] = newSpeedY & 0xFF;
+        motion.transitionCountdown()[slot] = countdown & 0xFF;
+        motion.speedX()[slot] = newSpeedX & 0xFF;
+        motion.speedY()[slot] = newSpeedY & 0xFF;
     }
 
     public static void setBeamForTest(LaserMotion motion, int slot, int newSpeedX, int newSpeedY, int beamDirection) {
@@ -238,7 +238,7 @@ public final class MotionTestFixture {
 
     public static void setPrivateStateForTest(BooBuddyMotion motion, int slot, int value) {
         motion.ensureInitialized(slot);
-        motion.reflectionPending[slot] = value & 0xFF;
+        motion.reflectionPending()[slot] = value & 0xFF;
     }
 
     public static void setSpeedForTest(BooBuddyMotion motion, int slot, int x, int y, int z) {
@@ -246,8 +246,8 @@ public final class MotionTestFixture {
             throw new IllegalArgumentException("Boo Buddy has no test Z speed");
         }
         motion.ensureInitialized(slot);
-        motion.speedX[slot] = x & 0xFF;
-        motion.speedY[slot] = y & 0xFF;
+        motion.speedX()[slot] = x & 0xFF;
+        motion.speedY()[slot] = y & 0xFF;
     }
 
     public static void setForTest(
@@ -258,12 +258,12 @@ public final class MotionTestFixture {
         if (newDirection < 0 || newDirection > 3) {
             throw new IllegalArgumentException("Pairodd projectile direction out of range");
         }
-        motion.speedX[slot] = (byte) newSpeedX;
-        motion.speedY[slot] = (byte) newSpeedY;
-        motion.speedXAccumulator[slot] = 0;
-        motion.speedYAccumulator[slot] = 0;
-        motion.direction[slot] = newDirection;
-        motion.initialized[slot] = true;
+        motion.speedX()[slot] = (byte) newSpeedX;
+        motion.speedY()[slot] = (byte) newSpeedY;
+        motion.speedXAccumulator()[slot] = 0;
+        motion.speedYAccumulator()[slot] = 0;
+        motion.direction()[slot] = newDirection;
+        motion.initialized()[slot] = true;
     }
 
     public static void forceStateForTest(
@@ -275,34 +275,34 @@ public final class MotionTestFixture {
             int newPrivateState4,
             int newSpeedX,
             int newSpeedY) {
-        motion.state[slot] = newState & 0xFF;
-        motion.disguiseMode[slot] = newPrivateState1 & 0xFF;
-        motion.crawlPhase[slot] = newState == 1 ? 4 : 0;
-        motion.crawlHeading[slot] = newPrivateState4 & 0x01;
-        motion.speedX[slot] = newSpeedX & 0xFF;
-        motion.speedY[slot] = newSpeedY & 0xFF;
-        motion.speedXAccumulator[slot] = 0;
-        motion.speedYAccumulator[slot] = 0;
-        motion.presentationVariant[slot] = 0;
-        motion.initialized[slot] = true;
+        motion.state()[slot] = newState & 0xFF;
+        motion.disguiseMode()[slot] = newPrivateState1 & 0xFF;
+        motion.crawlPhase()[slot] = newState == 1 ? 4 : 0;
+        motion.crawlHeading()[slot] = newPrivateState4 & 0x01;
+        motion.speedX()[slot] = newSpeedX & 0xFF;
+        motion.speedY()[slot] = newSpeedY & 0xFF;
+        motion.speedXAccumulator()[slot] = 0;
+        motion.speedYAccumulator()[slot] = 0;
+        motion.presentationVariant()[slot] = 0;
+        motion.initialized()[slot] = true;
     }
 
     public static void forcePrivateStateForTest(
             BushCrawlerMotion motion, int slot, int newPrivateState1, int transitionCountdown) {
-        motion.state[slot] = 0;
-        motion.disguiseMode[slot] = newPrivateState1 & 0xFF;
-        motion.crawlPhase[slot] = 0;
-        motion.crawlHeading[slot] = 0;
-        motion.speedX[slot] = 0;
-        motion.speedY[slot] = 0;
-        motion.speedXAccumulator[slot] = 0;
-        motion.speedYAccumulator[slot] = 0;
-        motion.presentationVariant[slot] = 0;
-        motion.initialized[slot] = true;
+        motion.state()[slot] = 0;
+        motion.disguiseMode()[slot] = newPrivateState1 & 0xFF;
+        motion.crawlPhase()[slot] = 0;
+        motion.crawlHeading()[slot] = 0;
+        motion.speedX()[slot] = 0;
+        motion.speedY()[slot] = 0;
+        motion.speedXAccumulator()[slot] = 0;
+        motion.speedYAccumulator()[slot] = 0;
+        motion.presentationVariant()[slot] = 0;
+        motion.initialized()[slot] = true;
     }
 
     public static void setPrivateCountdown1ForTest(RoamingEnemyMotion motion, int slot, int value) {
-        motion.attackPauseCountdown[slot] = value & 0xFF;
+        motion.attackPauseCountdown()[slot] = value & 0xFF;
     }
 
     public static void setStateForTest(
@@ -313,19 +313,19 @@ public final class MotionTestFixture {
             int newInertia,
             int newPrivateState1,
             int newDirection) {
-        motion.state[slot] = newState & 0xFF;
-        motion.transitionCountdown[slot] = newTransitionCountdown & 0xFF;
-        motion.inertia[slot] = newInertia & 0xFF;
-        motion.wanderTurnCount[slot] = newPrivateState1 & 0x03;
-        motion.direction[slot] = newDirection & 0x03;
-        motion.speedX[slot] = RoamingEnemyMotion.SPEED_X_BY_DIRECTION[motion.direction[slot]];
-        motion.speedY[slot] = RoamingEnemyMotion.SPEED_Y_BY_DIRECTION[motion.direction[slot]];
-        motion.speedXAccumulator[slot] = 0;
-        motion.speedYAccumulator[slot] = 0;
-        motion.collisionsTable[slot] = 0;
-        motion.horizontallyCollidedObject[slot] = 0;
-        motion.verticallyCollidedObject[slot] = 0;
-        motion.initialized[slot] = true;
+        motion.state()[slot] = newState & 0xFF;
+        motion.transitionCountdown()[slot] = newTransitionCountdown & 0xFF;
+        motion.inertia()[slot] = newInertia & 0xFF;
+        motion.wanderTurnCount()[slot] = newPrivateState1 & 0x03;
+        motion.direction()[slot] = newDirection & 0x03;
+        motion.speedX()[slot] = RoamingEnemyMotion.SPEED_X_BY_DIRECTION[motion.direction()[slot]];
+        motion.speedY()[slot] = RoamingEnemyMotion.SPEED_Y_BY_DIRECTION[motion.direction()[slot]];
+        motion.speedXAccumulator()[slot] = 0;
+        motion.speedYAccumulator()[slot] = 0;
+        motion.collisionsTable()[slot] = 0;
+        motion.horizontallyCollidedObject()[slot] = 0;
+        motion.verticallyCollidedObject()[slot] = 0;
+        motion.initialized()[slot] = true;
     }
 
     public static void setStateForTest(
@@ -341,58 +341,58 @@ public final class MotionTestFixture {
         if (newState < 0 || newState > 3) {
             throw new IllegalArgumentException("Tarin state must be 0..3");
         }
-        motion.state[slot] = newState;
-        motion.speedX[slot] = newSpeedX & 0xFF;
-        motion.speedY[slot] = newSpeedY & 0xFF;
-        motion.speedZ[slot] = newSpeedZ & 0xFF;
-        motion.animationAccumulator[slot] = privateState2 & 0xFF;
-        motion.animationInertia[slot] = privateState3 & 0xFF;
-        motion.animationIndex[slot] = 0;
-        motion.nearLinkLatch[slot] = nearLatch;
-        motion.accumulatorX[slot] = 0;
-        motion.accumulatorY[slot] = 0;
-        motion.accumulatorZ[slot] = 0;
+        motion.state()[slot] = newState;
+        motion.speedX()[slot] = newSpeedX & 0xFF;
+        motion.speedY()[slot] = newSpeedY & 0xFF;
+        motion.speedZ()[slot] = newSpeedZ & 0xFF;
+        motion.animationAccumulator()[slot] = privateState2 & 0xFF;
+        motion.animationInertia()[slot] = privateState3 & 0xFF;
+        motion.animationIndex()[slot] = 0;
+        motion.nearLinkLatch()[slot] = nearLatch;
+        motion.accumulatorX()[slot] = 0;
+        motion.accumulatorY()[slot] = 0;
+        motion.accumulatorZ()[slot] = 0;
     }
 
     public static void setSpeedForTest(
             EnemyProjectileMotion motion, int slot, int newSpeedX, int newSpeedY, int newSpeedZ) {
-        motion.speedX[slot] = newSpeedX & 0xFF;
-        motion.speedY[slot] = newSpeedY & 0xFF;
-        motion.speedZ[slot] = newSpeedZ & 0xFF;
-        motion.speedXAccumulator[slot] = 0;
-        motion.speedYAccumulator[slot] = 0;
-        motion.speedZAccumulator[slot] = 0;
-        motion.initialized[slot] = true;
+        motion.speedX()[slot] = newSpeedX & 0xFF;
+        motion.speedY()[slot] = newSpeedY & 0xFF;
+        motion.speedZ()[slot] = newSpeedZ & 0xFF;
+        motion.speedXAccumulator()[slot] = 0;
+        motion.speedYAccumulator()[slot] = 0;
+        motion.speedZAccumulator()[slot] = 0;
+        motion.initialized()[slot] = true;
     }
 
     public static void setTransitionForTest(
             EnemyProjectileMotion motion, int slot, int countdown, int z, int newSpeedZ) {
-        motion.transitionCountdown[slot] = countdown & 0xFF;
-        motion.zPosition[slot] = z & 0xFF;
-        motion.speedZ[slot] = newSpeedZ & 0xFF;
-        motion.speedZAccumulator[slot] = 0;
-        motion.initialized[slot] = true;
+        motion.transitionCountdown()[slot] = countdown & 0xFF;
+        motion.zPosition()[slot] = z & 0xFF;
+        motion.speedZ()[slot] = newSpeedZ & 0xFF;
+        motion.speedZAccumulator()[slot] = 0;
+        motion.initialized()[slot] = true;
     }
 
     public static void setSpeedForTest(
             PlayerArrowMotion motion, int slot, int newSpeedX, int newSpeedY, int newSpeedZ) {
         PlayerArrowMotion.validateSlot(slot);
-        motion.speedX[slot] = newSpeedX & 0xFF;
-        motion.speedY[slot] = newSpeedY & 0xFF;
-        motion.speedZ[slot] = newSpeedZ & 0xFF;
-        motion.speedXAccumulator[slot] = 0;
-        motion.speedYAccumulator[slot] = 0;
-        motion.speedZAccumulator[slot] = 0;
-        motion.initialized[slot] = true;
+        motion.speedX()[slot] = newSpeedX & 0xFF;
+        motion.speedY()[slot] = newSpeedY & 0xFF;
+        motion.speedZ()[slot] = newSpeedZ & 0xFF;
+        motion.speedXAccumulator()[slot] = 0;
+        motion.speedYAccumulator()[slot] = 0;
+        motion.speedZAccumulator()[slot] = 0;
+        motion.initialized()[slot] = true;
     }
 
     public static void setTransitionForTest(PlayerArrowMotion motion, int slot, int countdown, int z, int newSpeedZ) {
         PlayerArrowMotion.validateSlot(slot);
-        motion.transitionCountdown[slot] = countdown & 0xFF;
-        motion.zPosition[slot] = z & 0xFF;
-        motion.speedZ[slot] = newSpeedZ & 0xFF;
-        motion.speedZAccumulator[slot] = 0;
-        motion.initialized[slot] = true;
+        motion.transitionCountdown()[slot] = countdown & 0xFF;
+        motion.zPosition()[slot] = z & 0xFF;
+        motion.speedZ()[slot] = newSpeedZ & 0xFF;
+        motion.speedZAccumulator()[slot] = 0;
+        motion.initialized()[slot] = true;
     }
 
     public static void setStateForTest(
@@ -416,12 +416,12 @@ public final class MotionTestFixture {
         WitchRatMotion.validateByte(newSpeedY, "Witch Rat Y speed");
         WitchRatMotion.validateByte(newSpeedZ, "Witch Rat Z speed");
         motion.reset(slot);
-        motion.state[slot] = newState;
-        motion.direction[slot] = newDirection;
-        motion.speedX[slot] = newSpeedX;
-        motion.speedY[slot] = newSpeedY;
-        motion.speedZ[slot] = newSpeedZ;
-        motion.initialized[slot] = true;
+        motion.state()[slot] = newState;
+        motion.direction()[slot] = newDirection;
+        motion.speedX()[slot] = newSpeedX;
+        motion.speedY()[slot] = newSpeedY;
+        motion.speedZ()[slot] = newSpeedZ;
+        motion.initialized()[slot] = true;
     }
 
     public static void setStateForTest(
@@ -434,12 +434,12 @@ public final class MotionTestFixture {
         DogMotion.validateByte(newSpeedY, "Dog Y speed");
         DogMotion.validateByte(newSpeedZ, "Dog Z speed");
         motion.reset(slot);
-        motion.state[slot] = newState;
-        motion.direction[slot] = newDirection;
-        motion.speedX[slot] = newSpeedX;
-        motion.speedY[slot] = newSpeedY;
-        motion.speedZ[slot] = newSpeedZ;
-        motion.initialized[slot] = true;
+        motion.state()[slot] = newState;
+        motion.direction()[slot] = newDirection;
+        motion.speedX()[slot] = newSpeedX;
+        motion.speedY()[slot] = newSpeedY;
+        motion.speedZ()[slot] = newSpeedZ;
+        motion.initialized()[slot] = true;
     }
 
     public static void setStateForTest(
@@ -465,20 +465,20 @@ public final class MotionTestFixture {
             int newDirection,
             int newSpeedX,
             int newSpeedY) {
-        if (!motion.initialized[slot]) {
+        if (!motion.initialized()[slot]) {
             motion.initialize(slot);
         }
-        motion.state[slot] = newState;
-        motion.transitionCountdown[slot] = newCountdown & 0xFF;
-        motion.direction[slot] = newDirection & 0xFF;
-        motion.speedX[slot] = newSpeedX & 0xFF;
-        motion.speedY[slot] = newSpeedY & 0xFF;
-        motion.speedXAccumulator[slot] = 0;
-        motion.speedYAccumulator[slot] = 0;
+        motion.state()[slot] = newState;
+        motion.transitionCountdown()[slot] = newCountdown & 0xFF;
+        motion.direction()[slot] = newDirection & 0xFF;
+        motion.speedX()[slot] = newSpeedX & 0xFF;
+        motion.speedY()[slot] = newSpeedY & 0xFF;
+        motion.speedXAccumulator()[slot] = 0;
+        motion.speedYAccumulator()[slot] = 0;
     }
 
     public static void setSettledForTest(ThreeOfAKindMotion motion, int slot, int face) {
-        motion.state[slot] = 2;
-        motion.direction[slot] = face & 3;
+        motion.state()[slot] = 2;
+        motion.direction()[slot] = face & 3;
     }
 }

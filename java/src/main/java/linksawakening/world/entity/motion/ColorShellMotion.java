@@ -32,21 +32,21 @@ public final class ColorShellMotion {
     private static final int[] PUZZLE_EXPECTED_OBJECTS = {0x5E, 0x59, 0x63};
     static final int[] PUZZLE_FINAL_OBJECTS = {0x5F, 0x5A, 0x64};
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] spriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] physicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] positionX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] positionY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] positionZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] spriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] physicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] positionX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] positionY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] positionZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot) {
         resetSlot(slot);

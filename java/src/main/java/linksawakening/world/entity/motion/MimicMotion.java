@@ -13,10 +13,10 @@ public final class MimicMotion {
     private static final int[] SPEED_BY_BUTTON_INDEX = {0x21, 0xF0, 0x10, 0x21};
     private static final int[] VERTICAL_VARIANT_BASE_BY_INDEX = {0, 2, 0, 6};
 
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
 
     public record Update(RoomEntity entity) {}
 
@@ -177,5 +177,21 @@ public final class MimicMotion {
         if (value < 0 || value > 0xFF) {
             throw new IllegalArgumentException(name + " must be an unsigned byte: " + value);
         }
+    }
+
+    int[] speedX() {
+        return this.speedX;
+    }
+
+    int[] speedY() {
+        return this.speedY;
+    }
+
+    int[] speedXAccumulator() {
+        return this.speedXAccumulator;
+    }
+
+    int[] speedYAccumulator() {
+        return this.speedYAccumulator;
     }
 }

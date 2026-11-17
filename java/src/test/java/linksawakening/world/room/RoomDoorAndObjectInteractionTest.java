@@ -760,12 +760,14 @@ final class RoomDoorAndObjectInteractionTest {
         assertEquals(
                 0xDF,
                 RoomSessionInspection.component(session, RoomDoorInteractions.class)
-                        .tailCaveKeyholeCountdownForTest(RoomSessionInspection.loadedRoom(session).contents));
+                        .tailCaveKeyholeCountdownForTest(
+                                RoomSessionInspection.loadedRoom(session).contents()));
 
         assertEquals(0, session.doors().tickTailCaveKeyholeSequence());
         assertEquals(List.of(GameplaySoundEvent.DOOR_UNLOCKED), sounds);
         while (RoomSessionInspection.component(session, RoomDoorInteractions.class)
-                        .tailCaveKeyholeCountdownForTest(RoomSessionInspection.loadedRoom(session).contents)
+                        .tailCaveKeyholeCountdownForTest(
+                                RoomSessionInspection.loadedRoom(session).contents())
                 > 0x18) {
             session.doors().tickTailCaveKeyholeSequence();
         }
@@ -775,7 +777,8 @@ final class RoomDoorAndObjectInteractionTest {
         assertEquals(0x0C, session.rooms().activeRoomOrNull().tileIds()[gateTopLeft]);
         assertEquals(0x1F, session.rooms().activeRoomOrNull().tileIds()[gateTopLeft + RoomConstants.ROOM_TILE_WIDTH]);
         while (RoomSessionInspection.component(session, RoomDoorInteractions.class)
-                        .tailCaveKeyholeCountdownForTest(RoomSessionInspection.loadedRoom(session).contents)
+                        .tailCaveKeyholeCountdownForTest(
+                                RoomSessionInspection.loadedRoom(session).contents())
                 > 0x08) {
             session.doors().tickTailCaveKeyholeSequence();
         }
@@ -858,16 +861,19 @@ final class RoomDoorAndObjectInteractionTest {
                 RoomSessionInspection.component(session, RoomEntityBridge.class).consumePendingMusicTrack());
 
         while (RoomSessionInspection.component(session, RoomDoorInteractions.class)
-                        .tailCaveKeyholeCountdownForTest(RoomSessionInspection.loadedRoom(session).contents)
+                        .tailCaveKeyholeCountdownForTest(
+                                RoomSessionInspection.loadedRoom(session).contents())
                 > 0x0A) {
             session.doors().tickTailCaveKeyholeSequence();
         }
         assertEquals(
                 0x50,
                 RoomSessionInspection.component(session, RoomDoorInteractions.class)
-                        .nextWorldMusicTrackCountdownForTest(RoomSessionInspection.loadedRoom(session).contents));
+                        .nextWorldMusicTrackCountdownForTest(
+                                RoomSessionInspection.loadedRoom(session).contents()));
         while (RoomSessionInspection.component(session, RoomDoorInteractions.class)
-                        .tailCaveKeyholeCountdownForTest(RoomSessionInspection.loadedRoom(session).contents)
+                        .tailCaveKeyholeCountdownForTest(
+                                RoomSessionInspection.loadedRoom(session).contents())
                 > 1) {
             session.doors().tickTailCaveKeyholeSequence();
         }
@@ -878,7 +884,8 @@ final class RoomDoorAndObjectInteractionTest {
         assertFalse(session.doors().tailCaveKeyholeSequenceActive());
 
         int remainingMusicFrames = RoomSessionInspection.component(session, RoomDoorInteractions.class)
-                .nextWorldMusicTrackCountdownForTest(RoomSessionInspection.loadedRoom(session).contents);
+                .nextWorldMusicTrackCountdownForTest(
+                        RoomSessionInspection.loadedRoom(session).contents());
         for (int frame = 1; frame < remainingMusicFrames; frame++) {
             session.doors().tickTailCaveKeyholeSequence();
             assertEquals(
@@ -1465,14 +1472,16 @@ final class RoomDoorAndObjectInteractionTest {
         for (int i = 0; i < 39; i++) assertFalse(session.terrain().tickCrackedFloor(frame, false));
         assertFalse(session.terrain()
                 .tickCrackedFloor(new LinkGroundFrame(40, 40, false, true, false, false, 0, 0, 0), false));
-        assertEquals(0, RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter);
+        assertEquals(
+                0,
+                RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter());
         for (int i = 0; i < 39; i++) assertFalse(session.terrain().tickCrackedFloor(frame, false));
         assertFalse(session.terrain()
                 .tickCrackedFloor(new LinkGroundFrame(40, 40, true, false, false, false, 0, 0, 0), false));
         assertEquals(
                 39,
                 RoomSessionInspection.component(session, RoomTerrainState.class)
-                        .crackedFloorCounter); // airborne bypass retains timer
+                        .crackedFloorCounter()); // airborne bypass retains timer
         assertTrue(sounds.isEmpty());
         assertEquals(0xDF, session.rooms().activeRoomOrNull().roomObjectsArea()[index]);
         assertTrue(session.terrain().tickCrackedFloor(frame, false));
@@ -1480,13 +1489,15 @@ final class RoomDoorAndObjectInteractionTest {
         assertEquals(List.of(GameplaySoundEvent.CRACKED_FLOOR_COLLAPSE), sounds);
         // A pit does not reach Default, so its frame retains wC1C9.
         assertFalse(session.terrain().tickCrackedFloor(frame, false));
-        assertEquals(40, RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter);
+        assertEquals(
+                40,
+                RoomSessionInspection.component(session, RoomTerrainState.class).crackedFloorCounter());
         session.rooms().activeRoomOrNull().roomObjectsArea()[index] = 0x0D;
         session.terrain().tickCrackedFloor(frame, false);
         assertEquals(
                 0,
                 RoomSessionInspection.component(session, RoomTerrainState.class)
-                        .crackedFloorCounter); // non-$DF on Default resets
+                        .crackedFloorCounter()); // non-$DF on Default resets
     }
 
     @Test

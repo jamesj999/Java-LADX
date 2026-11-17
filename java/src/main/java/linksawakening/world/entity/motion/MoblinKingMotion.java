@@ -38,21 +38,21 @@ public final class MoblinKingMotion {
     static final int[] ARROW_SPEED_X = {0x20, -0x20};
     static final int[] CHARGE_SPEED_X = {0x28, -0x28};
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] xAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] yAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] zAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] xAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] yAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] zAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown1Table: hop-and-shoot pause; emits the arrow at $0C.
-    final int[] hopShotCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] hopShotCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown2Table.
-    final int[] shotIntervalCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] bodyVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] weaponFrame = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] weaponVisible = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] shotIntervalCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] bodyVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] weaponFrame = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] weaponVisible = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public Update advance(MoblinKingFrame inputs) {
         return moblinKingStep.run(inputs);
@@ -158,7 +158,7 @@ public final class MoblinKingMotion {
 
     record Vector(int x, int y) {}
 
-    final MoblinKingStep moblinKingStep = new MoblinKingStep(this);
+    private final MoblinKingStep moblinKingStep = new MoblinKingStep(this);
 
     public record MoblinKingFrame(
             RoomEntity entity,
@@ -538,5 +538,33 @@ public final class MoblinKingMotion {
                 this.completedResult = null;
             }
         }
+    }
+
+    int[] hopShotCountdown() {
+        return this.hopShotCountdown;
+    }
+
+    int[] shotIntervalCountdown() {
+        return this.shotIntervalCountdown;
+    }
+
+    int[] state() {
+        return this.state;
+    }
+
+    int[] direction() {
+        return this.direction;
+    }
+
+    int[] speedX() {
+        return this.speedX;
+    }
+
+    int[] speedY() {
+        return this.speedY;
+    }
+
+    int[] speedZ() {
+        return this.speedZ;
     }
 }

@@ -9,19 +9,19 @@ import linksawakening.world.transition.RoomBoundaryView;
 
 /** One loaded-room generation. Never represents absence; borrowed only until room replacement. */
 final class RoomRuntime {
-    final ActiveRoom room;
-    final RoomContents contents;
-    final RoomEntityRuntime entities;
-    final RoomRenderSnapshot.View renderView;
-    final RoomEntityInteractions interactions;
-    final CollisionCache collisions = new CollisionCache();
-    final linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
-    final linksawakening.world.entity.RoomEntityObjectCollision objectCollision;
-    final linksawakening.world.entity.RoomEntityGroundInteraction groundInteraction;
-    final linksawakening.world.entity.RoomEntityObjectQuery objectQuery;
-    final linksawakening.world.entity.RoomEntityObjectQuery objectIntersectionQuery;
-    final linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
-    final linksawakening.world.entity.ColorShellWorld colorShellWorld;
+    private final ActiveRoom room;
+    private final RoomContents contents;
+    private final RoomEntityRuntime entities;
+    private final RoomRenderSnapshot.View renderView;
+    private final RoomEntityInteractions interactions;
+    private final CollisionCache collisions = new CollisionCache();
+    private final linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision;
+    private final linksawakening.world.entity.RoomEntityObjectCollision objectCollision;
+    private final linksawakening.world.entity.RoomEntityGroundInteraction groundInteraction;
+    private final linksawakening.world.entity.RoomEntityObjectQuery objectQuery;
+    private final linksawakening.world.entity.RoomEntityObjectQuery objectIntersectionQuery;
+    private final linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction;
+    private final linksawakening.world.entity.ColorShellWorld colorShellWorld;
 
     record Services(
             RoomCollisionQueries queries,
@@ -42,7 +42,7 @@ final class RoomRuntime {
 
     RoomRuntime(RoomContents contents, RoomEntityRuntime entities, Services services) {
         this.contents = Objects.requireNonNull(contents, "contents");
-        this.room = contents.room;
+        this.room = contents.room();
         this.entities = Objects.requireNonNull(entities, "entities");
         Objects.requireNonNull(room.entityView(), "loaded room entity view");
         renderView = RoomRenderLiveView.live(room, entities);
@@ -70,25 +70,37 @@ final class RoomRuntime {
 
     /** Scratch results belong to this room, never to the session or an unloaded-room sentinel. */
     static final class CollisionCache {
-        final BoundaryProbe boundary = new BoundaryProbe();
-        final RoomEntityObjectSample[] objectSamples = new RoomEntityObjectSample[RoomEntity.SLOT_COUNT];
-        final RoomEntityGroundInteraction.Result[] groundResults =
+        private final BoundaryProbe boundary = new BoundaryProbe();
+        private final RoomEntityObjectSample[] objectSamples = new RoomEntityObjectSample[RoomEntity.SLOT_COUNT];
+        private final RoomEntityGroundInteraction.Result[] groundResults =
                 new RoomEntityGroundInteraction.Result[RoomEntity.SLOT_COUNT];
+
+        BoundaryProbe boundary() {
+            return this.boundary;
+        }
+
+        RoomEntityObjectSample[] objectSamples() {
+            return this.objectSamples;
+        }
+
+        RoomEntityGroundInteraction.Result[] groundResults() {
+            return this.groundResults;
+        }
     }
 
     /** Per-room synchronous boundary registers; no consumer keeps them after decide(). */
     static final class BoundaryProbe implements RoomBoundaryView {
-        int mapCategory;
-        int roomId;
-        boolean indoorHasSouthEntrance;
-        boolean hasWarps;
-        int shutterDoorMask;
-        int linkX;
-        int linkY;
-        int mapId;
-        boolean linkAirborne;
-        int linkPhysicsModifier;
-        boolean sideViewEntityActive;
+        private int mapCategory;
+        private int roomId;
+        private boolean indoorHasSouthEntrance;
+        private boolean hasWarps;
+        private int shutterDoorMask;
+        private int linkX;
+        private int linkY;
+        private int mapId;
+        private boolean linkAirborne;
+        private int linkPhysicsModifier;
+        private boolean sideViewEntityActive;
 
         @Override
         public int mapCategory() {
@@ -144,6 +156,61 @@ final class RoomRuntime {
         public boolean sideViewEntityActive() {
             return sideViewEntityActive;
         }
+
+        int mapCategory(int value) {
+            this.mapCategory = value;
+            return this.mapCategory;
+        }
+
+        int roomId(int value) {
+            this.roomId = value;
+            return this.roomId;
+        }
+
+        boolean indoorHasSouthEntrance(boolean value) {
+            this.indoorHasSouthEntrance = value;
+            return this.indoorHasSouthEntrance;
+        }
+
+        boolean hasWarps(boolean value) {
+            this.hasWarps = value;
+            return this.hasWarps;
+        }
+
+        int shutterDoorMask(int value) {
+            this.shutterDoorMask = value;
+            return this.shutterDoorMask;
+        }
+
+        int mapId(int value) {
+            this.mapId = value;
+            return this.mapId;
+        }
+
+        int linkX(int value) {
+            this.linkX = value;
+            return this.linkX;
+        }
+
+        int linkY(int value) {
+            this.linkY = value;
+            return this.linkY;
+        }
+
+        boolean linkAirborne(boolean value) {
+            this.linkAirborne = value;
+            return this.linkAirborne;
+        }
+
+        int linkPhysicsModifier(int value) {
+            this.linkPhysicsModifier = value;
+            return this.linkPhysicsModifier;
+        }
+
+        boolean sideViewEntityActive(boolean value) {
+            this.sideViewEntityActive = value;
+            return this.sideViewEntityActive;
+        }
     }
 
     RoomRenderSnapshot renderSnapshot() {
@@ -157,5 +224,57 @@ final class RoomRuntime {
                 entities.inspection().instrumentWarpVisual(),
                 entities.inspection().heartPieceVisual(),
                 snapshot.linkGrassPalette());
+    }
+
+    ActiveRoom room() {
+        return this.room;
+    }
+
+    CollisionCache collisions() {
+        return this.collisions;
+    }
+
+    RoomContents contents() {
+        return this.contents;
+    }
+
+    RoomEntityRuntime entities() {
+        return this.entities;
+    }
+
+    RoomRenderSnapshot.View renderView() {
+        return this.renderView;
+    }
+
+    linksawakening.world.entity.ColorShellWorld colorShellWorld() {
+        return this.colorShellWorld;
+    }
+
+    linksawakening.world.entity.RoomEntityGroundInteraction groundInteraction() {
+        return this.groundInteraction;
+    }
+
+    linksawakening.world.entity.RoomEntityBackgroundInteraction backgroundInteraction() {
+        return this.backgroundInteraction;
+    }
+
+    linksawakening.world.entity.RoomEntityObjectQuery objectQuery() {
+        return this.objectQuery;
+    }
+
+    linksawakening.world.entity.RoomEntityObjectQuery objectIntersectionQuery() {
+        return this.objectIntersectionQuery;
+    }
+
+    RoomEntityInteractions interactions() {
+        return this.interactions;
+    }
+
+    linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision() {
+        return this.backgroundCollision;
+    }
+
+    linksawakening.world.entity.RoomEntityObjectCollision objectCollision() {
+        return this.objectCollision;
     }
 }

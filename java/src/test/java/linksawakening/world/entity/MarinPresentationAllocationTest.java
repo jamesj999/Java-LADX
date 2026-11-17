@@ -15,13 +15,13 @@ class MarinPresentationAllocationTest {
                         TestEntities.active(0x3E).slot(0).at(64, 64).build()))
                 .build();
         assertTrue(runtime.commands().applyMarinWakeUpPresentation(56, 56, 0));
-        var first = runtime.inspection().slots.get(0);
+        var first = runtime.inspection().slots().get(0);
         assertTrue(runtime.commands().applyMarinWakeUpPresentation(56, 56, 1));
-        assertNotSame(first, runtime.inspection().slots.get(0));
+        assertNotSame(first, runtime.inspection().slots().get(0));
         assertTrue(runtime.commands().applyMarinWakeUpPresentation(56, 56, 0));
-        assertSame(first, runtime.inspection().slots.get(0));
+        assertSame(first, runtime.inspection().slots().get(0));
         runtime.commands().applyMarinWakeUpPresentation(57, 56, 0);
-        assertEquals(57, runtime.inspection().slots.get(0).x());
+        assertEquals(57, runtime.inspection().slots().get(0).x());
         assertEquals(56, first.x());
         int[] frame = {0};
         Runnable repeat = () -> runtime.commands().applyMarinWakeUpPresentation(56, 56, frame[0]++ & 7);

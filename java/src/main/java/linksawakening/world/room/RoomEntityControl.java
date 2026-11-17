@@ -109,7 +109,7 @@ final class RoomEntityControl implements RoomEntityState {
 
     @Override
     public List<SwordPickupRewardEvent> consumeSwordPickupRewards() {
-        return dependencies.entityBridge().outbox.consumeSwordPickupRewards();
+        return dependencies.entityBridge().outbox().consumeSwordPickupRewards();
     }
 
     @Override
@@ -129,7 +129,7 @@ final class RoomEntityControl implements RoomEntityState {
 
     @Override
     public int entityDefaultMusicTrack() {
-        return dependencies.followers().entityDefaultMusicTrack;
+        return dependencies.followers().entityDefaultMusicTrack();
     }
 
     @Override

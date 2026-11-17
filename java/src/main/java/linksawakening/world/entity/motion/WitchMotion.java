@@ -63,9 +63,9 @@ public final class WitchMotion {
             boolean grantMagicPowder,
             int motionBlockValue) {}
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] musicTrackTiming = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] musicTrackTiming = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public Update advance(RoomEntity source, int transitionCountdown, Input input) {
         return witchStep.run(source, transitionCountdown, input);
@@ -101,7 +101,7 @@ public final class WitchMotion {
                 source, source.x(), y, variant, source.entityFlipAttribute(), source.z(), -1, false);
     }
 
-    final WitchStep witchStep = new WitchStep(this);
+    private final WitchStep witchStep = new WitchStep(this);
 
     static final class WitchStep {
         private final WitchMotion owner;
@@ -340,5 +340,13 @@ public final class WitchMotion {
                 this.completedResult = null;
             }
         }
+    }
+
+    int[] state() {
+        return this.state;
+    }
+
+    int[] inertia() {
+        return this.inertia;
     }
 }

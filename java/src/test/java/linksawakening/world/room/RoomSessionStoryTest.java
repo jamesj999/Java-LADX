@@ -205,7 +205,7 @@ final class RoomSessionStoryTest {
         assertEquals(
                 List.of(new SlimeKeyRewardEvent(0, 5, 0xE9)),
                 RoomSessionInspection.component(session, RoomEntityBridge.class)
-                        .outbox
+                        .outbox()
                         .consumeSlimeKeyRewardEvents());
         assertEquals(0x10, session.dungeon().overworldRoomStatusSnapshot()[0x58] & 0x10);
         assertEquals(List.of(new DialogRequest(0, 0xE9)), session.entityState().consumeEntityDialogRequests());
@@ -260,7 +260,7 @@ final class RoomSessionStoryTest {
         assertEquals(
                 List.of(new RichardProgressEvent(richard.slot(), RichardProgressEvent.Kind.START_QUEST, 0)),
                 RoomSessionInspection.component(session, RoomEntityBridge.class)
-                        .outbox
+                        .outbox()
                         .consumeRichardProgressEvents());
         assertEquals(0x10, session.dungeon().indoorBRoomStatusSnapshot()[0xC7] & 0x10);
         assertEquals(2, session.story().richardSpokenFlag());

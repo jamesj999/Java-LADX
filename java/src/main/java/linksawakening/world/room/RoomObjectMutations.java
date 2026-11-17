@@ -53,7 +53,7 @@ final class RoomObjectMutations implements RoomTerrain {
                 frame,
                 dialogGotItemActive,
                 (room, terrain, inputs, gotItem) ->
-                        terrain.applyCrackedFloorGroundPhysics(room.contents, inputs, gotItem));
+                        terrain.applyCrackedFloorGroundPhysics(room.contents(), inputs, gotItem));
     }
 
     @Override
@@ -80,16 +80,18 @@ final class RoomObjectMutations implements RoomTerrain {
      */
     boolean tickCrackedFloor(RoomRuntime loaded, LinkGroundInputs frame, boolean dialogGotItemActive) {
 
-        if (loaded.entities.inspection().hookshotActive()) {
+        if (loaded.entities().inspection().hookshotActive()) {
             // $02:7549-754D takes func_002_755B: sample, but no $7589 copy
             // and no ApplyLinkGroundPhysics call.
-            sampleLinkGround(loaded.contents, frame.pixelX(), frame.pixelY());
+            sampleLinkGround(loaded.contents(), frame.pixelX(), frame.pixelY());
             return false;
         }
-        dependencies.terrain().linkGroundFinalRoomPosition = dependencies.terrain().linkGroundRoomPosition;
+        dependencies
+                .terrain()
+                .linkGroundFinalRoomPosition(dependencies.terrain().linkGroundRoomPosition());
         // $02:7590-7593 and $75B6-75BB bypass ground physics.
         if (frame.airborne() || frame.motionState() == linksawakening.state.LinkMotionState.UNSTUCKING) return false;
-        return applyCrackedFloorGroundPhysics(loaded.contents, frame, dialogGotItemActive);
+        return applyCrackedFloorGroundPhysics(loaded.contents(), frame, dialogGotItemActive);
     }
 
     /** ApplyLinkGroundMotion's landing call ($02:4588), before XY and the $7589 copy. */
@@ -98,26 +100,28 @@ final class RoomObjectMutations implements RoomTerrain {
         boolean bypassEntry = frame.dialogActive() || frame.roomTransitionActive();
         if (!bypassEntry) {
             sampleLinkGround(contents, frame.pixelX(), frame.pixelY()); // GetObjectUnderLink $02:75C7
-            dependencies.terrain().linkGroundObjectPhysics = dependencies
-                    .overworldCollision()
-                    .objectPhysicsFlagAtPoint((frame.pixelX() + 8) & 0xFF, (frame.pixelY() + 12) & 0xFF);
+            dependencies
+                    .terrain()
+                    .linkGroundObjectPhysics(dependencies
+                            .overworldCollision()
+                            .objectPhysicsFlagAtPoint((frame.pixelX() + 8) & 0xFF, (frame.pixelY() + 12) & 0xFF));
             // $02:75D2-75D4/$75DA-75E5 bypass Default for these hazards.
             if ((!dependencies.overworldCollision().usesIndoorPhysicsTable()
-                            && dependencies.terrain().linkGroundObjectUnderEntity == 0x61)
+                            && dependencies.terrain().linkGroundObjectUnderEntity() == 0x61)
                     || (dependencies.overworldCollision().usesIndoorPhysicsTable()
-                            && dependencies.terrain().linkGroundObjectUnderEntity == 0x4C
+                            && dependencies.terrain().linkGroundObjectUnderEntity() == 0x4C
                             && (((frame.pixelY() + 15) & 15) >= 12))) return false;
         }
         if (!RoomObjectMutations.reachesDefaultGroundPhysics(
-                dependencies.terrain().linkGroundObjectPhysics,
+                dependencies.terrain().linkGroundObjectPhysics(),
                 bypassEntry,
                 frame.slowWalkingSpeed(),
                 frame.itemUsageContext())) return false;
         // Default can return at $02:77E8 while standing on a raised switch block.
         if (linksawakening.world.object.SwitchBlockLinkInteraction.marksStanding(
-                dependencies.terrain().linkGroundObjectUnderEntity,
-                dependencies.terrain().linkGroundObjectPhysics,
-                dependencies.terrain().switchBlocksState)) return false;
+                dependencies.terrain().linkGroundObjectUnderEntity(),
+                dependencies.terrain().linkGroundObjectPhysics(),
+                dependencies.terrain().switchBlocksState())) return false;
         // $02:77F7-77FB gates on wIsIndoor, NOT hIsSideScrolling. Overworld
         // $DF has solid physics ($01), but still exits here without resetting.
         if (!dependencies.overworldCollision().usesIndoorPhysicsTable()) return false;
@@ -125,25 +129,27 @@ final class RoomObjectMutations implements RoomTerrain {
         // RoomTransitions retain wC1C9 at $02:7802; dialogs reaching $7858 reset it.
         if (frame.roomTransitionActive()) return false;
         // $02:7804-783B returns while an unpressed floor button is sinking.
-        if (dependencies.terrain().linkGroundObjectUnderEntity == 0xAA
-                && dependencies.puzzles().switchButtonPressed == 0) return false;
-        if (dependencies.terrain().linkGroundRoomPosition != dependencies.terrain().linkGroundFinalRoomPosition
-                || dependencies.terrain().linkGroundObjectUnderEntity != 0xDF
+        if (dependencies.terrain().linkGroundObjectUnderEntity() == 0xAA
+                && dependencies.puzzles().switchButtonPressed() == 0) return false;
+        if (dependencies.terrain().linkGroundRoomPosition()
+                        != dependencies.terrain().linkGroundFinalRoomPosition()
+                || dependencies.terrain().linkGroundObjectUnderEntity() != 0xDF
                 || frame.interactionBlocked()
                 || dialogGotItemActive
                 || frame.dialogActive()) {
-            dependencies.terrain().crackedFloorCounter = 0; // $02:7851-785D/$786C
+            dependencies.terrain().crackedFloorCounter(0); // $02:7851-785D/$786C
             return false;
         }
-        dependencies.terrain().crackedFloorCounter = (dependencies.terrain().crackedFloorCounter + 1) & 0xFF;
-        if (dependencies.terrain().crackedFloorCounter < 0x28) return false;
+        dependencies.terrain().crackedFloorCounter((dependencies.terrain().crackedFloorCounter() + 1) & 0xFF);
+        if (dependencies.terrain().crackedFloorCounter() < 0x28) return false;
         // label_002_4D97 writes $AE and redraws its tiles and GBC attributes.
-        contents.room
-                .roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + dependencies.terrain().linkGroundRoomPosition] = 0xAE;
+        contents.room()
+                .roomObjectsArea()[
+                RoomConstants.ROOM_OBJECTS_BASE + dependencies.terrain().linkGroundRoomPosition()] = 0xAE;
         this.refreshActiveRoomTilemap(contents);
         dependencies
                 .entityFrame()
-                .colorShellSoundSink
+                .colorShellSoundSink()
                 .play(linksawakening.gameplay.GameplaySoundEvent.CRACKED_FLOOR_COLLAPSE);
         return true;
     }
@@ -151,9 +157,11 @@ final class RoomObjectMutations implements RoomTerrain {
     /** GetObjectUnderLink $02:7512-7536, translated from ROM center/bottom to Java top-left. */
     void sampleLinkGround(RoomContents contents, int pixelX, int pixelY) {
         int location = RoomObjectMutations.linkGroundLocation(pixelX, pixelY);
-        dependencies.terrain().linkGroundRoomPosition = location;
-        dependencies.terrain().linkGroundObjectUnderEntity =
-                dependencies.roomSessionViews().objectAtRoomLocation(contents.room, location);
+        dependencies.terrain().linkGroundRoomPosition(location);
+        dependencies
+                .terrain()
+                .linkGroundObjectUnderEntity(
+                        dependencies.roomSessionViews().objectAtRoomLocation(contents.room(), location));
     }
 
     static int linkGroundLocation(int pixelX, int pixelY) {
@@ -181,27 +189,27 @@ final class RoomObjectMutations implements RoomTerrain {
 
     /** CheckStaticSwordCollision $00:161A-1679; RevealObjectUnderObject $14:5584-55E3. */
     boolean breakIndoorSwordCrystal(RoomRuntime loaded, int location) {
-        if (loaded.room.mapCategory() == Warp.CATEGORY_OVERWORLD
+        if (loaded.room().mapCategory() == Warp.CATEGORY_OVERWORLD
                 || location < 0
                 || (location & 15) >= 10
                 || (location >> 4) >= 8
-                || dependencies.roomSessionViews().objectAtRoomLocation(loaded.room, location) != 0xDD) return false;
-        loaded.room.roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + location] = 0x0D;
-        this.refreshActiveRoomTilemap(loaded.contents);
+                || dependencies.roomSessionViews().objectAtRoomLocation(loaded.room(), location) != 0xDD) return false;
+        loaded.room().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + location] = 0x0D;
+        this.refreshActiveRoomTilemap(loaded.contents());
 
         // Variant zero uses LiftableRockStartSmashingAnimation ($03:53E4):
         // fifteen frames of rock debris and NOISE_SFX_POT_SMASHED ($09).
-        loaded.entities.spawns().spawnLiftableRockSmash(((location & 15) << 4) + 8, (location & 0xF0) + 16, 0);
+        loaded.entities().spawns().spawnLiftableRockSmash(((location & 15) << 4) + 8, (location & 0xF0) + 16, 0);
         // Link runs before the entity tick, which clears its frame outbox.
         RoomEntityOutbox.append(
-                dependencies.entityRuntimeState().outbox.pendingRoomEntityEvents,
-                loaded.entities.outbox().consumePendingEntityEvents());
+                dependencies.entityRuntimeState().outbox().pendingRoomEntityEvents(),
+                loaded.entities().outbox().consumePendingEntityEvents());
 
         return true;
     }
 
     void applyBombObjectInteractions(RoomRuntime loaded, List<BombExplosionEvent> events) {
-        if (loaded.room.mapCategory() == Warp.CATEGORY_SIDESCROLL || events.isEmpty()) {
+        if (loaded.room().mapCategory() == Warp.CATEGORY_SIDESCROLL || events.isEmpty()) {
             return;
         }
 
@@ -212,10 +220,10 @@ final class RoomObjectMutations implements RoomTerrain {
                 continue;
             }
             RoomEntity bomb =
-                    event.bombSlot() < loaded.room.entityView().slots().size()
-                            ? loaded.room.entityView().slots().get(event.bombSlot())
+                    event.bombSlot() < loaded.room().entityView().slots().size()
+                            ? loaded.room().entityView().slots().get(event.bombSlot())
                             : null;
-            if (loaded.room.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+            if (loaded.room().mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 BombObjectInteraction.Candidate candidate =
                         BombObjectInteraction.basicCandidate(event.bombX(), event.bombVisualY(), event.countdown());
                 this.applyBasicBombObjectCandidate(loaded, candidate);
@@ -230,7 +238,7 @@ final class RoomObjectMutations implements RoomTerrain {
                 BombObjectInteraction.Candidate candidate =
                         BombObjectInteraction.puzzleCandidate(event.bombX(), bomb.y(), event.countdown());
                 if (!this.applyIndoorBombableBlockCandidate(loaded, candidate)) {
-                    this.applyIndoorBombableWallCandidate(loaded.contents, candidate, event.bombSlot());
+                    this.applyIndoorBombableWallCandidate(loaded.contents(), candidate, event.bombSlot());
                 }
             }
         }
@@ -245,31 +253,31 @@ final class RoomObjectMutations implements RoomTerrain {
                 .overworldBushInteraction()
                 .revealObjectAtLocation(
                         location,
-                        loaded.room.roomId(),
+                        loaded.room().roomId(),
                         true,
-                        loaded.room.roomObjectsArea(),
-                        loaded.room.renderValues(),
-                        loaded.room.gbcOverlay(),
-                        loaded.room.tileIds(),
-                        loaded.room.tileAttrs());
+                        loaded.room().roomObjectsArea(),
+                        loaded.room().renderValues(),
+                        loaded.room().gbcOverlay(),
+                        loaded.room().tileIds(),
+                        loaded.room().tileAttrs());
         if (!result.changed()) {
             return;
         }
 
         if (result.bushLeavesVisible()) {
             int sourceSpriteVariant = result.originalObjectId() == 0x0A ? 0xFF : 0x01;
-            loaded.entities
+            loaded.entities()
                     .spawns()
                     .spawnLiftableRockSmash(
                             dependencies.overworldBushInteraction().effectOriginXForLocation(location),
                             dependencies.overworldBushInteraction().effectOriginYForLocation(location),
                             sourceSpriteVariant);
         }
-        this.refreshOverworldCollisionAfterObjectMutation(loaded.contents);
+        this.refreshOverworldCollisionAfterObjectMutation(loaded.contents());
     }
 
     void applyBoomerangObjectInteractions(RoomContents contents, List<BoomerangObjectRequest> requests) {
-        if (contents.room.mapCategory() != Warp.CATEGORY_OVERWORLD || requests.isEmpty()) {
+        if (contents.room().mapCategory() != Warp.CATEGORY_OVERWORLD || requests.isEmpty()) {
             return;
         }
 
@@ -280,13 +288,13 @@ final class RoomObjectMutations implements RoomTerrain {
                     .overworldBushInteraction()
                     .revealObjectAtLocation(
                             request.location(),
-                            contents.room.roomId(),
+                            contents.room().roomId(),
                             true,
-                            contents.room.roomObjectsArea(),
-                            contents.room.renderValues(),
-                            contents.room.gbcOverlay(),
-                            contents.room.tileIds(),
-                            contents.room.tileAttrs());
+                            contents.room().roomObjectsArea(),
+                            contents.room().renderValues(),
+                            contents.room().gbcOverlay(),
+                            contents.room().tileIds(),
+                            contents.room().tileAttrs());
             if (!result.changed()) {
                 continue;
             }
@@ -297,8 +305,8 @@ final class RoomObjectMutations implements RoomTerrain {
 
             dependencies
                     .entityRuntimeState()
-                    .outbox
-                    .pendingRoomEntityEvents
+                    .outbox()
+                    .pendingRoomEntityEvents()
                     .add(new EntityCombatEvent(
                             request.sourceSlot(), 0x01, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13));
             this.refreshOverworldCollisionAfterObjectMutation(contents);
@@ -314,32 +322,33 @@ final class RoomObjectMutations implements RoomTerrain {
             MagicRodObjectRequest request = requests.get(requestIndex);
 
             boolean changed = false;
-            if (contents.room.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+            if (contents.room().mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 OverworldBushInteraction.CutResult result = dependencies
                         .overworldBushInteraction()
                         .revealObjectAtLocation(
                                 request.location(),
-                                contents.room.roomId(),
+                                contents.room().roomId(),
                                 true,
-                                contents.room.roomObjectsArea(),
-                                contents.room.renderValues(),
-                                contents.room.gbcOverlay(),
-                                contents.room.tileIds(),
-                                contents.room.tileAttrs());
+                                contents.room().roomObjectsArea(),
+                                contents.room().renderValues(),
+                                contents.room().gbcOverlay(),
+                                contents.room().tileIds(),
+                                contents.room().tileAttrs());
                 changed = result.changed();
-            } else if (contents.room.mapCategory() == Warp.CATEGORY_SIDESCROLL
-                    && dependencies.roomSessionViews().objectAtRoomLocation(contents.room, request.location())
+            } else if (contents.room().mapCategory() == Warp.CATEGORY_SIDESCROLL
+                    && dependencies.roomSessionViews().objectAtRoomLocation(contents.room(), request.location())
                             == 0x8A) {
                 int areaIndex =
                         RoomConstants.ROOM_OBJECTS_BASE + (request.location() & 0xF0) + (request.location() & 0x0F);
-                int[] objects = contents.room.roomObjectsArea();
+                int[] objects = contents.room().roomObjectsArea();
                 if (areaIndex >= 0 && areaIndex < objects.length) {
                     objects[areaIndex] = 0x04; // OBJECT_SIDE_VIEW_EMPTY
-                    if (contents.room.renderValues() != null && areaIndex < contents.room.renderValues().length) {
-                        contents.room.renderValues()[areaIndex] = 0x04;
+                    if (contents.room().renderValues() != null
+                            && areaIndex < contents.room().renderValues().length) {
+                        contents.room().renderValues()[areaIndex] = 0x04;
                     }
                     this.refreshActiveRoomTilemap(contents);
-                    dependencies.overworldCollision().setRoom(contents.room.roomObjectsArea());
+                    dependencies.overworldCollision().setRoom(contents.room().roomObjectsArea());
                     dependencies.overworldCollision().setGbcOverlay(null);
                     changed = true;
                 }
@@ -355,11 +364,11 @@ final class RoomObjectMutations implements RoomTerrain {
 
             dependencies
                     .entityRuntimeState()
-                    .outbox
-                    .pendingRoomEntityEvents
+                    .outbox()
+                    .pendingRoomEntityEvents()
                     .add(new EntityCombatEvent(
                             request.sourceSlot(), 0x04, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x13));
-            if (contents.room.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+            if (contents.room().mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 this.refreshOverworldCollisionAfterObjectMutation(contents);
             }
         }
@@ -379,18 +388,19 @@ final class RoomObjectMutations implements RoomTerrain {
                 continue;
             }
             if (request.action() == MagicPowderObjectAction.IGNITE_TORCH) {
-                contents.puzzles.roomTriggerCount = (contents.puzzles.roomTriggerCount + 1) & 0xFF;
+                contents.puzzles().roomTriggerCount((contents.puzzles().roomTriggerCount() + 1) & 0xFF);
                 dependencies.indoorTorchPaletteEffect().igniteTorch();
-            } else if (request.action() == MagicPowderObjectAction.EXTINGUISH_TORCH && contents.room.roomId() != 0x74) {
-                contents.puzzles.roomTriggerCount = (contents.puzzles.roomTriggerCount - 1) & 0xFF;
+            } else if (request.action() == MagicPowderObjectAction.EXTINGUISH_TORCH
+                    && contents.room().roomId() != 0x74) {
+                contents.puzzles().roomTriggerCount((contents.puzzles().roomTriggerCount() - 1) & 0xFF);
                 dependencies
                         .indoorTorchPaletteEffect()
-                        .extinguishTorch(dependencies.entityFrame().currentLinkMotionState != 0x05);
+                        .extinguishTorch(dependencies.entityFrame().currentLinkMotionState() != 0x05);
             }
-            if (contents.room.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+            if (contents.room().mapCategory() == Warp.CATEGORY_OVERWORLD) {
                 this.refreshOverworldCollisionAfterObjectMutation(contents);
             } else {
-                dependencies.overworldCollision().setRoom(contents.room.roomObjectsArea());
+                dependencies.overworldCollision().setRoom(contents.room().roomObjectsArea());
                 dependencies.overworldCollision().setGbcOverlay(null);
             }
         }
@@ -400,22 +410,24 @@ final class RoomObjectMutations implements RoomTerrain {
             RoomContents contents, int location, int expectedObject, int replacementObject, boolean redraw) {
         // Expiration writes $AB through the saved object pointer unconditionally.
         if (expectedObject >= 0
-                && dependencies.roomSessionViews().objectAtRoomLocation(contents.room, location) != expectedObject) {
+                && dependencies.roomSessionViews().objectAtRoomLocation(contents.room(), location) != expectedObject) {
             return false;
         }
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
-        int[] objects = contents.room.roomObjectsArea();
+        int[] objects = contents.room().roomObjectsArea();
         if (areaIndex < 0 || areaIndex >= objects.length) {
             return false;
         }
         if (redraw) {
-            contents.overrides.retainedTorchTiles.remove(areaIndex);
+            contents.overrides().retainedTorchTiles().remove(areaIndex);
         } else {
             this.retainTorchTiles(contents, areaIndex);
         }
         objects[areaIndex] = replacementObject & 0xFF;
-        if (redraw && contents.room.renderValues() != null && areaIndex < contents.room.renderValues().length) {
-            contents.room.renderValues()[areaIndex] = replacementObject & 0xFF;
+        if (redraw
+                && contents.room().renderValues() != null
+                && areaIndex < contents.room().renderValues().length) {
+            contents.room().renderValues()[areaIndex] = replacementObject & 0xFF;
         }
         if (redraw) {
             this.refreshActiveRoomTilemap(contents);
@@ -429,35 +441,37 @@ final class RoomObjectMutations implements RoomTerrain {
         int[] saved = new int[8];
         for (int tile = 0; tile < 4; tile++) {
             int index = topLeft + (tile / 2) * RoomConstants.ROOM_TILE_WIDTH + tile % 2;
-            saved[tile] = contents.room.tileIds()[index];
-            saved[tile + 4] = contents.room.tileAttrs()[index];
+            saved[tile] = contents.room().tileIds()[index];
+            saved[tile + 4] = contents.room().tileAttrs()[index];
         }
-        contents.overrides.retainedTorchTiles.putIfAbsent(areaIndex, saved);
+        contents.overrides().retainedTorchTiles().putIfAbsent(areaIndex, saved);
     }
 
     void applyRetainedTorchTiles(RoomContents contents) {
-        contents.overrides
-                .retainedTorchTiles
+        contents.overrides()
+                .retainedTorchTiles()
                 .keySet()
-                .removeIf(areaIndex -> contents.room.roomObjectsArea()[areaIndex] != 0xAB);
-        for (Map.Entry<Integer, int[]> entry : contents.overrides.retainedTorchTiles.entrySet()) {
+                .removeIf(areaIndex -> contents.room().roomObjectsArea()[areaIndex] != 0xAB);
+        for (Map.Entry<Integer, int[]> entry :
+                contents.overrides().retainedTorchTiles().entrySet()) {
             int location = entry.getKey() - RoomConstants.ROOM_OBJECTS_BASE;
             int topLeft = (location >>> 4) * 2 * RoomConstants.ROOM_TILE_WIDTH + (location & 0x0F) * 2;
             int[] saved = entry.getValue();
             for (int tile = 0; tile < 4; tile++) {
                 int index = topLeft + (tile / 2) * RoomConstants.ROOM_TILE_WIDTH + tile % 2;
-                contents.room.tileIds()[index] = saved[tile];
-                contents.room.tileAttrs()[index] = saved[tile + 4];
+                contents.room().tileIds()[index] = saved[tile];
+                contents.room().tileAttrs()[index] = saved[tile + 4];
             }
         }
     }
 
     int countUnlitTorches(RoomContents contents) {
-        if (contents.room.mapCategory() == Warp.CATEGORY_OVERWORLD || contents.room.roomId() == 0xC4) {
+        if (contents.room().mapCategory() == Warp.CATEGORY_OVERWORLD
+                || contents.room().roomId() == 0xC4) {
             return 0;
         }
         int count = 0;
-        int[] objects = contents.room.roomObjectsArea();
+        int[] objects = contents.room().roomObjectsArea();
         for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
             for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
                 int index = RoomConstants.ROOM_OBJECTS_BASE + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
@@ -470,11 +484,11 @@ final class RoomObjectMutations implements RoomTerrain {
     }
 
     void copyIndoorTorchPalettesToActiveRoom(RoomContents contents) {
-        if (contents.room.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+        if (contents.room().mapCategory() == Warp.CATEGORY_OVERWORLD) {
             return;
         }
         int[][] source = dependencies.indoorTorchPaletteEffect().palettes();
-        int[][] target = contents.room.palettes();
+        int[][] target = contents.room().palettes();
         if (target == null) {
             return;
         }
@@ -492,9 +506,9 @@ final class RoomObjectMutations implements RoomTerrain {
         if (candidate == null) {
             return;
         }
-        int objectId = dependencies.roomSessionViews().objectAtRoomLocation(loaded.room, candidate.location());
+        int objectId = dependencies.roomSessionViews().objectAtRoomLocation(loaded.room(), candidate.location());
         if (objectId < OBJECT_GIANT_SKULL_TOP_LEFT || objectId > OBJECT_GIANT_SKULL_BOTTOM_RIGHT) {
-            this.applyOutdoorBombableCaveDoorCandidate(loaded.contents, candidate, sourceSlot);
+            this.applyOutdoorBombableCaveDoorCandidate(loaded.contents(), candidate, sourceSlot);
             return;
         }
 
@@ -504,7 +518,7 @@ final class RoomObjectMutations implements RoomTerrain {
         int[] rubbleYOffsets = {0x20, 0x20, 0x10, 0x10};
 
         for (int index = 0; index < rubbleXOffsets.length; index++) {
-            loaded.entities
+            loaded.entities()
                     .spawns()
                     .spawnLiftableRockRubble(
                             blockLeft + rubbleXOffsets[index], blockTop + rubbleYOffsets[index] - sourceZ);
@@ -516,18 +530,18 @@ final class RoomObjectMutations implements RoomTerrain {
         for (int row = 0; row < 2; row++) {
             for (int column = 0; column < 2; column++) {
                 this.writeBombPuzzleObject(
-                        loaded.contents,
+                        loaded.contents(),
                         blockLocation + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column,
                         OBJECT_ROCKY_GROUND);
             }
         }
-        dependencies.roomState().overworldRoomStatus[loaded.room.roomId()] |= (byte) OW_ROOM_STATUS_OPENED;
-        this.refreshOverworldCollisionAfterObjectMutation(loaded.contents);
+        dependencies.roomState().overworldRoomStatus()[loaded.room().roomId()] |= (byte) OW_ROOM_STATUS_OPENED;
+        this.refreshOverworldCollisionAfterObjectMutation(loaded.contents());
     }
 
     void applyOutdoorBombableCaveDoorCandidate(
             RoomContents contents, BombObjectInteraction.Candidate candidate, int sourceSlot) {
-        int objectId = dependencies.roomSessionViews().objectAtRoomLocation(contents.room, candidate.location());
+        int objectId = dependencies.roomSessionViews().objectAtRoomLocation(contents.room(), candidate.location());
         int doorIndex =
                 dependencies.romTables().physicsTables().objectPhysicsFlag(RomTables.PHYSICS_TABLE_OVERWORLD, objectId)
                         - BOMBABLE_WALL_PHYSICS_BASE;
@@ -538,14 +552,14 @@ final class RoomObjectMutations implements RoomTerrain {
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
                 + (candidate.objectTop() & 0xF0)
                 + ((candidate.objectLeft() & 0xF0) >>> 4);
-        int[] objects = contents.room.roomObjectsArea();
+        int[] objects = contents.room().roomObjectsArea();
         if (areaIndex < 0 || areaIndex >= objects.length) {
             return;
         }
 
         this.writeBombPuzzleObject(contents, candidate.location(), OBJECT_ROCKY_CAVE_DOOR);
-        contents.overrides.bombedCaveDoorTileOverrides.add(areaIndex);
-        dependencies.roomState().overworldRoomStatus[contents.room.roomId()] |= (byte) OW_ROOM_STATUS_OPENED;
+        contents.overrides().bombedCaveDoorTileOverrides().add(areaIndex);
+        dependencies.roomState().overworldRoomStatus()[contents.room().roomId()] |= (byte) OW_ROOM_STATUS_OPENED;
         this.queuePuzzleSolvedJingle(sourceSlot);
         this.refreshActiveRoomTilemap(contents);
         this.refreshOverworldCollisionAfterObjectMutation(contents);
@@ -553,29 +567,29 @@ final class RoomObjectMutations implements RoomTerrain {
 
     void writeBombPuzzleObject(RoomContents contents, int location, int objectId) {
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
-        int[] objects = contents.room.roomObjectsArea();
+        int[] objects = contents.room().roomObjectsArea();
         if (areaIndex < 0 || areaIndex >= objects.length) {
             return;
         }
         objects[areaIndex] = objectId & 0xFF;
-        if (contents.room.renderValues() != null) {
-            contents.room.renderValues()[areaIndex] = objectId & 0xFF;
+        if (contents.room().renderValues() != null) {
+            contents.room().renderValues()[areaIndex] = objectId & 0xFF;
         }
         dependencies
                 .overworldBushInteraction()
                 .refreshRoomObjectCell(
-                        contents.room.roomId(),
+                        contents.room().roomId(),
                         location,
                         objects,
-                        contents.room.renderValues(),
-                        contents.room.gbcOverlay(),
-                        contents.room.tileIds(),
-                        contents.room.tileAttrs());
+                        contents.room().renderValues(),
+                        contents.room().gbcOverlay(),
+                        contents.room().tileIds(),
+                        contents.room().tileAttrs());
     }
 
     void refreshOverworldCollisionAfterObjectMutation(RoomContents contents) {
-        dependencies.overworldCollision().setRoom(contents.room.roomObjectsArea());
-        dependencies.overworldCollision().setGbcOverlay(contents.room.gbcOverlay());
+        dependencies.overworldCollision().setRoom(contents.room().roomObjectsArea());
+        dependencies.overworldCollision().setGbcOverlay(contents.room().gbcOverlay());
     }
 
     void applyIndoorBombableWallCandidate(
@@ -584,9 +598,9 @@ final class RoomObjectMutations implements RoomTerrain {
             return;
         }
         int location = candidate.location();
-        int objectId = dependencies.roomSessionViews().objectAtRoomLocation(contents.room, location);
+        int objectId = dependencies.roomSessionViews().objectAtRoomLocation(contents.room(), location);
         int physicsTable =
-                contents.room.mapId() == 0xFF ? RomTables.PHYSICS_TABLE_INDOORS2 : RomTables.PHYSICS_TABLE_INDOORS1;
+                contents.room().mapId() == 0xFF ? RomTables.PHYSICS_TABLE_INDOORS2 : RomTables.PHYSICS_TABLE_INDOORS1;
         int wallIndex = dependencies.romTables().physicsTables().objectPhysicsFlag(physicsTable, objectId)
                 - BOMBABLE_WALL_PHYSICS_BASE;
         if (wallIndex < 0 || wallIndex >= 4) {
@@ -594,13 +608,15 @@ final class RoomObjectMutations implements RoomTerrain {
         }
 
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
-        int[] objects = contents.room.roomObjectsArea();
+        int[] objects = contents.room().roomObjectsArea();
         if (areaIndex < 0 || areaIndex >= objects.length) {
             return;
         }
         objects[areaIndex] = wallIndex < 2 ? OBJECT_BOMBED_PASSAGE_VERTICAL : OBJECT_BOMBED_PASSAGE_HORIZONTAL;
 
-        byte[] status = dependencies.roomSessionViews().indoorStatusTableForMap(contents.room.mapId());
+        byte[] status = dependencies
+                .roomSessionViews()
+                .indoorStatusTableForMap(contents.room().mapId());
         int currentStatus =
                 switch (wallIndex) {
                     case 0 -> 0x04;
@@ -617,22 +633,22 @@ final class RoomObjectMutations implements RoomTerrain {
                     case 3 -> 0x02;
                     default -> throw new AssertionError(wallIndex);
                 };
-        int adjacentRoom = dependencies.roomSessionViews().adjacentIndoorRoomIdForBombWall(contents.room, wallIndex);
-        status[contents.room.roomId()] |= (byte) currentStatus;
+        int adjacentRoom = dependencies.roomSessionViews().adjacentIndoorRoomIdForBombWall(contents.room(), wallIndex);
+        status[contents.room().roomId()] |= (byte) currentStatus;
         status[adjacentRoom] |= (byte) adjacentStatus;
-        contents.overrides.bombedWallTileOverrides.put(areaIndex, wallIndex < 2 ? 0 : 1);
+        contents.overrides().bombedWallTileOverrides().put(areaIndex, wallIndex < 2 ? 0 : 1);
         this.queuePuzzleSolvedJingle(sourceSlot);
 
         this.refreshActiveRoomTilemap(contents);
-        dependencies.overworldCollision().setRoom(contents.room.roomObjectsArea());
+        dependencies.overworldCollision().setRoom(contents.room().roomObjectsArea());
         dependencies.overworldCollision().setGbcOverlay(null);
     }
 
     void queuePuzzleSolvedJingle(int sourceSlot) {
         dependencies
                 .entityRuntimeState()
-                .outbox
-                .pendingRoomEntityEvents
+                .outbox()
+                .pendingRoomEntityEvents()
                 .add(new EntityCombatEvent(sourceSlot, 0x02, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x02));
     }
 
@@ -641,26 +657,27 @@ final class RoomObjectMutations implements RoomTerrain {
             return false;
         }
         int location = candidate.location();
-        if (dependencies.roomSessionViews().objectAtRoomLocation(loaded.room, location) != OBJECT_BOMBABLE_BLOCK) {
+        if (dependencies.roomSessionViews().objectAtRoomLocation(loaded.room(), location) != OBJECT_BOMBABLE_BLOCK) {
             return false;
         }
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + (location & 0xF0) + (location & 0x0F);
-        int[] objects = loaded.room.roomObjectsArea();
+        int[] objects = loaded.room().roomObjectsArea();
         if (areaIndex < 0 || areaIndex >= objects.length) {
             return false;
         }
 
         objects[areaIndex] = OBJECT_FLOOR_OD;
-        dependencies.roomSessionViews().indoorStatusTableForMap(loaded.room.mapId())[loaded.room.roomId()] |=
-                (byte) INDOOR_ROOM_STATUS_EVENT_3;
-        loaded.contents.overrides.bombedBlockTileOverrides.add(areaIndex);
+        dependencies.roomSessionViews()
+                .indoorStatusTableForMap(loaded.room().mapId())[loaded.room().roomId()] |= (byte)
+                INDOOR_ROOM_STATUS_EVENT_3;
+        loaded.contents().overrides().bombedBlockTileOverrides().add(areaIndex);
 
-        loaded.entities
+        loaded.entities()
                 .spawns()
                 .spawnLiftableRockSmash(candidate.objectLeft() + 0x08, candidate.objectTop() + 0x10, 0x00);
 
-        this.refreshActiveRoomTilemap(loaded.contents);
-        dependencies.overworldCollision().setRoom(loaded.room.roomObjectsArea());
+        this.refreshActiveRoomTilemap(loaded.contents());
+        dependencies.overworldCollision().setRoom(loaded.room().roomObjectsArea());
         dependencies.overworldCollision().setGbcOverlay(null);
         return true;
     }
@@ -670,7 +687,7 @@ final class RoomObjectMutations implements RoomTerrain {
             return 0xFF;
         }
         int index = RoomInteractionGeometry.colorShellObjectIndex(entity) + relativeOffset;
-        int[] objects = loaded.room.roomObjectsArea();
+        int[] objects = loaded.room().roomObjectsArea();
         return index >= 0 && index < objects.length ? objects[index] : 0xFF;
     }
 
@@ -679,12 +696,12 @@ final class RoomObjectMutations implements RoomTerrain {
             return;
         }
         int index = RoomInteractionGeometry.colorShellObjectIndex(entity);
-        int[] objects = loaded.room.roomObjectsArea();
+        int[] objects = loaded.room().roomObjectsArea();
         if (index < 0 || index >= objects.length) {
             return;
         }
         objects[index] = objectId & 0xFF;
-        this.refreshActiveRoomTilemap(loaded.contents);
+        this.refreshActiveRoomTilemap(loaded.contents());
     }
 
     record Dependencies(
@@ -720,18 +737,18 @@ final class RoomObjectMutations implements RoomTerrain {
 
     private boolean applyPowderRequest(RoomContents contents, MagicPowderObjectRequest request) {
         return switch (request.action()) {
-            case REVEAL -> contents.room.mapCategory() == Warp.CATEGORY_OVERWORLD
+            case REVEAL -> contents.room().mapCategory() == Warp.CATEGORY_OVERWORLD
                     && dependencies
                             .overworldBushInteraction()
                             .revealObjectAtLocation(
                                     request.location(),
-                                    contents.room.roomId(),
+                                    contents.room().roomId(),
                                     true,
-                                    contents.room.roomObjectsArea(),
-                                    contents.room.renderValues(),
-                                    contents.room.gbcOverlay(),
-                                    contents.room.tileIds(),
-                                    contents.room.tileAttrs())
+                                    contents.room().roomObjectsArea(),
+                                    contents.room().renderValues(),
+                                    contents.room().gbcOverlay(),
+                                    contents.room().tileIds(),
+                                    contents.room().tileAttrs())
                             .changed();
             case IGNITE_TORCH -> this.writeMagicPowderTorchObject(contents, request.location(), 0xAB, 0xAC, true);
             case EXTINGUISH_TORCH -> this.writeMagicPowderTorchObject(
@@ -739,42 +756,48 @@ final class RoomObjectMutations implements RoomTerrain {
                     request.location(),
                     -1,
                     0xAB,
-                    contents.room.roomId() != 0x74
+                    contents.room().roomId() != 0x74
                             && (dependencies.indoorTorchPaletteEffect().targetAddress() >= 0x0C
-                                    || dependencies.entityFrame().currentLinkMotionState != 0x05));
+                                    || dependencies.entityFrame().currentLinkMotionState() != 0x05));
         };
     }
 
     void refreshActiveRoomTilemap(RoomContents contents) {
-        RoomTilemap tilemap = contents.room.mapCategory() == Warp.CATEGORY_OVERWORLD
+        RoomTilemap tilemap = contents.room().mapCategory() == Warp.CATEGORY_OVERWORLD
                 ? dependencies
                         .roomTilemapBuilder()
-                        .buildOverworld(contents.room.roomId(), contents.room.roomObjectsArea())
+                        .buildOverworld(
+                                contents.room().roomId(), contents.room().roomObjectsArea())
                 : dependencies
                         .roomTilemapBuilder()
-                        .buildIndoor(contents.room.mapId(), contents.room.roomId(), contents.room.roomObjectsArea());
-        contents.room.replaceTilemap(tilemap.tileIds(), tilemap.tileAttrs());
+                        .buildIndoor(
+                                contents.room().mapId(),
+                                contents.room().roomId(),
+                                contents.room().roomObjectsArea());
+        contents.room().replaceTilemap(tilemap.tileIds(), tilemap.tileAttrs());
         this.applyHookshotBridgeTileOverrides(contents);
         this.applyBombedWallTileOverrides(contents);
         this.applyBombedBlockTileOverrides(contents);
         this.applyBombedCaveDoorTileOverrides(contents);
         this.applyRetainedTorchTiles(contents);
-        contents.puzzles.shutterTileOverrides.forEach(
-                (index, tile) -> contents.room.tileIds()[index] = tile);
+        contents.puzzles()
+                .shutterTileOverrides()
+                .forEach((index, tile) -> contents.room().tileIds()[index] = tile);
     }
 
     void applyHookshotBridgeUpdates(RoomContents contents, List<HookshotBridgeUpdate> updates) {
         if (updates.isEmpty()) {
             return;
         }
-        int[] objects = contents.room.roomObjectsArea();
+        int[] objects = contents.room().roomObjectsArea();
         boolean changed = false;
         for (HookshotBridgeUpdate update : updates) {
             int areaIndex = RoomInteractionGeometry.hookshotObjectAreaIndex(update.objectLeft(), update.objectTop());
             if (areaIndex < 0 || areaIndex >= objects.length) {
                 continue;
             }
-            HookshotBridgeUpdate previous = contents.overrides.hookshotBridgeTileOverrides.put(areaIndex, update);
+            HookshotBridgeUpdate previous =
+                    contents.overrides().hookshotBridgeTileOverrides().put(areaIndex, update);
             if (objects[areaIndex] != 0x9D || !update.equals(previous)) {
                 objects[areaIndex] = 0x9D;
                 changed = true;
@@ -786,11 +809,12 @@ final class RoomObjectMutations implements RoomTerrain {
     }
 
     void applyHookshotBridgeTileOverrides(RoomContents contents) {
-        if (contents.overrides.hookshotBridgeTileOverrides.isEmpty()) {
+        if (contents.overrides().hookshotBridgeTileOverrides().isEmpty()) {
             return;
         }
-        int[] tileIds = contents.room.tileIds();
-        for (HookshotBridgeUpdate update : contents.overrides.hookshotBridgeTileOverrides.values()) {
+        int[] tileIds = contents.room().tileIds();
+        for (HookshotBridgeUpdate update :
+                contents.overrides().hookshotBridgeTileOverrides().values()) {
             int tileX = (update.objectLeft() & 0xFF) >>> 3;
             int tileY = (update.objectTop() & 0xFF) >>> 3;
             if (tileX < 0
@@ -816,11 +840,12 @@ final class RoomObjectMutations implements RoomTerrain {
     }
 
     void applyBombedWallTileOverrides(RoomContents contents) {
-        if (contents.overrides.bombedWallTileOverrides.isEmpty()) {
+        if (contents.overrides().bombedWallTileOverrides().isEmpty()) {
             return;
         }
-        int[] tileIds = contents.room.tileIds();
-        for (Map.Entry<Integer, Integer> entry : contents.overrides.bombedWallTileOverrides.entrySet()) {
+        int[] tileIds = contents.room().tileIds();
+        for (Map.Entry<Integer, Integer> entry :
+                contents.overrides().bombedWallTileOverrides().entrySet()) {
             int areaOffset = entry.getKey() - RoomConstants.ROOM_OBJECTS_BASE;
             int objectRow = (areaOffset >>> 4) & 0x0F;
             int objectColumn = areaOffset & 0x0F;
@@ -844,11 +869,11 @@ final class RoomObjectMutations implements RoomTerrain {
     }
 
     void applyBombedBlockTileOverrides(RoomContents contents) {
-        if (contents.overrides.bombedBlockTileOverrides.isEmpty()) {
+        if (contents.overrides().bombedBlockTileOverrides().isEmpty()) {
             return;
         }
-        int[] tileIds = contents.room.tileIds();
-        for (int areaIndex : contents.overrides.bombedBlockTileOverrides) {
+        int[] tileIds = contents.room().tileIds();
+        for (int areaIndex : contents.overrides().bombedBlockTileOverrides()) {
             int areaOffset = areaIndex - RoomConstants.ROOM_OBJECTS_BASE;
             int objectRow = (areaOffset >>> 4) & 0x0F;
             int objectColumn = areaOffset & 0x0F;
@@ -870,11 +895,11 @@ final class RoomObjectMutations implements RoomTerrain {
     }
 
     void applyBombedCaveDoorTileOverrides(RoomContents contents) {
-        if (contents.overrides.bombedCaveDoorTileOverrides.isEmpty()) {
+        if (contents.overrides().bombedCaveDoorTileOverrides().isEmpty()) {
             return;
         }
-        int[] tileIds = contents.room.tileIds();
-        for (int areaIndex : contents.overrides.bombedCaveDoorTileOverrides) {
+        int[] tileIds = contents.room().tileIds();
+        for (int areaIndex : contents.overrides().bombedCaveDoorTileOverrides()) {
             int areaOffset = areaIndex - RoomConstants.ROOM_OBJECTS_BASE;
             int objectRow = (areaOffset >>> 4) & 0x0F;
             int objectColumn = areaOffset & 0x0F;

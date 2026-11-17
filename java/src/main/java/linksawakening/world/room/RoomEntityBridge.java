@@ -36,49 +36,51 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
     private final LoadedRoomHandle rooms;
 
     boolean gelClingingToLink() {
-        return rooms.test(room -> room.entities.enemies().gelClingingToLink());
+        return rooms.test(room -> room.entities().enemies().gelClingingToLink());
     }
 
     void resetGuardianAcornCounterOnHurt() {
         var counters = rooms.readOr(
-                dependencies.entityFrame().enemyDropCounters,
-                room -> room.entities.inspection().enemyDropCounters());
-        dependencies.entityFrame().enemyDropCounters =
-                linksawakening.world.entity.EnemyDropResolver.resetGuardianAcornCounter(counters);
-        rooms.update(dependencies, (room, state) -> room.entities
+                dependencies.entityFrame().enemyDropCounters(),
+                room -> room.entities().inspection().enemyDropCounters());
+        dependencies
+                .entityFrame()
+                .enemyDropCounters(linksawakening.world.entity.EnemyDropResolver.resetGuardianAcornCounter(counters));
+        rooms.update(dependencies, (room, state) -> room.entities()
                 .configuration()
-                .setEnemyDropCounters(state.entityFrame().enemyDropCounters));
+                .setEnemyDropCounters(state.entityFrame().enemyDropCounters()));
     }
 
     int entityHealth(int slot) {
         RoomRuntime loaded = rooms.currentOrNull();
-        return loaded.entities.enemies().enemyHealth(slot);
+        return loaded.entities().enemies().enemyHealth(slot);
     }
 
     List<DialogRequest> consumeEntityDialogRequests() {
-        if (dependencies.entityFrame().outbox.pendingRoomDialogRequests.isEmpty())
-            return rooms.drain(room -> room.entities.outbox().consumePendingDialogRequests());
-        List<DialogRequest> requests = new ArrayList<>(dependencies.entityFrame().outbox.pendingRoomDialogRequests);
-        dependencies.entityFrame().outbox.pendingRoomDialogRequests.clear();
-        requests.addAll(rooms.drain(room -> room.entities.outbox().consumePendingDialogRequests()));
+        if (dependencies.entityFrame().outbox().pendingRoomDialogRequests().isEmpty())
+            return rooms.drain(room -> room.entities().outbox().consumePendingDialogRequests());
+        List<DialogRequest> requests =
+                new ArrayList<>(dependencies.entityFrame().outbox().pendingRoomDialogRequests());
+        dependencies.entityFrame().outbox().pendingRoomDialogRequests().clear();
+        requests.addAll(rooms.drain(room -> room.entities().outbox().consumePendingDialogRequests()));
         return List.copyOf(requests);
     }
 
     boolean swordPickupSequenceActive() {
-        return rooms.test(room -> room.entities.inspection().swordPickupSequenceActive());
+        return rooms.test(room -> room.entities().inspection().swordPickupSequenceActive());
     }
 
     boolean powerUpPickupSequenceActive() {
-        return rooms.test(room -> room.entities.inspection().powerUpPickupSequenceActive());
+        return rooms.test(room -> room.entities().inspection().powerUpPickupSequenceActive());
     }
 
     boolean gotItemPresentationActive() {
-        return rooms.test(room -> room.entities.inspection().witchGotItemPresentationActive());
+        return rooms.test(room -> room.entities().inspection().witchGotItemPresentationActive());
     }
 
     @Override
     public List<LinkAttackClearRequest> consumeLinkAttackClearRequests() {
-        return rooms.drain(room -> room.entities.outbox().consumePendingLinkAttackClearRequests());
+        return rooms.drain(room -> room.entities().outbox().consumePendingLinkAttackClearRequests());
     }
 
     void updateEnemyDropPlayerState(int maxHearts, int health, boolean power) {
@@ -91,11 +93,11 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
     }
 
     int clearEntity(int slot) {
-        return rooms.intOr(slot, 0, (room, index) -> room.interactions.clearEntity(index));
+        return rooms.intOr(slot, 0, (room, index) -> room.interactions().clearEntity(index));
     }
 
     boolean deferContactRecoil(int slot, int x, int y) {
-        return rooms.testPosition(slot, x, y, (room, index, linkX, linkY) -> room.entities
+        return rooms.testPosition(slot, x, y, (room, index, linkX, linkY) -> room.entities()
                 .combat()
                 .deferContactRecoil(index, linkX, linkY));
     }
@@ -115,14 +117,15 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
 
     @Override
     public boolean inBossBattle() {
-        return rooms.test(room -> room.entities.inspection().inBossBattle());
+        return rooms.test(room -> room.entities().inspection().inBossBattle());
     }
 
     @Override
     public List<linksawakening.world.entity.event.EntityCombatEvent> resolveEntityCombat(EnemyCombatInputs inputs) {
         if (inputs instanceof EntityCombatInputs owned) Objects.requireNonNull(owned.sword(), "sword");
         else inputs.swordCollisionActive();
-        return rooms.readOr(inputs, List.of(), (room, frame) -> room.interactions.resolveEntityCombat(frame));
+        return rooms.readOr(
+                inputs, List.of(), (room, frame) -> room.interactions().resolveEntityCombat(frame));
     }
 
     @Override
@@ -135,7 +138,7 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
             inputs.linkDirection();
             inputs.swordActive();
         }
-        return rooms.readOr(inputs, null, (room, frame) -> room.interactions.collectEntityIfNeeded(frame));
+        return rooms.readOr(inputs, null, (room, frame) -> room.interactions().collectEntityIfNeeded(frame));
     }
 
     @Override
@@ -147,15 +150,21 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
                 y,
                 airborne,
                 interactive,
-                dependencies.followers().followingLinkDirection,
-                dependencies.followers().followingLinkZ);
+                dependencies.followers().followingLinkDirection(),
+                dependencies.followers().followingLinkZ());
     }
 
     @Override
     public linksawakening.world.entity.EntityPickupEvent collectEntityIfNeeded(
             int frame, int x, int y, boolean airborne, boolean interactive, int direction) {
         return collectEntityIfNeeded(
-                frame, x, y, airborne, interactive, direction, dependencies.followers().followingLinkZ);
+                frame,
+                x,
+                y,
+                airborne,
+                interactive,
+                direction,
+                dependencies.followers().followingLinkZ());
     }
 
     @Override
@@ -178,8 +187,8 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
                 frameCounter,
                 linkEntityX,
                 linkEntityY,
-                dependencies.followers().followingLinkZ,
-                dependencies.followers().followingLinkDirection);
+                dependencies.followers().followingLinkZ(),
+                dependencies.followers().followingLinkDirection());
     }
 
     @Override
@@ -250,132 +259,133 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
 
     @Override
     public void drainEntityEvents(RoomFrameDrain<EntityCombatEvent> target) {
-        var events = rooms.drain(room -> room.entities.outbox().consumePendingEntityEvents());
+        var events = rooms.drain(room -> room.entities().outbox().consumePendingEntityEvents());
         dependencies
                 .entityFrame()
-                .outbox
-                .combatDrain
-                .drain(events, dependencies.entityFrame().outbox.pendingRoomEntityEvents, target);
+                .outbox()
+                .combatDrain()
+                .drain(events, dependencies.entityFrame().outbox().pendingRoomEntityEvents(), target);
     }
 
     @Override
     public DialogRequest consumeFirstEntityDialogRequest() {
-        DialogRequest first = dependencies
-                        .entityFrame()
-                        .outbox
-                        .pendingRoomDialogRequests
-                        .isEmpty()
-                ? null
-                : dependencies.entityFrame().outbox.pendingRoomDialogRequests.getFirst();
-        dependencies.entityFrame().outbox.pendingRoomDialogRequests.clear();
-        var events = rooms.drain(room -> room.entities.outbox().consumePendingDialogRequests());
+        DialogRequest first =
+                dependencies.entityFrame().outbox().pendingRoomDialogRequests().isEmpty()
+                        ? null
+                        : dependencies
+                                .entityFrame()
+                                .outbox()
+                                .pendingRoomDialogRequests()
+                                .getFirst();
+        dependencies.entityFrame().outbox().pendingRoomDialogRequests().clear();
+        var events = rooms.drain(room -> room.entities().outbox().consumePendingDialogRequests());
         return first != null || events.isEmpty() ? first : events.getFirst();
     }
 
     @Override
     public List<EntityCombatEvent> consumeEntityEvents() {
-        var entityEvents = rooms.drain(room -> room.entities.outbox().consumePendingEntityEvents());
-        if (dependencies.entityFrame().outbox.pendingRoomEntityEvents.isEmpty()) return entityEvents;
+        var entityEvents = rooms.drain(room -> room.entities().outbox().consumePendingEntityEvents());
+        if (dependencies.entityFrame().outbox().pendingRoomEntityEvents().isEmpty()) return entityEvents;
         List<EntityCombatEvent> events = new ArrayList<>(entityEvents.size()
-                + dependencies.entityFrame().outbox.pendingRoomEntityEvents.size());
+                + dependencies.entityFrame().outbox().pendingRoomEntityEvents().size());
         events.addAll(entityEvents);
-        events.addAll(dependencies.entityFrame().outbox.pendingRoomEntityEvents);
-        dependencies.entityFrame().outbox.pendingRoomEntityEvents.clear();
+        events.addAll(dependencies.entityFrame().outbox().pendingRoomEntityEvents());
+        dependencies.entityFrame().outbox().pendingRoomEntityEvents().clear();
         return List.copyOf(events);
     }
 
     @Override
     public List<LinkFinalPositionRequest> consumeLinkFinalPositionRequests() {
-        return rooms.drain(room -> room.entities.outbox().consumePendingLinkFinalPositionRequests());
+        return rooms.drain(room -> room.entities().outbox().consumePendingLinkFinalPositionRequests());
     }
 
     @Override
     public List<RoosterLinkStateRequest> consumeRoosterLinkStateRequests() {
-        return rooms.drain(room -> room.entities.outbox().consumePendingRoosterLinkStateRequests());
+        return rooms.drain(room -> room.entities().outbox().consumePendingRoosterLinkStateRequests());
     }
 
     @Override
     public List<LinkMotionBlockRequest> consumeLinkMotionBlockRequests() {
-        return rooms.drain(room -> room.entities.outbox().consumePendingLinkMotionBlockRequests());
+        return rooms.drain(room -> room.entities().outbox().consumePendingLinkMotionBlockRequests());
     }
 
     @Override
     public List<SideViewPlatformLinkRequest> consumeSideViewPlatformLinkRequests() {
-        return rooms.drain(room -> room.entities.outbox().consumePendingSideViewPlatformLinkRequests());
+        return rooms.drain(room -> room.entities().outbox().consumePendingSideViewPlatformLinkRequests());
     }
 
     @Override
     public List<SideViewPotLinkRequest> consumeSideViewPotLinkRequests() {
-        return rooms.drain(room -> room.entities.outbox().consumePendingSideViewPotLinkRequests());
+        return rooms.drain(room -> room.entities().outbox().consumePendingSideViewPotLinkRequests());
     }
 
     @Override
     public List<HinoxLinkEffectRequest> consumeHinoxLinkEffectRequests() {
-        return rooms.drain(room -> room.entities.outbox().consumePendingHinoxLinkEffectRequests());
+        return rooms.drain(room -> room.entities().outbox().consumePendingHinoxLinkEffectRequests());
     }
 
     @Override
     public List<LinkFallenPoseRequest> consumeLinkFallenPoseRequests() {
-        return rooms.drain(room -> room.entities.outbox().consumePendingLinkFallenPoseRequests());
+        return rooms.drain(room -> room.entities().outbox().consumePendingLinkFallenPoseRequests());
     }
 
     @Override
     public List<LinkFacingRequest> consumeLinkFacingRequests() {
-        return rooms.drain(room -> room.entities.outbox().consumePendingLinkFacingRequests());
+        return rooms.drain(room -> room.entities().outbox().consumePendingLinkFacingRequests());
     }
 
     @Override
     public List<LinkAttackStepRequest> consumeLinkAttackStepRequests() {
-        return rooms.drain(room -> room.entities.outbox().consumePendingLinkAttackStepRequests());
+        return rooms.drain(room -> room.entities().outbox().consumePendingLinkAttackStepRequests());
     }
 
     @Override
     public List<LinkHeldItemPoseRequest> consumeLinkHeldItemPoseRequests() {
-        return rooms.drain(room -> room.entities.outbox().consumePendingLinkHeldItemPoseRequests());
+        return rooms.drain(room -> room.entities().outbox().consumePendingLinkHeldItemPoseRequests());
     }
 
     @Override
     public List<LinkSwordSpinPoseRequest> consumeLinkSwordSpinPoseRequests() {
-        return rooms.drain(room -> room.entities.outbox().consumePendingLinkSwordSpinPoseRequests());
+        return rooms.drain(room -> room.entities().outbox().consumePendingLinkSwordSpinPoseRequests());
     }
 
     @Override
     public List<LinkSwordFinalPoseRequest> consumeLinkSwordFinalPoseRequests() {
-        return rooms.drain(room -> room.entities.outbox().consumePendingLinkSwordFinalPoseRequests());
+        return rooms.drain(room -> room.entities().outbox().consumePendingLinkSwordFinalPoseRequests());
     }
 
     @Override
     public List<ScreenShakeRequest> consumeScreenShakeRequests() {
-        return rooms.drain(room -> room.entities.outbox().consumePendingScreenShakeRequests());
+        return rooms.drain(room -> room.entities().outbox().consumePendingScreenShakeRequests());
     }
 
     @Override
     public int consumePendingMusicTrack() {
-        if (dependencies.entityFrame().outbox.pendingRoomMusicTrack >= 0) {
-            int pending = dependencies.entityFrame().outbox.pendingRoomMusicTrack;
-            dependencies.entityFrame().outbox.pendingRoomMusicTrack = -1;
+        if (dependencies.entityFrame().outbox().pendingRoomMusicTrack() >= 0) {
+            int pending = dependencies.entityFrame().outbox().pendingRoomMusicTrack();
+            dependencies.entityFrame().outbox().pendingRoomMusicTrack(-1);
             return pending;
         }
-        return rooms.intOr(-1, room -> room.entities.outbox().consumePendingMusicTrack());
+        return rooms.intOr(-1, room -> room.entities().outbox().consumePendingMusicTrack());
     }
 
     @Override
     public int consumePendingMusicFadeOutCountdown() {
-        return rooms.intOr(0, room -> room.entities.outbox().consumePendingMusicFadeOutCountdown());
+        return rooms.intOr(0, room -> room.entities().outbox().consumePendingMusicFadeOutCountdown());
     }
 
     @Override
     public List<LikeLikeEvent> consumeLikeLikeEvents() {
-        return rooms.drain(room -> room.entities.outbox().consumePendingLikeLikeEvents());
+        return rooms.drain(room -> room.entities().outbox().consumePendingLikeLikeEvents());
     }
 
     @Override
     public List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
         return rooms.readOr(this, List.of(), (room, bridge) -> {
-            var updates = room.entities.outbox().consumeHeartPieceUpdates();
+            var updates = room.entities().outbox().consumeHeartPieceUpdates();
             for (int i = 0; i < updates.size(); i++) {
                 if (updates.get(i).complete()) {
-                    bridge.dependencies.roomState().markCompleted(room.room);
+                    bridge.dependencies.roomState().markCompleted(room.room());
                     break;
                 }
             }
@@ -386,7 +396,7 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
     @Override
     public List<WarpLinkStateRequest> consumeWarpLinkStateRequests() {
         List<WarpLinkStateRequest> requests =
-                rooms.drain(room -> room.entities.outbox().consumePendingWarpLinkStateRequests());
+                rooms.drain(room -> room.entities().outbox().consumePendingWarpLinkStateRequests());
         if (!requests.isEmpty()) {
             dependencies.items().finishOcarinaPlayback();
             dependencies.entityInputs().clearDialogAfterWarp();
@@ -394,7 +404,7 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
         return requests;
     }
 
-    final RoomEntityOutbox outbox;
+    private final RoomEntityOutbox outbox;
     private final Dependencies dependencies;
 
     private final RoomEntitySimulation roomEntitySimulation;
@@ -402,7 +412,7 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
     RoomEntityBridge(LoadedRoomHandle rooms, Dependencies dependencies, RoomEntitySimulation roomEntitySimulation) {
         this.rooms = Objects.requireNonNull(rooms);
         this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
-        outbox = dependencies.entityFrame().outbox;
+        outbox = dependencies.entityFrame().outbox();
 
         this.roomEntitySimulation = Objects.requireNonNull(roomEntitySimulation, "roomEntitySimulation");
     }
@@ -414,20 +424,22 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
         if (health < 0 || health > 0xFF) {
             throw new IllegalArgumentException("Health must be an unsigned byte: " + health);
         }
-        dependencies.entityFrame().enemyDropMaxHearts = maxHearts;
-        dependencies.entityFrame().enemyDropHealth = health;
-        dependencies.entityFrame().enemyDropLowHealth = null;
-        dependencies.entityFrame().enemyDropActivePowerUp = activePowerUp;
+        dependencies.entityFrame().enemyDropMaxHearts(maxHearts);
+        dependencies.entityFrame().enemyDropHealth(health);
+        dependencies.entityFrame().enemyDropLowHealth(null);
+        dependencies.entityFrame().enemyDropActivePowerUp(activePowerUp);
     }
 
     void advanceBoomerangSoundClock(boolean worldGameplay) {
         if (worldGameplay) {
-            dependencies.entityFrame().boomerangSoundCounter = (dependencies.entityFrame().boomerangSoundCounter + 1)
-                    % linksawakening.world.entity.EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD;
+            dependencies
+                    .entityFrame()
+                    .boomerangSoundCounter((dependencies.entityFrame().boomerangSoundCounter() + 1)
+                            % linksawakening.world.entity.EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD);
         }
         // Main may run several world frames without an entity pass during a
         // transition. The next pass must use that clock without ticking twice.
-        dependencies.entityFrame().boomerangSoundClockProvided = true;
+        dependencies.entityFrame().boomerangSoundClockProvided(true);
     }
 
     List<EntityProjectileEvent> tickEntities(RoomRuntime loaded, EntityTickValues inputs) {
@@ -435,17 +447,18 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
     }
 
     boolean consumeWorldLinkMotionBlockRequest() {
-        boolean pending = dependencies.entityFrame().worldLinkMotionBlockPending;
-        dependencies.entityFrame().worldLinkMotionBlockPending = false;
+        boolean pending = dependencies.entityFrame().worldLinkMotionBlockPending();
+        dependencies.entityFrame().worldLinkMotionBlockPending(false);
         return pending;
     }
 
     void tickGameplayVBlank() {
-        if (SwitchBlockAnimation.isAnimating(dependencies.terrain().switchableObjectAnimationStage)) {
+        if (SwitchBlockAnimation.isAnimating(dependencies.terrain().switchableObjectAnimationStage())) {
             SwitchBlockAnimation.Step step = SwitchBlockAnimation.advance(
-                    dependencies.terrain().switchableObjectAnimationStage, dependencies.terrain().switchBlocksState);
-            dependencies.terrain().switchBlocksState = step.switchBlocksState();
-            dependencies.terrain().switchableObjectAnimationStage = step.nextStage();
+                    dependencies.terrain().switchableObjectAnimationStage(),
+                    dependencies.terrain().switchBlocksState());
+            dependencies.terrain().switchBlocksState(step.switchBlocksState());
+            dependencies.terrain().switchableObjectAnimationStage(step.nextStage());
             dependencies.roomLoadCoordinator().synchronizeSwitchBlockCollisionState();
             if (step.tileCopy() != null) {
                 dependencies
@@ -492,5 +505,9 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
             Objects.requireNonNull(romData, "romData");
             Objects.requireNonNull(roomLoadCoordinator, "roomLoadCoordinator");
         }
+    }
+
+    RoomEntityOutbox outbox() {
+        return this.outbox;
     }
 }

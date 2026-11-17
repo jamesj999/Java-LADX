@@ -59,7 +59,7 @@ final class RoomEntityInteractions {
     int clearEntity(int slot) {
         int mask = lifecycle.clearEntity(slot);
         if (mask != 0) {
-            session.recentRoomEntityClears.addMask(room.roomId(), mask);
+            session.recentRoomEntityClears().addMask(room.roomId(), mask);
         }
         room.replaceEntities(inspection.view());
         return mask;
@@ -75,20 +75,22 @@ final class RoomEntityInteractions {
             return null;
         }
         if (event.persistentClearMask() != 0) {
-            session.recentRoomEntityClears.addMask(room.roomId(), event.persistentClearMask());
+            session.recentRoomEntityClears().addMask(room.roomId(), event.persistentClearMask());
         }
         if (event.type() == 0x30 && room.roomId() == 0x7C && room.mapCategory() != Warp.CATEGORY_OVERWORLD) {
             // PickDroppableKey sets the Angler's Tunnel source room flag before
             // it starts the held-item transition.
-            world.indoorARoomStatus[0x69] |= 0x10;
+            world.indoorARoomStatus()[0x69] |= 0x10;
         }
         if (event.type() == ENTITY_DROPPABLE_SECRET_SEASHELL) {
             // PickSecretSeashell opens Dialog0EF and completes the room after
             // the shared pickup collision has cleared the source entity.
             world.markCompleted(room);
-            session.outbox.pendingRoomDialogRequests.add(new DialogRequest(0, 0xEF));
-            session.outbox.pendingRoomEntityEvents.add(new EntityCombatEvent(
-                    event.slot(), event.type(), 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x01));
+            session.outbox().pendingRoomDialogRequests().add(new DialogRequest(0, 0xEF));
+            session.outbox()
+                    .pendingRoomEntityEvents()
+                    .add(new EntityCombatEvent(
+                            event.slot(), event.type(), 0, false, EntityCombatEvent.SoundChannel.WAVE, 0x01));
         }
         harvestKeyRewardEvents();
         room.replaceEntities(inspection.view());
@@ -102,10 +104,10 @@ final class RoomEntityInteractions {
 
             if (reward.itemType() >= ChestContentsTable.CHEST_MAP
                     && reward.itemType() <= ChestContentsTable.CHEST_SMALL_KEY) {
-                world.dungeonItemState.incrementCurrentFlag(reward.itemType());
+                world.dungeonItemState().incrementCurrentFlag(reward.itemType());
             }
             world.markCompleted(room);
         }
-        RoomEntityOutbox.append(session.outbox.pendingKeyRewardEvents, rewards);
+        RoomEntityOutbox.append(session.outbox().pendingKeyRewardEvents(), rewards);
     }
 }

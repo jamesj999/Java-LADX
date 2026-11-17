@@ -91,31 +91,30 @@ import linksawakening.world.entity.motion.ZoraMotion;
 
 /** ConfigureEntityHealth and the ROM slot status, countdown and persistence reset paths. */
 public final class EntitySlotLifecycle {
-    final EntityWarpController warpState;
-    final EntityBombState bombInteractions;
-    final EntityBossState bossRewards;
-    final EntityCombatTables combatTables;
-    final EntityEnemyInspection enemyInspection;
-    final EntityEventChannels events;
-    final EntityLiftState liftThrow;
-    final EntityLinkState linkState;
-    final EntityMotionRegistry motions;
-    final EntityPhysicsTables physicsTables;
-    final EntityPickupState pickups;
-    final EntityPresentationState presentationState;
-    final EntityProjectileState projectiles;
-    final EntityRewardState rewards;
-    final EntityRoomVariables roomVariables;
-    final EntityStoryState story;
-    final GenieEntityController.State genie;
-    final RomEnemyCombatTables enemyCombatTables;
-    final EntitySlots slots;
-    final SlimeEyeController.State slimeEye;
+    private final EntityWarpController warpState;
+    private final EntityBombState bombInteractions;
+    private final EntityBossState bossRewards;
+    private final EntityCombatTables combatTables;
+    private final EntityEnemyInspection enemyInspection;
+    private final EntityEventChannels events;
+    private final EntityLiftState liftThrow;
+    private final EntityLinkState linkState;
+    private final EntityMotionRegistry motions;
+    private final EntityPhysicsTables physicsTables;
+    private final EntityPickupState pickups;
+    private final EntityProjectileState projectiles;
+    private final EntityRewardState rewards;
+    private final EntityRoomVariables roomVariables;
+    private final EntityStoryState story;
+    private final GenieEntityController.State genie;
+    private final RomEnemyCombatTables enemyCombatTables;
+    private final EntitySlots slots;
+    private final SlimeEyeController.State slimeEye;
     // Optional ROM data, absent in ROM-free runtimes.
-    final IntUnaryOperator entityProperties;
+    private final IntUnaryOperator entityProperties;
 
-    final EntityRoomInspection inspection;
-    final EntitySlotPresentation slotPresentation;
+    private final EntityRoomInspection inspection;
+    private final EntitySlotPresentation slotPresentation;
 
     EntitySlotLifecycle(
             EntityWarpController warpState,
@@ -155,7 +154,7 @@ public final class EntitySlotLifecycle {
         this.motions = Objects.requireNonNull(motions, "motions");
         this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
         this.pickups = Objects.requireNonNull(pickups, "pickups");
-        this.presentationState = Objects.requireNonNull(presentationState, "presentationState");
+        Objects.requireNonNull(presentationState, "presentationState");
         this.projectiles = Objects.requireNonNull(projectiles, "projectiles");
         this.rewards = Objects.requireNonNull(rewards, "rewards");
         this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");

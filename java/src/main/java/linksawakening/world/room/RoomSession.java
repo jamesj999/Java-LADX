@@ -90,7 +90,7 @@ public final class RoomSession {
 
     void installRoom(RoomRuntime room) {
         loadedRooms.install(room);
-        dungeonView.setRoomMap(room.room.mapId());
+        dungeonView.setRoomMap(room.room().mapId());
     }
 
     void clearRoom() {
@@ -99,7 +99,7 @@ public final class RoomSession {
     }
 
     RoomRuntime roomLoaded(RoomRuntime room) {
-        roomLoadListener.roomLoaded(room.room);
+        roomLoadListener.roomLoaded(room.room());
         // Notification may synchronously load another room; retain the original publication protocol.
         return Objects.requireNonNull(loadedRooms.currentOrNull());
     }

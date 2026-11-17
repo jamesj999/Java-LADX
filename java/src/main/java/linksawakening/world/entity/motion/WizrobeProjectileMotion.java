@@ -11,12 +11,12 @@ public final class WizrobeProjectileMotion {
     private static final int[] SPEED_X_BY_DIRECTION = {0x20, 0xE0, 0x00, 0x00};
     private static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xE0, 0x20};
 
-    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot, IntSupplier randomByteSupplier) {
         if (randomByteSupplier == null) {
@@ -103,5 +103,21 @@ public final class WizrobeProjectileMotion {
         if (direction < 0 || direction > 3) {
             throw new IllegalArgumentException("Wizrobe projectile direction out of range: " + direction);
         }
+    }
+
+    int[] speedX() {
+        return this.speedX;
+    }
+
+    int[] speedY() {
+        return this.speedY;
+    }
+
+    int[] direction() {
+        return this.direction;
+    }
+
+    boolean[] initialized() {
+        return this.initialized;
     }
 }

@@ -18,12 +18,12 @@ public final class BombiteMotion {
     static final int[] BOUNCING_SPEED_Y = {0x00, 0x00, 0xF8, 0x08};
     static final int[] TIMER_COUNTDOWN_VARIANTS = {5, 5, 4, 3, 2, 2, 2};
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record Update(
             RoomEntity entity,
@@ -177,7 +177,7 @@ public final class BombiteMotion {
 
     record Vector(int x, int y) {}
 
-    final BombiteStep bombiteStep = new BombiteStep(this);
+    private final BombiteStep bombiteStep = new BombiteStep(this);
 
     public record BombiteFrame(
             RoomEntity entity,

@@ -31,20 +31,20 @@ public final class SlimeEyeController {
     private static final RomAddress HALF_SPEED_X = RomSymbols.Data_004_4E94; // ROM Data_004_4E94
     private static final RomAddress HALF_SPEED_Y = RomSymbols.Data_004_4E9C; // ROM Data_004_4E9C
 
-    final List<RoomEntity> slotEntities;
-    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
-    final EntityBackgroundMechanics backgroundMechanics;
-    final EntityBossRewards bossRewards;
-    final EntityCombatTables combatTables;
-    final EntityEventChannels events;
-    final EntityMotionRegistry motions;
-    final EntityPhysicsTables physicsTables;
-    final EntityRoomVariables roomVariables;
-    final EntitySlotLifecycle lifecycle;
-    final EntitySlotProperties slotProperties;
-    final RomEnemyCombatTables enemyCombatTables;
-    final EntitySlots slots;
-    final State encounter;
+    private final List<RoomEntity> slotEntities;
+    private final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
+    private final EntityBackgroundMechanics backgroundMechanics;
+    private final EntityBossRewards bossRewards;
+    private final EntityCombatTables combatTables;
+    private final EntityEventChannels events;
+    private final EntityMotionRegistry motions;
+    private final EntityPhysicsTables physicsTables;
+    private final EntityRoomVariables roomVariables;
+    private final EntitySlotLifecycle lifecycle;
+    private final EntitySlotProperties slotProperties;
+    private final RomEnemyCombatTables enemyCombatTables;
+    private final EntitySlots slots;
+    private final State encounter;
     // The ROM-free reader retains the original encounter-table precondition.
     private final ToIntFunction<RomAddress> readByte;
     private int screenShakeCountdown;
@@ -474,11 +474,11 @@ public final class SlimeEyeController {
         return dx < read(CONTACT_HITBOXES, box + 1) + w && dy < read(CONTACT_HITBOXES, box + 3) + h;
     }
 
-    final SlimeEyeHalfStep slimeEyeHalfStep = new SlimeEyeHalfStep(this);
-    final SlimeEyeCombatStep slimeEyeCombatStep = new SlimeEyeCombatStep(this);
+    private final SlimeEyeHalfStep slimeEyeHalfStep = new SlimeEyeHalfStep(this);
+    private final SlimeEyeCombatStep slimeEyeCombatStep = new SlimeEyeCombatStep(this);
     /** Encounter slot state shared with slot clearing, independent of behavior dispatch. */
     static final class State {
-        final int[] state = new int[16],
+        private final int[] state = new int[16],
                 half = new int[16],
                 stretch = new int[16],
                 moving = new int[16],
@@ -495,7 +495,7 @@ public final class SlimeEyeController {
                 accY = new int[16],
                 accZ = new int[16],
                 swordHitFrame = new int[16];
-        final boolean[] dying = new boolean[16];
+        private final boolean[] dying = new boolean[16];
 
         void clear(int slot) {
             for (int[] table : new int[][] {
@@ -517,6 +517,14 @@ public final class SlimeEyeController {
                 swordHitFrame
             }) table[slot] = 0;
             dying[slot] = false;
+        }
+
+        int[] state() {
+            return this.state;
+        }
+
+        int[] half() {
+            return this.half;
         }
     }
 
@@ -919,5 +927,9 @@ public final class SlimeEyeController {
             return new HalfUpdate(3, countdown, speedZ, 0xFF, dropping, x, y, -1);
         }
         return new HalfUpdate(1, 0x18, 0xC0, 0xFF, 1, linkX & 0xFF, linkY & 0xFF, 0x08);
+    }
+
+    State encounter() {
+        return this.encounter;
     }
 }

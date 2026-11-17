@@ -21,15 +21,15 @@ public final class PincerMotion {
         12, 12, 11, 11, 11, 10, 10, 10
     };
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] holeX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] holeY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] lungeVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] holeX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] holeY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] lungeVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record Update(RoomEntity entity, int state, int transitionCountdown, int physicsFlags) {}
 
@@ -151,7 +151,7 @@ public final class PincerMotion {
 
     record Position(int x, int y) {}
 
-    final PincerStep pincerStep = new PincerStep(this);
+    private final PincerStep pincerStep = new PincerStep(this);
 
     static final class PincerStep {
         private final PincerMotion owner;
@@ -360,5 +360,41 @@ public final class PincerMotion {
                 this.completedResult = null;
             }
         }
+    }
+
+    int[] state() {
+        return this.state;
+    }
+
+    int[] lungeVariant() {
+        return this.lungeVariant;
+    }
+
+    int[] speedX() {
+        return this.speedX;
+    }
+
+    int[] speedY() {
+        return this.speedY;
+    }
+
+    int[] speedXAccumulator() {
+        return this.speedXAccumulator;
+    }
+
+    int[] speedYAccumulator() {
+        return this.speedYAccumulator;
+    }
+
+    boolean[] initialized() {
+        return this.initialized;
+    }
+
+    int[] holeX() {
+        return this.holeX;
+    }
+
+    int[] holeY() {
+        return this.holeY;
     }
 }

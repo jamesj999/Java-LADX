@@ -30,8 +30,8 @@ final class RoomSessionBoundariesTest {
     void roomLoadClearsAnUnconsumedDungeonWarpRequest() throws Exception {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x01, 0x28);
-        RoomSessionInspection.component(session, RoomLocationState.class).pendingDungeonWarp =
-                new Warp(Warp.CATEGORY_INDOOR, 0x01, 0x36, 0x50, 0x48, 0x34);
+        RoomSessionInspection.component(session, RoomLocationState.class)
+                .pendingDungeonWarp(new Warp(Warp.CATEGORY_INDOOR, 0x01, 0x36, 0x50, 0x48, 0x34));
 
         session.rooms().loadIndoor(0x01, 0x36);
 

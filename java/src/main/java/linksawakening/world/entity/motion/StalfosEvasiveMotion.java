@@ -12,19 +12,19 @@ public final class StalfosEvasiveMotion {
     private static final int[] RANDOM_DIRECTION_SPEEDS = {0x00, 0x06, 0xFA, 0xFA, 0x06};
     // ROM wEntitiesPrivateState1Table.
 
-    final int[] cloneMode = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] cloneMode = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown1Table: post-hit delay gating the clone response.
     // ROM wEntitiesPrivateCountdown1Table.
-    final int[] hitResponseCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] hitResponseCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record Update(
             RoomEntity entity,
@@ -261,7 +261,7 @@ public final class StalfosEvasiveMotion {
 
     record Vector(int x, int y) {}
 
-    final StalfosEvasiveFrameStep stalfosEvasiveFrameStep = new StalfosEvasiveFrameStep(this);
+    private final StalfosEvasiveFrameStep stalfosEvasiveFrameStep = new StalfosEvasiveFrameStep(this);
 
     public record StalfosEvasiveFrame(
             RoomEntity entity,
@@ -482,5 +482,25 @@ public final class StalfosEvasiveMotion {
                 this.completedResult = null;
             }
         }
+    }
+
+    boolean[] initialized() {
+        return this.initialized;
+    }
+
+    int[] hitResponseCountdown() {
+        return this.hitResponseCountdown;
+    }
+
+    int[] cloneMode() {
+        return this.cloneMode;
+    }
+
+    int[] speedX() {
+        return this.speedX;
+    }
+
+    int[] speedY() {
+        return this.speedY;
     }
 }

@@ -33,19 +33,19 @@ public final class ArmosKnightMotion {
     static final int STATE_BOUNCE = 6;
     static final int STATE_BOUNCE_DELAY = 7;
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown1Table.
-    final int[] linkHoldCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] linkHoldCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState1Table.
-    final int[] previousHealth = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] previousHealth = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot) {
         state[slot] = STATE_WAKE;
@@ -153,7 +153,7 @@ public final class ArmosKnightMotion {
 
     record Vector(int x, int y) {}
 
-    final ArmosKnightStep armosKnightStep = new ArmosKnightStep(this);
+    private final ArmosKnightStep armosKnightStep = new ArmosKnightStep(this);
 
     public record ArmosKnightFrame(
             RoomEntity entity,

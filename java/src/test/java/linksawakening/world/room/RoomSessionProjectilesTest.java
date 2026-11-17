@@ -141,7 +141,7 @@ final class RoomSessionProjectilesTest {
             int currentFrame = frame;
             session.entities().tickEntities(frame, 0, 0);
             List<BombExplosionEvent> events = RoomSessionInspection.component(session, RoomEntityBridge.class)
-                    .outbox
+                    .outbox()
                     .consumeBombExplosionEvents();
             assertTrue(
                     events.isEmpty(),
@@ -152,14 +152,14 @@ final class RoomSessionProjectilesTest {
         session.entities().tickEntities(136, 0, 0);
 
         List<BombExplosionEvent> events = RoomSessionInspection.component(session, RoomEntityBridge.class)
-                .outbox
+                .outbox()
                 .consumeBombExplosionEvents();
         assertEquals(1, events.size());
         assertTrue(events.getFirst().targetsRoomObjects());
         assertEquals(0x16, events.getFirst().countdown());
         assertEquals(BombExplosionEvent.DAMAGE_TYPE_BOMB, events.getFirst().damageType());
         assertTrue(RoomSessionInspection.component(session, RoomEntityBridge.class)
-                .outbox
+                .outbox()
                 .consumeBombExplosionEvents()
                 .isEmpty());
     }
@@ -185,7 +185,7 @@ final class RoomSessionProjectilesTest {
         assertEquals(0, vfx.activeCount());
         assertTrue(
                 RoomSessionInspection.component(session, RoomEntityBridge.class)
-                        .outbox
+                        .outbox()
                         .consumeBombExplosionEvents()
                         .stream()
                         .anyMatch(event -> event.targetsRoomObjects() && event.countdown() == 0x16));
@@ -376,7 +376,7 @@ final class RoomSessionProjectilesTest {
         assertEquals(
                 List.of(new RichardProgressEvent(richard.slot(), RichardProgressEvent.Kind.RETURN_ALL_LEAVES, 0xFF)),
                 RoomSessionInspection.component(session, RoomEntityBridge.class)
-                        .outbox
+                        .outbox()
                         .consumeRichardProgressEvents());
 
         session.entityState().setEntityActionButtonsHeld(false, false);

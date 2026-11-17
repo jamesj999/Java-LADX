@@ -24,18 +24,18 @@ import linksawakening.world.entity.motion.ThrownEntityMotion;
 /** ROM bomb explosion, damage and delayed presentation ordering. */
 public final class EntityBombInteractions {
     private final EntityBombState state;
-    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
-    final EntityBackgroundMechanics backgroundMechanics;
-    final EntityCombatTables combatTables;
-    final EntityEventChannels events;
-    final EntityLiftState liftThrow;
-    final EntityLinkState linkState;
-    final EntityMotionRegistry motions;
-    final EntityPhysicsTables physicsTables;
-    final EntitySlotProperties slotProperties;
-    final RomEnemyCombatTables enemyCombatTables;
-    final EntitySlots slots;
-    final EntitySlotLifecycle lifecycle;
+    private final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
+    private final EntityBackgroundMechanics backgroundMechanics;
+    private final EntityCombatTables combatTables;
+    private final EntityEventChannels events;
+    private final EntityLiftState liftThrow;
+    private final EntityLinkState linkState;
+    private final EntityMotionRegistry motions;
+    private final EntityPhysicsTables physicsTables;
+    private final EntitySlotProperties slotProperties;
+    private final RomEnemyCombatTables enemyCombatTables;
+    private final EntitySlots slots;
+    private final EntitySlotLifecycle lifecycle;
 
     EntityBombInteractions(
             EntityBombState state,

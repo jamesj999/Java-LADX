@@ -62,20 +62,22 @@ class RoomRuntimeTest {
     void aLoadedGenerationOwnsItsRoomRuntimeAndFreshCollisionScratch() {
         var session = RoomRenderAllocationTest.room();
         var room = session.rooms().activeRoomOrNull();
-        var entities = RoomSessionInspection.loadedRoom(session).entities;
+        var entities = RoomSessionInspection.loadedRoom(session).entities();
         var first = new RoomRuntime(
-                RoomSessionInspection.loadedRoom(session).contents,
+                RoomSessionInspection.loadedRoom(session).contents(),
                 entities,
                 RoomSessionInspection.component(session, RoomRuntime.Services.class));
         var replacement = new RoomRuntime(
-                RoomSessionInspection.loadedRoom(session).contents,
+                RoomSessionInspection.loadedRoom(session).contents(),
                 entities,
                 RoomSessionInspection.component(session, RoomRuntime.Services.class));
-        assertSame(room, first.room);
-        assertSame(entities, first.entities);
-        assertNotSame(first.collisions, replacement.collisions);
-        assertNotSame(first.collisions.objectSamples, replacement.collisions.objectSamples);
-        assertNotSame(first.collisions.groundResults, replacement.collisions.groundResults);
+        assertSame(room, first.room());
+        assertSame(entities, first.entities());
+        assertNotSame(first.collisions(), replacement.collisions());
+        assertNotSame(
+                first.collisions().objectSamples(), replacement.collisions().objectSamples());
+        assertNotSame(
+                first.collisions().groundResults(), replacement.collisions().groundResults());
     }
 
     @Test
@@ -85,12 +87,12 @@ class RoomRuntimeTest {
                 NullPointerException.class,
                 () -> new RoomRuntime(
                         null,
-                        RoomSessionInspection.loadedRoom(session).entities,
+                        RoomSessionInspection.loadedRoom(session).entities(),
                         RoomSessionInspection.component(session, RoomRuntime.Services.class)));
         assertThrows(
                 NullPointerException.class,
                 () -> new RoomRuntime(
-                        RoomSessionInspection.loadedRoom(session).contents,
+                        RoomSessionInspection.loadedRoom(session).contents(),
                         null,
                         RoomSessionInspection.component(session, RoomRuntime.Services.class)));
     }
@@ -158,7 +160,9 @@ class RoomRuntimeTest {
         var role = session.entities();
         var first = RoomSessionInspection.loadedRoom(session);
         var replacement = new RoomRuntime(
-                first.contents, first.entities, RoomSessionInspection.component(session, RoomRuntime.Services.class));
+                first.contents(),
+                first.entities(),
+                RoomSessionInspection.component(session, RoomRuntime.Services.class));
         session.installRoom(replacement);
         assertSame(replacement, RoomSessionInspection.loadedRoom(session));
         assertSame(role, session.entities());
@@ -170,21 +174,21 @@ class RoomRuntimeTest {
         var session = RoomRenderAllocationTest.room();
         var original = RoomSessionInspection.loadedRoom(session);
         var replacementEntities = new linksawakening.world.entity.RoomEntityRuntimeBuilder(
-                        original.entities.inspection().snapshot())
+                        original.entities().inspection().snapshot())
                 .build();
         var replacement = new RoomRuntime(
-                original.contents,
+                original.contents(),
                 replacementEntities,
                 RoomSessionInspection.component(session, RoomRuntime.Services.class));
         session.installRoom(replacement);
         session.entityState().clearEntity(0);
         org.junit.jupiter.api.Assertions.assertTrue(
-                original.entities.inspection().view().slots().get(0).loaded());
+                original.entities().inspection().view().slots().get(0).loaded());
         org.junit.jupiter.api.Assertions.assertFalse(
                 replacementEntities.inspection().view().slots().get(0).loaded());
         org.junit.jupiter.api.Assertions.assertFalse(
                 session.rooms().requireActiveRoom().entityView().slots().get(0).loaded());
-        assertNotSame(original.interactions, replacement.interactions);
+        assertNotSame(original.interactions(), replacement.interactions());
     }
 
     @Test
@@ -201,12 +205,16 @@ class RoomRuntimeTest {
         session.entityState().setEntityDialogActive(true);
         session.entityState().setEntityTalkState(true, 7, 0x80);
         org.junit.jupiter.api.Assertions.assertTrue(
-                RoomSessionInspection.component(session, RoomEntityInputs.class).entityDialogActive);
-        assertEquals(7, RoomSessionInspection.component(session, RoomEntityInputs.class).entityDialogCooldown);
+                RoomSessionInspection.component(session, RoomEntityInputs.class).entityDialogActive());
+        assertEquals(
+                7,
+                RoomSessionInspection.component(session, RoomEntityInputs.class).entityDialogCooldown());
         assertThrows(IllegalArgumentException.class, () -> session.entityState().setEntityTalkState(false, 256, 0));
-        assertEquals(7, RoomSessionInspection.component(session, RoomEntityInputs.class).entityDialogCooldown);
+        assertEquals(
+                7,
+                RoomSessionInspection.component(session, RoomEntityInputs.class).entityDialogCooldown());
         org.junit.jupiter.api.Assertions.assertTrue(
-                RoomSessionInspection.component(session, RoomEntityInputs.class).entityInventoryAppearing);
+                RoomSessionInspection.component(session, RoomEntityInputs.class).entityInventoryAppearing());
         org.junit.jupiter.api.Assertions.assertFalse(session.hasRoom());
     }
 
@@ -221,7 +229,7 @@ class RoomRuntimeTest {
                 new linksawakening.physics.OverworldCollision(linksawakening.rom.RomTables.load(rom)),
                 new RoomSessionConfig.Presentation(null, null, null),
                 new linksawakening.world.entity.RomRandomByteSource()));
-        RoomSessionInspection.component(session, RoomLocationState.class).shouldGetLostInMysteriousWoods = true;
+        RoomSessionInspection.component(session, RoomLocationState.class).shouldGetLostInMysteriousWoods(true);
         var result = session.tickEntities(new EntityTickInputs(
                 3,
                 new LinkPosition(260, -1, 257, 5, 0),
@@ -229,14 +237,28 @@ class RoomRuntimeTest {
                 0,
                 new SwordBox(false, 0, 0, 0, 0)));
         org.junit.jupiter.api.Assertions.assertTrue(result.isEmpty());
-        assertEquals(4, RoomSessionInspection.component(session, RoomFollowerState.class).followingLinkX);
-        assertEquals(255, RoomSessionInspection.component(session, RoomFollowerState.class).followingLinkY);
-        assertEquals(1, RoomSessionInspection.component(session, RoomFollowerState.class).followingLinkZ);
-        assertEquals(5, RoomSessionInspection.component(session, RoomFollowerState.class).followingLinkDirection);
         assertEquals(
-                0xE1, RoomSessionInspection.component(session, RoomEntitySessionState.class).currentLinkMotionState);
-        org.junit.jupiter.api.Assertions.assertFalse(
-                RoomSessionInspection.component(session, RoomLocationState.class).shouldGetLostInMysteriousWoods);
+                4,
+                RoomSessionInspection.component(session, RoomFollowerState.class)
+                        .followingLinkX());
+        assertEquals(
+                255,
+                RoomSessionInspection.component(session, RoomFollowerState.class)
+                        .followingLinkY());
+        assertEquals(
+                1,
+                RoomSessionInspection.component(session, RoomFollowerState.class)
+                        .followingLinkZ());
+        assertEquals(
+                5,
+                RoomSessionInspection.component(session, RoomFollowerState.class)
+                        .followingLinkDirection());
+        assertEquals(
+                0xE1,
+                RoomSessionInspection.component(session, RoomEntitySessionState.class)
+                        .currentLinkMotionState());
+        org.junit.jupiter.api.Assertions.assertFalse(RoomSessionInspection.component(session, RoomLocationState.class)
+                .shouldGetLostInMysteriousWoods());
     }
 
     @Test

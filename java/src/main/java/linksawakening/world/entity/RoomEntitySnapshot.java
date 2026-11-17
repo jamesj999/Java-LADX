@@ -445,43 +445,43 @@ public final class RoomEntitySnapshot {
             implements Data {
         @Override
         public EntitySpriteSelection spriteSelection() {
-            return room.presentationState.snapshotSelection();
+            return room.presentationState().snapshotSelection();
         }
 
         @Override
         public EntitySpriteTileSnapshot spriteTiles() {
-            return room.spriteTiles;
+            return room.spriteTiles();
         }
 
         @Override
         public boolean sideScrolling() {
-            return room.physicsTables.readGroundInteractionSideScrolling();
+            return room.physicsTables().readGroundInteractionSideScrolling();
         }
 
         @Override
         public List<HookshotChainOam.Entry> hookshotChainOam() {
-            return room.slotProperties.readHookshotChainOam();
+            return room.slotProperties().readHookshotChainOam();
         }
 
         @Override
         public List<PincerBodyOam.Entry> pincerBodyOam() {
-            return room.slotProperties.readPincerBodyOam();
+            return room.slotProperties().readPincerBodyOam();
         }
 
         @Override
         public List<WingedOctorokOam.Entry> wingedOctorokOam() {
-            return room.slotProperties.readWingedOctorokOam();
+            return room.slotProperties().readWingedOctorokOam();
         }
 
         @Override
         public List<BowWowChain.Entry> bowWowChainOam() {
-            return room.slotProperties.readBowWowChainOam();
+            return room.slotProperties().readBowWowChainOam();
         }
 
         @Override
         public int visualYOffset(int slot) {
             Objects.checkIndex(slot, RoomEntity.SLOT_COUNT);
-            return room.physicsTables.readFallingVisualYOffset(slot);
+            return room.physicsTables().readFallingVisualYOffset(slot);
         }
 
         @Override

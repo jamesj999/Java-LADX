@@ -20,7 +20,7 @@ import linksawakening.world.entity.event.WitchRewardEvent;
 final class RoomEntityOutbox {
     private final RoomRequestDrain<linksawakening.world.entity.event.EntityRequest> rewardDrain =
             new RoomRequestDrain<>();
-    final RoomRequestDrain<EntityCombatEvent> combatDrain = new RoomRequestDrain<>();
+    private final RoomRequestDrain<EntityCombatEvent> combatDrain = new RoomRequestDrain<>();
 
     /** Empty List.copyOf/addAll implementations can still allocate an array; avoid that boundary. */
     static <T> void append(List<T> target, List<? extends T> source) {
@@ -35,20 +35,20 @@ final class RoomEntityOutbox {
         return result;
     }
 
-    final List<BombExplosionEvent> pendingBombExplosionEvents = new ArrayList<>();
-    final List<EntityCombatEvent> pendingRoomEntityEvents = new ArrayList<>();
-    final List<ChestRewardEvent> pendingChestRewardEvents = new ArrayList<>();
-    final List<KeyRewardEvent> pendingKeyRewardEvents = new ArrayList<>();
-    final List<SlimeKeyRewardEvent> pendingSlimeKeyRewardEvents = new ArrayList<>();
-    final List<HeartContainerRewardEvent> pendingHeartContainerRewards = new ArrayList<>();
-    final List<MadamMeowMeowFullHealRequest> pendingMadamMeowMeowFullHealRequests = new ArrayList<>();
-    final List<RichardProgressEvent> pendingRichardProgressEvents = new ArrayList<>();
-    final List<SwordPickupRewardEvent> pendingSwordPickupRewards = new ArrayList<>();
-    final List<ToadstoolRewardEvent> pendingToadstoolRewards = new ArrayList<>();
-    final List<WitchExchangeEvent> pendingWitchExchangeEvents = new ArrayList<>();
-    final List<WitchRewardEvent> pendingWitchRewardEvents = new ArrayList<>();
-    final List<DialogRequest> pendingRoomDialogRequests = new ArrayList<>();
-    int pendingRoomMusicTrack = -1;
+    private final List<BombExplosionEvent> pendingBombExplosionEvents = new ArrayList<>();
+    private final List<EntityCombatEvent> pendingRoomEntityEvents = new ArrayList<>();
+    private final List<ChestRewardEvent> pendingChestRewardEvents = new ArrayList<>();
+    private final List<KeyRewardEvent> pendingKeyRewardEvents = new ArrayList<>();
+    private final List<SlimeKeyRewardEvent> pendingSlimeKeyRewardEvents = new ArrayList<>();
+    private final List<HeartContainerRewardEvent> pendingHeartContainerRewards = new ArrayList<>();
+    private final List<MadamMeowMeowFullHealRequest> pendingMadamMeowMeowFullHealRequests = new ArrayList<>();
+    private final List<RichardProgressEvent> pendingRichardProgressEvents = new ArrayList<>();
+    private final List<SwordPickupRewardEvent> pendingSwordPickupRewards = new ArrayList<>();
+    private final List<ToadstoolRewardEvent> pendingToadstoolRewards = new ArrayList<>();
+    private final List<WitchExchangeEvent> pendingWitchExchangeEvents = new ArrayList<>();
+    private final List<WitchRewardEvent> pendingWitchRewardEvents = new ArrayList<>();
+    private final List<DialogRequest> pendingRoomDialogRequests = new ArrayList<>();
+    private int pendingRoomMusicTrack = -1;
 
     List<ChestRewardEvent> consumeChestRewardEvents() {
         return take(pendingChestRewardEvents);
@@ -132,5 +132,70 @@ final class RoomEntityOutbox {
 
     void drainWitchRewardEvents(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
         rewardDrain.drain(pendingWitchRewardEvents, target);
+    }
+
+    List<DialogRequest> pendingRoomDialogRequests() {
+        return this.pendingRoomDialogRequests;
+    }
+
+    List<EntityCombatEvent> pendingRoomEntityEvents() {
+        return this.pendingRoomEntityEvents;
+    }
+
+    List<KeyRewardEvent> pendingKeyRewardEvents() {
+        return this.pendingKeyRewardEvents;
+    }
+
+    List<BombExplosionEvent> pendingBombExplosionEvents() {
+        return this.pendingBombExplosionEvents;
+    }
+
+    List<ChestRewardEvent> pendingChestRewardEvents() {
+        return this.pendingChestRewardEvents;
+    }
+
+    List<SlimeKeyRewardEvent> pendingSlimeKeyRewardEvents() {
+        return this.pendingSlimeKeyRewardEvents;
+    }
+
+    List<HeartContainerRewardEvent> pendingHeartContainerRewards() {
+        return this.pendingHeartContainerRewards;
+    }
+
+    List<MadamMeowMeowFullHealRequest> pendingMadamMeowMeowFullHealRequests() {
+        return this.pendingMadamMeowMeowFullHealRequests;
+    }
+
+    List<RichardProgressEvent> pendingRichardProgressEvents() {
+        return this.pendingRichardProgressEvents;
+    }
+
+    List<SwordPickupRewardEvent> pendingSwordPickupRewards() {
+        return this.pendingSwordPickupRewards;
+    }
+
+    List<ToadstoolRewardEvent> pendingToadstoolRewards() {
+        return this.pendingToadstoolRewards;
+    }
+
+    List<WitchExchangeEvent> pendingWitchExchangeEvents() {
+        return this.pendingWitchExchangeEvents;
+    }
+
+    List<WitchRewardEvent> pendingWitchRewardEvents() {
+        return this.pendingWitchRewardEvents;
+    }
+
+    int pendingRoomMusicTrack() {
+        return this.pendingRoomMusicTrack;
+    }
+
+    int pendingRoomMusicTrack(int value) {
+        this.pendingRoomMusicTrack = value;
+        return this.pendingRoomMusicTrack;
+    }
+
+    RoomRequestDrain<EntityCombatEvent> combatDrain() {
+        return this.combatDrain;
     }
 }

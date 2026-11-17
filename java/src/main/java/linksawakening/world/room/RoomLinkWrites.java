@@ -30,7 +30,7 @@ final class RoomLinkWrites {
     }
 
     private static final class Collector implements LinkWriteSink.Positions, LinkWriteSink.Attacks {
-        final List<LinkWrite> writes = new ArrayList<>();
+        private final List<LinkWrite> writes = new ArrayList<>();
 
         @Override
         public void platform(SideViewPlatformLinkRequest r) {

@@ -30,19 +30,19 @@ public final class CuccoMotion {
         0x20, 0x40, 0x60, 0x80, 0x20, 0x40, 0x60, 0x80
     };
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] spriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] spriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState1Table: flashed-frame buildup saturating at $23 before angry spawns.
     // ROM wEntitiesPrivateState1Table.
-    final int[] angerBuildup = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] angerBuildup = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record SpawnRequest(int x, int y, int z, int speedX, int speedY) {
         public SpawnRequest {
@@ -233,7 +233,7 @@ public final class CuccoMotion {
 
     record Vector(int x, int y) {}
 
-    final CuccoStep cuccoStep = new CuccoStep(this);
+    private final CuccoStep cuccoStep = new CuccoStep(this);
 
     static CuccoMotion.Update advanceBody(CuccoMotion owner, CuccoFrame inputs) {
         RoomEntity entity = inputs.entity();
@@ -658,5 +658,37 @@ public final class CuccoMotion {
                 this.completedResult = null;
             }
         }
+    }
+
+    int[] state() {
+        return this.state;
+    }
+
+    int[] angerBuildup() {
+        return this.angerBuildup;
+    }
+
+    int[] speedX() {
+        return this.speedX;
+    }
+
+    int[] speedY() {
+        return this.speedY;
+    }
+
+    int[] speedZ() {
+        return this.speedZ;
+    }
+
+    int[] speedXAccumulator() {
+        return this.speedXAccumulator;
+    }
+
+    int[] speedYAccumulator() {
+        return this.speedYAccumulator;
+    }
+
+    int[] speedZAccumulator() {
+        return this.speedZAccumulator;
     }
 }

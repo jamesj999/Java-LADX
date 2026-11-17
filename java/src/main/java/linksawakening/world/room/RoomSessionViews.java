@@ -11,11 +11,12 @@ final class RoomSessionViews {
     }
 
     long roomLoadSerial() {
-        return dependencies.location().roomLoadSerial;
+        return dependencies.location().roomLoadSerial();
     }
 
     long roomLoadToken() {
-        return (dependencies.location().roomSessionId << 32) ^ dependencies.location().roomLoadSerial;
+        return (dependencies.location().roomSessionId() << 32)
+                ^ dependencies.location().roomLoadSerial();
     }
 
     byte[] overworldRoomStatusSnapshot() {
@@ -67,7 +68,7 @@ final class RoomSessionViews {
     int adjacentIndoorRoomIdForBombWall(ActiveRoom room, int wallIndex) {
         return dependencies
                 .scrollNavigation()
-                .adjacentIndoorRoomIdForBombWall(room, dependencies.location().indoorMapPosition, wallIndex);
+                .adjacentIndoorRoomIdForBombWall(room, dependencies.location().indoorMapPosition(), wallIndex);
     }
 
     int findIndoorMapPosition(int mapId, int roomId) {

@@ -22,22 +22,22 @@ public final class RoamingEnemyMotion {
     private static final int[] IRON_MASK_SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xF4, 0x0C};
     static final int[] VARIANT_BY_DIRECTION = {6, 4, 2, 0};
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown1Table.
-    final int[] attackPauseCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] attackPauseCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState1Table.
-    final int[] wanderTurnCount = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    final int[] collisionsTable = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] horizontallyCollidedObject = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] verticallyCollidedObject = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] wanderTurnCount = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] collisionsTable = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] horizontallyCollidedObject = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] verticallyCollidedObject = new int[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot) {
         state[slot] = 0;
@@ -296,7 +296,7 @@ public final class RoamingEnemyMotion {
     public record LaunchRequest(int sourceSlot, int sourceType, int projectileType)
             implements linksawakening.world.entity.event.EntityRequestBridge {}
 
-    final RoamingEnemyFrameStep roamingEnemyFrameStep = new RoamingEnemyFrameStep(this);
+    private final RoamingEnemyFrameStep roamingEnemyFrameStep = new RoamingEnemyFrameStep(this);
 
     record RoamingEnemyFrame(
             linksawakening.world.entity.RoomEntity entity,
@@ -476,5 +476,61 @@ public final class RoamingEnemyMotion {
                 this.completedResult = null;
             }
         }
+    }
+
+    int[] attackPauseCountdown() {
+        return this.attackPauseCountdown;
+    }
+
+    int[] state() {
+        return this.state;
+    }
+
+    int[] transitionCountdown() {
+        return this.transitionCountdown;
+    }
+
+    int[] inertia() {
+        return this.inertia;
+    }
+
+    int[] wanderTurnCount() {
+        return this.wanderTurnCount;
+    }
+
+    int[] direction() {
+        return this.direction;
+    }
+
+    int[] speedX() {
+        return this.speedX;
+    }
+
+    int[] speedY() {
+        return this.speedY;
+    }
+
+    int[] speedXAccumulator() {
+        return this.speedXAccumulator;
+    }
+
+    int[] speedYAccumulator() {
+        return this.speedYAccumulator;
+    }
+
+    int[] collisionsTable() {
+        return this.collisionsTable;
+    }
+
+    int[] horizontallyCollidedObject() {
+        return this.horizontallyCollidedObject;
+    }
+
+    int[] verticallyCollidedObject() {
+        return this.verticallyCollidedObject;
+    }
+
+    boolean[] initialized() {
+        return this.initialized;
     }
 }

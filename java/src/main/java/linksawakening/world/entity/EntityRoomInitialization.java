@@ -44,21 +44,21 @@ import linksawakening.world.entity.motion.WitchRatMotion;
 
 /** ROM presentation loading and initial room slot setup in source order. */
 final class EntityRoomInitialization {
-    final EntityWarpController warpState;
-    final boolean indoorRoom;
-    final EntityBombState bombInteractions;
-    final EntityBossState bossRewards;
-    final EntityCombatTables combatTables;
-    final EntityLiftState liftThrow;
-    final EntityMotionRegistry motions;
-    final EntityPhysicsTables physicsTables;
-    final EntityPickupState pickups;
-    final EntityRewardState rewards;
-    final EntitySlotProperties slotProperties;
-    final EntityStoryState story;
-    final GenieEntityController genie;
-    final EntitySlots slots;
-    final EntitySlotLifecycle lifecycle;
+    private final EntityWarpController warpState;
+    private final boolean indoorRoom;
+    private final EntityBombState bombInteractions;
+    private final EntityBossState bossRewards;
+    private final EntityCombatTables combatTables;
+    private final EntityLiftState liftThrow;
+    private final EntityMotionRegistry motions;
+    private final EntityPhysicsTables physicsTables;
+    private final EntityPickupState pickups;
+    private final EntityRewardState rewards;
+    private final EntitySlotProperties slotProperties;
+    private final EntityStoryState story;
+    private final GenieEntityController genie;
+    private final EntitySlots slots;
+    private final EntitySlotLifecycle lifecycle;
 
     EntityRoomInitialization(
             EntityWarpController warpState,

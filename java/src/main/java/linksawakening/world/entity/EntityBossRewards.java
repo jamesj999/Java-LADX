@@ -36,20 +36,20 @@ public final class EntityBossRewards {
     }
 
     private final EntityBossState state;
-    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
-    final EntityBackgroundMechanics backgroundMechanics;
-    final EntityCombatTables combatTables;
-    final EntityEventChannels events;
-    final EntityMotionRegistry motions;
-    final EntityPhysicsTables physicsTables;
-    final EntityPickupController pickups;
-    final EntityRoomInspection roomInspection;
-    final EntityRoomVariables roomVariables;
-    final EntitySlotLifecycle lifecycle;
-    final EntitySlotProperties slotProperties;
-    final EntitySlots slots;
+    private final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
+    private final EntityBackgroundMechanics backgroundMechanics;
+    private final EntityCombatTables combatTables;
+    private final EntityEventChannels events;
+    private final EntityMotionRegistry motions;
+    private final EntityPhysicsTables physicsTables;
+    private final EntityPickupController pickups;
+    private final EntityRoomInspection roomInspection;
+    private final EntityRoomVariables roomVariables;
+    private final EntitySlotLifecycle lifecycle;
+    private final EntitySlotProperties slotProperties;
+    private final EntitySlots slots;
 
-    final EntityLinkState linkState;
+    private final EntityLinkState linkState;
 
     EntityBossRewards(
             EntityBossState state,
@@ -392,7 +392,7 @@ public final class EntityBossRewards {
         this.bossKeyDropStep.run(source, randomByteSupplier);
     }
 
-    final BossKeyDropStep bossKeyDropStep = new BossKeyDropStep(this);
+    private final BossKeyDropStep bossKeyDropStep = new BossKeyDropStep(this);
 
     void handleBowWowTargetContact(
             RoomEntity source, BowWowMotion.TargetContact contact, IntSupplier randomByteSupplier) {

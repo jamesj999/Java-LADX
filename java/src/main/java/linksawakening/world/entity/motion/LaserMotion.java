@@ -35,9 +35,9 @@ public final class LaserMotion {
     private final int[] parentSlot = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
 
@@ -317,4 +317,16 @@ public final class LaserMotion {
     public record BeamUpdate(RoomEntity entity, boolean unloaded) {}
 
     private record Vector(int x, int y) {}
+
+    int[] transitionCountdown() {
+        return this.transitionCountdown;
+    }
+
+    int[] speedX() {
+        return this.speedX;
+    }
+
+    int[] speedY() {
+        return this.speedY;
+    }
 }

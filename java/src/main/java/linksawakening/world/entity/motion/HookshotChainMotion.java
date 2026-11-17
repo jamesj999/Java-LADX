@@ -28,7 +28,7 @@ public final class HookshotChainMotion {
     private static final int HITBOX_WIDTH = 0x05;
     private static final int HITBOX_HEIGHT = 0x05;
 
-    final State[] states = new State[EntityRoomLoader.MAX_ENTITIES];
+    private final State[] states = new State[EntityRoomLoader.MAX_ENTITIES];
 
     public record State(
             int x,

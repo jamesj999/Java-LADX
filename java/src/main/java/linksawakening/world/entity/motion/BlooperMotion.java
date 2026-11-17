@@ -16,16 +16,16 @@ public final class BlooperMotion {
     private static final int DIRECTION_UP = 2;
     private static final int DIRECTION_DOWN = 3;
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown3Table.
     private final int[] recoilCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot) {
         reset(slot);
@@ -256,4 +256,36 @@ public final class BlooperMotion {
     public record Update(
             RoomEntity entity, /* Optional ground-pass outcome; absence retains the current motion result. */
             RoomEntityGroundInteraction.Result groundResult) {}
+
+    boolean[] initialized() {
+        return this.initialized;
+    }
+
+    int[] state() {
+        return this.state;
+    }
+
+    int[] transitionCountdown() {
+        return this.transitionCountdown;
+    }
+
+    int[] direction() {
+        return this.direction;
+    }
+
+    int[] speedX() {
+        return this.speedX;
+    }
+
+    int[] speedY() {
+        return this.speedY;
+    }
+
+    int[] speedXAccumulator() {
+        return this.speedXAccumulator;
+    }
+
+    int[] speedYAccumulator() {
+        return this.speedYAccumulator;
+    }
 }

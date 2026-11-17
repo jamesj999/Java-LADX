@@ -28,7 +28,8 @@ class RoomLiveBoundaryTest {
     @Test
     void emptyRoomAndEntityOutboxDrainsAndMergesAllocateNothing() {
         var session = RoomRenderAllocationTest.room();
-        var box = RoomSessionInspection.component(session, RoomEntitySessionState.class).outbox;
+        var box = RoomSessionInspection.component(session, RoomEntitySessionState.class)
+                .outbox();
         var bridge = RoomSessionInspection.component(session, RoomEntityBridge.class);
         Runnable drain = () -> {
             bridge.consumeEntityEvents();

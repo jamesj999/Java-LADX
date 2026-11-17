@@ -325,7 +325,7 @@ final class GameplayRouteScenario {
             route.session.entities().tickEntities(route.frame++, route.toadstool.x(), route.toadstool.y());
             route.session.entityState().consumeEntityDialogRequests();
             route.toadstoolRewards = RoomSessionInspection.component(route.session, RoomEntityBridge.class)
-                    .outbox
+                    .outbox()
                     .consumeToadstoolRewards();
         }
         assertEquals(List.of(new ToadstoolRewardEvent(route.toadstool.slot())), route.toadstoolRewards);
@@ -388,7 +388,7 @@ final class GameplayRouteScenario {
         route.session.entities().tickEntitiesWithProjectileEvents(route.frame++, route.witch.x(), 0x56, 0, 0, 1, false);
         route.session.entities().tickEntitiesWithProjectileEvents(route.frame++, route.witch.x(), 0x56, 0, 0, 1, false);
         route.exchangeEvents = RoomSessionInspection.component(route.session, RoomEntityBridge.class)
-                .outbox
+                .outbox()
                 .consumeWitchExchangeEvents();
         assertEquals(1, route.exchangeEvents.size());
         route.playerState
@@ -427,7 +427,7 @@ final class GameplayRouteScenario {
         assertEquals(
                 1,
                 RoomSessionInspection.component(route.session, RoomEntityBridge.class)
-                        .outbox
+                        .outbox()
                         .consumeWitchRewardEvents()
                         .size());
         route.playerState.playerRewards().applyWitchMagicPowderReward();
@@ -521,7 +521,7 @@ final class GameplayRouteScenario {
         assertEquals(ChestContentsTable.CHEST_TAIL_KEY, route.tailKeyChest.itemType());
         route.session.entities().tickEntities(route.frame++, 0x38, 0x31);
         RoomSessionInspection.component(route.session, RoomEntityBridge.class)
-                .outbox
+                .outbox()
                 .consumeChestRewardEvents()
                 .forEach(reward -> route.playerState.chestRewards().applyChestReward(reward.itemType()));
         assertEquals(1, route.playerState.progression().tailKeyCount());
@@ -596,7 +596,8 @@ final class GameplayRouteScenario {
         assertEquals(
                 0xDF,
                 RoomSessionInspection.component(route.session, RoomDoorInteractions.class)
-                        .tailCaveKeyholeCountdownForTest(RoomSessionInspection.loadedRoom(route.session).contents));
+                        .tailCaveKeyholeCountdownForTest(
+                                RoomSessionInspection.loadedRoom(route.session).contents()));
         route.rumbleTicks = 0;
         route.shookRight = false;
         route.shookLeft = false;
@@ -1096,7 +1097,7 @@ final class GameplayRouteScenario {
                 .entities()
                 .tickEntitiesWithProjectileEvents(route.frame++, 0x38, 0x21, 0, 0, Direction.UP.javaIndex(), false);
         RoomSessionInspection.component(route.session, RoomEntityBridge.class)
-                .outbox
+                .outbox()
                 .consumeChestRewardEvents()
                 .forEach(reward -> route.playerState.chestRewards().applyChestReward(reward.itemType()));
         route.hasFeather = route.playerState.inventory().itemA() == InventoryItem.ROCS_FEATHER.romValue()
@@ -1212,7 +1213,7 @@ final class GameplayRouteScenario {
                 .entities()
                 .tickEntitiesWithProjectileEvents(route.frame++, 0x38, 0x1B, 0, 0, Direction.UP.javaIndex(), false);
         RoomSessionInspection.component(route.session, RoomEntityBridge.class)
-                .outbox
+                .outbox()
                 .consumeChestRewardEvents()
                 .forEach(reward -> route.playerState.chestRewards().applyChestReward(reward.itemType()));
         assertEquals(
@@ -1444,7 +1445,7 @@ final class GameplayRouteScenario {
                             route.frame++, 0x50, 0x60, 0, 0, Direction.DOWN.javaIndex(), false);
         }
         RoomSessionInspection.component(route.session, RoomEntityBridge.class)
-                .outbox
+                .outbox()
                 .consumeHeartContainerRewards()
                 .forEach(reward -> route.playerState.vitals().applyHeartContainerReward());
         assertEquals(route.previousMaxHearts + 1, route.playerState.vitals().maxHearts());
@@ -2919,7 +2920,7 @@ final class GameplayRouteScenario {
                             route.link.position().romEntityX(),
                             route.link.position().romEntityY());
             for (ChestRewardEvent reward : RoomSessionInspection.component(route.session, RoomEntityBridge.class)
-                    .outbox
+                    .outbox()
                     .consumeChestRewardEvents()) {
                 route.compassRewardObserved |= reward.itemType() == ChestContentsTable.CHEST_COMPASS;
                 route.playerState.chestRewards().applyChestReward(reward.itemType());
@@ -3223,7 +3224,7 @@ final class GameplayRouteScenario {
                             route.link.position().romEntityX(),
                             route.link.position().romEntityY());
             for (ChestRewardEvent reward : RoomSessionInspection.component(route.session, RoomEntityBridge.class)
-                    .outbox
+                    .outbox()
                     .consumeChestRewardEvents()) {
                 route.stoneBeakRewardObserved |= reward.itemType() == ChestContentsTable.CHEST_STONE_BEAK;
                 route.playerState.chestRewards().applyChestReward(reward.itemType());
@@ -3518,7 +3519,7 @@ final class GameplayRouteScenario {
                             route.link.position().romEntityX(),
                             route.link.position().romEntityY());
             for (ChestRewardEvent reward : RoomSessionInspection.component(route.session, RoomEntityBridge.class)
-                    .outbox
+                    .outbox()
                     .consumeChestRewardEvents()) {
                 route.room38RewardObserved |= reward.itemType() == ChestContentsTable.CHEST_SMALL_KEY;
                 route.playerState.chestRewards().applyChestReward(reward.itemType());
@@ -3609,7 +3610,7 @@ final class GameplayRouteScenario {
                             route.link.position().romEntityX(),
                             route.link.position().romEntityY());
             for (ChestRewardEvent reward : RoomSessionInspection.component(route.session, RoomEntityBridge.class)
-                    .outbox
+                    .outbox()
                     .consumeChestRewardEvents()) {
                 route.room39RewardObserved |= reward.itemType() == ChestContentsTable.CHEST_SMALL_KEY;
                 route.playerState.chestRewards().applyChestReward(reward.itemType());
@@ -4604,7 +4605,7 @@ final class GameplayRouteScenario {
                             route.link.position().romEntityX(),
                             route.link.position().romEntityY());
             for (ChestRewardEvent reward : RoomSessionInspection.component(route.session, RoomEntityBridge.class)
-                    .outbox
+                    .outbox()
                     .consumeChestRewardEvents()) {
                 route.braceletRewardObserved |= reward.itemType() == ChestContentsTable.CHEST_POWER_BRACELET;
                 route.playerState.chestRewards().applyChestReward(reward.itemType());
@@ -4636,7 +4637,7 @@ final class GameplayRouteScenario {
         assertFalse(route.session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.type() == BooBuddyMotion.ENTITY_TYPE));
         assertTrue(RoomSessionInspection.component(route.session, RoomEntityBridge.class)
-                .outbox
+                .outbox()
                 .consumeChestRewardEvents()
                 .isEmpty());
 
@@ -4854,7 +4855,7 @@ final class GameplayRouteScenario {
         for (int chestTick = 0; chestTick < 0x40; chestTick++) {
             route.tickInteractiveAtLink();
             for (ChestRewardEvent reward : RoomSessionInspection.component(route.session, RoomEntityBridge.class)
-                    .outbox
+                    .outbox()
                     .consumeChestRewardEvents()) {
                 route.room22RewardObserved |= reward.itemType() == ChestContentsTable.CHEST_SMALL_KEY;
                 route.playerState.chestRewards().applyChestReward(reward.itemType());
@@ -5129,7 +5130,7 @@ final class GameplayRouteScenario {
         for (int chestTick = 0; chestTick < 0x40; chestTick++) {
             route.tickInteractiveAtLink();
             for (ChestRewardEvent reward : RoomSessionInspection.component(route.session, RoomEntityBridge.class)
-                    .outbox
+                    .outbox()
                     .consumeChestRewardEvents()) {
                 route.nightmareKeyRewardObserved |= reward.itemType() == ChestContentsTable.CHEST_NIGHTMARE_KEY;
                 route.playerState.chestRewards().applyChestReward(reward.itemType());
@@ -5167,7 +5168,7 @@ final class GameplayRouteScenario {
         assertFalse(route.session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .anyMatch(entity -> entity.sourceLoadOrder() >= 0 && entity.sourceLoadOrder() <= 2));
         assertTrue(RoomSessionInspection.component(route.session, RoomEntityBridge.class)
-                .outbox
+                .outbox()
                 .consumeChestRewardEvents()
                 .isEmpty());
     }

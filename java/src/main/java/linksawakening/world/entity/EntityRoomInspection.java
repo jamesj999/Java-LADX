@@ -22,28 +22,28 @@ import linksawakening.world.entity.motion.WitchMotion;
 /** Queries over ExecuteEntities slot state; snapshot() owns data, view() follows the live room. */
 public final class EntityRoomInspection {
     static final RoomEntity UNREAD_PRESENTATION = RoomEntity.disabled(0);
-    final EntityWarpController warpState;
-    final boolean indoorRoom;
-    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
+    private final EntityWarpController warpState;
+    private final boolean indoorRoom;
+    private final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     // Optional ROM data, absent in ROM-free runtimes.
-    final linksawakening.gpu.EntitySpriteTileSnapshot spriteTiles;
-    final EntityBombState bombInteractions;
-    final EntityBossState bossRewards;
-    final EntityCombatTables combatTables;
-    final EntityEventChannels events;
-    final EntityLiftState liftThrow;
-    final EntityLinkState linkState;
-    final EntityMotionRegistry motions;
-    final EntityPhysicsTables physicsTables;
-    final EntityPickupState pickups;
-    final EntityPresentationState presentationState;
-    final EntityProjectileState projectiles;
-    final EntityRewardState rewards;
-    final EntityRoomVariables roomVariables;
-    final EntitySlotPresentation slotProperties;
-    final EntityStoryState story;
-    final RomEnemyCombatTables enemyCombatTables;
-    final EntitySlots slots;
+    private final linksawakening.gpu.EntitySpriteTileSnapshot spriteTiles;
+    private final EntityBombState bombInteractions;
+    private final EntityBossState bossRewards;
+    private final EntityCombatTables combatTables;
+    private final EntityEventChannels events;
+    private final EntityLiftState liftThrow;
+    private final EntityLinkState linkState;
+    private final EntityMotionRegistry motions;
+    private final EntityPhysicsTables physicsTables;
+    private final EntityPickupState pickups;
+    private final EntityPresentationState presentationState;
+    private final EntityProjectileState projectiles;
+    private final EntityRewardState rewards;
+    private final EntityRoomVariables roomVariables;
+    private final EntitySlotPresentation slotProperties;
+    private final EntityStoryState story;
+    private final RomEnemyCombatTables enemyCombatTables;
+    private final EntitySlots slots;
 
     private final RoomEntitySnapshot liveView;
 
@@ -619,5 +619,65 @@ public final class EntityRoomInspection {
         if (!hidden || entity.spriteVariant() == -1) return entity;
         if (entity == previousSource && previousPresentation.spriteVariant() == -1) return previousPresentation;
         return EntitySnapshots.withVariant(entity, -1);
+    }
+
+    EntitySlots slots() {
+        return this.slots;
+    }
+
+    EntityPresentationState presentationState() {
+        return this.presentationState;
+    }
+
+    linksawakening.gpu.EntitySpriteTileSnapshot spriteTiles() {
+        return this.spriteTiles;
+    }
+
+    EntityPhysicsTables physicsTables() {
+        return this.physicsTables;
+    }
+
+    EntitySlotPresentation slotProperties() {
+        return this.slotProperties;
+    }
+
+    EntityCombatTables combatTables() {
+        return this.combatTables;
+    }
+
+    EntityMotionRegistry motions() {
+        return this.motions;
+    }
+
+    EntityRoomVariables roomVariables() {
+        return this.roomVariables;
+    }
+
+    EntityLinkState linkState() {
+        return this.linkState;
+    }
+
+    RomEnemyCombatTables enemyCombatTables() {
+        return this.enemyCombatTables;
+    }
+
+    EntityEventChannels events() {
+        return this.events;
+    }
+
+    EntityProjectileState projectiles() {
+        return this.projectiles;
+    }
+
+    EntityBossState bossRewards() {
+        return this.bossRewards;
+    }
+
+    EntityPickupState pickups() {
+        return this.pickups;
+    }
+
+    EntityWarpController warpState() {
+        return this.warpState;
     }
 }

@@ -66,7 +66,7 @@ final class RoamingSimultaneousContactTest {
                         .build());
         var runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots)).build();
         runtime.inspection()
-                .combatTables
+                .combatTables()
                 .writeEnemyHealth(2, 8); // Synthetic nonlethal target, matching the CPU-hook probe.
         return runtime;
     }

@@ -43,13 +43,13 @@ class EntityHealthGroupTest {
     void initializesResetsAndReinitializesSlotGroup() throws IOException {
         var runtime = runtime();
         assertEquals(
-                runtime.inspection().enemyCombatTables.healthGroup(0x09),
+                runtime.inspection().enemyCombatTables().healthGroup(0x09),
                 runtime.execution().slot().healthGroup(0));
         runtime.execution().slot().setHealthGroup(0, 12);
         runtime.lifecycle().disableEntityWithoutPersistence(0);
         assertEquals(0, runtime.execution().slot().healthGroup(0));
         runtime.inspection()
-                .slots
+                .slots()
                 .replace(
                         0,
                         new RoomEntityBuilder()
@@ -65,9 +65,9 @@ class EntityHealthGroupTest {
     @Test
     void gibdoTransformationReinitializesGroupFromTheNewType() throws IOException {
         var runtime = runtime();
-        var old = runtime.inspection().slots.get(0);
+        var old = runtime.inspection().slots().get(0);
         runtime.inspection()
-                .slots
+                .slots()
                 .replace(
                         0,
                         new RoomEntityBuilder()
@@ -78,9 +78,9 @@ class EntityHealthGroupTest {
                                 .spriteDefinition(EntitySpriteDefinition.unsupported(0x1F))
                                 .build());
         runtime.execution().slot().setHealthGroup(0, 0);
-        runtime.lifecycle().finishBurning(runtime.inspection().slots.get(0));
+        runtime.lifecycle().finishBurning(runtime.inspection().slots().get(0));
         assertEquals(
-                runtime.inspection().enemyCombatTables.healthGroup(0x1E),
+                runtime.inspection().enemyCombatTables().healthGroup(0x1E),
                 runtime.execution().slot().healthGroup(0));
     }
 
@@ -93,29 +93,29 @@ class EntityHealthGroupTest {
         // Find a ROM group with different sword damage, then exercise combat itself.
         var attack = new EnemyAttackContext(1, false, false, false, false);
         int original = runtime.inspection()
-                .enemyCombatTables
+                .enemyCombatTables()
                 .resolveSwordDamage(9, attack)
                 .numericDamage();
         int group = IntStream.range(0, 0x35)
                 .filter(g -> runtime.inspection()
-                                .enemyCombatTables
+                                .enemyCombatTables()
                                 .resolveSwordDamage(9, g, attack)
                                 .numericDamage()
                         != original)
                 .findFirst()
                 .orElseThrow();
         runtime.execution().slot().setHealthGroup(0, group);
-        runtime.inspection().combatTables.writeEnemyHealth(0, 100);
+        runtime.inspection().combatTables().writeEnemyHealth(0, 100);
         var events = runtime.combat()
                 .resolveCombat(new EntitySwordContactFrame(1, 100, 100, false, true, true, 48, 32, 64, 32));
         assertEquals(1, events.size());
         assertEquals(
                 runtime.inspection()
-                        .enemyCombatTables
+                        .enemyCombatTables()
                         .resolveSwordDamage(9, group, attack)
                         .numericDamage(),
                 events.get(0).enemyDamage());
-        assertEquals(9, runtime.inspection().slots.get(0).type());
+        assertEquals(9, runtime.inspection().slots().get(0).type());
     }
 
     @Test
@@ -123,13 +123,13 @@ class EntityHealthGroupTest {
         var normal = runtime();
         normal.execution()
                 .bossRewards()
-                .handleTerminalEnemyDeath(normal.inspection().slots.get(0), () -> 0);
+                .handleTerminalEnemyDeath(normal.inspection().slots().get(0), () -> 0);
         assertTrue(normal.inspection().snapshot().loadedEntities().stream().anyMatch(e -> e.type() == 0x2E));
         var changed = runtime();
         changed.execution().slot().setHealthGroup(0, 12); // Destroyed group offset zero: no drop.
         changed.execution()
                 .bossRewards()
-                .handleTerminalEnemyDeath(changed.inspection().slots.get(0), () -> 0);
+                .handleTerminalEnemyDeath(changed.inspection().slots().get(0), () -> 0);
         assertTrue(changed.inspection().snapshot().loadedEntities().isEmpty());
     }
 }

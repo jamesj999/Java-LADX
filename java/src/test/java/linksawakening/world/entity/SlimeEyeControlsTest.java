@@ -133,7 +133,7 @@ final class SlimeEyeControlsTest {
                                                 e.z(),
                                                 room.entityState().entityHealth(e.slot()),
                                                 runtime.inspection()
-                                                        .physicsTables
+                                                        .physicsTables()
                                                         .readEnemyTransitionCountdown(e.slot())))
                                 .collect(Collectors.joining(";")))
                         .append('\n');

@@ -21,16 +21,16 @@ public final class ZombieMotion {
     static final int[] SPAWN_Y = {0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80};
     static final int[] SPAWN_X = {0x18, 0x28, 0x38, 0x48, 0x58, 0x68, 0x78, 0x88};
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState1Table: zero for the hidden room marker, nonzero for its spawned Zombie.
     // ROM wEntitiesPrivateState1Table.
-    final int[] spawnedZombieFlag = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] spawnedZombieFlag = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record SpawnRequest(int x, int y) {}
 
@@ -247,7 +247,7 @@ public final class ZombieMotion {
 
     record PositionAndCollision(int x, int y, int collisionMask) {}
 
-    final ZombieStep zombieStep = new ZombieStep(this);
+    private final ZombieStep zombieStep = new ZombieStep(this);
 
     public record ZombieFrame(
             RoomEntity entity,

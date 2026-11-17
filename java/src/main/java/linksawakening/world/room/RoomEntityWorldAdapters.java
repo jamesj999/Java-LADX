@@ -51,14 +51,14 @@ final class RoomEntityWorldAdapters {
             @Override
             public void playJingle(int id) {
                 if ((id & 0xFF) == 0x1D) {
-                    entityFrame.colorShellSoundSink.play(GameplaySoundEvent.WRONG_ANSWER);
+                    entityFrame.colorShellSoundSink().play(GameplaySoundEvent.WRONG_ANSWER);
                 }
             }
 
             @Override
             public void playNoise(int id) {
                 if ((id & 0xFF) == 0x04) {
-                    entityFrame.colorShellSoundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
+                    entityFrame.colorShellSoundSink().play(GameplaySoundEvent.DOOR_UNLOCKED);
                 }
             }
 

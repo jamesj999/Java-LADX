@@ -61,9 +61,9 @@ final class EntityTickAllocationTest {
             // Keep the same six active types in bounds throughout warm-up and every window.
             // Motion state/timers advance normally; repositioning itself allocates nothing.
             for (int slot = 0; slot < starting.length; slot++)
-                runtime.inspection().slots.replace(slot, starting[slot]);
+                runtime.inspection().slots().replace(slot, starting[slot]);
             var moldorm = runtime.inspection()
-                    .motions
+                    .motions()
                     .get(
                             linksawakening.world.entity.motion.MoldormMotion.class,
                             linksawakening.world.entity.motion.MoldormMotion::new);
