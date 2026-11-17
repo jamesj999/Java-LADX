@@ -48,7 +48,7 @@ public final class DebugTeleporter {
         rooms.transitions().loadWarpDestination(destination);
         opening.clear();
         link.motion().resetTransientStateForDebug();
-        link.motion().setDebugNoClip(debug.debugNoClip);
+        link.motion().setDebugNoClip(debug.debugNoClip());
         link.sideView().setSideScrolling(destination.category() == Warp.CATEGORY_SIDESCROLL);
         link.position().setRoomEntryPixelPosition(destination.javaPixelX(), destination.javaPixelY());
         effects.clear();

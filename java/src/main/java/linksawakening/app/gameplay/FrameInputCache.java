@@ -94,7 +94,7 @@ public final class FrameInputCache {
         combat.linkVerticalVelocity = this.rooms.rooms().mapCategory() == Warp.CATEGORY_SIDESCROLL
                 ? this.playerLink.position().romSpeedY()
                 : this.playerLink.airborne().zVelocity();
-        combat.linkInteractive = !this.debugState.debugNoClip;
+        combat.linkInteractive = !this.debugState.debugNoClip();
         combat.sword = sword(b.active(), b.x(), b.width(), b.y(), b.height());
         combat.attackContext = attackContext;
         return combat;

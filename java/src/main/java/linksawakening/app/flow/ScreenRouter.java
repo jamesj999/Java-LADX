@@ -58,8 +58,8 @@ public final class ScreenRouter {
     }
 
     public void startIntroCutscene() {
-        state.screens().fileMenu.clear();
-        state.screens().fileSave.clear();
+        state.screens().fileMenu().clear();
+        state.screens().fileSave().clear();
         actions.navigator().show(ScreenKind.CUTSCENE);
         actions.music().playDirectMusic(MusicDirector.introCutsceneMusicTrack());
         rom.gpu().loadIntroSequenceTiles(rom.romData());
@@ -75,31 +75,30 @@ public final class ScreenRouter {
     }
 
     public void startTitleScreenWithoutIntro() {
-        state.screens().fileMenu.clear();
-        state.screens().fileSave.clear();
+        state.screens().fileMenu().clear();
+        state.screens().fileSave().clear();
         actions.navigator().show(ScreenKind.TITLE);
         actions.music().playDirectMusic(MusicDirector.directTitleScreenMusicTrack());
     }
 
     public void startFileSelection() {
         actions.navigator().show(ScreenKind.FILE_MENU);
-        state.screens().fileSave.clear();
+        state.screens().fileSave().clear();
         rom.gpu().loadMenuTiles(rom.romData());
+        var menuData = new FileMenuRomData(rom.romData());
+        var store = actions.saveState().saveRamStore();
+        int savedMask = store.saveFilesMask();
+        var savedNames = store.savedNames();
+        var firstSlot = store.readSlot(0);
+        var secondSlot = store.readSlot(1);
+        var thirdSlot = store.readSlot(2);
         setFileMenuController(new FileMenuController(
-                new FileMenuRomData(rom.romData()),
+                menuData,
                 this::loadFileMenuBackgroundScene,
-                actions.saveState().saveRamStore.saveFilesMask(),
-                actions.saveState().saveRamStore.savedNames(),
-                new int[] {
-                    actions.saveState().saveRamStore.readSlot(0).maxHearts(),
-                    actions.saveState().saveRamStore.readSlot(1).maxHearts(),
-                    actions.saveState().saveRamStore.readSlot(2).maxHearts()
-                },
-                new int[] {
-                    actions.saveState().saveRamStore.readSlot(0).deathCountBcd(),
-                    actions.saveState().saveRamStore.readSlot(1).deathCountBcd(),
-                    actions.saveState().saveRamStore.readSlot(2).deathCountBcd()
-                }));
+                savedMask,
+                savedNames,
+                new int[] {firstSlot.maxHearts(), secondSlot.maxHearts(), thirdSlot.maxHearts()},
+                new int[] {firstSlot.deathCountBcd(), secondSlot.deathCountBcd(), thirdSlot.deathCountBcd()}));
         actions.music().playDirectMusic(MusicDirector.fileSelectionMusicTrack());
         // The Enter event that leaves the title must not also activate the
         // first empty file. Its edge belongs to the title screen.
@@ -141,8 +140,8 @@ public final class ScreenRouter {
         if (actions.navigator().current() == actions.navigator().screen(ScreenKind.CUTSCENE)) {
             ui.cutsceneManager().skipIntroToTitle();
         }
-        state.screens().fileMenu.clear();
-        state.screens().fileSave.clear();
+        state.screens().fileMenu().clear();
+        state.screens().fileSave().clear();
         state.opening().wakeUp(null);
         state.opening().shield(null);
         state.screens().selectSaveSlot(-1);
@@ -161,8 +160,8 @@ public final class ScreenRouter {
     }
 
     public void startConfiguredLocationGameplay() {
-        state.screens().fileMenu.clear();
-        state.screens().fileSave.clear();
+        state.screens().fileMenu().clear();
+        state.screens().fileSave().clear();
         state.screens().selectSaveSlot(-1);
         state.opening().wakeUp(null);
         state.opening().shield(null);
@@ -202,6 +201,6 @@ public final class ScreenRouter {
     }
 
     private void setFileMenuController(FileMenuController controller) {
-        state.screens().fileMenu.open(controller);
+        state.screens().fileMenu().open(controller);
     }
 }

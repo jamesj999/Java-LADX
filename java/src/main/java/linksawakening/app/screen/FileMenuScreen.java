@@ -25,16 +25,16 @@ public final class FileMenuScreen implements Screen {
     @Override
     public void tick() {
         FileMenuAction action =
-                dependencies.screens().fileMenu.tick(dependencies.inputState(), dependencies.inputConfig());
+                dependencies.screens().fileMenu().tick(dependencies.inputState(), dependencies.inputConfig());
         if (action.type() == FileMenuAction.Type.CREATE_FILE) {
             // $01:4B26 -> label_001_4555: creation returns to file selection.
             // Only selecting a stored nonzero name can start gameplay.
-            dependencies
-                    .actions()
-                    .persistFileMenuMutation(() ->
-                            dependencies.saves().saveRamStore.createNewGame(action.selectedSlot(), action.nameBytes()));
+            dependencies.actions().persistFileMenuMutation(() -> dependencies
+                    .saves()
+                    .saveRamStore()
+                    .createNewGame(action.selectedSlot(), action.nameBytes()));
         } else if (action.type() == FileMenuAction.Type.LOAD_GAME) {
-            SaveSlotState saved = dependencies.saves().saveRamStore.readSlot(action.selectedSlot());
+            SaveSlotState saved = dependencies.saves().saveRamStore().readSlot(action.selectedSlot());
             dependencies.screens().selectSaveSlot(action.selectedSlot());
             if (saved.spawnPositionX() == 0) {
                 dependencies.actions().startNewGame();
@@ -45,12 +45,12 @@ public final class FileMenuScreen implements Screen {
             dependencies
                     .actions()
                     .persistFileMenuMutation(
-                            () -> dependencies.saves().saveRamStore.eraseSlot(action.selectedSlot()));
+                            () -> dependencies.saves().saveRamStore().eraseSlot(action.selectedSlot()));
         } else if (action.type() == FileMenuAction.Type.COPY_SLOT) {
             dependencies
                     .actions()
                     .persistFileMenuMutation(() ->
-                            dependencies.saves().saveRamStore.copySlot(action.selectedSlot(), action.targetSlot()));
+                            dependencies.saves().saveRamStore().copySlot(action.selectedSlot(), action.targetSlot()));
         }
         dependencies.completeInput().complete();
     }
@@ -65,7 +65,7 @@ public final class FileMenuScreen implements Screen {
 
     @Override
     public GameFrameState renderState(GameFrameState state) {
-        var frame = dependencies.screens().fileMenu.snapshotOrNull();
+        var frame = dependencies.screens().fileMenu().snapshotOrNull();
         return state.withFileMenuFrame(frame);
     }
     /** Required screen collaborators, validated before the first tick. */

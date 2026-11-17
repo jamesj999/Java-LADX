@@ -74,10 +74,7 @@ public final class ActiveLinkPhase {
         // frame's motion work (bank0.asm:$0F97), so capture it before
         // any Link movement can change the position.
         configureRoomMotion();
-        ActiveLinkPhase.this
-                .playerLink
-                .motion()
-                .setGelClinging(this.rooms.entityState().gelClingingToLink(), this.clock.value());
+        playerLink.motion().setGelClinging(this.rooms.entityState().gelClingingToLink(), this.clock.value());
         this.motion.capture(this.playerLink);
         boolean keyholeSequenceActive = this.rooms.doors().tailCaveKeyholeSequenceActive();
         if (keyholeSequenceActive) {
@@ -106,10 +103,7 @@ public final class ActiveLinkPhase {
     private void configureRoomMotion() {
         {
             int roomId = this.rooms.rooms().currentRoomId();
-            ActiveLinkPhase.this
-                    .playerLink
-                    .sideView()
-                    .setSideScrolling(this.rooms.rooms().mapCategory() == Warp.CATEGORY_SIDESCROLL);
+            playerLink.sideView().setSideScrolling(this.rooms.rooms().mapCategory() == Warp.CATEGORY_SIDESCROLL);
             // $02:6CB6's manual exits precede the normal recoil gate.
             boolean sideViewManualExit =
                     this.rooms.rooms().mapCategory() == Warp.CATEGORY_SIDESCROLL && roomId != 0xE8 && roomId != 0xF8;
@@ -130,9 +124,7 @@ public final class ActiveLinkPhase {
             boolean throwPressed =
                     !this.playerLink.status().recoveryBlocksInput() && this.lift.isThrowButtonPressed(bombBeingThrown);
             if (throwPressed && liftedState.carryState() == 0x01) {
-                ActiveLinkPhase.this
-                        .rooms
-                        .playerItems()
+                rooms.playerItems()
                         .throwLiftedEntity(
                                 Direction.fromJava(this.playerLink.animation().direction()));
             }
@@ -142,9 +134,7 @@ public final class ActiveLinkPhase {
                 && this.playerLink.airborne().romMotionState() == 0
                 && !this.playerState.equipmentLevels().runningWithPegasusBoots()
                 && !this.playerLink.actions().isCarryingLiftedObject();
-        boolean grabbing = ActiveLinkPhase.this
-                .rooms
-                .doors()
+        boolean grabbing = rooms.doors()
                 .tryLiftObject(
                         this.playerLink.position().pixelX(),
                         this.playerLink.position().pixelY(),
@@ -154,16 +144,13 @@ public final class ActiveLinkPhase {
                         this.playerState.equipmentLevels().activePowerUp() == PowerUp.PIECE_OF_POWER.romValue(),
                         this.playerState.equipmentLevels().powerBraceletLevel(),
                         this.playerState.equipmentLevels().activePowerUp() != PowerUp.NONE.romValue());
-        ActiveLinkPhase.this
-                .playerLink
+        playerLink
                 .actions()
                 .setGrabbingObject(
                         grabbing,
                         (this.playerLink.controls().romPressedButtonsMask()
-                                        & switch (Direction.fromJavaOrUnknown(ActiveLinkPhase.this
-                                                .playerLink
-                                                .animation()
-                                                .direction())) {
+                                        & switch (Direction.fromJavaOrUnknown(
+                                                playerLink.animation().direction())) {
                                             case RIGHT -> 2;
                                             case LEFT -> 1;
                                             case UP -> 8;
@@ -191,7 +178,7 @@ public final class ActiveLinkPhase {
     }
 
     private void moveLink() {
-        if (this.debugState.debugNoClip && this.debugScroll.tryDebugScreenScroll()) {
+        if (this.debugState.debugNoClip() && this.debugScroll.tryDebugScreenScroll()) {
             this.playerLink.animation().tickAnimation();
         } else {
             this.playerLink.equipment().tickRomLinkPushing();
@@ -207,9 +194,7 @@ public final class ActiveLinkPhase {
                 // ApplyLinkGroundMotion $02:4588 probes the landing tile
                 // before func_002_434A applies XY. $00:1794 probes again
                 // after XY and copies that first sample at $02:7589.
-                ActiveLinkPhase.this
-                        .rooms
-                        .terrain()
+                rooms.terrain()
                         .tickCrackedFloorOnLanding(
                                 this.ground.groundFrame(beforeMotionX, beforeMotionY, groundInteractionBlocked),
                                 this.ground.dialogGotItemActive());
@@ -227,9 +212,7 @@ public final class ActiveLinkPhase {
         {
             int collisionProbeX = this.playerLink.position().romCollisionProbePixelX();
             int collisionProbeY = this.playerLink.position().romCollisionProbePixelY();
-            ActiveLinkPhase.this
-                    .rooms
-                    .doors()
+            rooms.doors()
                     .tryUnlockTailCaveKeyhole(
                             collisionProbeX,
                             collisionProbeY,
@@ -237,9 +220,7 @@ public final class ActiveLinkPhase {
                                     this.playerLink.animation().direction()),
                             this.playerLink.position().romCollisionType(),
                             this.playerState.progression().tailKeyCount() != 0);
-            ActiveLinkPhase.this
-                    .rooms
-                    .doors()
+            rooms.doors()
                     .tryUnlockKeyCavernKeyhole(
                             collisionProbeX,
                             collisionProbeY,
@@ -247,18 +228,14 @@ public final class ActiveLinkPhase {
                                     this.playerLink.animation().direction()),
                             this.playerLink.position().romCollisionType(),
                             this.playerState.progression().goldenLeavesCount());
-            ActiveLinkPhase.this
-                    .rooms
-                    .doors()
+            rooms.doors()
                     .tryUnlockIndoorKeyDoor(
                             collisionProbeX,
                             collisionProbeY,
                             Direction.fromJavaOrUnknown(
                                     this.playerLink.animation().direction()),
                             this.playerLink.position().romCollisionType());
-            ActiveLinkPhase.this
-                    .rooms
-                    .doors()
+            rooms.doors()
                     .tryInteractWithIndoorBlock(
                             collisionProbeX,
                             collisionProbeY,
@@ -274,13 +251,8 @@ public final class ActiveLinkPhase {
             this.scrollController.startScreenShake(pegasusShake.countdown(), pegasusShake.phase());
         }
         {
-            ActiveLinkPhase.this
-                    .rooms
-                    .entityState()
-                    .setEntityScreenShakeCountdown(this.scrollController.screenShakeCountdown());
-            ActiveLinkPhase.this
-                    .rooms
-                    .entityState()
+            rooms.entityState().setEntityScreenShakeCountdown(this.scrollController.screenShakeCountdown());
+            rooms.entityState()
                     .setSecretSeashellPegasusCollisionState(
                             this.scrollController.screenShakeCountdown() != 0,
                             this.playerLink.motion().pegasusBootsCollisionCountdown() != 0,
@@ -291,16 +263,12 @@ public final class ActiveLinkPhase {
 
     private void collectPickups() {
         {
-            ActiveLinkPhase.this
-                    .rooms
-                    .story()
+            rooms.story()
                     .setChestPlayerLevels(
-                            ActiveLinkPhase.this.playerState.equipmentLevels().shieldLevel(),
-                            ActiveLinkPhase.this.playerState.equipmentLevels().swordLevel(),
-                            ActiveLinkPhase.this.playerState.equipmentLevels().powerBraceletLevel());
-            ActiveLinkPhase.this
-                    .rooms
-                    .entityState()
+                            playerState.equipmentLevels().shieldLevel(),
+                            playerState.equipmentLevels().swordLevel(),
+                            playerState.equipmentLevels().powerBraceletLevel());
+            rooms.entityState()
                     .setToadstoolPlayerState(
                             this.playerState.ammunition().hasToadstool(),
                             this.playerState.ammunition().magicPowderCount());
@@ -311,18 +279,14 @@ public final class ActiveLinkPhase {
                             this.playerLink.position().romEntityX(),
                             this.playerLink.position().romSwordCollisionY(),
                             this.playerLink.animation().direction(),
-                            ActiveLinkPhase.this.playerState.equipmentLevels().runningWithPegasusBoots());
-            EntityPickupEvent pickup =
-                    ActiveLinkPhase.this.rooms.entities().collectEntityIfNeeded(this.frameInputs.pickup(box));
+                            playerState.equipmentLevels().runningWithPegasusBoots());
+            EntityPickupEvent pickup = rooms.entities().collectEntityIfNeeded(this.frameInputs.pickup(box));
             if (pickup != null) {
                 if (pickup.type() == 0x36) {
                     this.playerState.equipmentLevels().setActivePowerUp(PowerUp.NONE.romValue());
                     this.musicDirector.playDirectMusic(0x25);
                 } else if (pickup.sourceVariant() >= 0) {
-                    ActiveLinkPhase.this
-                            .playerState
-                            .playerRewards()
-                            .applyFloatingItemPickup(pickup.type(), pickup.sourceVariant());
+                    playerState.playerRewards().applyFloatingItemPickup(pickup.type(), pickup.sourceVariant());
                 } else {
                     this.playerState.playerRewards().applyEntityPickup(pickup.type());
                 }

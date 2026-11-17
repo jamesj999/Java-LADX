@@ -92,7 +92,7 @@ public final class LinkEquipmentPhase {
                     && (dialogBlocksGameplay
                             || this.scrollController.isActive()
                             || this.transitionController.isInputBlocked()
-                            || LinkEquipmentPhase.this.rooms.entityState().gotItemPresentationActive())) {
+                            || rooms.entityState().gotItemPresentationActive())) {
                 this.ground.tickCrackedFloor(this.playerLink.motion().romInteractiveMotionBlockValue() != 0);
             }
         }
@@ -107,11 +107,9 @@ public final class LinkEquipmentPhase {
     private void prepare(boolean dialogBlocksGameplay) {
         if (!dialogBlocksGameplay) {
             {
-                LinkEquipmentPhase.this.playerState.playerResources().tickResourceBuffers(this.clock.value());
-                var resourceSound = LinkEquipmentPhase.this
-                        .playerState
-                        .playerSounds()
-                        .takeResourceSound(sound -> GameplaySoundEvent.valueOf(sound.name()));
+                playerState.playerResources().tickResourceBuffers(this.clock.value());
+                var resourceSound =
+                        playerState.playerSounds().takeResourceSound(sound -> GameplaySoundEvent.valueOf(sound.name()));
                 if (resourceSound != null) this.sounds.sink().play(resourceSound);
             }
             {

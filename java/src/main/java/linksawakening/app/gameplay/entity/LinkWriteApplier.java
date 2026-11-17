@@ -34,7 +34,7 @@ import linksawakening.world.transition.TransitionController;
 
 /**
  * Applies entity-produced Link writes in source order. One instance retains the position-write adapter per
- * session. One instance is retained for the owning session.
+ * session.
  */
 public final class LinkWriteApplier implements LinkWriteSink.Positions, LinkWriteSink.Attacks {
     private final EquipmentController equipmentController;

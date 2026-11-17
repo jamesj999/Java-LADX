@@ -73,10 +73,8 @@ public final class CombatPhase {
                     this.playerLink.equipment().isUsingShield(),
                     Direction.fromJava(this.playerLink.animation().direction()).romIndex(),
                     this.playerLink.animation().romEntityZ());
-            var combatEvents = CombatPhase.this
-                    .rooms
-                    .entities()
-                    .resolveEntityCombat(this.frameInputs.combat(swordBoxForEntityTick, attackContext));
+            var combatEvents =
+                    rooms.entities().resolveEntityCombat(this.frameInputs.combat(swordBoxForEntityTick, attackContext));
             EnemyCombatEventConsumer.consume(combatEvents, this.sounds.sink(), this.transientVfxSystem);
             for (int eventIndex = 0; eventIndex < combatEvents.size(); eventIndex++) {
                 EntityCombatEvent event = combatEvents.get(eventIndex);
@@ -101,9 +99,7 @@ public final class CombatPhase {
             this.rooms.entityState().resetGuardianAcornCounterOnHurt();
             if (event.linkCollisionResponse().active()) {
                 EntityCombatEvent.LinkCollisionResponse response = event.linkCollisionResponse();
-                if (!CombatPhase.this
-                        .rooms
-                        .entityState()
+                if (!rooms.entityState()
                         .deferContactRecoil(
                                 event.slot(),
                                 this.playerLink.position().romEntityX(),

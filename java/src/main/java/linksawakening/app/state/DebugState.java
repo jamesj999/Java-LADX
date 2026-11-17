@@ -7,4 +7,8 @@ public final class DebugState {
     public void setNoClip(boolean enabled) {
         debugNoClip = enabled;
     }
+
+    public boolean debugNoClip() {
+        return debugNoClip;
+    }
 }

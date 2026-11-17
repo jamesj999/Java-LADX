@@ -32,7 +32,7 @@ public final class SessionNavigator implements ScreenNavigator, RoomLoadListener
 
     @Override
     public Screen current() {
-        return state.currentScreen;
+        return state.currentScreen();
     }
 
     @Override

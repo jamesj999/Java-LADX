@@ -6,8 +6,8 @@ import linksawakening.world.room.LinkGroundInputs;
 import linksawakening.world.room.RoomSession;
 
 /**
- * Ground sampling at the pre- and post-motion ROM positions. Stateless utility; no session state is
- * retained.
+ * Ground sampling at the pre- and post-motion ROM positions using the session
+ * Link, room and reusable ground registers.
  */
 public final class LinkGroundPhase {
     private final FrameInputCache frameInputs;
@@ -21,9 +21,7 @@ public final class LinkGroundPhase {
     }
 
     public void tickCrackedFloor(boolean interactionBlocked) {
-        LinkGroundPhase.this
-                .rooms
-                .terrain()
+        rooms.terrain()
                 .tickCrackedFloor(
                         groundFrame(
                                 this.playerLink.position().pixelX(),

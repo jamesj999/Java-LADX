@@ -70,14 +70,9 @@ public final class EntityRewardApplier implements RoomFrameDrain<EntityRequest> 
 
             this.dialogController.setInteractionLocked(update.interactionLocked());
             if (update.incrementPiece())
-                EntityRewardApplier.this
-                        .playerState
+                playerState
                         .progression()
-                        .setHeartPieces(EntityRewardApplier.this
-                                        .playerState
-                                        .progression()
-                                        .heartPieces()
-                                + 1);
+                        .setHeartPieces(playerState.progression().heartPieces() + 1);
             if (update.newContainer()) this.playerState.vitals().completeHeartPieceContainer();
             if (update.tilesCommand() != 0) this.gpu.updateHeartPieceMeterTiles(this.rom, update.tilesCommand());
             if (update.complete())
@@ -109,48 +104,27 @@ public final class EntityRewardApplier implements RoomFrameDrain<EntityRequest> 
 
     private void apply(EntityRequest request) {
         switch (request) {
-            case ChestRewardEvent r -> EntityRewardApplier.this
-                    .playerState
-                    .chestRewards()
-                    .applyChestReward(r.itemType());
-            case KeyRewardEvent r -> EntityRewardApplier.this
-                    .playerState
-                    .chestRewards()
-                    .applyChestReward(r.itemType());
-            case SlimeKeyRewardEvent r -> EntityRewardApplier.this
-                    .playerState
-                    .progression()
-                    .setGoldenLeavesCount(r.goldenLeavesCount());
+            case ChestRewardEvent r -> playerState.chestRewards().applyChestReward(r.itemType());
+            case KeyRewardEvent r -> playerState.chestRewards().applyChestReward(r.itemType());
+            case SlimeKeyRewardEvent r -> playerState.progression().setGoldenLeavesCount(r.goldenLeavesCount());
             case HeartContainerRewardEvent r -> {
                 this.playerState.vitals().applyHeartContainerReward();
                 this.musicDirector.playDirectMusic(0x18);
             }
-            case MadamMeowMeowFullHealRequest r -> EntityRewardApplier.this
-                    .playerState
-                    .vitals()
-                    .requestFullHeal();
+            case MadamMeowMeowFullHealRequest r -> playerState.vitals().requestFullHeal();
             case RichardProgressEvent r -> {
                 if (r.kind() == RichardProgressEvent.Kind.RETURN_ALL_LEAVES) {
                     this.playerState.progression().setGoldenLeavesCount(r.goldenLeavesCount());
                     this.gpu.replaceSlimeKeyTilesByGoldenLeaf(this.rom);
                 }
             }
-            case SwordPickupRewardEvent r -> EntityRewardApplier.this
-                    .playerState
-                    .playerRewards()
-                    .applyBeachSwordReward();
-            case ToadstoolRewardEvent r -> EntityRewardApplier.this
-                    .playerState
-                    .playerRewards()
-                    .applyToadstoolReward();
+            case SwordPickupRewardEvent r -> playerState.playerRewards().applyBeachSwordReward();
+            case ToadstoolRewardEvent r -> playerState.playerRewards().applyToadstoolReward();
             case WitchExchangeEvent r -> {
                 this.playerState.playerRewards().beginWitchToadstoolExchange(r.inventorySlot());
                 if (r.inventorySlot() == 0) this.playerLink.animation().clearDialogGotItem();
             }
-            case WitchRewardEvent r -> EntityRewardApplier.this
-                    .playerState
-                    .playerRewards()
-                    .applyWitchMagicPowderReward();
+            case WitchRewardEvent r -> playerState.playerRewards().applyWitchMagicPowderReward();
             default -> throw new IllegalStateException("Unexpected room reward: " + request);
         }
     }

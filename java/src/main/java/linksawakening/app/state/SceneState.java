@@ -16,4 +16,27 @@ public final class SceneState {
         bgPalettes = scene.palettes();
         objPalettes = scene.objectPalettes();
     }
+
+    public int[] currentTilemap() {
+        return currentTilemap;
+    }
+
+    public int[] currentAttrmap() {
+        return currentAttrmap;
+    }
+
+    public int[][] bgPalettes() {
+        return bgPalettes;
+    }
+
+    public int[][] objPalettes() {
+        return objPalettes;
+    }
+    /** Installs a decoded scene's planes and palettes in their source order. */
+    public void setPlanes(int[] tilemap, int[] attrmap, int[][] backgroundPalettes, int[][] objectPalettes) {
+        currentTilemap = tilemap;
+        currentAttrmap = attrmap;
+        bgPalettes = backgroundPalettes;
+        objPalettes = objectPalettes;
+    }
 }

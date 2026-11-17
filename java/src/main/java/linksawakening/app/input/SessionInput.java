@@ -47,7 +47,7 @@ public final class SessionInput {
             return;
         }
         if (state.options().config().debugEnabled() && DebugMenu.isToggle(key, action)) {
-            if (state.screens().currentScreen == screenSet.gameplay()
+            if (state.screens().currentScreen() == screenSet.gameplay()
                     && router.canPresentFileSave()
                     && !world.roomSession().doors().tailCaveKeyholeSequenceActive()) {
                 debugTools

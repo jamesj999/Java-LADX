@@ -22,9 +22,9 @@ public final class FileSaveScreen implements Screen {
     @Override
     public void tick() {
         FileSaveAction action =
-                dependencies.screens().fileSave.tick(dependencies.inputState(), dependencies.inputConfig());
+                dependencies.screens().fileSave().tick(dependencies.inputState(), dependencies.inputConfig());
         if (action.type() == FileSaveAction.Type.RETURN_TO_GAME) {
-            dependencies.screens().fileSave.clear();
+            dependencies.screens().fileSave().clear();
             dependencies.navigator().show(ScreenKind.GAMEPLAY);
         } else if (action.type() == FileSaveAction.Type.SAVE_AND_QUIT) {
             dependencies.actions().saveCurrentPlayerState();
@@ -43,7 +43,7 @@ public final class FileSaveScreen implements Screen {
 
     @Override
     public GameFrameState renderState(GameFrameState state) {
-        var frame = dependencies.screens().fileSave.snapshotOrNull();
+        var frame = dependencies.screens().fileSave().snapshotOrNull();
         return state.withFileMenuFrame(frame);
     }
     /** Required screen collaborators, validated before the first tick. */

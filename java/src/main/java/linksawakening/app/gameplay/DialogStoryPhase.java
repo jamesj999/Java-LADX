@@ -52,21 +52,17 @@ public final class DialogStoryPhase {
         {
             // $00:0F22 runs before world transitions and dialog gates.
             // The separate inventory gameplay handler does not run it.
-            DialogStoryPhase.this
-                    .rooms
-                    .entityState()
+            rooms.entityState()
                     .advanceBoomerangSoundClock(this.inventoryMenu.transition().worldHandlerActive());
         }
         this.scrollController.tickScreenShake();
         if (!this.transitionController.isInputBlocked()) {
-            int dungeonTitle = DialogStoryPhase.this
-                    .rooms
-                    .transitions()
+            int dungeonTitle = rooms.transitions()
                     .tickDungeonTitleMessage(
                             this.dialogController.isActive(),
                             this.inventoryMenu.isFullyClosed(),
                             this.playerLink.airborne().romMotionState(),
-                            this.debugState.debugNoClip);
+                            this.debugState.debugNoClip());
             if (dungeonTitle >= 0) {
                 this.dialogController.openPreformattedForLinkY(
                         this.dialogTextLoader.load(new SignpostDialogRef(0, dungeonTitle)),

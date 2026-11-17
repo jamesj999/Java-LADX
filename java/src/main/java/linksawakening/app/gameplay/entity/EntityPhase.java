@@ -39,27 +39,27 @@ public final class EntityPhase {
     private final EntityFrameStages stages = new EntityFrameStages() {
         @Override
         public List<EntityProjectileEvent> tickEntities(Sword.CollisionBox b) {
-            return EntityPhase.this.rooms.tickEntities(EntityPhase.this.inputs.borrow(b));
+            return rooms.tickEntities(inputs.borrow(b));
         }
 
         @Override
         public void positions() {
-            EntityPhase.this.linkWrites.applyPositionWrites();
+            linkWrites.applyPositionWrites();
         }
 
         @Override
         public void motion() {
-            EntityPhase.this.linkWrites.applyMotionWrites();
+            linkWrites.applyMotionWrites();
         }
 
         @Override
         public void attacks() {
-            EntityPhase.this.linkWrites.applyAttackWrites();
+            linkWrites.applyAttackWrites();
         }
 
         @Override
         public void sword() {
-            EntityPhase.this.linkWrites.applySwordWrites();
+            linkWrites.applySwordWrites();
         }
 
         @Override
@@ -89,12 +89,12 @@ public final class EntityPhase {
 
         @Override
         public void projectiles(List<EntityProjectileEvent> events) {
-            EntityPhase.this.linkWrites.applyProjectileResponses(events);
+            linkWrites.applyProjectileResponses(events);
         }
 
         @Override
         public void finalEffects() {
-            EntityPhase.this.linkWrites.applyFinalEffects();
+            linkWrites.applyFinalEffects();
         }
     };
 
@@ -119,11 +119,11 @@ public final class EntityPhase {
         // room-transition application. Give handlers the same current
         // position and active-room snapshot.
         if (shouldTickRoomEntities(
-                EntityPhase.this.scrollController.isActive(),
-                EntityPhase.this.transitionController.isInputBlocked(),
-                EntityPhase.this.inventoryController.shouldBlockOverworldInput()
-                        && !EntityPhase.this.inventoryMenu.transition().worldHandlerActive(),
-                EntityPhase.this.inventoryMenu.isTransitioning())) {
+                scrollController.isActive(),
+                transitionController.isInputBlocked(),
+                inventoryController.shouldBlockOverworldInput()
+                        && !inventoryMenu.transition().worldHandlerActive(),
+                inventoryMenu.isTransitioning())) {
             stages.run(b);
         }
     }
@@ -133,22 +133,16 @@ public final class EntityPhase {
     }
 
     public void applyChestRewards() {
-        EntityPhase.this.rewards.applyChestRewards();
+        rewards.applyChestRewards();
     }
 
     public void routeDialogs() {
-        var results = EntityPhase.this.rooms.entityFrameResults();
-        EntityPhase.this
-                .rooms
-                .story()
-                .setBirdKeyOwned(EntityPhase.this.playerState.progression().birdKeyCount() != 0);
-        EntityPhase.this
-                .rooms
-                .story()
-                .setTailKeyOwned(EntityPhase.this.playerState.progression().tailKeyCount() != 0);
+        var results = rooms.entityFrameResults();
+        rooms.story().setBirdKeyOwned(playerState.progression().birdKeyCount() != 0);
+        rooms.story().setTailKeyOwned(playerState.progression().tailKeyCount() != 0);
         int chestMusicTrack = results.presentation().consumePendingMusicTrack();
         if (chestMusicTrack >= 0) {
-            EntityPhase.this.routing.music(chestMusicTrack);
+            routing.music(chestMusicTrack);
         }
         var likeLikeEvents = results.presentation().consumeLikeLikeEvents();
         for (int eventIndex = 0; eventIndex < likeLikeEvents.size(); eventIndex++) {
@@ -156,40 +150,35 @@ public final class EntityPhase {
 
             if (event.kind() == LikeLikeEvent.Kind.CAPTURE) {
                 if (event.stolenInventorySlot() == 0) {
-                    EntityPhase.this.playerState.inventory().setItemB(InventoryItem.EMPTY.romValue());
+                    playerState.inventory().setItemB(InventoryItem.EMPTY.romValue());
                 } else if (event.stolenInventorySlot() == 1) {
-                    EntityPhase.this.playerState.inventory().setItemA(InventoryItem.EMPTY.romValue());
+                    playerState.inventory().setItemA(InventoryItem.EMPTY.romValue());
                 }
-                EntityPhase.this.playerLink.apply(LinkCommandAdapter.from(event));
-            } else EntityPhase.this.playerLink.apply(LinkCommandAdapter.from(event));
+                playerLink.apply(LinkCommandAdapter.from(event));
+            } else playerLink.apply(LinkCommandAdapter.from(event));
         }
-        EntityPhase.this.routing.dialogs();
-        EntityPhase.this.routing.manbo();
-        EntityPhase.this.routing.instrument();
+        routing.dialogs();
+        routing.manbo();
+        routing.instrument();
     }
 
     private void applyCombat(List<EntityProjectileEvent> projectileEvents) {
-        var results = EntityPhase.this.rooms.entityFrameResults();
+        var results = rooms.entityFrameResults();
         var screenShakeRequests = results.presentation().consumeScreenShakeRequests();
         for (int requestIndex = 0; requestIndex < screenShakeRequests.size(); requestIndex++) {
             ScreenShakeRequest request = screenShakeRequests.get(requestIndex);
-            EntityPhase.this.scrollController.startScreenShake(request.countdown(), request.phase());
+            scrollController.startScreenShake(request.countdown(), request.phase());
         }
-        EnemyProjectileEventConsumer.consume(
-                projectileEvents,
-                EntityPhase.this.playerState,
-                EntityPhase.this.playerLink,
-                EntityPhase.this.sounds.sink(),
-                combatEvents);
+        EnemyProjectileEventConsumer.consume(projectileEvents, playerState, playerLink, sounds.sink(), combatEvents);
         results.presentation().drainEntityEvents(combatEvents);
     }
 
     private void applyProgressRewards() {
-        EntityPhase.this.rewards.applyProgressRewards();
+        rewards.applyProgressRewards();
     }
 
     private void applyWitchRewards() {
-        EntityPhase.this.rewards.applyWitchRewards();
+        rewards.applyWitchRewards();
     }
 
     /** Named construction inputs, consumed once by the phase constructor. */

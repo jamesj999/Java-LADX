@@ -53,10 +53,7 @@ final class RomWiring {
         }
 
         SceneState initial = new SceneState();
-        initial.currentTilemap = currentTilemap;
-        initial.currentAttrmap = currentAttrmap;
-        initial.bgPalettes = bgPalettes;
-        initial.objPalettes = objPalettes;
+        initial.setPlanes(currentTilemap, currentAttrmap, bgPalettes, objPalettes);
         return new Graphics(backgroundSceneLoader, initial, indexedDisplayBuffer);
     }
 

@@ -13,4 +13,8 @@ public final class SaveState {
     public SaveState(SaveRamStore store) {
         saveRamStore = Objects.requireNonNull(store);
     }
+
+    public SaveRamStore saveRamStore() {
+        return saveRamStore;
+    }
 }
