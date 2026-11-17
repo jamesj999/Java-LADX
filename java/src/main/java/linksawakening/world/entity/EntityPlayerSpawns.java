@@ -19,7 +19,10 @@ import linksawakening.world.entity.motion.ThrownEntityMotion;
 import linksawakening.world.entity.motion.UnmaskedIronMaskMotion;
 import linksawakening.world.room.ChestContentsTable;
 
-/** SpawnNewEntity / SpawnNewEntityInRange allocation and player-weapon initialization paths. */
+/** SpawnNewEntity / SpawnNewEntityInRange allocation and player-weapon initialization paths.
+ *
+ * Player-created entities share free-slot selection, slot initialization and presentation publication as one spawn transaction; ongoing item behavior belongs to the motion owners.
+ */
 public final class EntityPlayerSpawns {
     final boolean indoorRoom;
     // Optional ROM-backed input or caller override; absent values retain the established fallback.

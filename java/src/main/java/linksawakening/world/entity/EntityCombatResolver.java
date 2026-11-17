@@ -41,7 +41,10 @@ import linksawakening.world.entity.motion.WizrobeMotion;
 import linksawakening.world.entity.motion.ZolGelMotion;
 import linksawakening.world.entity.motion.ZombieMotion;
 
-/** DefaultEnemyDamageCollisionHandler and ApplySwordDamagesToEnemy, in ROM collision order. */
+/** DefaultEnemyDamageCollisionHandler and ApplySwordDamagesToEnemy, in ROM collision order.
+ *
+ * Sword and contact resolution form one ordered collision pass over shared slot scratch and deferred Link-contact registers, so separating damage branches would divide the same transaction.
+ */
 public final class EntityCombatResolver {
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
     final linksawakening.world.entity.EntitySpriteViews spriteHandlers;

@@ -17,7 +17,10 @@ import linksawakening.world.entity.motion.EnemyRecoilMotion;
 import linksawakening.world.entity.motion.GenieMotion;
 import linksawakening.world.entity.motion.ThrownEntityMotion;
 
-/** Bank-$04 GenieEntityHandler jar, body, projectile and destruction sequences. */
+/** Bank-$04 GenieEntityHandler jar, body, projectile and destruction sequences.
+ *
+ * Jar, body, thrown rocks and destruction are phases of one Genie encounter whose shared slot arrays and lifecycle must advance together.
+ */
 public final class GenieEntityController {
     final State encounter;
     final EntityBossRewards bossRewards;

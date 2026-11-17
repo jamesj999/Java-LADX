@@ -24,7 +24,10 @@ import linksawakening.world.entity.motion.EnemyRecoilMotion;
 import linksawakening.world.entity.motion.FollowingNpcMotion;
 import linksawakening.world.entity.motion.WitchMotion;
 
-/** OwlEventEntityHandler, RichardEntityHandler and village NPC presentation sequences. */
+/** OwlEventEntityHandler, RichardEntityHandler and village NPC presentation sequences.
+ *
+ * NPC story handlers share room progression inputs, slot lifecycle and ordered dialog/Link effects; character motion state is owned separately from this story-event policy.
+ */
 public final class EntityStoryController {
     private final EntityStoryState state;
     final EntityMotionRegistry motions;

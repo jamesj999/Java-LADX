@@ -29,7 +29,10 @@ import linksawakening.world.entity.motion.TarinRaccoonMotion;
 import linksawakening.world.entity.motion.UnmaskedIronMaskMotion;
 import linksawakening.world.entity.motion.ZolGelMotion;
 
-/** ArrowEntityHandler, BoomerangEntityHandler and MagicRodFireballEntityHandler collision/object effects. */
+/** ArrowEntityHandler, BoomerangEntityHandler and MagicRodFireballEntityHandler collision/object effects.
+ *
+ * Player projectile collision arbitration shares target-slot mutation, damage scratch, object probes and ordered effects across projectile types; persistent family state belongs to the registry-owned motions.
+ */
 public final class EntityProjectileController {
     record ProjectileEntityCollision(boolean unload, boolean blocked) {}
 
