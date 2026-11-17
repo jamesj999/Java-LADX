@@ -1,20 +1,53 @@
 package linksawakening.app.gameplay;
 
+import java.util.Objects;
+import linksawakening.app.state.DebugState;
+import linksawakening.app.state.FrameClock;
+import linksawakening.dialog.DialogController;
+import linksawakening.entity.Link;
 import linksawakening.equipment.Sword;
 import linksawakening.world.entity.EnemyAttackContext;
 import linksawakening.world.entity.EnemyCombatInputs;
 import linksawakening.world.entity.EntityPickupFrameInputs;
 import linksawakening.world.room.LinkGroundInputs;
+import linksawakening.world.room.RoomSession;
 import linksawakening.world.room.SwordBox;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
 import linksawakening.world.transition.Warp;
 
 /** Owns retained synchronous phase registers and immutable attack/sword values for one simulation. */
 // Direction and motion inputs retain raw snapshot bytes, including unknown values accepted by the world boundary.
-final class FrameInputCache {
+public final class FrameInputCache {
+    private final DebugState debugState;
+    private final DialogController dialogController;
+    private final FrameClock clock;
+    private final Link playerLink;
+    private final RoomSession rooms;
+    private final ScrollController scrollController;
+    private final TransitionController transitionController;
+
+    public FrameInputCache(
+            DebugState debugNoClip,
+            DialogController dialogController,
+            FrameClock frameCounter,
+            Link link,
+            RoomSession roomSession,
+            ScrollController scrollController,
+            TransitionController transitionController) {
+        this.debugState = Objects.requireNonNull(debugNoClip);
+        this.dialogController = Objects.requireNonNull(dialogController);
+        this.clock = Objects.requireNonNull(frameCounter);
+        this.playerLink = Objects.requireNonNull(link);
+        this.rooms = Objects.requireNonNull(roomSession);
+        this.scrollController = Objects.requireNonNull(scrollController);
+        this.transitionController = Objects.requireNonNull(transitionController);
+    }
+
     // Absent until first use; these are cached immutable values, not session collaborators.
     private EnemyAttackContext attack;
 
-    EnemyAttackContext attack(
+    public EnemyAttackContext attack(
             int swordLevel,
             boolean redTunic,
             boolean pieceOfPower,
@@ -39,7 +72,7 @@ final class FrameInputCache {
 
     private SwordBox sword;
 
-    SwordBox sword(boolean active, int x, int width, int y, int height) {
+    public SwordBox sword(boolean active, int x, int width, int y, int height) {
         if (sword == null
                 || sword.active() != active
                 || sword.x() != x
@@ -53,43 +86,42 @@ final class FrameInputCache {
     private final PickupFrame pickup = new PickupFrame();
     private final GroundFrame ground = new GroundFrame();
 
-    EnemyCombatInputs combat(GameplaySimulation c, Sword.CollisionBox b, EnemyAttackContext attackContext) {
-        combat.frameCounter = c.frameCounter();
-        combat.linkEntityX = c.link().position().romEntityX();
-        combat.linkEntityY = c.link().position().romEntityY();
-        combat.linkAirborne = c.link().airborne().isAirborne();
-        combat.linkVerticalVelocity = c.roomSession().rooms().mapCategory() == Warp.CATEGORY_SIDESCROLL
-                ? c.link().position().romSpeedY()
-                : c.link().airborne().zVelocity();
-        combat.linkInteractive = !c.debugNoClip();
+    public EnemyCombatInputs combat(Sword.CollisionBox b, EnemyAttackContext attackContext) {
+        combat.frameCounter = this.clock.value();
+        combat.linkEntityX = this.playerLink.position().romEntityX();
+        combat.linkEntityY = this.playerLink.position().romEntityY();
+        combat.linkAirborne = this.playerLink.airborne().isAirborne();
+        combat.linkVerticalVelocity = this.rooms.rooms().mapCategory() == Warp.CATEGORY_SIDESCROLL
+                ? this.playerLink.position().romSpeedY()
+                : this.playerLink.airborne().zVelocity();
+        combat.linkInteractive = !this.debugState.debugNoClip;
         combat.sword = sword(b.active(), b.x(), b.width(), b.y(), b.height());
         combat.attackContext = attackContext;
         return combat;
     }
 
-    EntityPickupFrameInputs pickup(GameplaySimulation c, Sword.CollisionBox b) {
-        pickup.frameCounter = c.frameCounter();
-        pickup.linkEntityX = c.link().position().romEntityX();
-        pickup.linkEntityY = c.link().position().romEntityY();
-        pickup.linkAirborne = c.link().airborne().isAirborne();
+    public EntityPickupFrameInputs pickup(Sword.CollisionBox b) {
+        pickup.frameCounter = this.clock.value();
+        pickup.linkEntityX = this.playerLink.position().romEntityX();
+        pickup.linkEntityY = this.playerLink.position().romEntityY();
+        pickup.linkAirborne = this.playerLink.airborne().isAirborne();
         pickup.linkInteractive = true;
-        pickup.linkDirection = c.link().animation().direction();
-        pickup.linkZ = c.link().animation().romEntityZ();
+        pickup.linkDirection = this.playerLink.animation().direction();
+        pickup.linkZ = this.playerLink.animation().romEntityZ();
         pickup.sword = sword(b.active(), b.x(), b.width(), b.y(), b.height());
         return pickup;
     }
 
-    LinkGroundInputs ground(GameplaySimulation c, int x, int y, boolean blocked) {
+    public LinkGroundInputs ground(int x, int y, boolean blocked) {
         ground.pixelX = x;
         ground.pixelY = y;
-        ground.airborne = c.link().airborne().isAirborne();
+        ground.airborne = this.playerLink.airborne().isAirborne();
         ground.interactionBlocked = blocked;
-        ground.dialogActive = c.dialogController().isActive();
-        ground.roomTransitionActive =
-                c.scrollController().isActive() || c.transitionController().isInputBlocked();
-        ground.rawMotionState = c.link().airborne().romMotionState();
-        ground.slowWalkingSpeed = c.link().motion().romSlowWalkingSpeed();
-        ground.itemUsageContext = c.link().motion().romItemUsageContext();
+        ground.dialogActive = this.dialogController.isActive();
+        ground.roomTransitionActive = this.scrollController.isActive() || this.transitionController.isInputBlocked();
+        ground.rawMotionState = this.playerLink.airborne().romMotionState();
+        ground.slowWalkingSpeed = this.playerLink.motion().romSlowWalkingSpeed();
+        ground.itemUsageContext = this.playerLink.motion().romItemUsageContext();
         return ground;
     }
 

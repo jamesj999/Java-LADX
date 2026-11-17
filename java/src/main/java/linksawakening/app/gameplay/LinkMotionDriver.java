@@ -3,7 +3,7 @@ package linksawakening.app.gameplay;
 import linksawakening.entity.Link;
 
 /** Orders final-position capture and Link motion. A retained port also supports recording test drivers. */
-interface LinkMotionDriver {
+public interface LinkMotionDriver {
     LinkMotionDriver DIRECT = new LinkMotionDriver() {
         @Override
         public void capture(Link link) {

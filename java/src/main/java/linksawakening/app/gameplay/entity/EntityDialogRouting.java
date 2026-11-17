@@ -1,41 +1,58 @@
 package linksawakening.app.gameplay.entity;
 
-import linksawakening.app.gameplay.GameplaySimulation;
+import java.util.Objects;
+import linksawakening.app.audio.MusicDirector;
+import linksawakening.app.gameplay.interaction.DialogInteractions;
+import linksawakening.app.state.GameplaySounds;
+import linksawakening.entity.Link;
 import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.world.room.RoomTransitionCoordinator;
 
 /**
  * Side-effect ports for the ROM music/dialog/warp sequence. Retained implementations support recording fakes
  * for ordering tests.
  */
-interface EntityDialogRouting {
-    EntityDialogRouting DIRECT = new EntityDialogRouting() {
-        @Override
-        public void music(GameplaySimulation c, int track) {
-            c.musicDirector().playDirectMusic(track);
-        }
+public interface EntityDialogRouting {
+    static EntityDialogRouting direct(
+            MusicDirector music,
+            DialogInteractions dialogs,
+            RoomTransitionCoordinator transitions,
+            Link link,
+            GameplaySounds sounds) {
+        Objects.requireNonNull(music);
+        Objects.requireNonNull(dialogs);
+        Objects.requireNonNull(transitions);
+        Objects.requireNonNull(link);
+        Objects.requireNonNull(sounds);
+        return new EntityDialogRouting() {
+            @Override
+            public void music(int track) {
+                music.playDirectMusic(track);
+            }
 
-        @Override
-        public void dialogs(GameplaySimulation c) {
-            c.dialogInteractions().openEntityDialogRequests();
-        }
+            @Override
+            public void dialogs() {
+                dialogs.openEntityDialogRequests();
+            }
 
-        @Override
-        public void manbo(GameplaySimulation c) {
-            if (c.roomTransitionCoordinator().handlePendingManboTransition(c.link()))
-                c.gameplaySoundSink().play(GameplaySoundEvent.MANBO_WARP);
-        }
+            @Override
+            public void manbo() {
+                if (transitions.handlePendingManboTransition(link))
+                    sounds.sink().play(GameplaySoundEvent.MANBO_WARP);
+            }
 
-        @Override
-        public void instrument(GameplaySimulation c) {
-            c.roomTransitionCoordinator().handlePendingInstrumentTransition(c.link());
-        }
-    };
+            @Override
+            public void instrument() {
+                transitions.handlePendingInstrumentTransition(link);
+            }
+        };
+    }
 
-    void music(GameplaySimulation c, int track);
+    void music(int track);
 
-    void dialogs(GameplaySimulation c);
+    void dialogs();
 
-    void manbo(GameplaySimulation c);
+    void manbo();
 
-    void instrument(GameplaySimulation c);
+    void instrument();
 }

@@ -1,281 +1,100 @@
 package linksawakening.app.gameplay;
 
 import java.util.Objects;
-import linksawakening.app.audio.MusicDirector;
 import linksawakening.app.gameplay.entity.EntityPhase;
-import linksawakening.app.gameplay.interaction.BushInteraction;
 import linksawakening.app.gameplay.interaction.DialogBlockers;
-import linksawakening.app.gameplay.interaction.DialogInteractions;
-import linksawakening.app.gameplay.interaction.DialogSoundRouting;
-import linksawakening.app.gameplay.interaction.LiftInteraction;
-import linksawakening.app.gameplay.recovery.GameOverActions;
 import linksawakening.app.gameplay.recovery.PassOutController;
-import linksawakening.app.services.InputServices;
-import linksawakening.app.services.PlayerServices;
-import linksawakening.app.services.RomServices;
-import linksawakening.app.services.UiServices;
-import linksawakening.app.services.VisualServices;
-import linksawakening.app.services.WorldServices;
-import linksawakening.app.state.SessionState;
-import linksawakening.app.story.OpeningStory;
-import linksawakening.audio.music.FrameMusicPlayer;
-import linksawakening.audio.music.GameplayMusicController;
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.Link;
-import linksawakening.equipment.EquipmentController;
-import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.Sword;
-import linksawakening.gameplay.DialogTextLoader;
-import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.gpu.GPU;
-import linksawakening.input.InputConfig;
-import linksawakening.input.InputState;
-import linksawakening.rom.Rom;
-import linksawakening.state.PlayerState;
 import linksawakening.ui.InventoryController;
 import linksawakening.ui.InventoryMenu;
-import linksawakening.vfx.TransientVfxSystem;
-import linksawakening.world.room.DroppableRupeeSystem;
-import linksawakening.world.room.RoomSession;
-import linksawakening.world.room.RoomTransitionCoordinator;
-import linksawakening.world.transition.ScrollController;
-import linksawakening.world.transition.TransitionController;
 
-/**
- * ROM-ordered simulation between transition advancement and input completion. One instance is retained for
- * the owning session.
- */
-public final class GameplaySimulation implements GameplayFrame.Simulation {
-    private final FrameInputCache frameInputs = new FrameInputCache();
-
-    FrameInputCache frameInputs() {
-        return frameInputs;
-    }
-
-    private final AnimatedTilesPhase animatedTilesPhase = new AnimatedTilesPhase();
+/** Sequences the ROM gameplay phases between transition advancement and input completion. */
+public final class GameplaySimulation implements GameplayFrame.Simulation, SimulationStages {
+    private final InventoryController inventoryController;
+    private final InventoryMenu inventoryMenu;
+    private final Link link;
+    private final PassOutController passOutController;
+    private final DialogController dialogController;
+    private final DialogBlockers dialogBlockers;
+    private final DialogStoryPhase dialogStoryPhase;
+    private final LinkEquipmentPhase linkEquipmentPhase;
+    private final CombatPhase combatPhase;
     private final EntityPhase entityPhase;
-    private final CombatPhase combatPhase = new CombatPhase();
-    private final LinkEquipmentPhase linkEquipmentPhase = new LinkEquipmentPhase();
-    private final DialogStoryPhase dialogStoryPhase = new DialogStoryPhase();
-    private final RomServices rom;
-    private final WorldServices world;
-    private final PlayerServices player;
-    private final UiServices ui;
-    private final InputServices input;
-    private final VisualServices visual;
-    private final SessionState state;
-    private final GameplayControl control;
+    private final AnimatedTilesPhase animatedTilesPhase;
 
-    private final SimulationStages stages = new SimulationStages() {
-        @Override
-        public boolean dialogStory() {
-            return dialogStoryPhase.tick(GameplaySimulation.this);
-        }
-
-        @Override
-        public boolean dialogBlocks() {
-            return dialogBlockers().current().pausesGameplay();
-        }
-
-        @Override
-        public void linkEquipment(boolean blocked, boolean inventory) {
-            linkEquipmentPhase.tick(GameplaySimulation.this, blocked, inventory);
-        }
-
-        @Override
-        public boolean passingOut() {
-            return link().status().isPassingOut() || passOutController().handledFrame();
-        }
-
-        @Override
-        public Sword.CollisionBox combat(boolean blocked) {
-            return combatPhase.tick(GameplaySimulation.this, blocked);
-        }
-
-        @Override
-        public void entities(Sword.CollisionBox sword) {
-            entityPhase.tick(GameplaySimulation.this, sword);
-        }
-
-        @Override
-        public void completeInput() {
-            completeGameplayFrame(dialogController());
-        }
-
-        @Override
-        public void animatedTiles(boolean blocked) {
-            animatedTilesPhase.tick(GameplaySimulation.this, blocked);
-        }
-    };
-
-    public GameplaySimulation(
-            RomServices rom,
-            WorldServices world,
-            PlayerServices player,
-            UiServices ui,
-            InputServices input,
-            VisualServices visual,
-            SessionState state,
-            GameplayControl control) {
-        this.rom = Objects.requireNonNull(rom);
-        this.world = Objects.requireNonNull(world);
-        this.player = Objects.requireNonNull(player);
-        this.ui = Objects.requireNonNull(ui);
-        this.input = Objects.requireNonNull(input);
-        this.visual = Objects.requireNonNull(visual);
-        this.state = Objects.requireNonNull(state);
-        this.control = Objects.requireNonNull(control);
-        entityPhase = new EntityPhase(
-                world.roomSession(), player.link(), state.sounds(), visual.transientVfxSystem(), control.music());
+    public GameplaySimulation(Inputs inputs) {
+        this.inventoryController = Objects.requireNonNull(inputs.inventoryController);
+        this.inventoryMenu = Objects.requireNonNull(inputs.inventoryMenu);
+        this.link = Objects.requireNonNull(inputs.link);
+        this.passOutController = Objects.requireNonNull(inputs.passOutController);
+        this.dialogController = Objects.requireNonNull(inputs.dialogController);
+        this.dialogBlockers = Objects.requireNonNull(inputs.dialogBlockers);
+        this.dialogStoryPhase = Objects.requireNonNull(inputs.dialogStoryPhase);
+        this.linkEquipmentPhase = Objects.requireNonNull(inputs.linkEquipmentPhase);
+        this.combatPhase = Objects.requireNonNull(inputs.combatPhase);
+        this.entityPhase = Objects.requireNonNull(inputs.entityPhase);
+        this.animatedTilesPhase = Objects.requireNonNull(inputs.animatedTilesPhase);
     }
 
     public PassOutController passOutController() {
-        return control.passOut();
+        return passOutController;
     }
 
-    public GameOverActions gameOverOutcome() {
-        return control.gameOver();
+    @Override
+    public boolean dialogStory() {
+        return dialogStoryPhase.tick();
     }
 
-    public GPU gpu() {
-        return rom.gpu();
+    @Override
+    public boolean dialogBlocks() {
+        return dialogBlockers.current().pausesGameplay();
     }
 
-    public Rom romData() {
-        return rom.romData();
+    @Override
+    public void linkEquipment(boolean blocked, boolean inventory) {
+        linkEquipmentPhase.tick(blocked, inventory);
     }
 
-    public RoomSession roomSession() {
-        return world.roomSession();
+    @Override
+    public boolean passingOut() {
+        return link.status().isPassingOut() || passOutController.handledFrame();
     }
 
-    public TransitionController transitionController() {
-        return world.transitionController();
+    @Override
+    public Sword.CollisionBox combat(boolean blocked) {
+        return combatPhase.tick(blocked);
     }
 
-    public RoomTransitionCoordinator roomTransitionCoordinator() {
-        return world.roomTransitionCoordinator();
+    @Override
+    public void entities(Sword.CollisionBox sword) {
+        entityPhase.tick(sword);
     }
 
-    public boolean debugNoClip() {
-        return state.debug().debugNoClip;
+    @Override
+    public void completeInput() {
+        completeGameplayFrame(dialogController);
     }
 
-    public int frameCounter() {
-        return state.clock().value();
+    @Override
+    public void animatedTiles(boolean blocked) {
+        animatedTilesPhase.tick(blocked);
     }
-
-    public ScrollController scrollController() {
-        return world.scrollController();
-    }
-
-    public InputConfig inputConfig() {
-        return input.inputConfig();
-    }
-
-    public InputState inputState() {
-        return input.inputState();
-    }
-
-    public PlayerState playerState() {
-        return player.playerState();
-    }
-
-    public InventoryMenu inventoryMenu() {
-        return ui.inventoryMenu();
-    }
-
-    public InventoryController inventoryController() {
-        return ui.inventoryController();
-    }
-
-    public DialogController dialogController() {
-        return ui.dialogController();
-    }
-
-    public DialogTextLoader dialogTextLoader() {
-        return ui.dialogTextLoader();
-    }
-
-    public GameplaySoundSink gameplaySoundSink() {
-        return state.sounds().sink();
-    }
-
-    public FrameMusicPlayer musicPlayer() {
-        return control.audio().musicPlayer();
-    }
-
-    public GameplayMusicController gameplayMusicController() {
-        return control.audio().gameplayMusicController();
-    }
-
-    public MusicDirector musicDirector() {
-        return control.music();
-    }
-
-    public TransientVfxSystem transientVfxSystem() {
-        return visual.transientVfxSystem();
-    }
-
-    public DroppableRupeeSystem droppableRupeeSystem() {
-        return visual.droppableRupeeSystem();
-    }
-
-    public ItemRegistry itemRegistry() {
-        return player.itemRegistry();
-    }
-
-    public EquipmentController equipmentController() {
-        return player.equipmentController();
-    }
-
-    public Link link() {
-        return player.link();
-    }
-
-    public OpeningStory story() {
-        return control.interactions().story();
-    }
-
-    public LiftInteraction lift() {
-        return control.interactions().lift();
-    }
-
-    public BushInteraction bush() {
-        return control.interactions().bush();
-    }
-
-    public DialogInteractions dialogInteractions() {
-        return control.interactions().dialogs();
-    }
-
-    public DialogBlockers dialogBlockers() {
-        return control.blockers();
-    }
-
-    public DebugScroll debugScroll() {
-        return control.debugScroll();
-    }
-
-    public DialogSoundRouting dialogSounds() {
-        return control.dialogSounds();
-    }
-
     /** The simulation's strict per-frame order, including opening-story gates. */
     @Override
     public void tick() {
         // GAMEPLAY_INVENTORY has its own handler ($00:0EA1/$20:5904):
         // world resources, effects, Link and entities do not advance behind it.
-        boolean inventoryBlockedAtStart = inventoryController().shouldBlockOverworldInput();
+        boolean inventoryBlockedAtStart = inventoryController.shouldBlockOverworldInput();
         if (inventoryBlockedAtStart) {
-            boolean worldHandler = inventoryMenu().transition().worldHandlerActive();
-            boolean interactive = inventoryMenu().isFullyOpen();
-            inventoryController().tick();
-            if (interactive && inventoryMenu().isFullyOpen())
-                inventoryController().dispatchMenuInput();
+            boolean worldHandler = inventoryMenu.transition().worldHandlerActive();
+            boolean interactive = inventoryMenu.isFullyOpen();
+            inventoryController.tick();
+            if (interactive && inventoryMenu.isFullyOpen()) inventoryController.dispatchMenuInput();
             if (!worldHandler) return;
         }
-        stages.run(inventoryBlockedAtStart);
+        run(inventoryBlockedAtStart);
     }
 
     public static boolean shouldTickRoomEntities(
@@ -289,6 +108,76 @@ public final class GameplaySimulation implements GameplayFrame.Simulation {
     public static void completeGameplayFrame(DialogController dialog) {
         if (dialog != null) {
             dialog.tickGameplayFrameCooldown();
+        }
+    }
+
+    /** Named construction inputs, consumed once by the phase constructor. */
+    public static final class Inputs {
+        private InventoryController inventoryController;
+        private InventoryMenu inventoryMenu;
+        private Link link;
+        private PassOutController passOutController;
+        private DialogController dialogController;
+        private DialogBlockers dialogBlockers;
+        private DialogStoryPhase dialogStoryPhase;
+        private LinkEquipmentPhase linkEquipmentPhase;
+        private CombatPhase combatPhase;
+        private EntityPhase entityPhase;
+        private AnimatedTilesPhase animatedTilesPhase;
+
+        public Inputs inventoryController(InventoryController value) {
+            this.inventoryController = value;
+            return this;
+        }
+
+        public Inputs inventoryMenu(InventoryMenu value) {
+            this.inventoryMenu = value;
+            return this;
+        }
+
+        public Inputs link(Link value) {
+            this.link = value;
+            return this;
+        }
+
+        public Inputs passOutController(PassOutController value) {
+            this.passOutController = value;
+            return this;
+        }
+
+        public Inputs dialogController(DialogController value) {
+            this.dialogController = value;
+            return this;
+        }
+
+        public Inputs dialogBlockers(DialogBlockers value) {
+            this.dialogBlockers = value;
+            return this;
+        }
+
+        public Inputs dialogStoryPhase(DialogStoryPhase value) {
+            this.dialogStoryPhase = value;
+            return this;
+        }
+
+        public Inputs linkEquipmentPhase(LinkEquipmentPhase value) {
+            this.linkEquipmentPhase = value;
+            return this;
+        }
+
+        public Inputs combatPhase(CombatPhase value) {
+            this.combatPhase = value;
+            return this;
+        }
+
+        public Inputs entityPhase(EntityPhase value) {
+            this.entityPhase = value;
+            return this;
+        }
+
+        public Inputs animatedTilesPhase(AnimatedTilesPhase value) {
+            this.animatedTilesPhase = value;
+            return this;
         }
     }
 }

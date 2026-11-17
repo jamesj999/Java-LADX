@@ -16,14 +16,14 @@ import linksawakening.world.room.RoomSession;
  * Applies enemy damage outcomes and drains combat effects without session back-calls. One instance is
  * retained for the owning session.
  */
-final class GameplayCombatEvents implements DamageConsequences, RoomFrameDrain<EntityCombatEvent> {
+public final class GameplayCombatEvents implements DamageConsequences, RoomFrameDrain<EntityCombatEvent> {
     private final RoomSession rooms;
     private final Link link;
     private final GameplaySounds sounds;
     private final TransientVfxSystem effects;
     private final MusicDirector music;
 
-    GameplayCombatEvents(
+    public GameplayCombatEvents(
             RoomSession rooms, Link link, GameplaySounds sounds, TransientVfxSystem effects, MusicDirector music) {
         this.rooms = Objects.requireNonNull(rooms);
         this.link = Objects.requireNonNull(link);

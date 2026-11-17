@@ -1,7 +1,6 @@
 package linksawakening.app.gameplay.entity;
 
 import java.util.List;
-import linksawakening.app.gameplay.GameplaySimulation;
 import linksawakening.equipment.Sword;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 
@@ -10,46 +9,46 @@ import linksawakening.world.entity.event.EntityProjectileEvent;
  * doubles.
  */
 interface EntityFrameStages {
-    List<EntityProjectileEvent> tickEntities(GameplaySimulation c, Sword.CollisionBox b);
+    List<EntityProjectileEvent> tickEntities(Sword.CollisionBox b);
 
-    void positions(GameplaySimulation c);
+    void positions();
 
-    void motion(GameplaySimulation c);
+    void motion();
 
-    void attacks(GameplaySimulation c);
+    void attacks();
 
-    void sword(GameplaySimulation c);
+    void sword();
 
-    void combat(GameplaySimulation c, List<EntityProjectileEvent> events);
+    void combat(List<EntityProjectileEvent> events);
 
-    void chests(GameplaySimulation c);
+    void chests();
 
-    void progress(GameplaySimulation c);
+    void progress();
 
-    void witch(GameplaySimulation c);
+    void witch();
 
-    void dialogs(GameplaySimulation c);
+    void dialogs();
 
-    void projectiles(GameplaySimulation c, List<EntityProjectileEvent> events);
+    void projectiles(List<EntityProjectileEvent> events);
 
-    void finalEffects(GameplaySimulation c);
+    void finalEffects();
 
-    default void run(GameplaySimulation c, Sword.CollisionBox b) {
-        var events = tickEntities(c, b);
-        applyResults(c, events);
+    default void run(Sword.CollisionBox b) {
+        var events = tickEntities(b);
+        applyResults(events);
     }
 
-    default void applyResults(GameplaySimulation c, List<EntityProjectileEvent> events) {
-        positions(c);
-        motion(c);
-        attacks(c);
-        sword(c);
-        combat(c, events);
-        chests(c);
-        progress(c);
-        witch(c);
-        dialogs(c);
-        projectiles(c, events);
-        finalEffects(c);
+    default void applyResults(List<EntityProjectileEvent> events) {
+        positions();
+        motion();
+        attacks();
+        sword();
+        combat(events);
+        chests();
+        progress();
+        witch();
+        dialogs();
+        projectiles(events);
+        finalEffects();
     }
 }

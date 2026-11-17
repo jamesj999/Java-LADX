@@ -52,7 +52,19 @@ final class FlowWiring {
         var renderer = new RenderStateAssembler(s.rom(), s.world(), s.player(), s.ui(), s.visual(), state);
         var saves = new SaveCoordinator(
                 s.rom(), s.world(), s.player(), s.input(), state, saveState, navigator, new StoryActions(music, story));
-        var passOut = new PassOutController();
+        var passOut = new PassOutController(new PassOutController.Inputs()
+                .gameplaySoundSink(state.sounds())
+                .inventoryController(s.ui().inventoryController())
+                .link(s.player().link())
+                .musicDirector(prepared.music())
+                .playerState(s.player().playerState())
+                .romData(s.rom().romData())
+                .roomSession(s.world().roomSession())
+                .scrollController(s.world().scrollController())
+                .transitionController(s.world().transitionController())
+                .gpu(s.rom().gpu())
+                .inputConfig(s.input().inputConfig())
+                .inputState(s.input().inputState()));
         var gameOver = new GameOverFlow(
                 s.player().equipmentController(),
                 passOut,
@@ -68,13 +80,8 @@ final class FlowWiring {
                 state,
                 new ScreenActions(navigator, saves, saveState, music));
         var input = input(s, state, navigator, lifecycle, saves, prepared);
-        var simulation = new GameplaySimulation(
-                s.rom(),
-                s.world(),
-                s.player(),
-                s.ui(),
-                s.input(),
-                s.visual(),
+        var simulation = GameplayWiring.simulation(
+                s,
                 state,
                 new GameplayControl(s.audio(), music, interactions, passOut, gameOver, blockers, input, dialogSounds));
         return new Flows(saves, router, input, renderer, simulation, interactions, music, passOut);
