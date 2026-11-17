@@ -312,6 +312,9 @@ public final class EntityProjectileController {
     }
 
     boolean collideMagicRodFireballWithEntities(RoomEntity fireball, int frame) {
+        var resolvedMagicRodFireballMotion =
+                this.motions.get(MagicRodFireballMotion.class, MagicRodFireballMotion::new);
+
         int sourceSlot = fireball.slot();
         int sourceVisualY = (fireball.y() - fireball.z()) & 0xFF;
         boolean unloadOnHit = false;
@@ -334,36 +337,36 @@ public final class EntityProjectileController {
             }
 
             if ((this.combatTables.readEnemyHitboxFlags(targetSlot) & EntityRomConstants.HITFLAGS_IGNORE_HITS) != 0) {
-                var magicRodFireballMotion =
-                        this.motions.get(MagicRodFireballMotion.class, MagicRodFireballMotion::new);
-                magicRodFireballMotion.setCollision(sourceSlot, true);
+                resolvedMagicRodFireballMotion.setCollision(sourceSlot, true);
                 continue;
             }
             if (this.combatTables.readEnemyIgnoreHitsCountdown(targetSlot) != 0) {
                 continue;
             }
-            var magicRodFireballMotion = this.motions.get(MagicRodFireballMotion.class, MagicRodFireballMotion::new);
+
             var roamingEnemyMotion = this.motions.get(RoamingEnemyMotion.class, RoamingEnemyMotion::new);
             var unmaskedIronMaskMotion = this.motions.get(UnmaskedIronMaskMotion.class, UnmaskedIronMaskMotion::new);
             if (target.type() == EntityRomConstants.ENTITY_IRON_MASK
                     && unmaskedIronMaskMotion.maskRemovalState(targetSlot) == 0
                     && (roamingEnemyMotion.direction(targetSlot) ^ 0x01)
-                            == magicRodFireballMotion.direction(sourceSlot)) {
-                magicRodFireballMotion.setCollision(sourceSlot, true);
+                            == resolvedMagicRodFireballMotion.direction(sourceSlot)) {
+                resolvedMagicRodFireballMotion.setCollision(sourceSlot, true);
                 continue;
             }
 
-            unloadOnHit |= !magicRodFireballMotion.collided(sourceSlot);
+            unloadOnHit |= !resolvedMagicRodFireballMotion.collided(sourceSlot);
             this.applyPlayerProjectileDamage(
                     target,
                     EntityRomConstants.DAMAGE_TYPE_MAGIC_ROD,
-                    magicRodFireballMotion.speedX(sourceSlot),
-                    magicRodFireballMotion.speedY(sourceSlot));
+                    resolvedMagicRodFireballMotion.speedX(sourceSlot),
+                    resolvedMagicRodFireballMotion.speedY(sourceSlot));
         }
         return unloadOnHit;
     }
 
     public boolean collidePlayerArrowWithEntities(RoomEntity arrow, int frame) {
+        var resolvedPlayerArrowMotion = this.motions.get(PlayerArrowMotion.class, PlayerArrowMotion::new);
+
         boolean unload = false;
         int arrowSlot = arrow.slot();
         int attackType = this.bombInteractions.readPlayerArrowBombArrow(arrowSlot)
@@ -395,19 +398,19 @@ public final class EntityProjectileController {
             }
 
             if ((this.combatTables.readEnemyHitboxFlags(targetSlot) & EntityRomConstants.HITFLAGS_IGNORE_HITS) != 0) {
-                var playerArrowMotion = this.motions.get(PlayerArrowMotion.class, PlayerArrowMotion::new);
-                playerArrowMotion.markCollision(arrowSlot);
+
+                resolvedPlayerArrowMotion.markCollision(arrowSlot);
                 continue;
             }
             if (this.combatTables.readEnemyIgnoreHitsCountdown(targetSlot) != 0) {
                 continue;
             }
-            var playerArrowMotion = this.motions.get(PlayerArrowMotion.class, PlayerArrowMotion::new);
-            if (this.ironMaskBlocksProjectile(target, playerArrowMotion.direction(arrowSlot))) {
-                playerArrowMotion.markCollision(arrowSlot);
+
+            if (this.ironMaskBlocksProjectile(target, resolvedPlayerArrowMotion.direction(arrowSlot))) {
+                resolvedPlayerArrowMotion.markCollision(arrowSlot);
                 continue;
             }
-            unload |= !playerArrowMotion.collided(arrowSlot);
+            unload |= !resolvedPlayerArrowMotion.collided(arrowSlot);
             if (attackType == EntityRomConstants.DAMAGE_TYPE_BOMB_ARROW) {
                 // BombArrowHandler selects DAMAGE_TYPE_BOMB_ARROW. The
                 // shared damage helper deliberately treats this active-arrow
@@ -422,6 +425,8 @@ public final class EntityProjectileController {
     }
 
     boolean collideBoomerangWithEntities(RoomEntity boomerang, int frame) {
+        var resolvedBoomerangMotion = this.motions.get(BoomerangMotion.class, BoomerangMotion::new);
+
         int sourceSlot = boomerang.slot();
         int sourceVisualY = (boomerang.y() - boomerang.z()) & 0xFF;
         boolean collided = false;
@@ -445,8 +450,8 @@ public final class EntityProjectileController {
 
             if (grabbable) {
                 collided = true;
-                var boomerangMotion = this.motions.get(BoomerangMotion.class, BoomerangMotion::new);
-                boomerangMotion.setTransitionCountdown(sourceSlot, 0);
+
+                resolvedBoomerangMotion.setTransitionCountdown(sourceSlot, 0);
                 // The source writes sourceSlot + 1 to the target's private
                 // state five. The current runtime has no consumer for that
                 // field, but the source-side transition is still observable.
@@ -454,24 +459,24 @@ public final class EntityProjectileController {
             }
             if ((this.combatTables.readEnemyHitboxFlags(targetSlot) & EntityRomConstants.HITFLAGS_IGNORE_HITS) != 0) {
                 collided = true;
-                var boomerangMotion = this.motions.get(BoomerangMotion.class, BoomerangMotion::new);
-                boomerangMotion.setTransitionCountdown(sourceSlot, 0);
+
+                resolvedBoomerangMotion.setTransitionCountdown(sourceSlot, 0);
                 continue;
             }
             if (this.combatTables.readEnemyIgnoreHitsCountdown(targetSlot) != 0) {
                 continue;
             }
             collided = true;
-            var boomerangMotion = this.motions.get(BoomerangMotion.class, BoomerangMotion::new);
-            boomerangMotion.setTransitionCountdown(sourceSlot, 0);
-            if (this.ironMaskBlocksProjectile(target, boomerangMotion.direction(sourceSlot))) {
+
+            resolvedBoomerangMotion.setTransitionCountdown(sourceSlot, 0);
+            if (this.ironMaskBlocksProjectile(target, resolvedBoomerangMotion.direction(sourceSlot))) {
                 continue;
             }
             this.applyPlayerProjectileDamage(
                     target,
                     EntityRomConstants.DAMAGE_TYPE_BOOMERANG,
-                    boomerangMotion.speedX(sourceSlot),
-                    boomerangMotion.speedY(sourceSlot));
+                    resolvedBoomerangMotion.speedX(sourceSlot),
+                    resolvedBoomerangMotion.speedY(sourceSlot));
         }
         return collided;
     }
@@ -647,6 +652,7 @@ public final class EntityProjectileController {
         }
 
         private boolean prepareMotion() {
+            var resolvedBoomerangMotion = owner.motions.get(BoomerangMotion.class, BoomerangMotion::new);
 
             index = inputs.index();
             entity = inputs.entity();
@@ -659,11 +665,11 @@ public final class EntityProjectileController {
             timersInteractive = inputs.timersInteractive();
             slot = entity.slot();
             if (timersInteractive) {
-                var boomerangMotion = owner.motions.get(BoomerangMotion.class, BoomerangMotion::new);
-                boomerangMotion.decrementTransitionCountdown(slot);
+
+                resolvedBoomerangMotion.decrementTransitionCountdown(slot);
             }
-            var boomerangMotion = owner.motions.get(BoomerangMotion.class, BoomerangMotion::new);
-            variant = boomerangMotion.advanceSpriteVariant(slot, frame, handlerInteractive);
+
+            variant = resolvedBoomerangMotion.advanceSpriteVariant(slot, frame, handlerInteractive);
             if (!handlerInteractive) {
                 owner.slots.replace(index, withVariant(entity, variant));
                 return false;
@@ -674,7 +680,7 @@ public final class EntityProjectileController {
             // vector for recoil. This pass also clears the outbound countdown on
             // a successful enemy/object collision, as the ROM does.
             owner.collideBoomerangWithEntities(entity, frame);
-            moved = boomerangMotion.advancePosition(entity);
+            moved = resolvedBoomerangMotion.advancePosition(entity);
             intersectionQuery = owner.physicsTables.readObjectIntersectionQuery();
             object = intersectionQuery.sampleOrAbsent(moved);
             objectCollision = object.sampled()
@@ -683,7 +689,7 @@ public final class EntityProjectileController {
                     && !owner.indoorRoom
                     && (object.objectId() == EntityRomConstants.OBJECT_BUSH
                             || object.objectId() == EntityRomConstants.OBJECT_BUSH_GROUND_STAIRS);
-            positioned = objectCollision && boomerangMotion.transitionCountdown(slot) != 0 ? entity : moved;
+            positioned = objectCollision && resolvedBoomerangMotion.transitionCountdown(slot) != 0 ? entity : moved;
             return true;
         }
 
@@ -1048,6 +1054,8 @@ public final class EntityProjectileController {
         }
 
         private boolean resolveObjectCollision() {
+            var resolvedMagicRodFireballMotion =
+                    owner.motions.get(MagicRodFireballMotion.class, MagicRodFireballMotion::new);
 
             objectCollision = !object.sampled()
                     ? ProjectileObjectCollision.NONE
@@ -1060,9 +1068,7 @@ public final class EntityProjectileController {
             // position before the fireball handler can clear a burnable collision.
             positioned = objectCollision == ProjectileObjectCollision.BLOCKED ? entity : moved;
             if (owner.isMagicRodBurnableObject(object)) {
-                var magicRodFireballMotion =
-                        owner.motions.get(MagicRodFireballMotion.class, MagicRodFireballMotion::new);
-                magicRodFireballMotion.setCollision(slot, false);
+                resolvedMagicRodFireballMotion.setCollision(slot, false);
                 int location = (object.objectTop() | (object.objectLeft() >>> 4)) & 0xFF;
                 owner.events.magicRodObject(
                         new MagicRodObjectRequest(slot, location, object.objectLeft(), object.objectTop()));
@@ -1070,13 +1076,12 @@ public final class EntityProjectileController {
                 return false;
             }
 
-            var magicRodFireballMotion = owner.motions.get(MagicRodFireballMotion.class, MagicRodFireballMotion::new);
-            if (magicRodFireballMotion.collided(slot) || objectCollision == ProjectileObjectCollision.BLOCKED) {
+            if (resolvedMagicRodFireballMotion.collided(slot) || objectCollision == ProjectileObjectCollision.BLOCKED) {
                 // ArrowRenderAndMove writes privateCountdown1 after the normal
                 // fireball display has already been rendered. Keep the normal
                 // definition for this frame; the next handler tick switches to
                 // FireSpriteVariants and decrements the $30 countdown.
-                magicRodFireballMotion.beginFireTransition(slot);
+                resolvedMagicRodFireballMotion.beginFireTransition(slot);
             }
             owner.slots.replace(index, withVariant(positioned, variant));
             return true;
@@ -1174,6 +1179,7 @@ public final class EntityProjectileController {
         }
 
         private boolean applyDamageOrStatus() {
+            var resolvedEnemyRecoilMotion = owner.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
 
             if (rawDamage == 0xFE) {
                 owner.physicsTables.writeEnemyTransitionCountdown(targetSlot, 0x60);
@@ -1182,8 +1188,8 @@ public final class EntityProjectileController {
                 owner.combatTables.writeEnemyIgnoreHitsCountdown(targetSlot, 0x0A);
                 owner.physicsTables.writeEnemyPhysicsFlags(
                         targetSlot, (owner.physicsTables.readEnemyPhysicsFlags(targetSlot) + 2) & 0xFF);
-                var enemyRecoilMotion = owner.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
-                enemyRecoilMotion.clear(targetSlot);
+
+                resolvedEnemyRecoilMotion.clear(targetSlot);
                 owner.slots.replace(targetSlot, withStatus(target, EntityStatus.BURNING));
                 secondaryChannel = EntityCombatEvent.SoundChannel.NOISE;
                 secondarySoundId = 0x12;
@@ -1192,15 +1198,15 @@ public final class EntityProjectileController {
                 owner.combatTables.writeEnemyStunnedCountdown(targetSlot, 0xFF);
                 owner.combatTables.writeEnemyFlashCountdown(targetSlot, 0);
                 owner.combatTables.writeEnemyIgnoreHitsCountdown(targetSlot, 0x0A);
-                var enemyRecoilMotion = owner.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
-                enemyRecoilMotion.clear(targetSlot);
+
+                resolvedEnemyRecoilMotion.clear(targetSlot);
                 owner.slots.replace(targetSlot, withStatus(target, EntityStatus.STUNNED));
             } else if (rawDamage == 0xFD) {
                 // The fairy-conversion branch is entity-specific in the ROM. The
                 // generic table result is still surfaced so the pending special
                 // action is not silently changed into numeric damage.
-                var enemyRecoilMotion = owner.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
-                enemyRecoilMotion.clear(targetSlot);
+
+                resolvedEnemyRecoilMotion.clear(targetSlot);
             } else {
                 owner.combatTables.writeEnemyHealth(
                         targetSlot, Math.max(0, owner.combatTables.readEnemyHealth(targetSlot) - enemyDamage));

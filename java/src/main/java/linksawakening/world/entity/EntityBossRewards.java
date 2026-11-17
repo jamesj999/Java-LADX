@@ -241,18 +241,18 @@ public final class EntityBossRewards {
     }
 
     public void advanceMoldormDestruction(RoomEntity source, int frameCounter) {
+        var resolvedMoldormMotion = this.motions.get(MoldormMotion.class, MoldormMotion::new);
+
         int slot = source.slot();
-        int tailState =
-                this.motions.get(MoldormMotion.class, MoldormMotion::new).destructionTailState(slot);
+        int tailState = resolvedMoldormMotion.destructionTailState(slot);
         {
-            var moldormMotion = this.motions.get(MoldormMotion.class, MoldormMotion::new);
             RoomEntity rendered = this.spriteHandlers.present(
                     source,
                     this.spriteHandlers.forMoldormState(
-                            moldormMotion.headSpriteVariant(slot),
+                            resolvedMoldormMotion.headSpriteVariant(slot),
                             source.x(),
                             (source.y() - source.z()) & 0xFF,
-                            moldormMotion.currentTailSegments(slot),
+                            resolvedMoldormMotion.currentTailSegments(slot),
                             tailState,
                             frameCounter),
                     0);
@@ -286,11 +286,11 @@ public final class EntityBossRewards {
                     this.writeBossDeathProducerState(slot, 3);
                     return;
                 }
-                var moldormMotion = this.motions.get(MoldormMotion.class, MoldormMotion::new);
+
                 MoldormSegmentPosition poofPosition =
-                        moldormMotion.currentTailSegments(slot).get(3 - tailState);
+                        resolvedMoldormMotion.currentTailSegments(slot).get(3 - tailState);
                 this.createMoldormPoof(source, poofPosition.x(), poofPosition.y());
-                moldormMotion.setDestructionTailState(slot, tailState + 1);
+                resolvedMoldormMotion.setDestructionTailState(slot, tailState + 1);
             }
             default -> this.advanceMoldormBossExplosion(source);
         }

@@ -131,6 +131,8 @@ final class MoldormHandler {
         private boolean completedResult;
 
         private boolean prepareMotion() {
+            var resolvedMoldormMotion = state.motion(MoldormMotion.class, MoldormMotion::new);
+
             slotState = state.slotFrame();
             frameInput = state.inputs();
             timerGates = state.gates();
@@ -151,22 +153,19 @@ final class MoldormHandler {
                                     slotState.entity(),
                                     state.sprites()
                                             .forMoldormState(
-                                                    state.motion(MoldormMotion.class, MoldormMotion::new)
-                                                            .headSpriteVariant(slot),
+                                                    resolvedMoldormMotion.headSpriteVariant(slot),
                                                     slotState.entity().x(),
                                                     (slotState.entity().y()
                                                                     - slotState
                                                                             .entity()
                                                                             .z())
                                                             & 0xFF,
-                                                    state.motion(MoldormMotion.class, MoldormMotion::new)
-                                                            .currentTailSegments(slot),
+                                                    resolvedMoldormMotion.currentTailSegments(slot),
                                                     0,
                                                     frameInput.frame()),
                                     0));
                 }
-                if (state.roomInspection().roomTransitionActive())
-                    state.motion(MoldormMotion.class, MoldormMotion::new).resetHistory(slot);
+                if (state.roomInspection().roomTransitionActive()) resolvedMoldormMotion.resetHistory(slot);
 
                 completedResult = false;
                 return false;

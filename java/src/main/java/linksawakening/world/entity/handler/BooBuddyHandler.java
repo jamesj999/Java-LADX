@@ -22,18 +22,19 @@ final class BooBuddyHandler {
     }
 
     private static boolean phase1BooBuddy(EntityFrameExecution state) {
+        var resolvedBooBuddyMotion = state.motion(BooBuddyMotion.class, BooBuddyMotion::new);
+        var resolvedEnemyRecoilMotion = state.motion(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+
         var slotState = state.slotFrame();
         var timerGates = state.gates();
 
         if (slotState.initialStatus() == EntityStatus.ACTIVE) {
             int slot = slotState.entity().slot();
             // Rendering precedes ReturnIfNonInteractive_06 and recoil.
-            slotState.entity(withVariant(
-                    slotState.entity(),
-                    state.motion(BooBuddyMotion.class, BooBuddyMotion::new).selectedVariant(slot)));
+            slotState.entity(withVariant(slotState.entity(), resolvedBooBuddyMotion.selectedVariant(slot)));
             state.replaceEntity(slotState.entity());
             if (timerGates.projectileTimersInteractive()) {
-                state.motion(BooBuddyMotion.class, BooBuddyMotion::new).tickTimers(slot);
+                resolvedBooBuddyMotion.tickTimers(slot);
             }
             if (!timerGates.handlerInteractive()) {
                 return false;
@@ -43,13 +44,10 @@ final class BooBuddyHandler {
                 // speeds, and pops the handler return address. OPTIONS1
                 // bit $20 skips background collision for Boo Buddy.
                 state.slot().decrementIgnoreHits(slot);
-                state.replaceEntity(state.motion(BooBuddyMotion.class, BooBuddyMotion::new)
-                        .advanceRecoil(
-                                slotState.entity(),
-                                state.motion(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                                        .recoilSpeedX(slot),
-                                state.motion(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
-                                        .recoilSpeedY(slot)));
+                state.replaceEntity(resolvedBooBuddyMotion.advanceRecoil(
+                        slotState.entity(),
+                        resolvedEnemyRecoilMotion.recoilSpeedX(slot),
+                        resolvedEnemyRecoilMotion.recoilSpeedY(slot)));
                 return false;
             }
         }

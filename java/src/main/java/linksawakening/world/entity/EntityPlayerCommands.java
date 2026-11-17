@@ -103,6 +103,8 @@ public final class EntityPlayerCommands {
     }
 
     public boolean throwLiftedEntity(int romDirection) {
+        var resolvedThrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+
         EntitySlotValidation.validateRomDirection(romDirection);
         LiftedEntityState state = this.inspection.liftedEntityState();
         if (!state.active() || state.carryState() != 0x01) {
@@ -123,8 +125,8 @@ public final class EntityPlayerCommands {
             this.liftThrow.writeThrownDirection(slot, romDirection);
             var sideViewPotMotion = this.motions.get(SideViewPotMotion.class, SideViewPotMotion::new);
             sideViewPotMotion.start(slot, romDirection);
-            var thrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
-            thrownEntityMotion.clear(slot);
+
+            resolvedThrownEntityMotion.clear(slot);
             this.liftThrow.writeThrownMotionInitialized(slot, false);
             this.liftThrow.writeLiftedStateInitialized(slot, false);
             this.liftThrow.writeLiftedPhase(slot, 0);
@@ -136,8 +138,8 @@ public final class EntityPlayerCommands {
             return true;
         }
         this.liftThrow.writeThrownDirection(slot, romDirection);
-        var thrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
-        thrownEntityMotion.start(
+
+        resolvedThrownEntityMotion.start(
                 slot, romDirection, entity.type(), this.physicsTables.readGroundInteractionSideScrolling());
         this.liftThrow.writeThrownMotionInitialized(slot, true);
         this.liftThrow.writeLiftedStateInitialized(slot, false);

@@ -630,6 +630,8 @@ public final class EntityEnemySpawns {
     }
 
     static int enemyBombSpawnsSpawnEnemyBomb(EntityEnemySpawns runtime, EnemyBombSpawn inputs) {
+        var resolvedThrownEntityMotion = runtime.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+
         int entityX = inputs.entityX();
         int entityY = inputs.entityY();
         int entityZ = inputs.entityZ();
@@ -679,11 +681,11 @@ public final class EntityEnemySpawns {
         runtime.bombInteractions.writePlacedBombMotionInitialized(freeSlot, false);
         runtime.bombInteractions.writeEnemyBombMotionInitialized(freeSlot, initializeMotion);
         if (initializeMotion) {
-            var thrownEntityMotion = runtime.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
-            thrownEntityMotion.startEnemyBomb(freeSlot, speedX, speedY, speedZ);
+
+            resolvedThrownEntityMotion.startEnemyBomb(freeSlot, speedX, speedY, speedZ);
         } else {
-            var thrownEntityMotion = runtime.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
-            thrownEntityMotion.clear(freeSlot);
+
+            resolvedThrownEntityMotion.clear(freeSlot);
         }
         runtime.liftThrow.writeThrownMotionInitialized(freeSlot, false);
         runtime.combatTables.writeEnemyHitboxFlags(freeSlot, 0);

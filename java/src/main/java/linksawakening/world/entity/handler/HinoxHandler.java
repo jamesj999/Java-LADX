@@ -68,6 +68,7 @@ final class HinoxHandler {
         private boolean completedResult;
 
         private boolean advanceMotion() {
+            var resolvedHinoxMotion = state.motion(HinoxMotion.class, HinoxMotion::new);
 
             slotState = state.slotFrame();
             frameInput = state.inputs();
@@ -97,19 +98,18 @@ final class HinoxHandler {
             if (bossIntro.dialogLowId() >= 0) {
                 state.emit(new DialogRequest(bossIntro.dialogTableId(), bossIntro.dialogLowId()));
             }
-            hinoxUpdate = state.motion(HinoxMotion.class, HinoxMotion::new)
-                    .advance(new HinoxFrame(
-                            slotState.entity(),
-                            state.slot().transitionCountdown(slot),
-                            frameInput.frame(),
-                            frameInput.linkEntityX(),
-                            frameInput.linkEntityY(),
-                            frameInput.linkZ(),
-                            frameInput.projectileLinkState().motionState(),
-                            frameInput.randomByteSupplier(),
-                            frameInput.hinoxBackgroundInteraction(),
-                            state.motion(HinoxMotion.class, HinoxMotion::new).collisionFlags(slot),
-                            state.slot().flashCountdown(slot)));
+            hinoxUpdate = resolvedHinoxMotion.advance(new HinoxFrame(
+                    slotState.entity(),
+                    state.slot().transitionCountdown(slot),
+                    frameInput.frame(),
+                    frameInput.linkEntityX(),
+                    frameInput.linkEntityY(),
+                    frameInput.linkZ(),
+                    frameInput.projectileLinkState().motionState(),
+                    frameInput.randomByteSupplier(),
+                    frameInput.hinoxBackgroundInteraction(),
+                    resolvedHinoxMotion.collisionFlags(slot),
+                    state.slot().flashCountdown(slot)));
             slotState.updated(hinoxUpdate.entity());
             state.slot().setTransitionCountdown(slot, hinoxUpdate.transitionCountdown());
             presentationFlags.preserveHinoxPresentation(true);

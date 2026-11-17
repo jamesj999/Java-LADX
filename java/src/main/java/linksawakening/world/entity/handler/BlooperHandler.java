@@ -20,6 +20,8 @@ final class BlooperHandler {
     }
 
     private static boolean phase3Blooper(EntityFrameExecution state) {
+        var resolvedBlooperMotion = state.motion(BlooperMotion.class, BlooperMotion::new);
+
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         var timerGates = state.gates();
@@ -31,12 +33,11 @@ final class BlooperHandler {
 
             RoomEntityBackgroundInteraction blooperBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
 
-            BlooperMotion.Movement movement = state.motion(BlooperMotion.class, BlooperMotion::new)
-                    .move(
-                            slotState.entity(),
-                            frameInput.frame(),
-                            blooperBackgroundInteraction,
-                            state.slot().ignoreHits(slotState.entity().slot()));
+            BlooperMotion.Movement movement = resolvedBlooperMotion.move(
+                    slotState.entity(),
+                    frameInput.frame(),
+                    blooperBackgroundInteraction,
+                    state.slot().ignoreHits(slotState.entity().slot()));
             RoomEntityGroundInteraction.Result groundResult = Objects.requireNonNull(
                     state.background()
                             .groundInteraction()
@@ -49,13 +50,8 @@ final class BlooperHandler {
                                     state.background().verticalSpeedZ(movement.entity()),
                                     state.background().groundInteractionSideScrolling()),
                     "Room entity ground interaction returned null");
-            BlooperMotion.Update blooperUpdate = state.motion(BlooperMotion.class, BlooperMotion::new)
-                    .finish(
-                            movement,
-                            groundResult,
-                            frameInput.frame(),
-                            frameInput.linkEntityX(),
-                            frameInput.linkEntityY());
+            BlooperMotion.Update blooperUpdate = resolvedBlooperMotion.finish(
+                    movement, groundResult, frameInput.frame(), frameInput.linkEntityX(), frameInput.linkEntityY());
             slotState.updated(blooperUpdate.entity());
             slotState.preAppliedGroundResult(blooperUpdate.groundResult());
             presentationFlags.preserveBlooperPresentation(true);

@@ -79,17 +79,17 @@ final class SideViewPotHandler {
     }
 
     private static boolean phase1SideViewPot2(EntityFrameExecution state) {
+        var resolvedSideViewPotMotion = state.motion(SideViewPotMotion.class, SideViewPotMotion::new);
+
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         var timerGates = state.gates();
 
         if (slotState.status() == EntityStatus.ACTIVE
-                && state.motion(SideViewPotMotion.class, SideViewPotMotion::new)
-                        .active(slotState.entity().slot())) {
+                && resolvedSideViewPotMotion.active(slotState.entity().slot())) {
 
             if (timerGates.sideViewPotInteractive()) {
-                SideViewPotMotion.Update potUpdate = state.motion(SideViewPotMotion.class, SideViewPotMotion::new)
-                        .advance(slotState.entity());
+                SideViewPotMotion.Update potUpdate = resolvedSideViewPotMotion.advance(slotState.entity());
                 RoomEntity movedPot = potUpdate.entity();
                 boolean collision = state.liftThrow()
                         .sideViewPotBackgroundCollision(

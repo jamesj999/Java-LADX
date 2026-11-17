@@ -116,6 +116,8 @@ final class MoblinKingHandler {
         }
 
         private void applyMotionUpdate(MoblinKingMotion.Update kingUpdate) {
+            var resolvedMoblinKingMotion = state.motion(MoblinKingMotion.class, MoblinKingMotion::new);
+
             slotState.updated(kingUpdate.entity());
             state.slot().setTransitionCountdown(slotState.entity().slot(), kingUpdate.transitionCountdown());
             state.slot().setSlowTransitionCountdown(slotState.entity().slot(), kingUpdate.slowTransitionCountdown());
@@ -123,20 +125,14 @@ final class MoblinKingHandler {
             state.slot()
                     .setOptions1Override(
                             slotState.entity().slot(),
-                            state.motion(MoblinKingMotion.class, MoblinKingMotion::new)
-                                                    .state(slotState.entity().slot())
-                                            == 5
+                            resolvedMoblinKingMotion.state(slotState.entity().slot()) == 5
                                     ? 0x84
-                                    : state.motion(MoblinKingMotion.class, MoblinKingMotion::new)
-                                                            .state(slotState
-                                                                    .entity()
-                                                                    .slot())
+                                    : resolvedMoblinKingMotion.state(
+                                                            slotState.entity().slot())
                                                     >= 2
                                             ? 0xC4
                                             : 0x40);
-            if (state.motion(MoblinKingMotion.class, MoblinKingMotion::new)
-                            .state(slotState.entity().slot())
-                    == 5) {
+            if (resolvedMoblinKingMotion.state(slotState.entity().slot()) == 5) {
                 state.slot().orPhysicsFlags(slotState.entity().slot(), ENTITY_PHYSICS_HARMLESS);
             } else {
                 state.slot().andPhysicsFlags(slotState.entity().slot(), ~ENTITY_PHYSICS_HARMLESS);
@@ -147,14 +143,10 @@ final class MoblinKingHandler {
                                 slotState.updated(),
                                 state.spriteViews()
                                         .forMoblinKingState(
-                                                state.motion(MoblinKingMotion.class, MoblinKingMotion::new)
-                                                        .bodyVariant(slotState
-                                                                .entity()
-                                                                .slot()),
-                                                state.motion(MoblinKingMotion.class, MoblinKingMotion::new)
-                                                        .weaponVariant(slotState
-                                                                .entity()
-                                                                .slot()),
+                                                resolvedMoblinKingMotion.bodyVariant(
+                                                        slotState.entity().slot()),
+                                                resolvedMoblinKingMotion.weaponVariant(
+                                                        slotState.entity().slot()),
                                                 slotState.updated().z() != 0),
                                 0));
             }

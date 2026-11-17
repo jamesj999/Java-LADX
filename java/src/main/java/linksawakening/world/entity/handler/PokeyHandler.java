@@ -21,6 +21,8 @@ final class PokeyHandler {
     }
 
     private static boolean phase4Pokey(EntityFrameExecution state) {
+        var resolvedPokeyMotion = state.motion(PokeyMotion.class, PokeyMotion::new);
+
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         var timerGates = state.gates();
@@ -31,13 +33,12 @@ final class PokeyHandler {
             if (!timerGates.handlerLinkCollisionEnabled()) {
                 // Both Pokey branches return immediately after their
                 // pre-handler display pass when Link is non-interactive.
-            } else if (state.motion(PokeyMotion.class, PokeyMotion::new).isSegment(slot)) {
-                PokeyMotion.Update segmentUpdate = state.motion(PokeyMotion.class, PokeyMotion::new)
-                        .advanceSegment(
-                                slotState.updated(),
-                                state.slot().pokeyInertia(slot),
-                                state.slot().transitionCountdown(slot),
-                                frameInput.backgroundCollision());
+            } else if (resolvedPokeyMotion.isSegment(slot)) {
+                PokeyMotion.Update segmentUpdate = resolvedPokeyMotion.advanceSegment(
+                        slotState.updated(),
+                        state.slot().pokeyInertia(slot),
+                        state.slot().transitionCountdown(slot),
+                        frameInput.backgroundCollision());
                 slotState.updated(segmentUpdate.entity());
                 state.slot().setPokeyInertia(slot, segmentUpdate.inertia());
                 state.slot().setTransitionCountdown(slot, segmentUpdate.transitionCountdown());
@@ -62,17 +63,16 @@ final class PokeyHandler {
                     // separated.
                     state.slot().setHealth(slot, 0x02);
                 }
-                PokeyMotion.Update pokeyUpdate = state.motion(PokeyMotion.class, PokeyMotion::new)
-                        .advanceMain(new PokeyFrame(
-                                slotState.updated(),
-                                frameInput.frame(),
-                                state.slot().pokeyInertia(slot),
-                                state.slot().transitionCountdown(slot),
-                                state.slot().flashCountdown(slot),
-                                frameInput.linkEntityX(),
-                                frameInput.linkEntityY(),
-                                frameInput.randomByteSupplier(),
-                                frameInput.backgroundCollision()));
+                PokeyMotion.Update pokeyUpdate = resolvedPokeyMotion.advanceMain(new PokeyFrame(
+                        slotState.updated(),
+                        frameInput.frame(),
+                        state.slot().pokeyInertia(slot),
+                        state.slot().transitionCountdown(slot),
+                        state.slot().flashCountdown(slot),
+                        frameInput.linkEntityX(),
+                        frameInput.linkEntityY(),
+                        frameInput.randomByteSupplier(),
+                        frameInput.backgroundCollision()));
                 slotState.updated(pokeyUpdate.entity());
                 state.slot().setPokeyInertia(slot, pokeyUpdate.inertia());
                 state.slot().setTransitionCountdown(slot, pokeyUpdate.transitionCountdown());

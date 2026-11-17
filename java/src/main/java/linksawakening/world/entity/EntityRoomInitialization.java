@@ -275,6 +275,8 @@ final class EntityRoomInitialization {
     }
 
     private void initializeBossAndFollowerEntities(RoomEntity entity) {
+        var resolvedRollingBonesMotion = this.motions.get(RollingBonesMotion.class, RollingBonesMotion::new);
+
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_MINI_MOLDORM) {
             var miniMoldormMotion = this.motions.get(MiniMoldormMotion.class, MiniMoldormMotion::new);
             miniMoldormMotion.initialize(entity);
@@ -284,12 +286,12 @@ final class EntityRoomInitialization {
             moldormMotion.initialize(entity);
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES) {
-            var rollingBonesMotion = this.motions.get(RollingBonesMotion.class, RollingBonesMotion::new);
-            rollingBonesMotion.initializeBoss(entity.slot());
+
+            resolvedRollingBonesMotion.initializeBoss(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_ROLLING_BONES_BAR) {
-            var rollingBonesMotion = this.motions.get(RollingBonesMotion.class, RollingBonesMotion::new);
-            rollingBonesMotion.initializeBar(entity.slot());
+
+            resolvedRollingBonesMotion.initializeBar(entity.slot());
         }
         if (entity.loaded() && entity.type() == EntityRomConstants.ENTITY_CUCCO) {
             var cuccoMotion = this.motions.get(CuccoMotion.class, CuccoMotion::new);

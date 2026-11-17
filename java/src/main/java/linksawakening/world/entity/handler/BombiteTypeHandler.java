@@ -48,27 +48,26 @@ final class BombiteTypeHandler {
     }
 
     private static boolean phase3BombiteType(EntityFrameExecution state) {
+        var resolvedBombiteMotion = state.motion(BombiteMotion.class, BombiteMotion::new);
+
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         var presentationFlags = state.presentation();
 
         if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
-            BombiteMotion.Update bombiteUpdate = state.motion(BombiteMotion.class, BombiteMotion::new)
-                    .advance(new BombiteFrame(
-                            slotState.entity(),
-                            frameInput.frame(),
-                            frameInput.linkEntityX(),
-                            frameInput.linkEntityY(),
-                            state.slot().transitionCountdown(slotState.entity().slot()),
-                            state.slot()
-                                    .slowTransitionCountdown(slotState.entity().slot()),
-                            state.bombInteractions()
-                                    .bombCollisionGraceCountdown(
-                                            slotState.entity().slot()),
-                            state.slot().ignoreHits(slotState.entity().slot()),
-                            state.link().runningWithPegasusBoots(),
-                            frameInput.randomByteSupplier(),
-                            frameInput.backgroundCollision()));
+            BombiteMotion.Update bombiteUpdate = resolvedBombiteMotion.advance(new BombiteFrame(
+                    slotState.entity(),
+                    frameInput.frame(),
+                    frameInput.linkEntityX(),
+                    frameInput.linkEntityY(),
+                    state.slot().transitionCountdown(slotState.entity().slot()),
+                    state.slot().slowTransitionCountdown(slotState.entity().slot()),
+                    state.bombInteractions()
+                            .bombCollisionGraceCountdown(slotState.entity().slot()),
+                    state.slot().ignoreHits(slotState.entity().slot()),
+                    state.link().runningWithPegasusBoots(),
+                    frameInput.randomByteSupplier(),
+                    frameInput.backgroundCollision()));
             slotState.updated(withVariant(bombiteUpdate.entity(), bombiteUpdate.spriteVariant()));
             presentationFlags.preserveBombitePresentation(true);
             state.slot().setTransitionCountdown(slotState.entity().slot(), bombiteUpdate.transitionCountdown());
@@ -85,9 +84,7 @@ final class BombiteTypeHandler {
                         0x09));
             }
             boolean entityCollisionExplosion = slotState.entity().type() == ENTITY_BOUNCING_BOMBITE
-                    && state.motion(BombiteMotion.class, BombiteMotion::new)
-                                    .state(slotState.entity().slot())
-                            == 2
+                    && resolvedBombiteMotion.state(slotState.entity().slot()) == 2
                     && state.projectiles().collideBouncingBombiteWithEntities(slotState.updated(), frameInput.frame());
             if (bombiteUpdate.explode() || entityCollisionExplosion) {
                 // BombiteExplode writes the already-positioned source
