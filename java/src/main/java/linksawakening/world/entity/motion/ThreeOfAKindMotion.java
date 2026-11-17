@@ -21,8 +21,8 @@ public final class ThreeOfAKindMotion {
         MATCH
     }
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -188,5 +188,13 @@ public final class ThreeOfAKindMotion {
 
     private static RoomEntity withPositionAndVariant(RoomEntity entity, int x, int y, int variant) {
         return EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), entity.z(), -1, false);
+    }
+
+    int[] state() {
+        return this.state;
+    }
+
+    int[] direction() {
+        return this.direction;
     }
 }

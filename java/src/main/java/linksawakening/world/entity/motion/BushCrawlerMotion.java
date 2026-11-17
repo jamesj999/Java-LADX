@@ -20,20 +20,20 @@ public final class BushCrawlerMotion {
     static final int[] SPECIAL_SPEED_X = {0x00, 0x0C, 0x10, 0x0C, 0x00, 0xF4, 0xF0, 0xF4};
     static final int[] SPECIAL_SPEED_Y = {0xF0, 0xF4, 0x00, 0x0C, 0x10, 0x0C, 0x00, 0xF4};
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState1Table: 0 unseeded, 1 room disguise, 2 spawned crawling form.
     // ROM wEntitiesPrivateState1Table.
-    final int[] disguiseMode = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] disguiseMode = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState2Table.
-    final int[] crawlPhase = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] crawlPhase = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState4Table.
-    final int[] crawlHeading = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] presentationVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] crawlHeading = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] presentationVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record Update(
             RoomEntity entity,
@@ -44,7 +44,12 @@ public final class BushCrawlerMotion {
             int visualYOffset,
             boolean liftRequested,
             boolean specialState,
-            boolean crawlOverlayRendered) {}
+            boolean crawlOverlayRendered) {
+        /** wEntitiesPrivateState4Table is the crawling form's heading. */
+        public int crawlHeading() {
+            return privateState4;
+        }
+    }
 
     public void initialize(int slot) {
         clear(slot);
@@ -172,7 +177,7 @@ public final class BushCrawlerMotion {
 
     record Position(int x, int y, boolean collided) {}
 
-    final BushCrawlerStep bushCrawlerStep = new BushCrawlerStep(this);
+    private final BushCrawlerStep bushCrawlerStep = new BushCrawlerStep(this);
 
     public record BushCrawlerFrame(
             RoomEntity entity,
@@ -391,5 +396,45 @@ public final class BushCrawlerMotion {
                 this.completedResult = null;
             }
         }
+    }
+
+    int[] state() {
+        return this.state;
+    }
+
+    int[] disguiseMode() {
+        return this.disguiseMode;
+    }
+
+    int[] crawlPhase() {
+        return this.crawlPhase;
+    }
+
+    int[] crawlHeading() {
+        return this.crawlHeading;
+    }
+
+    int[] speedX() {
+        return this.speedX;
+    }
+
+    int[] speedY() {
+        return this.speedY;
+    }
+
+    int[] speedXAccumulator() {
+        return this.speedXAccumulator;
+    }
+
+    int[] speedYAccumulator() {
+        return this.speedYAccumulator;
+    }
+
+    int[] presentationVariant() {
+        return this.presentationVariant;
+    }
+
+    boolean[] initialized() {
+        return this.initialized;
     }
 }

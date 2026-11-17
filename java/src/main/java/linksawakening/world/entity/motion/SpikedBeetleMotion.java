@@ -22,15 +22,15 @@ public final class SpikedBeetleMotion {
     private static final int[] FLIP_X_SPEEDS = {0x10, 0xF0, 0x00, 0x00};
     private static final int[] FLIP_Y_SPEEDS = {0x00, 0x00, 0xF0, 0x10};
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] animationVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] animationVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot) {
         state[slot] = 0;
@@ -121,7 +121,7 @@ public final class SpikedBeetleMotion {
         direction[slot] = directionToLink(entityX, entityY, linkEntityX, linkEntityY);
     }
 
-    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
 
     void setWalkingSpeed(int slot, int newDirection) {
         direction[slot] = newDirection & 0x03;
@@ -215,7 +215,7 @@ public final class SpikedBeetleMotion {
 
     public record Update(RoomEntity entity, int transitionCountdown, int options1, int hitboxFlags) {}
 
-    final SpikedBeetleFrameStep spikedBeetleFrameStep = new SpikedBeetleFrameStep(this);
+    private final SpikedBeetleFrameStep spikedBeetleFrameStep = new SpikedBeetleFrameStep(this);
 
     record SpikedBeetleFrame(
             linksawakening.world.entity.RoomEntity entity,

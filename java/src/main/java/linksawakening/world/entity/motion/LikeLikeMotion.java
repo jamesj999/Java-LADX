@@ -15,12 +15,12 @@ public final class LikeLikeMotion {
     static final int LINK_MOTION_NON_INTERACTIVE = 0x02;
     // ROM wEntitiesPrivateState1Table.
 
-    final int[] swallowedShieldLevel = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] swallowedShieldLevel = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState3Table.
-    final int[] holdingLink = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    final GibdoMotion walkMotion = new GibdoMotion();
+    private final int[] holdingLink = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final GibdoMotion walkMotion = new GibdoMotion();
 
     public record Update(RoomEntity entity, int slowTransitionCountdown, LikeLikeEvent event, int spriteVariant) {}
 
@@ -64,7 +64,7 @@ public final class LikeLikeMotion {
         return walkMotion.speedY(slot);
     }
 
-    final LikeLikeFrameStep likeLikeFrameStep = new LikeLikeFrameStep(this);
+    private final LikeLikeFrameStep likeLikeFrameStep = new LikeLikeFrameStep(this);
 
     public record LikeLikeFrame(
             RoomEntity entity,

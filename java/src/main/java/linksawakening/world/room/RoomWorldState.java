@@ -25,19 +25,19 @@ final class RoomWorldState implements RoomDungeon {
     @Override
     public byte[] dungeonMinimapRoomStatusSnapshot() {
         RoomRuntime room = rooms.currentOrNull();
-        return room == null ? new byte[64] : dungeonMinimapRoomStatusSnapshot(room.room);
+        return room == null ? new byte[64] : dungeonMinimapRoomStatusSnapshot(room.room());
     }
 
     private static final int ROOM_STATUS_TABLE_SIZE = 0x100;
     private final Rom romData;
     private static final int COLOR_DUNGEON_SAVE_STATUS_SIZE = 0x20;
     private static final int INDOOR_MAP_LAYOUT_SIZE = 0x40;
-    final byte[] overworldRoomStatus = new byte[0x100];
-    final byte[] indoorARoomStatus = new byte[0x100];
-    final byte[] indoorBRoomStatus = new byte[0x100];
-    final byte[] colorDungeonRoomStatus = new byte[0x100];
-    final byte[] dungeonProgressFlags = new byte[0x1A];
-    final DungeonItemState dungeonItemState = new DungeonItemState();
+    private final byte[] overworldRoomStatus = new byte[0x100];
+    private final byte[] indoorARoomStatus = new byte[0x100];
+    private final byte[] indoorBRoomStatus = new byte[0x100];
+    private final byte[] colorDungeonRoomStatus = new byte[0x100];
+    private final byte[] dungeonProgressFlags = new byte[0x1A];
+    private final DungeonItemState dungeonItemState = new DungeonItemState();
 
     RoomWorldState(Rom romData, LoadedRoomHandle rooms) {
         this.rooms = Objects.requireNonNull(rooms);
@@ -203,5 +203,29 @@ final class RoomWorldState implements RoomDungeon {
                 ? overworldRoomStatus
                 : indoorStatusTableForMap(room.mapId());
         status[room.roomId()] |= (byte) RoomSessionRules.ROOM_STATUS_EVENT_1;
+    }
+
+    byte[] indoorARoomStatus() {
+        return this.indoorARoomStatus;
+    }
+
+    DungeonItemState dungeonItemState() {
+        return this.dungeonItemState;
+    }
+
+    byte[] overworldRoomStatus() {
+        return this.overworldRoomStatus;
+    }
+
+    byte[] dungeonProgressFlags() {
+        return this.dungeonProgressFlags;
+    }
+
+    byte[] indoorBRoomStatus() {
+        return this.indoorBRoomStatus;
+    }
+
+    byte[] colorDungeonRoomStatus() {
+        return this.colorDungeonRoomStatus;
     }
 }

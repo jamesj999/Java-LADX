@@ -10,11 +10,11 @@ final class EntityBossInspectionFixture {
     }
 
     void setSlimeEyeState(int slot, int value) {
-        runtime.execution().slimeEye().encounter.state[slot] = value;
+        runtime.execution().slimeEye().encounter().state()[slot] = value;
     }
 
     void setSlimeEyeHalf(int slot, int value) {
-        runtime.execution().slimeEye().encounter.half[slot] = value;
+        runtime.execution().slimeEye().encounter().half()[slot] = value;
     }
 
     int geniePrivateState1ForTest(int slot) {
@@ -60,7 +60,7 @@ final class EntityBossInspectionFixture {
     int rollingBonesBarStateForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
         return runtime.inspection()
-                .motions
+                .motions()
                 .get(RollingBonesMotion.class, RollingBonesMotion::new)
                 .barState(slot);
     }
@@ -68,7 +68,7 @@ final class EntityBossInspectionFixture {
     int rollingBonesBarSpeedXForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
         return runtime.inspection()
-                .motions
+                .motions()
                 .get(RollingBonesMotion.class, RollingBonesMotion::new)
                 .barSpeedX(slot);
     }

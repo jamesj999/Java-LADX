@@ -479,7 +479,7 @@ final class EntitySlotPipeline {
         if (!state.handlers().tick(EntityTickStage.PHASE_1_BEFORE_PICKUP_SEQUENCE, state)) return false;
         if (slotState.status() == EntityStatus.ACTIVE
                 && state.rewards()
-                                .state
+                                .state()
                                 .readPowerUpPickupCountdown(slotState.entity().slot())
                         != 0) {
             state.rewards()

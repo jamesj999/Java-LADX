@@ -35,23 +35,23 @@ import linksawakening.world.room.ChestContentsTable;
 
 /** PickableCollectIfNeeded, SirensInstrumentEntityHandler and SwordShieldPickableEntityHandler. */
 public final class EntityRewardController {
-    final EntityRewardState state;
-    final EntityMotionRegistry motions;
-    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
-    final EntityCombatTables combatTables;
-    final EntityEventChannels events;
-    final EntityLinkState linkState;
-    final EntityPhysicsTables physicsTables;
-    final EntityPresentationState presentationState;
-    final EntityRoomVariables roomVariables;
-    final EntitySlotLifecycle lifecycle;
-    final EntityStoryState story;
-    final EntitySlots slots;
-    final EntitySpriteViews spriteViews;
-    final EntityPlayerCommands playerCommands;
+    private final EntityRewardState state;
+    private final EntityMotionRegistry motions;
+    private final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
+    private final EntityCombatTables combatTables;
+    private final EntityEventChannels events;
+    private final EntityLinkState linkState;
+    private final EntityPhysicsTables physicsTables;
+    private final EntityPresentationState presentationState;
+    private final EntityRoomVariables roomVariables;
+    private final EntitySlotLifecycle lifecycle;
+    private final EntityStoryState story;
+    private final EntitySlots slots;
+    private final EntitySpriteViews spriteViews;
+    private final EntityPlayerCommands playerCommands;
 
-    final EntityPickupState pickups;
-    final EntityBossState bossRewards;
+    private final EntityPickupState pickups;
+    private final EntityBossState bossRewards;
 
     EntityRewardController(
             EntityRewardState state,
@@ -296,8 +296,8 @@ public final class EntityRewardController {
         return secretSeashellMotion.readSecretSeashellPegasusCollisionY();
     }
 
-    final ItemPickupFrameStep itemPickupFrameStep = new ItemPickupFrameStep(this);
-    final InstrumentPickupStep instrumentPickupStep = new InstrumentPickupStep(this);
+    private final ItemPickupFrameStep itemPickupFrameStep = new ItemPickupFrameStep(this);
+    private final InstrumentPickupStep instrumentPickupStep = new InstrumentPickupStep(this);
 
     public EntityPickupEvent collectIfNeeded(
             int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne, boolean linkInteractive) {
@@ -341,7 +341,7 @@ public final class EntityRewardController {
         return entitySlotLifecycleFrameStep.run(inputs);
     }
 
-    final EntitySlotLifecycleFrameStep entitySlotLifecycleFrameStep = new EntitySlotLifecycleFrameStep(this);
+    private final EntitySlotLifecycleFrameStep entitySlotLifecycleFrameStep = new EntitySlotLifecycleFrameStep(this);
 
     static final class EntitySlotLifecycleFrameStep {
         private final EntityRewardController owner;
@@ -827,5 +827,9 @@ public final class EntityRewardController {
                 this.entity = null;
             }
         }
+    }
+
+    EntityRewardState state() {
+        return this.state;
     }
 }

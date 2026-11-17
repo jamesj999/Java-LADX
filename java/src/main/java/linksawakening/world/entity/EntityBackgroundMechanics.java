@@ -41,18 +41,18 @@ public final class EntityBackgroundMechanics {
     /** Completed EntityFallHandler visit; callers consume only the disabled status. */
     private static final RoomEntity FINISHED_FALL = RoomEntity.disabled(0);
 
-    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
-    final EntityBossState bossRewards;
-    final EntityCombatTables combatTables;
-    final EntityEnemyInspection enemyInspection;
-    final EntityEventChannels events;
-    final EntityMotionRegistry motions;
-    final EntityPhysicsTables physicsTables;
-    final EntityRoomInspection roomInspection;
-    final EntityRoomVariables roomVariables;
-    final EntitySlots slots;
-    final EntitySpriteViews spriteViews;
-    final EntitySlotLifecycle lifecycle;
+    private final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
+    private final EntityBossState bossRewards;
+    private final EntityCombatTables combatTables;
+    private final EntityEnemyInspection enemyInspection;
+    private final EntityEventChannels events;
+    private final EntityMotionRegistry motions;
+    private final EntityPhysicsTables physicsTables;
+    private final EntityRoomInspection roomInspection;
+    private final EntityRoomVariables roomVariables;
+    private final EntitySlots slots;
+    private final EntitySpriteViews spriteViews;
+    private final EntitySlotLifecycle lifecycle;
 
     EntityBackgroundMechanics(
             linksawakening.world.entity.EntitySpriteViews spriteHandlers,

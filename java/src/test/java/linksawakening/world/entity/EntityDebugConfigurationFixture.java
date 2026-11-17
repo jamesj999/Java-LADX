@@ -35,7 +35,7 @@ final class EntityDebugConfigurationFixture {
         if (!runtime.inspection().isLoadedEntityOfType(slot, EntityRomConstants.ENTITY_MAGIC_POWDER_SPRINKLE)) {
             throw new IllegalArgumentException("Entity slot does not contain Magic Powder: " + slot);
         }
-        runtime.inspection().physicsTables.writeEnemyTransitionCountdown(slot, value);
+        runtime.inspection().physicsTables().writeEnemyTransitionCountdown(slot, value);
     }
 
     void setMagicPowderSlowTransitionCountdownForTest(int slot, int value) {
@@ -43,17 +43,17 @@ final class EntityDebugConfigurationFixture {
         if (!runtime.inspection().isLoadedEntityOfType(slot, EntityRomConstants.ENTITY_MAGIC_POWDER_SPRINKLE)) {
             throw new IllegalArgumentException("Entity slot does not contain Magic Powder: " + slot);
         }
-        runtime.inspection().physicsTables.writeSlowTransitionCountdown(slot, value);
-        runtime.inspection().physicsTables.writeSlowTimerInitialized(slot, true);
+        runtime.inspection().physicsTables().writeSlowTransitionCountdown(slot, value);
+        runtime.inspection().physicsTables().writeSlowTimerInitialized(slot, true);
     }
 
     void setBombTransitionCountdownForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        if (!runtime.inspection().slots.get(slot).loaded()
-                || runtime.inspection().slots.get(slot).type() != EntityRomConstants.ENTITY_BOMB) {
+        if (!runtime.inspection().slots().get(slot).loaded()
+                || runtime.inspection().slots().get(slot).type() != EntityRomConstants.ENTITY_BOMB) {
             throw new IllegalArgumentException("Entity slot does not contain a bomb: " + slot);
         }
-        runtime.inspection().physicsTables.writeEnemyTransitionCountdown(slot, value);
+        runtime.inspection().physicsTables().writeEnemyTransitionCountdown(slot, value);
     }
 
     void setBowWowTransitionCountdownForTest(int slot, int value) {
@@ -62,31 +62,31 @@ final class EntityDebugConfigurationFixture {
             throw new IllegalArgumentException("Entity slot does not contain Bow-Wow: " + slot);
         }
         MotionTestFixture.setTransitionCountdownForTest(
-                runtime.inspection().motions.get(BowWowMotion.class, BowWowMotion::new), slot, value);
+                runtime.inspection().motions().get(BowWowMotion.class, BowWowMotion::new), slot, value);
     }
 
     void setEntityInertiaForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        runtime.inspection().physicsTables.writeEntityInertia(slot, value);
+        runtime.inspection().physicsTables().writeEntityInertia(slot, value);
     }
 
     void setMoblinKingStateForTest(
             int slot, int state, int direction, int speedX, int speedY, int speedZ, int transitionCountdown) {
         EntitySlotValidation.validateCountdownTestValue(slot, transitionCountdown);
         MotionTestFixture.setStateForTest(
-                runtime.inspection().motions.get(MoblinKingMotion.class, MoblinKingMotion::new),
+                runtime.inspection().motions().get(MoblinKingMotion.class, MoblinKingMotion::new),
                 slot,
                 state,
                 direction,
                 speedX,
                 speedY,
                 speedZ);
-        runtime.inspection().physicsTables.writeEnemyTransitionCountdown(slot, transitionCountdown);
+        runtime.inspection().physicsTables().writeEnemyTransitionCountdown(slot, transitionCountdown);
     }
 
     void setEntityPrivateState4ForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        runtime.inspection().physicsTables.writeEntityPrivateState4(slot, value);
+        runtime.inspection().physicsTables().writeEntityPrivateState4(slot, value);
     }
 
     void setLikeLikeLinkInventoryForTest(int itemA, int itemB) {
@@ -126,58 +126,58 @@ final class EntityDebugConfigurationFixture {
     void setDroppableRevealedForTest(int slot, int slowCountdown) {
         EntitySlotValidation.validateCountdownTestValue(slot, slowCountdown);
         EntitySlotValidation.validateEntitySlot(slot);
-        int type = runtime.inspection().slots.get(slot).type();
+        int type = runtime.inspection().slots().get(slot).type();
         if (!isCommonDroppableType(type)) {
             throw new IllegalArgumentException("Entity slot is not an ordinary droppable: " + slot);
         }
         runtime.execution().bossRewards().writeDroppablePrivateState3(slot, 0);
         runtime.execution().bossRewards().writeDroppablePrivateState4(slot, 0);
         runtime.inspection()
-                .physicsTables
+                .physicsTables()
                 .writeEntityOptions1Override(slot, EntityRomConstants.DROPPABLE_REVEALED_OPTIONS1);
-        runtime.inspection().physicsTables.writeSlowTransitionCountdown(slot, slowCountdown);
-        runtime.inspection().physicsTables.writeSlowTimerInitialized(slot, true);
+        runtime.inspection().physicsTables().writeSlowTransitionCountdown(slot, slowCountdown);
+        runtime.inspection().physicsTables().writeSlowTimerInitialized(slot, true);
         runtime.execution().bossRewards().writeEnemyDropActive(slot, false);
         runtime.inspection()
-                .motions
+                .motions()
                 .get(EnemyDropMotion.class, EnemyDropMotion::new)
                 .clear(slot);
     }
 
     void setSlowTransitionCountdownForTest(int slot, int countdown) {
         EntitySlotValidation.validateCountdownTestValue(slot, countdown);
-        runtime.inspection().physicsTables.writeSlowTransitionCountdown(slot, countdown);
-        runtime.inspection().physicsTables.writeSlowTimerInitialized(slot, true);
+        runtime.inspection().physicsTables().writeSlowTransitionCountdown(slot, countdown);
+        runtime.inspection().physicsTables().writeSlowTimerInitialized(slot, true);
     }
 
     void setTransitionCountdownForTest(int slot, int countdown) {
         EntitySlotValidation.validateCountdownTestValue(slot, countdown);
-        runtime.inspection().physicsTables.writeEnemyTransitionCountdown(slot, countdown);
+        runtime.inspection().physicsTables().writeEnemyTransitionCountdown(slot, countdown);
     }
 
     void setThreeOfAKindSettledForTest(int slot, int face) {
         EntitySlotValidation.validateEntitySlot(slot);
         MotionTestFixture.setSettledForTest(
-                runtime.inspection().motions.get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new), slot, face);
-        runtime.inspection().physicsTables.writeEnemyTransitionCountdown(slot, 0);
+                runtime.inspection().motions().get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new), slot, face);
+        runtime.inspection().physicsTables().writeEnemyTransitionCountdown(slot, 0);
     }
 
     void setHinoxStateForTest(int slot, int state) {
         EntitySlotValidation.validateEntitySlot(slot);
-        if (runtime.inspection().slots.get(slot).type() != EntityRomConstants.ENTITY_HINOX) {
+        if (runtime.inspection().slots().get(slot).type() != EntityRomConstants.ENTITY_HINOX) {
             throw new IllegalArgumentException("Entity slot is not Hinox: " + slot);
         }
         MotionTestFixture.setStateForTest(
-                runtime.inspection().motions.get(HinoxMotion.class, HinoxMotion::new), slot, state, 0, 0);
+                runtime.inspection().motions().get(HinoxMotion.class, HinoxMotion::new), slot, state, 0, 0);
     }
 
     void setHinoxSpeedForTest(int slot, int speedX, int speedY) {
         EntitySlotValidation.validateEntitySlot(slot);
-        if (runtime.inspection().slots.get(slot).type() != EntityRomConstants.ENTITY_HINOX) {
+        if (runtime.inspection().slots().get(slot).type() != EntityRomConstants.ENTITY_HINOX) {
             throw new IllegalArgumentException("Entity slot is not Hinox: " + slot);
         }
         MotionTestFixture.setSpeedForTest(
-                runtime.inspection().motions.get(HinoxMotion.class, HinoxMotion::new), slot, speedX, speedY);
+                runtime.inspection().motions().get(HinoxMotion.class, HinoxMotion::new), slot, speedX, speedY);
     }
 
     void setTarinRaccoonStateForTest(
@@ -191,7 +191,7 @@ final class EntityDebugConfigurationFixture {
             boolean nearLinkLatch) {
         EntitySlotValidation.validateEntitySlot(slot);
         MotionTestFixture.setStateForTest(
-                runtime.inspection().motions.get(TarinRaccoonMotion.class, TarinRaccoonMotion::new),
+                runtime.inspection().motions().get(TarinRaccoonMotion.class, TarinRaccoonMotion::new),
                 slot,
                 state,
                 speedX,
@@ -206,21 +206,21 @@ final class EntityDebugConfigurationFixture {
         if (counter < 0 || counter > 0xFF) {
             throw new IllegalArgumentException("Transition sequence counter must be an unsigned byte: " + counter);
         }
-        runtime.inspection().roomVariables.writeTransitionSequenceCounter(counter);
+        runtime.inspection().roomVariables().writeTransitionSequenceCounter(counter);
     }
 
     void setGameplayWorldForTest(boolean gameplayWorld) {
-        runtime.inspection().roomVariables.writeGameplayWorld(gameplayWorld);
+        runtime.inspection().roomVariables().writeGameplayWorld(gameplayWorld);
     }
 
     void setRoomTransitionStateForTest(boolean active) {
-        runtime.inspection().roomVariables.writeRoomTransitionActive(active);
+        runtime.inspection().roomVariables().writeRoomTransitionActive(active);
     }
 
     void setWitchGotItemPresentationActiveForTest(boolean active) {
         Arrays.fill(
                 runtime.inspection()
-                        .motions
+                        .motions()
                         .get(WitchMotion.class, WitchMotion::new)
                         .storageWitchGotItemCountdown(),
                 active ? 1 : 0);
@@ -228,11 +228,11 @@ final class EntityDebugConfigurationFixture {
 
     void setSideViewPotSpeedForTest(int slot, int speedX, int speedY) {
         runtime.inspection()
-                .motions
+                .motions()
                 .get(SideViewPotMotion.class, SideViewPotMotion::new)
                 .setSpeedX(slot, speedX);
         runtime.inspection()
-                .motions
+                .motions()
                 .get(SideViewPotMotion.class, SideViewPotMotion::new)
                 .setSpeedY(slot, speedY);
     }
@@ -243,21 +243,21 @@ final class EntityDebugConfigurationFixture {
 
     void setSideViewPlatformSpeedYForTest(int slot, int speed) {
         runtime.inspection()
-                .motions
+                .motions()
                 .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
                 .setSpeedY(slot, speed);
     }
 
     void setSideViewPlatformSpeedXForTest(int slot, int speed) {
         runtime.inspection()
-                .motions
+                .motions()
                 .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
                 .setSpeedX(slot, speed);
     }
 
     void setLaserParentForTest(int slot, int countdown, int newSpeedX, int newSpeedY) {
         MotionTestFixture.setParentForTest(
-                runtime.inspection().motions.get(LaserMotion.class, LaserMotion::new),
+                runtime.inspection().motions().get(LaserMotion.class, LaserMotion::new),
                 slot,
                 countdown,
                 newSpeedX,
@@ -266,7 +266,7 @@ final class EntityDebugConfigurationFixture {
 
     void setPairoddProjectileForTest(int slot, int newSpeedX, int newSpeedY, int direction) {
         MotionTestFixture.setForTest(
-                runtime.inspection().motions.get(PairoddProjectileMotion.class, PairoddProjectileMotion::new),
+                runtime.inspection().motions().get(PairoddProjectileMotion.class, PairoddProjectileMotion::new),
                 slot,
                 newSpeedX,
                 newSpeedY,
@@ -275,7 +275,7 @@ final class EntityDebugConfigurationFixture {
 
     void setLaserBeamForTest(int slot, int newSpeedX, int newSpeedY, int direction) {
         MotionTestFixture.setBeamForTest(
-                runtime.inspection().motions.get(LaserMotion.class, LaserMotion::new),
+                runtime.inspection().motions().get(LaserMotion.class, LaserMotion::new),
                 slot,
                 newSpeedX,
                 newSpeedY,
@@ -285,17 +285,17 @@ final class EntityDebugConfigurationFixture {
     void setZolPrivateCountdown1ForTest(int slot, int value) {
         EntitySlotValidation.validateByte(value, "Zol/Gel private countdown 1");
         MotionTestFixture.setPrivateCountdown1ForTest(
-                runtime.inspection().motions.get(ZolGelMotion.class, ZolGelMotion::new), slot, value);
+                runtime.inspection().motions().get(ZolGelMotion.class, ZolGelMotion::new), slot, value);
     }
 
     void setEvasivePrivateCountdown1ForTest(int slot, int value) {
         MotionTestFixture.setPrivateCountdown1ForTest(
-                runtime.inspection().motions.get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new), slot, value);
+                runtime.inspection().motions().get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new), slot, value);
     }
 
     void setEvasiveFleeingForTest(int slot, int newSpeedX, int newSpeedY) {
         MotionTestFixture.setFleeingForTest(
-                runtime.inspection().motions.get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new),
+                runtime.inspection().motions().get(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new),
                 slot,
                 newSpeedX,
                 newSpeedY);
@@ -306,21 +306,21 @@ final class EntityDebugConfigurationFixture {
         EntitySlotValidation.validateEntitySlot(slot);
         EntitySlotValidation.validateCountdownTestValue(slot, transitionCountdown);
         MotionTestFixture.setForTest(
-                runtime.inspection().motions.get(WizrobeMotion.class, WizrobeMotion::new),
+                runtime.inspection().motions().get(WizrobeMotion.class, WizrobeMotion::new),
                 slot,
                 state,
                 transitionCountdown,
                 privateState1,
                 privateCountdown1,
                 direction,
-                runtime.inspection().slots.get(slot).spriteVariant());
-        runtime.inspection().physicsTables.writeEnemyTransitionCountdown(slot, transitionCountdown);
-        runtime.inspection().physicsTables.writeEnemyPhysicsFlags(slot, 0x42);
+                runtime.inspection().slots().get(slot).spriteVariant());
+        runtime.inspection().physicsTables().writeEnemyTransitionCountdown(slot, transitionCountdown);
+        runtime.inspection().physicsTables().writeEnemyPhysicsFlags(slot, 0x42);
     }
 
     void setWizrobeProjectileForTest(int slot, int newSpeedX, int newSpeedY, int direction) {
         MotionTestFixture.setForTest(
-                runtime.inspection().motions.get(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new),
+                runtime.inspection().motions().get(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new),
                 slot,
                 newSpeedX,
                 newSpeedY,
@@ -329,7 +329,7 @@ final class EntityDebugConfigurationFixture {
 
     void setEnemyIgnoreHitsCountdownForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        runtime.inspection().combatTables.writeEnemyIgnoreHitsCountdown(slot, value);
+        runtime.inspection().combatTables().writeEnemyIgnoreHitsCountdown(slot, value);
     }
 
     void setOcarinaPlaybackForTest(int countdown, int songFlags, int selectedSong) {
@@ -341,23 +341,23 @@ final class EntityDebugConfigurationFixture {
         if (animationPhase < 0 || animationPhase > 1) {
             throw new IllegalArgumentException("Ocarina animation phase must be 0 or 1");
         }
-        runtime.inspection().linkState.writeOcarinaAnimationCounter(animationCounter);
-        runtime.inspection().linkState.writeOcarinaAnimationPhase(animationPhase);
+        runtime.inspection().linkState().writeOcarinaAnimationCounter(animationCounter);
+        runtime.inspection().linkState().writeOcarinaAnimationPhase(animationPhase);
     }
 
     void setHitboxFlagsForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        runtime.inspection().combatTables.writeEnemyHitboxFlags(slot, value);
+        runtime.inspection().combatTables().writeEnemyHitboxFlags(slot, value);
     }
 
     void setEnemyFlashCountdownForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        runtime.inspection().combatTables.writeEnemyFlashCountdown(slot, value);
+        runtime.inspection().combatTables().writeEnemyFlashCountdown(slot, value);
     }
 
     void setEnemyHealthForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        runtime.inspection().combatTables.writeEnemyHealth(slot, value);
+        runtime.inspection().combatTables().writeEnemyHealth(slot, value);
     }
 
     void setGeniePrivateState1ForTest(int slot, int value) {
@@ -387,7 +387,7 @@ final class EntityDebugConfigurationFixture {
 
     void setPhysicsFlagsForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        runtime.inspection().physicsTables.writeEnemyPhysicsFlags(slot, value);
+        runtime.inspection().physicsTables().writeEnemyPhysicsFlags(slot, value);
     }
 
     void setSpriteVariantForTest(int slot, int variant) {
@@ -396,8 +396,8 @@ final class EntityDebugConfigurationFixture {
             throw new IllegalArgumentException("Invalid sprite variant: " + variant);
         }
         runtime.inspection()
-                .slots
-                .replace(slot, withVariant(runtime.inspection().slots.get(slot), variant));
+                .slots()
+                .replace(slot, withVariant(runtime.inspection().slots().get(slot), variant));
     }
 
     void setThrownDirectionForTest(int slot, int value) {
@@ -413,7 +413,7 @@ final class EntityDebugConfigurationFixture {
         if (!runtime.inspection().isLoadedEntityOfType(slot, EntityRomConstants.ENTITY_KEY_DROP_POINT)) {
             throw new IllegalArgumentException("Entity slot does not contain a key drop point: " + slot);
         }
-        runtime.inspection().physicsTables.writeEnemyTransitionCountdown(slot, value);
+        runtime.inspection().physicsTables().writeEnemyTransitionCountdown(slot, value);
     }
 
     void setHidingSlimeKeyTransitionCountdownForTest(int slot, int value) {
@@ -421,7 +421,7 @@ final class EntityDebugConfigurationFixture {
         if (!runtime.inspection().isLoadedEntityOfType(slot, EntityRomConstants.ENTITY_HIDING_SLIME_KEY)) {
             throw new IllegalArgumentException("Entity slot does not contain a Hiding Slime Key: " + slot);
         }
-        runtime.inspection().physicsTables.writeEnemyTransitionCountdown(slot, value);
+        runtime.inspection().physicsTables().writeEnemyTransitionCountdown(slot, value);
     }
 
     void setGoldenLeavesCountForTest(int value) {
@@ -435,7 +435,7 @@ final class EntityDebugConfigurationFixture {
     void setColorShellStateForTest(
             int slot, int state, int transitionCountdown, int direction, int speedX, int speedY) {
         MotionTestFixture.setStateForTest(
-                runtime.inspection().motions.get(ColorShellMotion.class, ColorShellMotion::new),
+                runtime.inspection().motions().get(ColorShellMotion.class, ColorShellMotion::new),
                 slot,
                 state,
                 transitionCountdown,
@@ -446,12 +446,12 @@ final class EntityDebugConfigurationFixture {
 
     void configureEnemyRecoilForTest(int slot, int linkEntityX, int linkEntityY, int length) {
         EntitySlotValidation.validateEntitySlot(slot);
-        RoomEntity entity = runtime.inspection().slots.get(slot);
+        RoomEntity entity = runtime.inspection().slots().get(slot);
         if (!entity.loaded()) {
             throw new IllegalArgumentException("Entity slot is not loaded: " + slot);
         }
         runtime.inspection()
-                .motions
+                .motions()
                 .get(EnemyRecoilMotion.class, EnemyRecoilMotion::new)
                 .configure(slot, entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, length);
     }

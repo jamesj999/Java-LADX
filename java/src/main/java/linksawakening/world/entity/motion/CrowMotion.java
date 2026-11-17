@@ -11,18 +11,18 @@ public final class CrowMotion {
     public static final int INITIAL_PHYSICS_FLAGS = 0x02 | 0x10 | 0x40;
     static final int ACTIVE_PHYSICS_FLAGS = 0x02 | 0x10;
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] physicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] perchPositionAdjusted = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] physicsFlags = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] perchPositionAdjusted = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     /** Entity $7A uses EntityInitNoop; the handler owns all of these fields. */
     public void initialize(int slot) {
@@ -185,7 +185,7 @@ public final class CrowMotion {
     public record Update(
             RoomEntity entity, int transitionCountdown, int physicsFlags, boolean unloaded, boolean boomerangSound) {}
 
-    final CrowStep crowStep = new CrowStep(this);
+    private final CrowStep crowStep = new CrowStep(this);
 
     static final class CrowStep {
         private final CrowMotion owner;
@@ -395,5 +395,21 @@ public final class CrowMotion {
                 this.completedResult = null;
             }
         }
+    }
+
+    int[] state() {
+        return this.state;
+    }
+
+    int[] speedX() {
+        return this.speedX;
+    }
+
+    int[] speedY() {
+        return this.speedY;
+    }
+
+    int[] speedZ() {
+        return this.speedZ;
     }
 }

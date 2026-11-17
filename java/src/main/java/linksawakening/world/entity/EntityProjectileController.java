@@ -42,20 +42,20 @@ public final class EntityProjectileController {
         UNLOAD
     }
 
-    final boolean indoorRoom;
-    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
-    final EntityBombState bombInteractions;
-    final EntityCombatTables combatTables;
-    final EntityEventChannels events;
-    final EntityLiftState liftThrow;
-    final EntityMotionRegistry motions;
-    final EntityPhysicsTables physicsTables;
-    final EntityPlayerSpawns entityPlayerSpawns;
-    final EntityRoomVariables roomVariables;
-    final EntitySlotLifecycle lifecycle;
-    final EntitySlotProperties slotProperties;
-    final RomEnemyCombatTables enemyCombatTables;
-    final EntitySlots slots;
+    private final boolean indoorRoom;
+    private final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
+    private final EntityBombState bombInteractions;
+    private final EntityCombatTables combatTables;
+    private final EntityEventChannels events;
+    private final EntityLiftState liftThrow;
+    private final EntityMotionRegistry motions;
+    private final EntityPhysicsTables physicsTables;
+    private final EntityPlayerSpawns entityPlayerSpawns;
+    private final EntityRoomVariables roomVariables;
+    private final EntitySlotLifecycle lifecycle;
+    private final EntitySlotProperties slotProperties;
+    private final RomEnemyCombatTables enemyCombatTables;
+    private final EntitySlots slots;
     private final EntityProjectileState state;
 
     EntityProjectileController(
@@ -612,10 +612,11 @@ public final class EntityProjectileController {
         moblinSwordMotion.writeSwordMoblinAlertingSoundCounter(value);
     }
 
-    final PlayerProjectileDamageFrameStep playerProjectileDamageFrameStep = new PlayerProjectileDamageFrameStep(this);
-    final MagicPowderStep magicPowderStep = new MagicPowderStep(this);
-    final MagicRodFrameStep magicRodFrameStep = new MagicRodFrameStep(this);
-    final BoomerangStep boomerangStep = new BoomerangStep(this);
+    private final PlayerProjectileDamageFrameStep playerProjectileDamageFrameStep =
+            new PlayerProjectileDamageFrameStep(this);
+    private final MagicPowderStep magicPowderStep = new MagicPowderStep(this);
+    private final MagicRodFrameStep magicRodFrameStep = new MagicRodFrameStep(this);
+    private final BoomerangStep boomerangStep = new BoomerangStep(this);
 
     static final class BoomerangStep {
         private final linksawakening.world.entity.EntityProjectileController owner;

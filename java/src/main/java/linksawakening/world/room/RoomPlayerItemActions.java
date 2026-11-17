@@ -88,7 +88,7 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
 
     @Override
     public boolean lastBombPlacementPlayedBump() {
-        return rooms.test(room -> room.entities.inspection().lastBombPlacementPlayedBump());
+        return rooms.test(room -> room.entities().inspection().lastBombPlacementPlayedBump());
     }
 
     @Override
@@ -116,22 +116,22 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
 
     @Override
     public int activeProjectileCount() {
-        return rooms.intOr(0, room -> room.entities.inspection().activeProjectileCount());
+        return rooms.intOr(0, room -> room.entities().inspection().activeProjectileCount());
     }
 
     @Override
     public boolean bombActive() {
-        return rooms.test(room -> room.entities.inspection().bombActive());
+        return rooms.test(room -> room.entities().inspection().bombActive());
     }
 
     @Override
     public boolean hookshotActive() {
-        return rooms.test(room -> room.entities.inspection().hookshotActive());
+        return rooms.test(room -> room.entities().inspection().hookshotActive());
     }
 
     @Override
     public boolean boomerangActive() {
-        return rooms.test(room -> room.entities.inspection().boomerangActive());
+        return rooms.test(room -> room.entities().inspection().boomerangActive());
     }
 
     private final LoadedRoomHandle rooms;
@@ -146,7 +146,7 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
 
     boolean throwLiftedEntity(RoomRuntime loaded, linksawakening.state.Direction linkDirection) {
 
-        boolean thrown = loaded.entities
+        boolean thrown = loaded.entities()
                 .commands()
                 .throwLiftedEntity(RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection));
         if (thrown) {
@@ -166,7 +166,7 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
         if (linkAirborne || linkPushing) {
             return false;
         }
-        int slot = loaded.entities.spawns().spawnHookshotChain(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        int slot = loaded.entities().spawns().spawnHookshotChain(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
         }
@@ -182,7 +182,7 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
             int romDirection,
             int pressedButtonsMask) {
 
-        int slot = loaded.entities
+        int slot = loaded.entities()
                 .spawns()
                 .spawnBoomerang(linkEntityX, linkEntityY, linkEntityZ, romDirection, pressedButtonsMask);
         if (slot < 0) {
@@ -194,7 +194,7 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
 
     boolean fireSwordBeam(RoomRuntime loaded, int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
 
-        int slot = loaded.entities.spawns().spawnSwordBeam(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        int slot = loaded.entities().spawns().spawnSwordBeam(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
         }
@@ -215,7 +215,7 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
             int romDirection,
             boolean pieceOfPower) {
 
-        int slot = loaded.entities
+        int slot = loaded.entities()
                 .spawns()
                 .spawnMagicRodFireball(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
         if (slot < 0) {
@@ -228,8 +228,9 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
     boolean sprinkleMagicPowder(
             RoomRuntime loaded, int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
 
-        int slot =
-                loaded.entities.spawns().spawnMagicPowderSprinkle(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        int slot = loaded.entities()
+                .spawns()
+                .spawnMagicPowderSprinkle(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
         }
@@ -261,7 +262,7 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
 
     boolean placeBomb(RoomRuntime loaded, int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
 
-        int slot = loaded.entities.spawns().spawnBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
+        int slot = loaded.entities().spawns().spawnBomb(linkEntityX, linkEntityY, linkEntityZ, romDirection);
         if (slot < 0) {
             return false;
         }
@@ -270,7 +271,7 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
     }
 
     boolean lastBombPlacementPlayedBump(RoomRuntime loaded) {
-        return loaded.entities.inspection().lastBombPlacementPlayedBump();
+        return loaded.entities().inspection().lastBombPlacementPlayedBump();
     }
 
     boolean shootArrow(RoomRuntime loaded, int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
@@ -291,33 +292,34 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
             int romDirection,
             boolean pieceOfPower) {
 
-        int slot =
-                loaded.entities.spawns().spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
+        int slot = loaded.entities()
+                .spawns()
+                .spawnArrow(linkEntityX, linkEntityY, linkEntityZ, romDirection, pieceOfPower);
         if (slot < 0) {
             return new ArrowShotResult(false, false);
         }
-        boolean playWhoosh = loaded.entities.inspection().lastArrowShotPlayedWhoosh();
+        boolean playWhoosh = loaded.entities().inspection().lastArrowShotPlayedWhoosh();
         publishEntityView(loaded);
         return new ArrowShotResult(true, playWhoosh);
     }
 
     int activeProjectileCount(RoomRuntime loaded) {
-        return loaded.entities.inspection().activeProjectileCount();
+        return loaded.entities().inspection().activeProjectileCount();
     }
 
     boolean bombActive(RoomRuntime loaded) {
-        return loaded.entities.inspection().bombActive();
+        return loaded.entities().inspection().bombActive();
     }
 
     boolean hookshotActive(RoomRuntime loaded) {
-        return loaded.entities.inspection().hookshotActive();
+        return loaded.entities().inspection().hookshotActive();
     }
 
     boolean boomerangActive(RoomRuntime loaded) {
-        return loaded.entities.inspection().boomerangActive();
+        return loaded.entities().inspection().boomerangActive();
     }
 
     private void publishEntityView(RoomRuntime loaded) {
-        loaded.room.replaceEntities(loaded.entities.inspection().view());
+        loaded.room().replaceEntities(loaded.entities().inspection().view());
     }
 }

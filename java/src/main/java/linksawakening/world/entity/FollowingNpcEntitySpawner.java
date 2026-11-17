@@ -29,7 +29,7 @@ public final class FollowingNpcEntitySpawner {
     static final int ROOM_SECTION_OW_GHOST_TRIGGER = 0x40;
     static final int ROOM_INDOOR_B_MRS_MEOW_MEOW = 0xA7;
 
-    final EntitySpriteHandlerCatalog spriteHandlers;
+    private final EntitySpriteHandlerCatalog spriteHandlers;
 
     public FollowingNpcEntitySpawner(EntitySpriteHandlerCatalog spriteHandlers) {
         if (spriteHandlers == null) {
@@ -125,7 +125,7 @@ public final class FollowingNpcEntitySpawner {
         }
     }
 
-    final FollowingNpcEntitySpawnerFrameStep followingNpcEntitySpawnerFrameStep =
+    private final FollowingNpcEntitySpawnerFrameStep followingNpcEntitySpawnerFrameStep =
             new FollowingNpcEntitySpawnerFrameStep(this);
 
     static final class FollowingNpcEntitySpawnerFrameStep {

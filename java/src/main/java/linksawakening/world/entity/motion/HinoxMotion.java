@@ -25,24 +25,24 @@ public final class HinoxMotion {
     static final int[] GRAB_LINK_Z = {0x15, 0x15, 0x15, 0x15, 0x15, 0x14, 0x14, 0x14, 0x10, 0x08, 0x04, 0x00};
     static final int[] GRAB_BODY_VARIANT = {0, 0, 0, 0, 1, 1, 1, 1, 0, 0};
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState1Table.
-    final int[] wanderTurnCount = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] wanderTurnCount = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState3Table: wandering steps before the charge decision.
-    final int[] wanderStepCount = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] wanderStepCount = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown1Table: Link-motion blocking interval after the grab.
     // ROM wEntitiesPrivateCountdown1Table.
-    final int[] linkHoldCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] entityCollisionFlags = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] bombOriginX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] bombOriginY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] bombOriginWritten = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] linkHoldCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] entityCollisionFlags = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] bombOriginX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] bombOriginY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] bombOriginWritten = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record BombSpawn(
             int type, int x, int y, int z, int speedX, int speedY, int speedZ, int transitionCountdown) {}
@@ -296,7 +296,7 @@ public final class HinoxMotion {
 
     record Position(int x, int y) {}
 
-    final HinoxStep hinoxStep = new HinoxStep(this);
+    private final HinoxStep hinoxStep = new HinoxStep(this);
 
     public record HinoxFrame(
             RoomEntity entity,
@@ -698,4 +698,40 @@ public final class HinoxMotion {
             boolean heldLinkPositionWritten,
             boolean applyHeldLinkPose,
             HinoxMotion.BombSpawn bomb) {}
+
+    int[] state() {
+        return this.state;
+    }
+
+    int[] wanderTurnCount() {
+        return this.wanderTurnCount;
+    }
+
+    int[] wanderStepCount() {
+        return this.wanderStepCount;
+    }
+
+    boolean[] initialized() {
+        return this.initialized;
+    }
+
+    int[] speedX() {
+        return this.speedX;
+    }
+
+    int[] speedY() {
+        return this.speedY;
+    }
+
+    int[] inertia() {
+        return this.inertia;
+    }
+
+    int[] entityCollisionFlags() {
+        return this.entityCollisionFlags;
+    }
+
+    int[] linkHoldCountdown() {
+        return this.linkHoldCountdown;
+    }
 }

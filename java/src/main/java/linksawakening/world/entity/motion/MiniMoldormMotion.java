@@ -35,24 +35,24 @@ public final class MiniMoldormMotion {
         0xF0, 0xF2, 0xF4, 0xFA, 0x00, 0x06, 0x0C, 0x0E
     };
 
-    final int[][] historyX = new int[EntityRoomLoader.MAX_ENTITIES][HISTORY_LENGTH];
-    final int[][] historyY = new int[EntityRoomLoader.MAX_ENTITIES][HISTORY_LENGTH];
-    final int[] historyKey = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[][] historyX = new int[EntityRoomLoader.MAX_ENTITIES][HISTORY_LENGTH];
+    private final int[][] historyY = new int[EntityRoomLoader.MAX_ENTITIES][HISTORY_LENGTH];
+    private final int[] historyKey = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState1Table: sixteen-entry movement and head-sprite table index.
     // ROM wEntitiesPrivateState1Table.
-    final int[] headingIndex = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] headingIndex = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState2Table: signed step around the sixteen-heading table.
     // ROM wEntitiesPrivateState2Table.
-    final int[] turnStep = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] turnStep = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown1Table.
-    final int[] turnCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] headSpriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] turnCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] headSpriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record Update(
             RoomEntity entity,
@@ -209,7 +209,7 @@ public final class MiniMoldormMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    final MiniMoldormFrameStep miniMoldormFrameStep = new MiniMoldormFrameStep(this);
+    private final MiniMoldormFrameStep miniMoldormFrameStep = new MiniMoldormFrameStep(this);
 
     static final class MiniMoldormFrameStep {
         private final MiniMoldormMotion owner;

@@ -53,7 +53,7 @@ class EntityBossBattleFlagTest {
     void laterBossInitSetsFlagAndDeathDoesNotClearItButRoomResetDoes() throws IOException {
         var runtime = runtime();
         assertFalse(runtime.inspection().inBossBattle());
-        runtime.inspection().slots.replace(15, entity(15, 0x81));
+        runtime.inspection().slots().replace(15, entity(15, 0x81));
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertTrue(runtime.inspection().inBossBattle());
         runtime.lifecycle().disableEntityWithoutPersistence(15);
@@ -66,31 +66,31 @@ class EntityBossBattleFlagTest {
     @Test
     void nonBossAndDefeatedBossDoNotSetFlag() throws IOException {
         var runtime = runtime();
-        runtime.inspection().slots.replace(15, entity(15, 9));
+        runtime.inspection().slots().replace(15, entity(15, 9));
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         assertFalse(runtime.inspection().inBossBattle());
-        runtime.inspection().slots.replace(14, entity(14, 0x81));
-        runtime.inspection().roomVariables.writeEntityRoomStatus(0x20);
+        runtime.inspection().slots().replace(14, entity(14, 0x81));
+        runtime.inspection().roomVariables().writeEntityRoomStatus(0x20);
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
         assertFalse(runtime.inspection().inBossBattle());
-        assertEquals(EntityStatus.DISABLED, runtime.inspection().slots.get(14).status());
+        assertEquals(EntityStatus.DISABLED, runtime.inspection().slots().get(14).status());
     }
 
     @Test
     void battleFlagSuppressesPowerUpsButStillAllowsOrdinaryDrops() throws IOException {
         var runtime = runtime();
         var source = entity(0, 9);
-        runtime.inspection().slots.replace(0, source);
-        runtime.inspection().slots.replace(15, entity(15, 0x81));
+        runtime.inspection().slots().replace(0, source);
+        runtime.inspection().slots().replace(15, entity(15, 0x81));
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
         runtime.execution().bossRewards().setEnemyDropCounters(new EnemyDropResolver.CounterState(11, 0));
         runtime.execution()
                 .bossRewards()
-                .handleTerminalEnemyDeath(runtime.inspection().slots.get(0), () -> 0);
+                .handleTerminalEnemyDeath(runtime.inspection().slots().get(0), () -> 0);
         assertFalse(runtime.inspection().snapshot().loadedEntities().stream().anyMatch(e -> e.type() == 0x34));
         assertTrue(runtime.inspection().snapshot().loadedEntities().stream().anyMatch(e -> e.type() == 0x2E));
         var peaceful = runtime();
-        peaceful.inspection().slots.replace(0, source);
+        peaceful.inspection().slots().replace(0, source);
         peaceful.lifecycle().initializeHealthGroup(0);
         peaceful.execution().bossRewards().setEnemyDropCounters(new EnemyDropResolver.CounterState(11, 0));
         peaceful.execution().bossRewards().handleTerminalEnemyDeath(source, () -> 0);

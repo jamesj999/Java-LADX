@@ -12,13 +12,13 @@ public final class LeeverMotion {
     static final int[] EMERGING_VARIANTS = {0x01, 0x00};
     static final int[] BURROWING_VARIANTS = {0x00, 0x01};
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot) {
         state[slot] = 0;
@@ -126,7 +126,7 @@ public final class LeeverMotion {
 
     record Vector(int x, int y) {}
 
-    final LeeverFrameStep leeverFrameStep = new LeeverFrameStep(this);
+    private final LeeverFrameStep leeverFrameStep = new LeeverFrameStep(this);
 
     static final class LeeverFrameStep {
         private final LeeverMotion owner;

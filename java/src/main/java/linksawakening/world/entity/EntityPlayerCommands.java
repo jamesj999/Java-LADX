@@ -19,17 +19,17 @@ import linksawakening.world.entity.motion.ThrownEntityMotion;
 
 /** Player lift, throw, block movement and held-item presentation commands. */
 public final class EntityPlayerCommands {
-    final EntityBombState bombInteractions;
-    final EntityCombatTables combatTables;
-    final EntityEventChannels events;
-    final EntityLiftState liftThrow;
-    final EntityMotionRegistry motions;
-    final EntityPhysicsTables physicsTables;
-    final EntityPresentationState presentationState;
-    final EntityRewardState rewards;
-    final EntityRoomInspection inspection;
-    final EntitySlotProperties slotProperties;
-    final EntitySlots slots;
+    private final EntityBombState bombInteractions;
+    private final EntityCombatTables combatTables;
+    private final EntityEventChannels events;
+    private final EntityLiftState liftThrow;
+    private final EntityMotionRegistry motions;
+    private final EntityPhysicsTables physicsTables;
+    private final EntityPresentationState presentationState;
+    private final EntityRewardState rewards;
+    private final EntityRoomInspection inspection;
+    private final EntitySlotProperties slotProperties;
+    private final EntitySlots slots;
     // Marin's eight direction/walk variants repeat during the opening dialog.
     // Cache complete immutable values only while every source field still matches.
     private static final RoomEntity UNREAD_PRESENTATION = RoomEntity.disabled(0);

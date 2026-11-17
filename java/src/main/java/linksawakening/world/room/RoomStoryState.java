@@ -43,7 +43,10 @@ final class RoomStoryState implements RoomStory {
     @Override
     public void setTailKeyOwned(boolean owned) {
         rememberTailKeyOwned(owned);
-        rooms.update(this, (room, story) -> story.applyTailKeyOwned(room, story.dependencies.followers().hasTailKey));
+        rooms.update(
+                this,
+                (room, story) -> story.applyTailKeyOwned(
+                        room, story.dependencies.followers().hasTailKey()));
     }
 
     @Override
@@ -65,7 +68,10 @@ final class RoomStoryState implements RoomStory {
     @Override
     public void setBowWowState(int state) {
         rememberBowWowState(state);
-        rooms.update(this, (room, story) -> story.applyBowWowState(room, story.dependencies.followers().bowWowState));
+        rooms.update(
+                this,
+                (room, story) -> story.applyBowWowState(
+                        room, story.dependencies.followers().bowWowState()));
     }
 
     @Override
@@ -75,9 +81,9 @@ final class RoomStoryState implements RoomStory {
                 this,
                 (room, story) -> story.applyChestPlayerLevels(
                         room,
-                        story.dependencies.followers().playerShieldLevel,
-                        story.dependencies.followers().playerSwordLevel,
-                        story.dependencies.followers().playerBraceletLevel));
+                        story.dependencies.followers().playerShieldLevel(),
+                        story.dependencies.followers().playerSwordLevel(),
+                        story.dependencies.followers().playerBraceletLevel()));
     }
 
     @Override
@@ -98,7 +104,7 @@ final class RoomStoryState implements RoomStory {
         rooms.updateOr(
                 transients,
                 RoomTransientState::clearTransientRoomState,
-                (room, state) -> state.clearTransientRoomState(room.contents));
+                (room, state) -> state.clearTransientRoomState(room.contents()));
     }
 
     private final Dependencies dependencies;
@@ -128,43 +134,43 @@ final class RoomStoryState implements RoomStory {
 
     @Override
     public void setBirdKeyOwned(boolean owned) {
-        dependencies.followers().hasBirdKey = owned;
+        dependencies.followers().hasBirdKey(owned);
     }
 
     void rememberTailKeyOwned(boolean owned) {
-        dependencies.followers().hasTailKey = owned;
+        dependencies.followers().hasTailKey(owned);
     }
 
     void resetWorldStoryState() {
-        Arrays.fill(dependencies.roomState().overworldRoomStatus, (byte) 0);
-        Arrays.fill(dependencies.roomState().indoorARoomStatus, (byte) 0);
-        Arrays.fill(dependencies.roomState().indoorBRoomStatus, (byte) 0);
-        Arrays.fill(dependencies.roomState().colorDungeonRoomStatus, (byte) 0);
-        dependencies.location().shouldGetLostInMysteriousWoods = false;
-        dependencies.entityFrame().recentRoomEntityClears.reset();
-        Arrays.fill(dependencies.roomState().dungeonProgressFlags, (byte) 0);
-        dependencies.roomState().dungeonItemState.reset();
-        dependencies.followers().followingNpcState = FollowingNpcState.none();
-        dependencies.followers().followingNpcRoomNeedsSync = true;
-        dependencies.followers().followingLinkPositionHistory.fill(0x08, 0x10, 0, 0);
-        dependencies.followers().hasBirdKey = false;
-        dependencies.followers().hasTailKey = false;
-        dependencies.followers().bowWowState = 0;
-        dependencies.followers().richardSpokenFlag = 0;
-        dependencies.followers().tarinFlag = 0;
-        dependencies.followers().playerShieldLevel = 0;
-        dependencies.followers().playerSwordLevel = 0;
-        dependencies.followers().playerBraceletLevel = 0;
-        dependencies.followers().houseNpcTradeItem = 0;
-        dependencies.entityInputs().entityGoldenLeavesCount = 0;
-        dependencies.entityFrame().enemyDropCounters = new EnemyDropResolver.CounterState(0, 0);
-        dependencies.entityFrame().boomerangSoundCounter = 0;
-        dependencies.entityFrame().boomerangSoundClockProvided = false;
-        dependencies.puzzles().dungeonTitleMessageCountdown = 0;
-        dependencies.terrain().switchBlocksState = 0;
-        dependencies.terrain().switchableObjectAnimationStage = 0;
-        dependencies.puzzles().switchButtonPressed = 0;
-        dependencies.location().currentOverworldTilesetId = W_TILESET_NO_UPDATE;
+        Arrays.fill(dependencies.roomState().overworldRoomStatus(), (byte) 0);
+        Arrays.fill(dependencies.roomState().indoorARoomStatus(), (byte) 0);
+        Arrays.fill(dependencies.roomState().indoorBRoomStatus(), (byte) 0);
+        Arrays.fill(dependencies.roomState().colorDungeonRoomStatus(), (byte) 0);
+        dependencies.location().shouldGetLostInMysteriousWoods(false);
+        dependencies.entityFrame().recentRoomEntityClears().reset();
+        Arrays.fill(dependencies.roomState().dungeonProgressFlags(), (byte) 0);
+        dependencies.roomState().dungeonItemState().reset();
+        dependencies.followers().followingNpcState(FollowingNpcState.none());
+        dependencies.followers().followingNpcRoomNeedsSync(true);
+        dependencies.followers().followingLinkPositionHistory().fill(0x08, 0x10, 0, 0);
+        dependencies.followers().hasBirdKey(false);
+        dependencies.followers().hasTailKey(false);
+        dependencies.followers().bowWowState(0);
+        dependencies.followers().richardSpokenFlag(0);
+        dependencies.followers().tarinFlag(0);
+        dependencies.followers().playerShieldLevel(0);
+        dependencies.followers().playerSwordLevel(0);
+        dependencies.followers().playerBraceletLevel(0);
+        dependencies.followers().houseNpcTradeItem(0);
+        dependencies.entityInputs().entityGoldenLeavesCount(0);
+        dependencies.entityFrame().enemyDropCounters(new EnemyDropResolver.CounterState(0, 0));
+        dependencies.entityFrame().boomerangSoundCounter(0);
+        dependencies.entityFrame().boomerangSoundClockProvided(false);
+        dependencies.puzzles().dungeonTitleMessageCountdown(0);
+        dependencies.terrain().switchBlocksState(0);
+        dependencies.terrain().switchableObjectAnimationStage(0);
+        dependencies.puzzles().switchButtonPressed(0);
+        dependencies.location().currentOverworldTilesetId(W_TILESET_NO_UPDATE);
     }
 
     void rememberRoomStatuses(
@@ -181,37 +187,37 @@ final class RoomStoryState implements RoomStory {
         if (state == null) {
             throw new IllegalArgumentException("Follower state cannot be null");
         }
-        dependencies.followers().followingLinkX = linkX & 0xFF;
-        dependencies.followers().followingLinkY = linkY & 0xFF;
-        dependencies.followers().followingLinkZ = linkZ & 0xFF;
-        dependencies.followers().followingEntityYOffset = entityYOffset & 0xFF;
-        dependencies.followers().followingLinkDirection = linkDirection & 0xFF;
-        if (!state.equals(dependencies.followers().followingNpcState)) {
-            dependencies.followers().followingNpcRoomNeedsSync = true;
+        dependencies.followers().followingLinkX(linkX & 0xFF);
+        dependencies.followers().followingLinkY(linkY & 0xFF);
+        dependencies.followers().followingLinkZ(linkZ & 0xFF);
+        dependencies.followers().followingEntityYOffset(entityYOffset & 0xFF);
+        dependencies.followers().followingLinkDirection(linkDirection & 0xFF);
+        if (!state.equals(dependencies.followers().followingNpcState())) {
+            dependencies.followers().followingNpcRoomNeedsSync(true);
         }
-        dependencies.followers().followingNpcState = state;
+        dependencies.followers().followingNpcState(state);
     }
 
     @Override
     public FollowingNpcState followingNpcState() {
-        return dependencies.followers().followingNpcState;
+        return dependencies.followers().followingNpcState();
     }
 
     @Override
     public int bowWowState() {
-        return dependencies.followers().bowWowState & 0xFF;
+        return dependencies.followers().bowWowState() & 0xFF;
     }
 
     void rememberBowWowState(int state) {
         if ((state & ~0xFF) != 0) {
             throw new IllegalArgumentException("BowWow state must be an unsigned byte");
         }
-        dependencies.followers().bowWowState = state;
+        dependencies.followers().bowWowState(state);
     }
 
     @Override
     public int richardSpokenFlag() {
-        return dependencies.followers().richardSpokenFlag & 0xFF;
+        return dependencies.followers().richardSpokenFlag() & 0xFF;
     }
 
     @Override
@@ -219,12 +225,12 @@ final class RoomStoryState implements RoomStory {
         if ((flag & ~0xFF) != 0) {
             throw new IllegalArgumentException("Richard spoken flag must be an unsigned byte");
         }
-        dependencies.followers().richardSpokenFlag = flag;
+        dependencies.followers().richardSpokenFlag(flag);
     }
 
     @Override
     public int tarinFlag() {
-        return dependencies.followers().tarinFlag & 0xFF;
+        return dependencies.followers().tarinFlag() & 0xFF;
     }
 
     @Override
@@ -232,21 +238,21 @@ final class RoomStoryState implements RoomStory {
         if ((flag & ~0xFF) != 0) {
             throw new IllegalArgumentException("Tarin flag must be an unsigned byte");
         }
-        dependencies.followers().tarinFlag = flag;
+        dependencies.followers().tarinFlag(flag);
     }
 
     void rememberChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) {
         if ((shieldLevel & ~0xFF) != 0 || (swordLevel & ~0xFF) != 0 || (powerBraceletLevel & ~0xFF) != 0) {
             throw new IllegalArgumentException("Player upgrade levels must be unsigned bytes");
         }
-        dependencies.followers().playerShieldLevel = shieldLevel;
-        dependencies.followers().playerSwordLevel = swordLevel;
-        dependencies.followers().playerBraceletLevel = powerBraceletLevel;
+        dependencies.followers().playerShieldLevel(shieldLevel);
+        dependencies.followers().playerSwordLevel(swordLevel);
+        dependencies.followers().playerBraceletLevel(powerBraceletLevel);
     }
 
     void rememberHouseNpcTradeItem(int tradeItem) {
         if ((tradeItem & ~0xFF) != 0) throw new IllegalArgumentException("Trade item must be a byte");
-        dependencies.followers().houseNpcTradeItem = tradeItem;
+        dependencies.followers().houseNpcTradeItem(tradeItem);
     }
 
     void configureHouseNpcStoryState(RoomRuntime loaded) {
@@ -257,21 +263,21 @@ final class RoomStoryState implements RoomStory {
         if ((trackId & ~0xFF) != 0) {
             throw new IllegalArgumentException("Default music track must be an unsigned byte");
         }
-        dependencies.followers().entityDefaultMusicTrack = trackId;
+        dependencies.followers().entityDefaultMusicTrack(trackId);
     }
 
     void updateWitchEnvironment(RoomRuntime loaded) {
-        loaded.entities
+        loaded.entities()
                 .configuration()
                 .setWitchEnvironment(
                         dependencies.indoorTorchPaletteEffect().effectAddress(),
                         dependencies.indoorTorchPaletteEffect().paletteDataFlags(),
-                        dependencies.followers().entityDefaultMusicTrack);
+                        dependencies.followers().entityDefaultMusicTrack());
     }
 
     @Override
     public boolean shouldGetLostInMysteriousWoods() {
-        return dependencies.location().shouldGetLostInMysteriousWoods;
+        return dependencies.location().shouldGetLostInMysteriousWoods();
     }
 
     RoomRuntime synchronizeFollowingNpcEntitiesIfNeeded(RoomRuntime loaded) {
@@ -280,12 +286,14 @@ final class RoomStoryState implements RoomStory {
 
     void markHeartContainerCollected(RoomRuntime loaded) {
 
-        byte[] activeStatus = dependencies.roomSessionViews().indoorStatusTableForMap(loaded.room.mapId());
-        activeStatus[loaded.room.roomId()] |= (byte) ROOM_STATUS_EVENT_2;
-        if (loaded.room.mapId() == 0x06) {
-            dependencies.roomState().indoorBRoomStatus[0x2E] |= (byte) ROOM_STATUS_EVENT_2;
-        } else if (loaded.room.mapId() == 0x03) {
-            dependencies.roomState().indoorARoomStatus[0x66] |= (byte) ROOM_STATUS_EVENT_2;
+        byte[] activeStatus = dependencies
+                .roomSessionViews()
+                .indoorStatusTableForMap(loaded.room().mapId());
+        activeStatus[loaded.room().roomId()] |= (byte) ROOM_STATUS_EVENT_2;
+        if (loaded.room().mapId() == 0x06) {
+            dependencies.roomState().indoorBRoomStatus()[0x2E] |= (byte) ROOM_STATUS_EVENT_2;
+        } else if (loaded.room().mapId() == 0x03) {
+            dependencies.roomState().indoorARoomStatus()[0x66] |= (byte) ROOM_STATUS_EVENT_2;
         }
     }
 
@@ -333,7 +341,7 @@ final class RoomStoryState implements RoomStory {
     }
 
     void applyTailKeyOwned(RoomRuntime loaded, boolean owned) {
-        loaded.entities.configuration().setTailKeyOwned(owned);
+        loaded.entities().configuration().setTailKeyOwned(owned);
     }
 
     void applyRestoredRoomStatuses(
@@ -342,21 +350,23 @@ final class RoomStoryState implements RoomStory {
             byte[] indoorAStatus,
             byte[] indoorBStatus,
             byte[] colorDungeonStatus) {
-        loaded.entities
+        loaded.entities()
                 .configuration()
-                .setEntityRoomStatus(dependencies.roomSessionViews().activeRoomStatusFlags(loaded.room));
-        loaded.entities.configuration().setTailKeyOwned(dependencies.followers().hasTailKey);
+                .setEntityRoomStatus(dependencies.roomSessionViews().activeRoomStatusFlags(loaded.room()));
+        loaded.entities()
+                .configuration()
+                .setTailKeyOwned(dependencies.followers().hasTailKey());
     }
 
     void applyBowWowState(RoomRuntime loaded, int state) {
-        loaded.entities.configuration().setBowWowState(state);
+        loaded.entities().configuration().setBowWowState(state);
     }
 
     void applyChestPlayerLevels(RoomRuntime loaded, int shieldLevel, int swordLevel, int powerBraceletLevel) {
         configureHouseNpcStoryState(loaded);
 
-        loaded.entities.configuration().setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
+        loaded.entities().configuration().setChestPlayerLevels(shieldLevel, swordLevel, powerBraceletLevel);
 
-        loaded.room.replaceEntities(loaded.entities.inspection().view());
+        loaded.room().replaceEntities(loaded.entities().inspection().view());
     }
 }

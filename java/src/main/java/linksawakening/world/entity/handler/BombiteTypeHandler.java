@@ -73,7 +73,7 @@ final class BombiteTypeHandler {
             state.slot().setTransitionCountdown(slotState.entity().slot(), bombiteUpdate.transitionCountdown());
             state.slot().setSlowTransitionCountdown(slotState.entity().slot(), bombiteUpdate.slowTransitionCountdown());
             state.bombInteractions()
-                    .setBombCollisionGraceCountdown(slotState.entity().slot(), bombiteUpdate.privateCountdown1());
+                    .setBombCollisionGraceCountdown(slotState.entity().slot(), bombiteUpdate.collisionGraceCountdown());
             if (bombiteUpdate.bumpJingle()) {
                 state.emit(new EntityCombatEvent(
                         slotState.entity().slot(),

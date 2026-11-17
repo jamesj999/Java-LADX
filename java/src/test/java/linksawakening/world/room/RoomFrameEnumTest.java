@@ -65,10 +65,10 @@ class RoomFrameEnumTest {
     @Test
     void ocarinaUnknownSelectionsStayRawAndCannotBecomeManbo() {
         var s = new RoomItemUseState();
-        s.selectedSongIndex = 1;
+        s.selectedSongIndex(1);
         assertEquals(OcarinaSong.MANBO_MAMBO, s.selectedSong());
-        s.selectedSongIndex = 0xFF;
+        s.selectedSongIndex(0xFF);
         assertNull(s.selectedSong());
-        assertEquals(0xFF, s.selectedSongIndex);
+        assertEquals(0xFF, s.selectedSongIndex());
     }
 }

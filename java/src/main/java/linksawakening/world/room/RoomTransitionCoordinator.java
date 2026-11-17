@@ -43,7 +43,7 @@ public final class RoomTransitionCoordinator {
         if (transitionController.isActive()) {
             return;
         }
-        ActiveRoom room = loaded.room;
+        ActiveRoom room = loaded.room();
 
         // $02:5136-5167 uses wWarp0, independent of the door warp positions.
         if (link.status().pitWarpPending() && room.hasWarps()) {

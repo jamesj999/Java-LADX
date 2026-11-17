@@ -105,7 +105,7 @@ class RoomRenderAllocationTest {
         session.rooms().activeRoomOrNull().palettes()[0][0] = 11;
         session.dungeon().setDungeonItemForDebug(0, 0, 1);
         RoomSessionInspection.component(session, RoomWorldState.class)
-                .dungeonItemState
+                .dungeonItemState()
                 .loadForMap(0, true);
         assertSame(view, session.rooms().renderViewOrNull());
         assertEquals(7, view.tileId(0));

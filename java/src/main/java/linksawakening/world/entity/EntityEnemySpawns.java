@@ -27,18 +27,18 @@ import linksawakening.world.entity.motion.ZoraMotion;
 /** SpawnNewEntity / SpawnNewEntityInRange and each enemy handler’s child initialization path. */
 public final class EntityEnemySpawns {
     // Optional ROM catalog for ROM-free entity fixtures.
-    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
-    final EntityBombState bombInteractions;
-    final EntityBossState bossRewards;
-    final EntityCombatTables combatTables;
-    final EntityEventChannels events;
-    final EntityLiftState liftThrow;
-    final EntityMotionRegistry motions;
-    final EntityPhysicsTables physicsTables;
-    final EntityPickupController pickups;
-    final EntitySlotProperties slotProperties;
-    final EntitySlots slots;
-    final EntitySlotLifecycle lifecycle;
+    private final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
+    private final EntityBombState bombInteractions;
+    private final EntityBossState bossRewards;
+    private final EntityCombatTables combatTables;
+    private final EntityEventChannels events;
+    private final EntityLiftState liftThrow;
+    private final EntityMotionRegistry motions;
+    private final EntityPhysicsTables physicsTables;
+    private final EntityPickupController pickups;
+    private final EntitySlotProperties slotProperties;
+    private final EntitySlots slots;
+    private final EntitySlotLifecycle lifecycle;
 
     EntityEnemySpawns(
             linksawakening.world.entity.EntitySpriteViews spriteHandlers,

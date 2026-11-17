@@ -29,16 +29,17 @@ class RoomOutboxOwnershipTest {
     @Test
     void combatResultsRemainImmutableAndIndependentOfLaterDrains() {
         var session = unloadedSession();
-        var box = RoomSessionInspection.component(session, RoomEntitySessionState.class).outbox;
+        var box = RoomSessionInspection.component(session, RoomEntitySessionState.class)
+                .outbox();
         var event = new EntityCombatEvent(0, 1, 0, false, EntityCombatEvent.SoundChannel.NONE, -1);
-        box.pendingRoomEntityEvents.add(event);
+        box.pendingRoomEntityEvents().add(event);
         var first =
                 RoomSessionInspection.component(session, RoomEntityBridge.class).consumeEntityEvents();
         assertEquals(List.of(event), first);
         assertTrue(RoomSessionInspection.component(session, RoomEntityBridge.class)
                 .consumeEntityEvents()
                 .isEmpty());
-        box.pendingRoomEntityEvents.add(event);
+        box.pendingRoomEntityEvents().add(event);
         RoomSessionInspection.component(session, RoomEntityBridge.class).consumeEntityEvents();
         assertEquals(List.of(event), first);
         assertThrows(UnsupportedOperationException.class, first::clear);
@@ -47,16 +48,17 @@ class RoomOutboxOwnershipTest {
     @Test
     void dialogResultsRemainImmutableAndIndependentOfLaterDrains() {
         var session = unloadedSession();
-        var box = RoomSessionInspection.component(session, RoomEntitySessionState.class).outbox;
+        var box = RoomSessionInspection.component(session, RoomEntitySessionState.class)
+                .outbox();
         var event = new DialogRequest(0, 1);
-        box.pendingRoomDialogRequests.add(event);
+        box.pendingRoomDialogRequests().add(event);
         var first =
                 RoomSessionInspection.component(session, RoomEntityBridge.class).consumeEntityDialogRequests();
         assertEquals(List.of(event), first);
         assertTrue(RoomSessionInspection.component(session, RoomEntityBridge.class)
                 .consumeEntityDialogRequests()
                 .isEmpty());
-        box.pendingRoomDialogRequests.add(new DialogRequest(0, 2));
+        box.pendingRoomDialogRequests().add(new DialogRequest(0, 2));
         RoomSessionInspection.component(session, RoomEntityBridge.class).consumeEntityDialogRequests();
         assertEquals(List.of(event), first);
         assertThrows(UnsupportedOperationException.class, first::clear);
@@ -65,7 +67,8 @@ class RoomOutboxOwnershipTest {
     @Test
     void emptyDrainsKeepAllChannelsEmpty() {
         var session = unloadedSession();
-        var box = RoomSessionInspection.component(session, RoomEntitySessionState.class).outbox;
+        var box = RoomSessionInspection.component(session, RoomEntitySessionState.class)
+                .outbox();
         assertEquals(
                 List.of(),
                 RoomSessionInspection.component(session, RoomEntityBridge.class).consumeEntityEvents());
@@ -78,15 +81,16 @@ class RoomOutboxOwnershipTest {
     @Test
     void scopedRewardDrainClearsTheQueueBeforeReadOnlyCallbacksAndKeepsNewlyQueuedRewards() {
         var session = unloadedSession();
-        var box = RoomSessionInspection.component(session, RoomEntitySessionState.class).outbox;
+        var box = RoomSessionInspection.component(session, RoomEntitySessionState.class)
+                .outbox();
         var first = new ChestRewardEvent(0, 1);
         var next = new ChestRewardEvent(1, 2);
-        box.pendingChestRewardEvents.add(first);
+        box.pendingChestRewardEvents().add(first);
         box.drainChestRewardEvents(events -> {
             assertEquals(List.of(first), events);
             assertTrue(box.consumeChestRewardEvents().isEmpty());
             assertThrows(UnsupportedOperationException.class, events::clear);
-            box.pendingChestRewardEvents.add(next);
+            box.pendingChestRewardEvents().add(next);
         });
         assertEquals(List.of(next), box.consumeChestRewardEvents());
     }
@@ -94,8 +98,9 @@ class RoomOutboxOwnershipTest {
     @Test
     void throwingDuringAFrameDrainStillConsumesTheOriginalBatch() {
         var session = unloadedSession();
-        var box = RoomSessionInspection.component(session, RoomEntitySessionState.class).outbox;
-        box.pendingHeartContainerRewards.add(new HeartContainerRewardEvent(0));
+        var box = RoomSessionInspection.component(session, RoomEntitySessionState.class)
+                .outbox();
+        box.pendingHeartContainerRewards().add(new HeartContainerRewardEvent(0));
         var failure = new IllegalStateException("consumer");
         assertSame(
                 failure,
@@ -105,17 +110,18 @@ class RoomOutboxOwnershipTest {
                             throw failure;
                         })));
         assertTrue(box.consumeHeartContainerRewards().isEmpty());
-        box.pendingHeartContainerRewards.add(new HeartContainerRewardEvent(1));
+        box.pendingHeartContainerRewards().add(new HeartContainerRewardEvent(1));
         box.drainHeartContainerRewards(events -> assertEquals(1, events.size()));
     }
 
     @Test
     void firstDialogRequestDrainStillConsumesEveryQueuedDialog() {
         var session = unloadedSession();
-        var box = RoomSessionInspection.component(session, RoomEntitySessionState.class).outbox;
+        var box = RoomSessionInspection.component(session, RoomEntitySessionState.class)
+                .outbox();
         var first = new DialogRequest(0, 1);
-        box.pendingRoomDialogRequests.add(first);
-        box.pendingRoomDialogRequests.add(new DialogRequest(0, 2));
+        box.pendingRoomDialogRequests().add(first);
+        box.pendingRoomDialogRequests().add(new DialogRequest(0, 2));
         assertEquals(
                 first,
                 RoomSessionInspection.component(session, RoomEntityBridge.class).consumeFirstEntityDialogRequest());

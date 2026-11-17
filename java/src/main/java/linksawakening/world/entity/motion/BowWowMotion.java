@@ -42,26 +42,26 @@ public final class BowWowMotion {
         Arrays.setAll(chains, ignored -> new BowWowChain());
     }
 
-    final int[] activeState = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] activeState = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     // wEntitiesPrivateState4Table: setup latch, separate from active handler state.
-    final int[] setupComplete = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] setupComplete = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown1Table.
-    final int[] wanderCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] wanderCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown2Table.
     private final int[] biteCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] targetX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] targetY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] targetSlot = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] targetX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] targetY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] targetSlot = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] updatedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] updatedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot) {
         clear(slot);
@@ -394,7 +394,7 @@ public final class BowWowMotion {
 
     record Vector(int x, int y) {}
 
-    final BowWowStep bowWowStep = new BowWowStep(this);
+    private final BowWowStep bowWowStep = new BowWowStep(this);
 
     static BowWowMotion.Update advanceAfterTimersBody(BowWowMotion owner, BowWowFrame inputs) {
         RoomEntity entity = inputs.entity();

@@ -21,31 +21,31 @@ final class RoomFollowerSynchronizer {
     }
 
     RoomRuntime synchronizeFollowingNpcEntitiesIfNeeded(RoomRuntime loaded) {
-        if (!dependencies.followers().followingNpcRoomNeedsSync) {
+        if (!dependencies.followers().followingNpcRoomNeedsSync()) {
             return loaded;
         }
         FollowingNpcRoomContext room = new FollowingNpcRoomContext(
-                loaded.room.mapCategory() != Warp.CATEGORY_OVERWORLD,
-                loaded.room.mapCategory() == Warp.CATEGORY_SIDESCROLL,
-                loaded.room.mapId(),
-                loaded.room.roomId());
+                loaded.room().mapCategory() != Warp.CATEGORY_OVERWORLD,
+                loaded.room().mapCategory() == Warp.CATEGORY_SIDESCROLL,
+                loaded.room().mapId(),
+                loaded.room().roomId());
         FollowingNpcEntitySpawner.Result result = dependencies
                 .followingNpcEntitySpawner()
                 .synchronize(new linksawakening.world.entity.FollowingNpcSpawn(
-                        loaded.room.entityView().ownedCopy(),
+                        loaded.room().entityView().ownedCopy(),
                         room,
-                        dependencies.followers().followingNpcState,
-                        dependencies.followers().followingLinkX,
-                        dependencies.followers().followingLinkY,
-                        dependencies.followers().followingLinkZ,
-                        dependencies.followers().followingEntityYOffset,
-                        dependencies.followers().followingLinkDirection,
-                        dependencies.followers().followingLinkPositionHistory));
-        dependencies.followers().followingNpcState = result.state();
-        dependencies.followers().followingNpcRoomNeedsSync = false;
-        loaded.room.replaceEntities(result.snapshot());
+                        dependencies.followers().followingNpcState(),
+                        dependencies.followers().followingLinkX(),
+                        dependencies.followers().followingLinkY(),
+                        dependencies.followers().followingLinkZ(),
+                        dependencies.followers().followingEntityYOffset(),
+                        dependencies.followers().followingLinkDirection(),
+                        dependencies.followers().followingLinkPositionHistory()));
+        dependencies.followers().followingNpcState(result.state());
+        dependencies.followers().followingNpcRoomNeedsSync(false);
+        loaded.room().replaceEntities(result.snapshot());
         RoomEntityRuntime replacementRuntime = new RoomEntityRuntimeBuilder(result.snapshot())
-                .indoorRoom(loaded.room.mapCategory() != Warp.CATEGORY_OVERWORLD)
+                .indoorRoom(loaded.room().mapCategory() != Warp.CATEGORY_OVERWORLD)
                 .randomByteSupplier(dependencies.entityRandomByteSource())
                 .spriteHandlers(dependencies.entitySpriteHandlerCatalog())
                 .enemyCombatTables(dependencies.enemyCombatTables())
@@ -53,23 +53,23 @@ final class RoomFollowerSynchronizer {
                 .romTables(dependencies.romTables())
                 .rom(dependencies.romData())
                 .build();
-        loaded = new RoomRuntime(loaded.contents, replacementRuntime, dependencies.roomRuntimeServices());
+        loaded = new RoomRuntime(loaded.contents(), replacementRuntime, dependencies.roomRuntimeServices());
         dependencies.installRoom().accept(loaded);
         configureFollowerWorld(loaded);
         configureFollowerCollision(loaded);
         configureFollowerInputs(loaded);
         configureFollowerProgress(loaded);
         configureHouseNpcStoryState(loaded);
-        if (loaded.room.mapCategory() != Warp.CATEGORY_OVERWORLD
-                && loaded.room.mapId() == 0x10
-                && loaded.room.roomId() == 0xA3) {
-            loaded.entities
+        if (loaded.room().mapCategory() != Warp.CATEGORY_OVERWORLD
+                && loaded.room().mapId() == 0x10
+                && loaded.room().roomId() == 0xA3) {
+            loaded.entities()
                     .configuration()
                     .setChestPlayerLevels(
-                            dependencies.followers().playerShieldLevel,
-                            dependencies.followers().playerSwordLevel,
-                            dependencies.followers().playerBraceletLevel);
-            loaded.room.replaceEntities(loaded.entities.inspection().view());
+                            dependencies.followers().playerShieldLevel(),
+                            dependencies.followers().playerSwordLevel(),
+                            dependencies.followers().playerBraceletLevel());
+            loaded.room().replaceEntities(loaded.entities().inspection().view());
         }
         dependencies
                 .dropState()
@@ -112,66 +112,73 @@ final class RoomFollowerSynchronizer {
     }
 
     private void configureFollowerWorld(RoomRuntime loaded) {
-        var configuration = loaded.entities.configuration();
-        configuration.setColorShellWorld(loaded.colorShellWorld);
-        configuration.setFollowingNpcState(dependencies.followers().followingNpcState);
-        configuration.setEntityMapId(loaded.room.mapId());
-        configuration.setEntityRoomId(loaded.room.roomId());
-        configuration.setDungeonMinibossReady(loaded.room.mapId() >= 0
-                && loaded.room.mapId() < dependencies.roomState().dungeonProgressFlags.length
-                && (dependencies.roomState().dungeonProgressFlags[loaded.room.mapId()] & 0x01) != 0);
+        var configuration = loaded.entities().configuration();
+        configuration.setColorShellWorld(loaded.colorShellWorld());
+        configuration.setFollowingNpcState(dependencies.followers().followingNpcState());
+        configuration.setEntityMapId(loaded.room().mapId());
+        configuration.setEntityRoomId(loaded.room().roomId());
+        configuration.setDungeonMinibossReady(loaded.room().mapId() >= 0
+                && loaded.room().mapId() < dependencies.roomState().dungeonProgressFlags().length
+                && (dependencies.roomState()
+                                        .dungeonProgressFlags()[loaded.room().mapId()]
+                                & 0x01)
+                        != 0);
         configuration.setOwlDialogResolver(dependencies.owlEventDialogResolver()::globalDialogId);
     }
 
     private void configureFollowerCollision(RoomRuntime loaded) {
-        var configuration = loaded.entities.configuration();
+        var configuration = loaded.entities().configuration();
 
         configuration.setOwlDefaultMusicResolver(dependencies.owlEventDialogResolver()::defaultMusicTrack);
-        configuration.setGroundInteraction(loaded.groundInteraction);
-        configuration.setBackgroundInteraction(loaded.backgroundInteraction);
-        configuration.setObjectQuery(loaded.objectQuery);
-        configuration.setObjectIntersectionQuery(loaded.objectIntersectionQuery);
-        configuration.setGroundInteractionSideScrolling(loaded.room.mapCategory() == Warp.CATEGORY_SIDESCROLL);
+        configuration.setGroundInteraction(loaded.groundInteraction());
+        configuration.setBackgroundInteraction(loaded.backgroundInteraction());
+        configuration.setObjectQuery(loaded.objectQuery());
+        configuration.setObjectIntersectionQuery(loaded.objectIntersectionQuery());
+        configuration.setGroundInteractionSideScrolling(loaded.room().mapCategory() == Warp.CATEGORY_SIDESCROLL);
     }
 
     private void configureFollowerInputs(RoomRuntime loaded) {
-        var configuration = loaded.entities.configuration();
+        var configuration = loaded.entities().configuration();
 
         configuration.setActionButtonsHeld(
-                dependencies.entityInputs().actionButtonAHeld, dependencies.entityInputs().actionButtonBHeld);
+                dependencies.entityInputs().actionButtonAHeld(),
+                dependencies.entityInputs().actionButtonBHeld());
         configuration.setTalkState(
-                dependencies.entityInputs().entityInventoryAppearing,
-                dependencies.entityInputs().entityDialogCooldown,
-                dependencies.entityInputs().entityWindowY);
-        configuration.setJoypadHeld(dependencies.entityInputs().joypadHeld);
-        configuration.setPressedButtonsMask(dependencies.entityInputs().entityPressedButtonsMask);
-        configuration.setPowerBraceletButtonHeld(dependencies.entityInputs().powerBraceletButtonHeld);
-        configuration.setBombButtonHeld(dependencies.entityInputs().bombButtonHeld);
+                dependencies.entityInputs().entityInventoryAppearing(),
+                dependencies.entityInputs().entityDialogCooldown(),
+                dependencies.entityInputs().entityWindowY());
+        configuration.setJoypadHeld(dependencies.entityInputs().joypadHeld());
+        configuration.setPressedButtonsMask(dependencies.entityInputs().entityPressedButtonsMask());
+        configuration.setPowerBraceletButtonHeld(dependencies.entityInputs().powerBraceletButtonHeld());
+        configuration.setBombButtonHeld(dependencies.entityInputs().bombButtonHeld());
     }
 
     private void configureFollowerProgress(RoomRuntime loaded) {
-        var configuration = loaded.entities.configuration();
+        var configuration = loaded.entities().configuration();
 
-        configuration.setLiftedLinkC13B(dependencies.followers().followingEntityYOffset);
-        configuration.setEntityRoomStatus(dependencies.roomSessionViews().activeRoomStatusFlags(loaded.room));
-        configuration.setDungeonMinibossReady(loaded.room.mapId() >= 0
-                && loaded.room.mapId() < dependencies.roomState().dungeonProgressFlags.length
-                && (dependencies.roomState().dungeonProgressFlags[loaded.room.mapId()] & 0x01) != 0);
-        configuration.setTailKeyOwned(dependencies.followers().hasTailKey);
+        configuration.setLiftedLinkC13B(dependencies.followers().followingEntityYOffset());
+        configuration.setEntityRoomStatus(dependencies.roomSessionViews().activeRoomStatusFlags(loaded.room()));
+        configuration.setDungeonMinibossReady(loaded.room().mapId() >= 0
+                && loaded.room().mapId() < dependencies.roomState().dungeonProgressFlags().length
+                && (dependencies.roomState()
+                                        .dungeonProgressFlags()[loaded.room().mapId()]
+                                & 0x01)
+                        != 0);
+        configuration.setTailKeyOwned(dependencies.followers().hasTailKey());
         configuration.setSecretSeashellPegasusCollisionState(
-                dependencies.entityInputs().secretSeashellScreenShakeActive,
-                        dependencies.entityInputs().secretSeashellPegasusCollisionActive,
-                dependencies.entityInputs().secretSeashellPegasusCollisionX,
-                        dependencies.entityInputs().secretSeashellPegasusCollisionY);
+                dependencies.entityInputs().secretSeashellScreenShakeActive(),
+                        dependencies.entityInputs().secretSeashellPegasusCollisionActive(),
+                dependencies.entityInputs().secretSeashellPegasusCollisionX(),
+                        dependencies.entityInputs().secretSeashellPegasusCollisionY());
     }
 
     void configureHouseNpcStoryState(RoomRuntime loaded) {
-        loaded.entities
+        loaded.entities()
                 .configuration()
                 .setHouseNpcStoryState(
-                        dependencies.followers().tarinFlag,
-                        dependencies.followers().houseNpcTradeItem,
-                        Byte.toUnsignedInt(dependencies.roomState().dungeonProgressFlags[2]),
-                        Byte.toUnsignedInt(dependencies.roomState().overworldRoomStatus[0xFD]));
+                        dependencies.followers().tarinFlag(),
+                        dependencies.followers().houseNpcTradeItem(),
+                        Byte.toUnsignedInt(dependencies.roomState().dungeonProgressFlags()[2]),
+                        Byte.toUnsignedInt(dependencies.roomState().overworldRoomStatus()[0xFD]));
     }
 }

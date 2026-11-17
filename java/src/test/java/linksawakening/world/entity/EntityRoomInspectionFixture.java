@@ -28,31 +28,31 @@ final class EntityRoomInspectionFixture {
 
     int swordPickupStateForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.pickups().state.readSwordPickupState(slot);
+        return runtime.pickups().state().readSwordPickupState(slot);
     }
 
     int slowTransitionCountdownForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.inspection().physicsTables.readSlowTransitionCountdown(slot);
+        return runtime.inspection().physicsTables().readSlowTransitionCountdown(slot);
     }
 
     int threeOfAKindStateForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
         return runtime.inspection()
-                .motions
+                .motions()
                 .get(ThreeOfAKindMotion.class, ThreeOfAKindMotion::new)
                 .state(slot);
     }
 
     int transitionCountdownForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.inspection().physicsTables.readEnemyTransitionCountdown(slot);
+        return runtime.inspection().physicsTables().readEnemyTransitionCountdown(slot);
     }
 
     int hinoxStateForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
         return runtime.inspection()
-                .motions
+                .motions()
                 .get(HinoxMotion.class, HinoxMotion::new)
                 .state(slot);
     }
@@ -60,7 +60,7 @@ final class EntityRoomInspectionFixture {
     int hinoxSpeedXForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
         return runtime.inspection()
-                .motions
+                .motions()
                 .get(HinoxMotion.class, HinoxMotion::new)
                 .speedX(slot);
     }
@@ -68,20 +68,20 @@ final class EntityRoomInspectionFixture {
     int hinoxSpeedYForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
         return runtime.inspection()
-                .motions
+                .motions()
                 .get(HinoxMotion.class, HinoxMotion::new)
                 .speedY(slot);
     }
 
     int enemyHealthForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.inspection().combatTables.readEnemyHealth(slot);
+        return runtime.inspection().combatTables().readEnemyHealth(slot);
     }
 
     int tarinRaccoonStateForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
         return runtime.inspection()
-                .motions
+                .motions()
                 .get(TarinRaccoonMotion.class, TarinRaccoonMotion::new)
                 .state(slot);
     }
@@ -92,12 +92,12 @@ final class EntityRoomInspectionFixture {
     }
 
     int entityRoomStatusForTest() {
-        return runtime.inspection().roomVariables.readEntityRoomStatus() & 0xFF;
+        return runtime.inspection().roomVariables().readEntityRoomStatus() & 0xFF;
     }
 
     int warpTransitionCountdownForTest(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
-        return runtime.inspection().warpState.readWarpTransitionCountdown(slot) & 0xFF;
+        return runtime.inspection().warpState().readWarpTransitionCountdown(slot) & 0xFF;
     }
 
     int owlEventStateForTest(int slot) {
@@ -112,28 +112,28 @@ final class EntityRoomInspectionFixture {
 
     int sideViewPlatformSpeedYForTest(int slot) {
         return runtime.inspection()
-                .motions
+                .motions()
                 .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
                 .speedY(slot);
     }
 
     int sideViewPlatformSpeedXForTest(int slot) {
         return runtime.inspection()
-                .motions
+                .motions()
                 .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
                 .speedX(slot);
     }
 
     int sideViewPlatformRumbleCountdownForTest(int slot) {
         return runtime.inspection()
-                .motions
+                .motions()
                 .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
                 .rumbleCountdown(slot);
     }
 
     int sideViewPlatformPressureTicksForTest(int slot) {
         return runtime.inspection()
-                .motions
+                .motions()
                 .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
                 .pressureTicks(slot);
     }

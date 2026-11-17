@@ -9,15 +9,15 @@ import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
 /** Bank-$06 StalfosAggressiveEntityHandler's pursuit and jump states. */
 public final class StalfosAggressiveMotion {
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     /** Mirrors EntityInitWithRandomDirection's consumed random byte. */
     // The ROM advances its random source here even though this particular byte is discarded.
@@ -136,7 +136,7 @@ public final class StalfosAggressiveMotion {
 
     record Vector(int x, int y) {}
 
-    final StalfosAggressiveFrameStep stalfosAggressiveFrameStep = new StalfosAggressiveFrameStep(this);
+    private final StalfosAggressiveFrameStep stalfosAggressiveFrameStep = new StalfosAggressiveFrameStep(this);
 
     static final class StalfosAggressiveFrameStep {
         private final StalfosAggressiveMotion owner;

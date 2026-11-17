@@ -18,17 +18,17 @@ class RoomDungeonLiveViewTest {
         bytes[RomSymbols.MapLayout11.offset()] = 10;
         var session = RoomRenderAllocationTest.room(bytes);
         var world = RoomSessionInspection.component(session, RoomWorldState.class);
-        world.indoorARoomStatus[7] = 21;
-        world.indoorBRoomStatus[8] = 22;
-        world.indoorBRoomStatus[9] = 23;
-        world.colorDungeonRoomStatus[10] = 24;
+        world.indoorARoomStatus()[7] = 21;
+        world.indoorBRoomStatus()[8] = 22;
+        world.indoorBRoomStatus()[9] = 23;
+        world.colorDungeonRoomStatus()[10] = 24;
         var view = session.dungeon().view();
         assertEquals(21, view.minimapStatus(0));
-        world.indoorARoomStatus[7] = 25;
+        world.indoorARoomStatus()[7] = 25;
         assertEquals(25, view.minimapStatus(0));
         roomMap(session, 6);
         assertEquals(22, view.minimapStatus(0));
-        world.dungeonProgressFlags[6] = 4;
+        world.dungeonProgressFlags()[6] = 4;
         assertEquals(23, view.minimapStatus(0));
         roomMap(session, 255);
         assertEquals(24, view.minimapStatus(0));
@@ -51,9 +51,9 @@ class RoomDungeonLiveViewTest {
         session.installRoom(new RoomRuntime(
                 new RoomContents(
                         room,
-                        RoomSessionInspection.loadedRoom(session).contents.puzzles,
-                        RoomSessionInspection.loadedRoom(session).contents.overrides),
-                RoomSessionInspection.loadedRoom(session).entities,
+                        RoomSessionInspection.loadedRoom(session).contents().puzzles(),
+                        RoomSessionInspection.loadedRoom(session).contents().overrides()),
+                RoomSessionInspection.loadedRoom(session).entities(),
                 RoomSessionInspection.component(session, RoomRuntime.Services.class)));
     }
 }

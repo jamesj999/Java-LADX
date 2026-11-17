@@ -23,15 +23,15 @@ public final class RewardOutputs {
     }
 
     public List<ChestRewardEvent> consumeChestRewardEvents() {
-        return dependencies.entityRuntimeState().outbox.consumeChestRewardEvents();
+        return dependencies.entityRuntimeState().outbox().consumeChestRewardEvents();
     }
 
     public List<KeyRewardEvent> consumeKeyRewardEvents() {
-        return dependencies.entityRuntimeState().outbox.consumeKeyRewardEvents();
+        return dependencies.entityRuntimeState().outbox().consumeKeyRewardEvents();
     }
 
     public List<SlimeKeyRewardEvent> consumeSlimeKeyRewardEvents() {
-        return dependencies.entityRuntimeState().outbox.consumeSlimeKeyRewardEvents();
+        return dependencies.entityRuntimeState().outbox().consumeSlimeKeyRewardEvents();
     }
 
     public List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {
@@ -39,68 +39,68 @@ public final class RewardOutputs {
     }
 
     public List<HeartContainerRewardEvent> consumeHeartContainerRewards() {
-        return dependencies.entityRuntimeState().outbox.consumeHeartContainerRewards();
+        return dependencies.entityRuntimeState().outbox().consumeHeartContainerRewards();
     }
 
     public List<MadamMeowMeowFullHealRequest> consumeMadamMeowMeowFullHealRequests() {
-        return dependencies.entityRuntimeState().outbox.consumeMadamMeowMeowFullHealRequests();
+        return dependencies.entityRuntimeState().outbox().consumeMadamMeowMeowFullHealRequests();
     }
 
     public List<RichardProgressEvent> consumeRichardProgressEvents() {
-        return dependencies.entityRuntimeState().outbox.consumeRichardProgressEvents();
+        return dependencies.entityRuntimeState().outbox().consumeRichardProgressEvents();
     }
 
     public List<ToadstoolRewardEvent> consumeToadstoolRewards() {
-        return dependencies.entityRuntimeState().outbox.consumeToadstoolRewards();
+        return dependencies.entityRuntimeState().outbox().consumeToadstoolRewards();
     }
 
     public List<WitchExchangeEvent> consumeWitchExchangeEvents() {
-        return dependencies.entityRuntimeState().outbox.consumeWitchExchangeEvents();
+        return dependencies.entityRuntimeState().outbox().consumeWitchExchangeEvents();
     }
 
     public List<WitchRewardEvent> consumeWitchRewardEvents() {
-        return dependencies.entityRuntimeState().outbox.consumeWitchRewardEvents();
+        return dependencies.entityRuntimeState().outbox().consumeWitchRewardEvents();
     }
 
     public void drainChestRewardEvents(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
-        dependencies.entityRuntimeState().outbox.drainChestRewardEvents(target);
+        dependencies.entityRuntimeState().outbox().drainChestRewardEvents(target);
     }
 
     public void drainKeyRewardEvents(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
-        dependencies.entityRuntimeState().outbox.drainKeyRewardEvents(target);
+        dependencies.entityRuntimeState().outbox().drainKeyRewardEvents(target);
     }
 
     public void drainSlimeKeyRewardEvents(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
-        dependencies.entityRuntimeState().outbox.drainSlimeKeyRewardEvents(target);
+        dependencies.entityRuntimeState().outbox().drainSlimeKeyRewardEvents(target);
     }
 
     public void drainHeartContainerRewards(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
-        dependencies.entityRuntimeState().outbox.drainHeartContainerRewards(target);
+        dependencies.entityRuntimeState().outbox().drainHeartContainerRewards(target);
     }
 
     public void drainMadamMeowMeowFullHealRequests(
             RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
-        dependencies.entityRuntimeState().outbox.drainMadamMeowMeowFullHealRequests(target);
+        dependencies.entityRuntimeState().outbox().drainMadamMeowMeowFullHealRequests(target);
     }
 
     public void drainRichardProgressEvents(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
-        dependencies.entityRuntimeState().outbox.drainRichardProgressEvents(target);
+        dependencies.entityRuntimeState().outbox().drainRichardProgressEvents(target);
     }
 
     public void drainSwordPickupRewards(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
-        dependencies.entityRuntimeState().outbox.drainSwordPickupRewards(target);
+        dependencies.entityRuntimeState().outbox().drainSwordPickupRewards(target);
     }
 
     public void drainToadstoolRewards(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
-        dependencies.entityRuntimeState().outbox.drainToadstoolRewards(target);
+        dependencies.entityRuntimeState().outbox().drainToadstoolRewards(target);
     }
 
     public void drainWitchExchangeEvents(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
-        dependencies.entityRuntimeState().outbox.drainWitchExchangeEvents(target);
+        dependencies.entityRuntimeState().outbox().drainWitchExchangeEvents(target);
     }
 
     public void drainWitchRewardEvents(RoomFrameDrain<linksawakening.world.entity.event.EntityRequest> target) {
-        dependencies.entityRuntimeState().outbox.drainWitchRewardEvents(target);
+        dependencies.entityRuntimeState().outbox().drainWitchRewardEvents(target);
     }
 
     record Dependencies(RoomEntitySessionState entityRuntimeState) {

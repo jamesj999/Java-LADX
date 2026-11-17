@@ -12,18 +12,18 @@ import linksawakening.world.entity.motion.FollowingNpcMotion;
 
 /** Read-only views over ROM slot state for gameplay and diagnostics. */
 public final class EntityEnemyInspection {
-    final EntityBossState bossRewards;
-    final EntityCombatTables combatTables;
-    final EntityEventChannels events;
-    final EntityLiftState liftThrow;
-    final EntityLinkState linkState;
-    final EntityMotionRegistry motions;
-    final EntityPhysicsTables physicsTables;
-    final EntityRoomInspection inspection;
-    final EntityRoomInspection roomInspection;
-    final EntityRoomVariables roomVariables;
-    final EntitySlotPresentation slotProperties;
-    final EntitySlots slots;
+    private final EntityBossState bossRewards;
+    private final EntityCombatTables combatTables;
+    private final EntityEventChannels events;
+    private final EntityLiftState liftThrow;
+    private final EntityLinkState linkState;
+    private final EntityMotionRegistry motions;
+    private final EntityPhysicsTables physicsTables;
+    private final EntityRoomInspection inspection;
+    private final EntityRoomInspection roomInspection;
+    private final EntityRoomVariables roomVariables;
+    private final EntitySlotPresentation slotProperties;
+    private final EntitySlots slots;
 
     EntityEnemyInspection(
             EntityBossState bossRewards,
@@ -168,5 +168,29 @@ public final class EntityEnemyInspection {
                 linksawakening.world.entity.motion.ZolGelMotion.class,
                 linksawakening.world.entity.motion.ZolGelMotion::new);
         return zolGelMotion.readGelClingingToLink();
+    }
+
+    EntityMotionRegistry motions() {
+        return this.motions;
+    }
+
+    EntitySlotPresentation slotProperties() {
+        return this.slotProperties;
+    }
+
+    EntityPhysicsTables physicsTables() {
+        return this.physicsTables;
+    }
+
+    EntityRoomInspection roomInspection() {
+        return this.roomInspection;
+    }
+
+    EntitySlots slots() {
+        return this.slots;
+    }
+
+    EntityCombatTables combatTables() {
+        return this.combatTables;
     }
 }

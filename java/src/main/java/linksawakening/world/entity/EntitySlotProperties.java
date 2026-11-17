@@ -34,22 +34,21 @@ public final class EntitySlotProperties {
     private final List<BowWowChain.Entry> bowWowEntries = new ArrayList<>();
     private final List<WingedOctorokOam.Entry> wingedEntries = new ArrayList<>();
     private final EntitySlotPresentation state;
-    final boolean indoorRoom;
-    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
-    final EntityBossState bossRewards;
-    final EntityCombatTables combatTables;
-    final EntityEventChannels events;
-    final EntityLiftState liftThrow;
-    final EntityLinkState linkState;
-    final EntityMotionRegistry motions;
-    final EntityPhysicsTables physicsTables;
-    final EntityPresentationState presentationState;
-    final EntityProjectileState projectiles;
-    final EntityRoomInspection inspection;
-    final EntityRoomInspection roomInspection;
-    final EntityRoomVariables roomVariables;
-    final EntitySlots slots;
-    final EntitySlotLifecycle lifecycle;
+    private final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
+    private final EntityBossState bossRewards;
+    private final EntityCombatTables combatTables;
+    private final EntityEventChannels events;
+    private final EntityLiftState liftThrow;
+    private final EntityLinkState linkState;
+    private final EntityMotionRegistry motions;
+    private final EntityPhysicsTables physicsTables;
+    private final EntityPresentationState presentationState;
+    private final EntityProjectileState projectiles;
+    private final EntityRoomInspection inspection;
+    private final EntityRoomInspection roomInspection;
+    private final EntityRoomVariables roomVariables;
+    private final EntitySlots slots;
+    private final EntitySlotLifecycle lifecycle;
 
     EntitySlotProperties(
             EntitySlotPresentation state,
@@ -70,7 +69,6 @@ public final class EntitySlotProperties {
         EntityPhysicsTables physicsTables = slots.physics();
         EntityRoomInspection inspection = roomInspection;
         this.state = Objects.requireNonNull(state, "state");
-        this.indoorRoom = indoorRoom;
         this.spriteHandlers = Objects.requireNonNull(spriteHandlers, "sprite source");
         this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
         this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
@@ -348,7 +346,7 @@ public final class EntitySlotProperties {
         };
     }
 
-    final IntUnaryOperator puzzleCountdown;
+    private final IntUnaryOperator puzzleCountdown;
     private final List<RoomEntity> puzzleEntities;
 
     List<RoomEntity> puzzleEntities() {

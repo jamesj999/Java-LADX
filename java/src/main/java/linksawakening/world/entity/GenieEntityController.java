@@ -22,17 +22,17 @@ import linksawakening.world.entity.motion.ThrownEntityMotion;
  * Jar, body, thrown rocks and destruction are phases of one Genie encounter whose shared slot arrays and lifecycle must advance together.
  */
 public final class GenieEntityController {
-    final State encounter;
-    final EntityBossRewards bossRewards;
-    final EntityCombatTables combatTables;
-    final EntityEventChannels events;
-    final EntityLiftState liftThrow;
-    final EntityMotionRegistry motions;
-    final EntityPhysicsTables physicsTables;
-    final EntityPlayerSpawns entityPlayerSpawns;
-    final EntitySlotLifecycle lifecycle;
-    final EntitySlotProperties slotProperties;
-    final EntitySlots slots;
+    private final State encounter;
+    private final EntityBossRewards bossRewards;
+    private final EntityCombatTables combatTables;
+    private final EntityEventChannels events;
+    private final EntityLiftState liftThrow;
+    private final EntityMotionRegistry motions;
+    private final EntityPhysicsTables physicsTables;
+    private final EntityPlayerSpawns entityPlayerSpawns;
+    private final EntitySlotLifecycle lifecycle;
+    private final EntitySlotProperties slotProperties;
+    private final EntitySlots slots;
 
     GenieEntityController(
             State encounter,
@@ -295,6 +295,34 @@ public final class GenieEntityController {
         return withStatus(jar, EntityStatus.ACTIVE);
     }
 
+    /** wEntitiesPrivateCountdown1Table times the current jar/body attack phase. */
+    public int phaseCountdown(int slot) {
+        return encounter.geniePrivateCountdown1[slot];
+    }
+
+    public void decrementPhaseCountdown(int slot) {
+        encounter.geniePrivateCountdown1[slot]--;
+    }
+
+    /** wEntitiesPrivateCountdown2Table holds the firing sprite after a body attack. */
+    public int attackFlashCountdown(int slot) {
+        return encounter.geniePrivateCountdown2[slot];
+    }
+
+    public void decrementAttackFlashCountdown(int slot) {
+        encounter.geniePrivateCountdown2[slot]--;
+    }
+
+    /** wEntitiesPrivateState1Table selects the Genie jar/body/projectile handler. */
+    public int phase(int slot) {
+        return encounter.handlerState[slot];
+    }
+
+    /** wEntitiesPrivateState4Table accumulates damage to the jar. */
+    public int jarDamageCounter(int slot) {
+        return encounter.romPrivateState4[slot];
+    }
+
     public int geniePrivateCountdown1(int slot) {
         return encounter.geniePrivateCountdown1[slot];
     }
@@ -419,35 +447,35 @@ public final class GenieEntityController {
         Arrays.fill(encounter.genieImpactRegisteredThisFrame, false);
     }
 
-    final GenieJarStep genieJarStep = new GenieJarStep(this);
-    final GenieBodyStep genieBodyStep = new GenieBodyStep(this);
+    private final GenieJarStep genieJarStep = new GenieJarStep(this);
+    private final GenieBodyStep genieBodyStep = new GenieBodyStep(this);
     /** Encounter slot state shared with slot clearing, independent of behavior dispatch. */
     static final class State {
-        final int[] genieActiveState = new int[EntityRoomLoader.MAX_ENTITIES];
+        private final int[] genieActiveState = new int[EntityRoomLoader.MAX_ENTITIES];
         // ROM wEntitiesPrivateState1Table; selects GenieState0Handler through GenieState4Handler.
-        final int[] handlerState = new int[EntityRoomLoader.MAX_ENTITIES];
+        private final int[] handlerState = new int[EntityRoomLoader.MAX_ENTITIES];
         // ROM wEntitiesPrivateState2Table; interpretation follows the selected Genie handler.
         // ROM wEntitiesPrivateState2Table: handler-dependent register; a narrower meaning has not been established.
-        final int[] romPrivateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
+        private final int[] romPrivateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
         // ROM wEntitiesPrivateState3Table; interpretation follows the selected Genie handler.
         // ROM wEntitiesPrivateState3Table: handler-dependent register; a narrower meaning has not been established.
-        final int[] romPrivateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
+        private final int[] romPrivateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
         // ROM wEntitiesPrivateState4Table; interpretation follows the selected Genie handler.
         // ROM wEntitiesPrivateState4Table: handler-dependent register; a narrower meaning has not been established.
-        final int[] romPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
+        private final int[] romPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
         // ROM wEntitiesPrivateCountdown1Table: handler-dependent register; a narrower meaning has not been established.
-        final int[] geniePrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+        private final int[] geniePrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
         // ROM wEntitiesPrivateCountdown2Table: handler-dependent register; a narrower meaning has not been established.
-        final int[] geniePrivateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
-        final int[] genieDirection = new int[EntityRoomLoader.MAX_ENTITIES];
-        final boolean[] genieDeathInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
-        final int[] genieSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
-        final int[] genieSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
-        final int[] genieSpeedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-        final int[] genieSpeedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-        final int[] genieSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-        final int[] genieSpeedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-        final boolean[] genieImpactRegisteredThisFrame = new boolean[EntityRoomLoader.MAX_ENTITIES];
+        private final int[] geniePrivateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
+        private final int[] genieDirection = new int[EntityRoomLoader.MAX_ENTITIES];
+        private final boolean[] genieDeathInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+        private final int[] genieSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
+        private final int[] genieSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
+        private final int[] genieSpeedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+        private final int[] genieSpeedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+        private final int[] genieSpeedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+        private final int[] genieSpeedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+        private final boolean[] genieImpactRegisteredThisFrame = new boolean[EntityRoomLoader.MAX_ENTITIES];
         private int genieControllerSlot = -1;
         private int genieSharedBodySpeedX;
         private int genieSharedBodySpeedY;

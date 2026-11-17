@@ -23,10 +23,10 @@ final class EntityLiveSlotList extends AbstractList<RoomEntity> implements Rando
 
     @Override
     public int size() {
-        if (!loadedOnly) return runtime.slots.size();
+        if (!loadedOnly) return runtime.slots().size();
         int count = 0;
-        for (int entitySlotIndex = 0; entitySlotIndex < runtime.slots.size(); entitySlotIndex++) {
-            RoomEntity entity = runtime.slots.get(entitySlotIndex);
+        for (int entitySlotIndex = 0; entitySlotIndex < runtime.slots().size(); entitySlotIndex++) {
+            RoomEntity entity = runtime.slots().get(entitySlotIndex);
             if (entity.loaded()) count++;
         }
         return count;
@@ -36,8 +36,8 @@ final class EntityLiveSlotList extends AbstractList<RoomEntity> implements Rando
     public RoomEntity get(int index) {
         Objects.checkIndex(index, size());
         if (!loadedOnly) return presented(index);
-        for (int slot = 0; slot < runtime.slots.size(); slot++) {
-            if (runtime.slots.get(slot).loaded() && index-- == 0) return presented(slot);
+        for (int slot = 0; slot < runtime.slots().size(); slot++) {
+            if (runtime.slots().get(slot).loaded() && index-- == 0) return presented(slot);
         }
         throw new IndexOutOfBoundsException();
     }
@@ -45,7 +45,7 @@ final class EntityLiveSlotList extends AbstractList<RoomEntity> implements Rando
     private RoomEntity presented(int slot) {
         RoomEntity result = EntityRoomInspection.entityRoomQueriesPresentedEntity(
                 runtime, slot, sources[slot], presentations[slot]);
-        sources[slot] = runtime.slots.get(slot);
+        sources[slot] = runtime.slots().get(slot);
         presentations[slot] = result;
         return result;
     }

@@ -629,11 +629,11 @@ final class RoomObjectParser {
     private static final int MACRO_END = 0xFF;
     private static final int[] DOOR_STATUS_BITS = {0x04, 0x08, 0x02, 0x01};
 
-    int[] roomObjectsArea;
-    int shutterDoorMask;
-    int staircaseLocation = -1;
-    int floorObject;
-    final List<Warp> warps = new ArrayList<>();
-    final List<Integer> doorPositions = new ArrayList<>();
-    int roomStatusFlags;
+    private int[] roomObjectsArea;
+    private int shutterDoorMask;
+    private int staircaseLocation = -1;
+    private int floorObject;
+    private final List<Warp> warps = new ArrayList<>();
+    private final List<Integer> doorPositions = new ArrayList<>();
+    private int roomStatusFlags;
 }

@@ -54,7 +54,7 @@ final class BushCrawlerHandler {
             } else if (bushUpdate.crawlOverlayRendered()) {
                 slotState.updated(withDefinition(
                         slotState.updated(),
-                        state.slotProperties().spriteDefinitionForBushCrawlerCrawlState(bushUpdate.privateState4()),
+                        state.slotProperties().spriteDefinitionForBushCrawlerCrawlState(bushUpdate.crawlHeading()),
                         slotState.updated().spriteVariant()));
             } else {
                 slotState.updated(withDefinition(
@@ -74,7 +74,7 @@ final class BushCrawlerHandler {
                             .beginBushCrawlerLift(
                                     slotState.index(),
                                     slotState.updated(),
-                                    bushUpdate.privateState4(),
+                                    bushUpdate.crawlHeading(),
                                     frameInput.romLinkDirection())) {
                 return false;
             }

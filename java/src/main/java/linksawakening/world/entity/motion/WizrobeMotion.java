@@ -14,16 +14,16 @@ public final class WizrobeMotion {
     private static final int[] PROJECTILE_OFFSET_X = {0x08, 0xF8, 0x00, 0x00};
     private static final int[] PROJECTILE_OFFSET_Y = {0x00, 0x00, 0xF8, 0x08};
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState1Table: raw +1/$FF step through appearance and disappearance states.
     // ROM wEntitiesPrivateState1Table.
-    final int[] phaseStep = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] phaseStep = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown1Table: appearance, firing and disappearance phase timer.
     // ROM wEntitiesPrivateCountdown1Table.
-    final int[] phaseCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] currentSpriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] phaseCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] currentSpriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     void initialize(int slot, int spriteVariant) {
         reset(slot);
@@ -123,7 +123,7 @@ public final class WizrobeMotion {
             int physicsFlags, /* Optional emitted projectile; absent when this visit does not fire. */
             ProjectileSpawn projectileSpawn) {}
 
-    final WizrobeFrameStep wizrobeFrameStep = new WizrobeFrameStep(this);
+    private final WizrobeFrameStep wizrobeFrameStep = new WizrobeFrameStep(this);
 
     static final class WizrobeFrameStep {
         private final WizrobeMotion owner;
@@ -320,5 +320,29 @@ public final class WizrobeMotion {
                 this.completedResult = null;
             }
         }
+    }
+
+    int[] state() {
+        return this.state;
+    }
+
+    int[] phaseStep() {
+        return this.phaseStep;
+    }
+
+    int[] phaseCountdown() {
+        return this.phaseCountdown;
+    }
+
+    int[] direction() {
+        return this.direction;
+    }
+
+    int[] currentSpriteVariant() {
+        return this.currentSpriteVariant;
+    }
+
+    boolean[] initialized() {
+        return this.initialized;
     }
 }

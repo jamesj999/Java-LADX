@@ -15,17 +15,17 @@ public final class SnakeMotion {
     private static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xF8, 0x08};
     private static final int[] SPRITE_DIRECTION_OFFSET = {0x02, 0x00, -1, -1};
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown1Table: delay before the next Link-targeted dash.
     // ROM wEntitiesPrivateCountdown1Table.
-    final int[] dashCooldown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] animationVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] dashCooldown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] animationVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot) {
         state[slot] = 0;
@@ -186,7 +186,7 @@ public final class SnakeMotion {
 
     public record Update(RoomEntity entity, int transitionCountdown) {}
 
-    final SnakeFrameStep snakeFrameStep = new SnakeFrameStep(this);
+    private final SnakeFrameStep snakeFrameStep = new SnakeFrameStep(this);
 
     static final class SnakeFrameStep {
         private final SnakeMotion owner;

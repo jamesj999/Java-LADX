@@ -124,18 +124,18 @@ public final class TarinRaccoonMotion {
             int collisionFlags,
             boolean nearLinkLatch) {}
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] warningShown = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] accumulatorX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] accumulatorY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] accumulatorZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] animationAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] animationInertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] animationIndex = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] nearLinkLatch = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] warningShown = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] accumulatorX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] accumulatorY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] accumulatorZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] animationAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] animationInertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] animationIndex = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] nearLinkLatch = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public Update advance(RoomEntity source, Input input) {
         return TarinRaccoonMotion.advanceBody(this, source, input);
@@ -276,7 +276,7 @@ public final class TarinRaccoonMotion {
 
     record Movement(int x, int y, int collisionFlags) {}
 
-    final TarinRaccoonStep tarinRaccoonStep = new TarinRaccoonStep(this);
+    private final TarinRaccoonStep tarinRaccoonStep = new TarinRaccoonStep(this);
 
     static TarinRaccoonMotion.Update advanceBody(
             TarinRaccoonMotion owner, RoomEntity source, TarinRaccoonMotion.Input input) {
@@ -559,5 +559,49 @@ public final class TarinRaccoonMotion {
                 this.completedResult = null;
             }
         }
+    }
+
+    int[] state() {
+        return this.state;
+    }
+
+    int[] speedX() {
+        return this.speedX;
+    }
+
+    int[] speedY() {
+        return this.speedY;
+    }
+
+    int[] speedZ() {
+        return this.speedZ;
+    }
+
+    int[] animationAccumulator() {
+        return this.animationAccumulator;
+    }
+
+    int[] animationInertia() {
+        return this.animationInertia;
+    }
+
+    int[] animationIndex() {
+        return this.animationIndex;
+    }
+
+    boolean[] nearLinkLatch() {
+        return this.nearLinkLatch;
+    }
+
+    int[] accumulatorX() {
+        return this.accumulatorX;
+    }
+
+    int[] accumulatorY() {
+        return this.accumulatorY;
+    }
+
+    int[] accumulatorZ() {
+        return this.accumulatorZ;
     }
 }

@@ -84,18 +84,18 @@ public final class SecretSeashellMotion {
 
     private final int[] roomId = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState3Table.
-    final int[] hiddenMode = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] hiddenMode = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState4Table.
     private final int[] shovelRevealPending = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown1Table.
-    final int[] revealCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] revealCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     void initialize(int slot, int roomId) {

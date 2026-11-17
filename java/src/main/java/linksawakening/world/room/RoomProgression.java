@@ -19,12 +19,12 @@ final class RoomProgression implements RoomProgress {
 
     @Override
     public Warp respawnPoint() {
-        return dependencies.location().respawnPoint;
+        return dependencies.location().respawnPoint();
     }
 
     @Override
     public int respawnIndoorRoom() {
-        return dependencies.location().respawnIndoorRoom;
+        return dependencies.location().respawnIndoorRoom();
     }
 
     @Override

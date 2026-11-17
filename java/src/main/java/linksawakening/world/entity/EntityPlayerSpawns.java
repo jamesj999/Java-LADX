@@ -24,30 +24,30 @@ import linksawakening.world.room.ChestContentsTable;
  * Player-created entities share free-slot selection, slot initialization and presentation publication as one spawn transaction; ongoing item behavior belongs to the motion owners.
  */
 public final class EntityPlayerSpawns {
-    final boolean indoorRoom;
+    private final boolean indoorRoom;
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
-    final IntSupplier defaultRandomByteSupplier;
+    private final IntSupplier defaultRandomByteSupplier;
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
-    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
-    final EntityBombInteractions bombInteractions;
-    final EntityBossState bossRewards;
-    final EntityCombatTables combatTables;
-    final EntityEventChannels events;
-    final EntityLiftState liftThrow;
-    final EntityMotionRegistry motions;
-    final EntityPhysicsTables physicsTables;
-    final EntityPickupController pickups;
-    final EntityPresentationState presentationState;
-    final EntityProjectileState projectiles;
-    final EntityRoomInspection inspection;
-    final EntityRoomInspection roomInspection;
-    final EntityRoomVariables roomVariables;
-    final EntitySlotLifecycle lifecycle;
-    final EntitySlotProperties slotProperties;
-    final EntitySlots slots;
+    private final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
+    private final EntityBombInteractions bombInteractions;
+    private final EntityBossState bossRewards;
+    private final EntityCombatTables combatTables;
+    private final EntityEventChannels events;
+    private final EntityLiftState liftThrow;
+    private final EntityMotionRegistry motions;
+    private final EntityPhysicsTables physicsTables;
+    private final EntityPickupController pickups;
+    private final EntityPresentationState presentationState;
+    private final EntityProjectileState projectiles;
+    private final EntityRoomInspection inspection;
+    private final EntityRoomInspection roomInspection;
+    private final EntityRoomVariables roomVariables;
+    private final EntitySlotLifecycle lifecycle;
+    private final EntitySlotProperties slotProperties;
+    private final EntitySlots slots;
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
-    final EntityChestContents chestContentsTable;
-    final EntityPlayerCommands playerCommands;
+    private final EntityChestContents chestContentsTable;
+    private final EntityPlayerCommands playerCommands;
 
     EntityPlayerSpawns(
             boolean indoorRoom,
@@ -787,10 +787,10 @@ public final class EntityPlayerSpawns {
         this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
         this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
         this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 0);
-        this.pickups.state.writeChestSpeedY(freeSlot, 0);
-        this.pickups.state.writeChestSpeedYAccumulator(freeSlot, 0);
-        this.pickups.state.writeChestInertia(freeSlot, 0);
-        this.pickups.state.writeChestItemBySlot(freeSlot, itemType);
+        this.pickups.state().writeChestSpeedY(freeSlot, 0);
+        this.pickups.state().writeChestSpeedYAccumulator(freeSlot, 0);
+        this.pickups.state().writeChestInertia(freeSlot, 0);
+        this.pickups.state().writeChestItemBySlot(freeSlot, itemType);
         this.physicsTables.writeEntityOptions1Override(freeSlot, -1);
         this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, false);
         return freeSlot;

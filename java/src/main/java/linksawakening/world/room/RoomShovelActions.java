@@ -33,16 +33,16 @@ final class RoomShovelActions {
         if (romDirection < 0 || romDirection > 3) {
             throw new IllegalArgumentException("ROM shovel direction out of range: " + romDirection);
         }
-        if (linkAirborne || dependencies.items().shovelUseState != 0) {
+        if (linkAirborne || dependencies.items().shovelUseState() != 0) {
             return new ShovelStartResult(false, true, -1);
         }
         ShovelProbe probe = probeShovel(loaded, linkEntityX, linkEntityY, romDirection);
-        dependencies.items().shovelUseState = SHOVEL_STATE_ACTIVE;
+        dependencies.items().shovelUseState(SHOVEL_STATE_ACTIVE);
         return new ShovelStartResult(true, !probe.valid(), probe.location());
     }
 
     void advanceShovel(RoomRuntime loaded, int linkEntityX, int linkEntityY, int romDirection, int timer) {
-        if (dependencies.items().shovelUseState == 0) {
+        if (dependencies.items().shovelUseState() == 0) {
             return;
         }
         int normalizedTimer = timer & 0xFF;
@@ -51,24 +51,27 @@ final class RoomShovelActions {
             if (!probe.valid()) {
                 return;
             }
-            dependencies.items().shovelUseState = SHOVEL_STATE_DUG;
+            dependencies.items().shovelUseState(SHOVEL_STATE_DUG);
             writeShovelHole(loaded, probe);
-            dependencies.items().pendingShovelDrop = new PendingShovelDrop(
-                    probe.objectLeft(),
-                    probe.objectTop(),
-                    linkEntityX,
-                    linkEntityY,
-                    loaded.room.mapCategory() != Warp.CATEGORY_OVERWORLD || loaded.room.roomId() != 0x0E);
+            dependencies
+                    .items()
+                    .pendingShovelDrop(new PendingShovelDrop(
+                            probe.objectLeft(),
+                            probe.objectTop(),
+                            linkEntityX,
+                            linkEntityY,
+                            loaded.room().mapCategory() != Warp.CATEGORY_OVERWORLD
+                                    || loaded.room().roomId() != 0x0E));
         } else if (normalizedTimer == SHOVEL_FINISH_TIMER) {
-            if (dependencies.items().shovelUseState == SHOVEL_STATE_DUG
-                    && dependencies.followers().followingNpcState.marinFollowing()) {
+            if (dependencies.items().shovelUseState() == SHOVEL_STATE_DUG
+                    && dependencies.followers().followingNpcState().marinFollowing()) {
                 dependencies
                         .entityRuntimeState()
-                        .outbox
-                        .pendingRoomDialogRequests
+                        .outbox()
+                        .pendingRoomDialogRequests()
                         .add(new DialogRequest(SHOVEL_DIALOG_TABLE, SHOVEL_DIALOG_ID));
             }
-            dependencies.items().shovelUseState = 0;
+            dependencies.items().shovelUseState(0);
         }
     }
 
@@ -80,7 +83,7 @@ final class RoomShovelActions {
     }
 
     ShovelProbe probeShovel(RoomRuntime loaded, int linkEntityX, int linkEntityY, int romDirection) {
-        if (loaded.room.mapCategory() == Warp.CATEGORY_SIDESCROLL) {
+        if (loaded.room().mapCategory() == Warp.CATEGORY_SIDESCROLL) {
             return ShovelProbe.invalid();
         }
 
@@ -99,12 +102,12 @@ final class RoomShovelActions {
         }
 
         int location = objectTop | cellX;
-        int objectId = dependencies.roomSessionViews().objectAtRoomLocation(loaded.room, location);
-        int physicsTable = loaded.room.mapCategory() == Warp.CATEGORY_OVERWORLD
+        int objectId = dependencies.roomSessionViews().objectAtRoomLocation(loaded.room(), location);
+        int physicsTable = loaded.room().mapCategory() == Warp.CATEGORY_OVERWORLD
                 ? RomTables.PHYSICS_TABLE_OVERWORLD
-                : loaded.room.mapId() == 0xFF ? RomTables.PHYSICS_TABLE_INDOORS2 : RomTables.PHYSICS_TABLE_INDOORS1;
+                : loaded.room().mapId() == 0xFF ? RomTables.PHYSICS_TABLE_INDOORS2 : RomTables.PHYSICS_TABLE_INDOORS1;
         boolean valid = dependencies.romTables().physicsTables().objectPhysicsFlag(physicsTable, objectId) == 0;
-        if (loaded.room.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+        if (loaded.room().mapCategory() == Warp.CATEGORY_OVERWORLD) {
             valid &= objectId != OBJECT_SHOVEL_BLOCKER_A
                     && objectId != OBJECT_SHOVEL_BLOCKER_B
                     && objectId != OBJECT_SHOVEL_BLOCKER_C;
@@ -116,32 +119,32 @@ final class RoomShovelActions {
 
     void writeShovelHole(RoomRuntime loaded, ShovelProbe probe) {
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE + probe.location();
-        int[] objects = loaded.room.roomObjectsArea();
+        int[] objects = loaded.room().roomObjectsArea();
         if (areaIndex < 0 || areaIndex >= objects.length) {
             return;
         }
         objects[areaIndex] = OBJECT_SHOVEL_HOLE;
-        if (loaded.room.renderValues() != null && areaIndex < loaded.room.renderValues().length) {
-            loaded.room.renderValues()[areaIndex] = OBJECT_SHOVEL_HOLE;
+        if (loaded.room().renderValues() != null && areaIndex < loaded.room().renderValues().length) {
+            loaded.room().renderValues()[areaIndex] = OBJECT_SHOVEL_HOLE;
         }
-        if (loaded.room.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+        if (loaded.room().mapCategory() == Warp.CATEGORY_OVERWORLD) {
             // On GBC the mutable WRAM2 overlay is the render source for both
             // tile ids and attributes; rebuilding from the immutable ROM
             // overlay here would immediately undo the hole.
             dependencies
                     .overworldBushInteraction()
                     .refreshRoomObjectCell(
-                            loaded.room.roomId(),
+                            loaded.room().roomId(),
                             probe.location(),
                             objects,
-                            loaded.room.renderValues(),
-                            loaded.room.gbcOverlay(),
-                            loaded.room.tileIds(),
-                            loaded.room.tileAttrs());
-            dependencies.roomObjectMutations().refreshOverworldCollisionAfterObjectMutation(loaded.contents);
+                            loaded.room().renderValues(),
+                            loaded.room().gbcOverlay(),
+                            loaded.room().tileIds(),
+                            loaded.room().tileAttrs());
+            dependencies.roomObjectMutations().refreshOverworldCollisionAfterObjectMutation(loaded.contents());
         } else {
-            dependencies.roomTileRedraw().refreshActiveRoomTilemap(loaded.contents);
-            dependencies.overworldCollision().setRoom(loaded.room.roomObjectsArea());
+            dependencies.roomTileRedraw().refreshActiveRoomTilemap(loaded.contents());
+            dependencies.overworldCollision().setRoom(loaded.room().roomObjectsArea());
         }
     }
 

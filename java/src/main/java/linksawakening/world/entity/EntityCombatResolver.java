@@ -47,27 +47,27 @@ import linksawakening.world.entity.motion.ZombieMotion;
  */
 public final class EntityCombatResolver {
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
-    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
-    final EntityBackgroundMechanics backgroundMechanics;
-    final EntityBombInteractions bombInteractions;
-    final EntityBossRewards bossRewards;
-    final EntityCombatTables combatTables;
-    final EntityEventChannels events;
-    final EntityLinkState linkState;
-    final EntityMotionRegistry motions;
-    final EntityPhysicsTables physicsTables;
-    final EntityRoomInspection roomInspection;
-    final EntitySlotProperties slotProperties;
+    private final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
+    private final EntityBackgroundMechanics backgroundMechanics;
+    private final EntityBombInteractions bombInteractions;
+    private final EntityBossRewards bossRewards;
+    private final EntityCombatTables combatTables;
+    private final EntityEventChannels events;
+    private final EntityLinkState linkState;
+    private final EntityMotionRegistry motions;
+    private final EntityPhysicsTables physicsTables;
+    private final EntityRoomInspection roomInspection;
+    private final EntitySlotProperties slotProperties;
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
-    final RomEnemyCombatTables enemyCombatTables;
-    final EntitySlots slots;
-    final SlimeEyeController slimeEye;
-    final EntityFrameRandom frameRandom;
+    private final RomEnemyCombatTables enemyCombatTables;
+    private final EntitySlots slots;
+    private final SlimeEyeController slimeEye;
+    private final EntityFrameRandom frameRandom;
     private final EntityCombatSlot slotScratch;
     private boolean slotScratchInUse;
-    final boolean[] deferredLeeverContact = new boolean[RoomEntity.SLOT_COUNT];
-    final int[] contactLinkX = new int[RoomEntity.SLOT_COUNT];
-    final int[] contactLinkY = new int[RoomEntity.SLOT_COUNT];
+    private final boolean[] deferredLeeverContact = new boolean[RoomEntity.SLOT_COUNT];
+    private final int[] contactLinkX = new int[RoomEntity.SLOT_COUNT];
+    private final int[] contactLinkY = new int[RoomEntity.SLOT_COUNT];
 
     EntityCombatResolver(
             linksawakening.world.entity.EntitySpriteViews spriteHandlers,
@@ -804,7 +804,7 @@ public final class EntityCombatResolver {
     }
 
     static final class EntityCombatSlot {
-        final EntityCombatResolver runtime;
+        private final EntityCombatResolver runtime;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private EnemyCombatInputs inputs;
         private List<linksawakening.world.entity.event.EntityCombatEvent> events;

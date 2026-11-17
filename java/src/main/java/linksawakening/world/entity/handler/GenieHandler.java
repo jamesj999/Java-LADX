@@ -38,22 +38,22 @@ final class GenieHandler {
     }
 
     private static boolean phase1Genie(EntitySlotExecution slotState, GenieEntityController genie) {
-        if (genie.geniePrivateCountdown1(slotState.entity().slot()) > 0) {
-            genie.decrementGeniePrivateCountdown1(slotState.entity().slot());
+        if (genie.phaseCountdown(slotState.entity().slot()) > 0) {
+            genie.decrementPhaseCountdown(slotState.entity().slot());
         }
         return true;
     }
 
     private static boolean phase1Genie2(EntitySlotExecution slotState, GenieEntityController genie) {
-        if (genie.geniePrivateCountdown2(slotState.entity().slot()) > 0) {
-            genie.decrementGeniePrivateCountdown2(slotState.entity().slot());
+        if (genie.attackFlashCountdown(slotState.entity().slot()) > 0) {
+            genie.decrementAttackFlashCountdown(slotState.entity().slot());
         }
         return true;
     }
 
     private static boolean phase2Genie(
             EntitySlotExecution slotState, EntityFrameInputLatch frameInput, GenieEntityController genie) {
-        if (genie.geniePrivateState1(slotState.entity().slot()) == 1) {
+        if (genie.phase(slotState.entity().slot()) == 1) {
             genie.advanceGenieDestruction(slotState.entity(), frameInput.frame(), frameInput.randomByteSupplier());
             return false;
         }
@@ -120,11 +120,11 @@ final class GenieHandler {
                 state.emit(new DialogRequest(bossIntro.dialogTableId(), bossIntro.dialogLowId()));
             }
             genieThresholdReached =
-                    state.genie().geniePrivateState4(slotState.entity().slot()) >= GenieMotion.JAR_HEALTH_THRESHOLD;
-            if (state.genie().geniePrivateState1(slotState.entity().slot()) == 0 && !genieThresholdReached) {
+                    state.genie().jarDamageCounter(slotState.entity().slot()) >= GenieMotion.JAR_HEALTH_THRESHOLD;
+            if (state.genie().phase(slotState.entity().slot()) == 0 && !genieThresholdReached) {
                 state.genie().setGenieControllerSlot(slotState.entity().slot());
             }
-            if (state.genie().geniePrivateState1(slotState.entity().slot()) == 0
+            if (state.genie().phase(slotState.entity().slot()) == 0
                     && (genieThresholdReached
                             || state.roomInspection().genieState0Interactive(frameInput.creditsGameplay()))) {
                 state.genie().advanceGenieJar(slotState.entity(), frameInput.linkEntityY());
@@ -134,7 +134,7 @@ final class GenieHandler {
                 }
                 slotState.updated(state.entityAt(slotState.entity().slot()));
             }
-            if (state.genie().geniePrivateState1(slotState.entity().slot()) == 2
+            if (state.genie().phase(slotState.entity().slot()) == 2
                     && state.roomInspection().genieState0Interactive(frameInput.creditsGameplay())) {
                 state.genie().advanceGenieAppearance(slotState.entity());
                 if (!state.entityAt(slotState.entity().slot()).loaded()) {
@@ -147,7 +147,7 @@ final class GenieHandler {
         }
 
         private boolean advanceBodyOrFireball() {
-            if (state.genie().geniePrivateState1(slotState.entity().slot()) == 3
+            if (state.genie().phase(slotState.entity().slot()) == 3
                     && state.roomInspection().genieState0Interactive(frameInput.creditsGameplay())) {
                 state.genie().advanceGenieSideProjectile(slotState.entity(), frameInput.frameCounter());
                 if (!state.entityAt(slotState.entity().slot()).loaded()) {
@@ -156,7 +156,7 @@ final class GenieHandler {
                 }
                 slotState.updated(state.entityAt(slotState.entity().slot()));
             }
-            if (state.genie().geniePrivateState1(slotState.entity().slot()) == 4
+            if (state.genie().phase(slotState.entity().slot()) == 4
                     && state.roomInspection().genieState0Interactive(frameInput.creditsGameplay())) {
                 if (timerGates.handlerLinkCollisionEnabled()
                         && RoomEntityCombatRules.overlapsLink(
@@ -170,7 +170,7 @@ final class GenieHandler {
                 }
                 slotState.updated(state.entityAt(slotState.entity().slot()));
             }
-            if (state.genie().geniePrivateState1(slotState.entity().slot()) == 1
+            if (state.genie().phase(slotState.entity().slot()) == 1
                     && state.roomInspection().genieState0Interactive(frameInput.creditsGameplay())) {
                 state.genie()
                         .setGenieSharedBodySpeedX(

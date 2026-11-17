@@ -49,15 +49,15 @@ public final class RollingBonesMotion {
     private static final int BAR_STATE_ROLLING = 1;
     private static final int BAR_STATE_DECELERATING = 2;
 
-    final int[] bossState = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] bossDirection = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] bossSpriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] bossSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] bossSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] bossSpeedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] bossXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] bossYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] bossZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] bossState = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] bossDirection = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] bossSpriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] bossSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] bossSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] bossSpeedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] bossXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] bossYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] bossZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] barState = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] barSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] barAnimationVariant = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -228,7 +228,7 @@ public final class RollingBonesMotion {
 
     record MoveResult(int position, boolean blocked) {}
 
-    final RollingBonesFrameStep rollingBonesFrameStep = new RollingBonesFrameStep(this);
+    private final RollingBonesFrameStep rollingBonesFrameStep = new RollingBonesFrameStep(this);
 
     static final class RollingBonesFrameStep {
         private final RollingBonesMotion owner;

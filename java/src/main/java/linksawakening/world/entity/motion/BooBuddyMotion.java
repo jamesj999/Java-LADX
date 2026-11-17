@@ -23,18 +23,18 @@ public final class BooBuddyMotion {
     public static final int INITIAL_PHYSICS_FLAGS = 0x02 | 0x10;
     public static final int OPTIONS1 = 0x20 | 0x08;
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState1Table.
-    final int[] reflectionPending = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] reflectionPending = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown1Table: movement and contact pause after reflecting around the room center.
     // ROM wEntitiesPrivateCountdown1Table.
-    final int[] reflectionCooldown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] reflectionCooldown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     /** Entity $50 uses the ordinary no-op initialization path. */
     public void initialize(int slot) {
@@ -268,7 +268,7 @@ public final class BooBuddyMotion {
 
     public record Update(RoomEntity entity, int transitionCountdown, boolean unloaded, int healthOverride) {}
 
-    final BooBuddyFrameStep booBuddyFrameStep = new BooBuddyFrameStep(this);
+    private final BooBuddyFrameStep booBuddyFrameStep = new BooBuddyFrameStep(this);
 
     record BooBuddyFrame(
             linksawakening.world.entity.RoomEntity entity,
@@ -459,5 +459,17 @@ public final class BooBuddyMotion {
                 this.completedResult = null;
             }
         }
+    }
+
+    int[] reflectionPending() {
+        return this.reflectionPending;
+    }
+
+    int[] speedX() {
+        return this.speedX;
+    }
+
+    int[] speedY() {
+        return this.speedY;
     }
 }

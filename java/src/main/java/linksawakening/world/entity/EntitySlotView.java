@@ -133,4 +133,8 @@ public final class EntitySlotView {
     public int ironMaskPrivateState2(int slot) {
         return ironMask.maskRemovalState(slot);
     }
+
+    public int ironMaskRemovalState(int slot) {
+        return ironMask.maskRemovalState(slot);
+    }
 }

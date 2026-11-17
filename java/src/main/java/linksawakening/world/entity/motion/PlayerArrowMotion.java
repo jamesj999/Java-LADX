@@ -22,16 +22,16 @@ public final class PlayerArrowMotion {
     private static final int[] SPIN_VARIANTS = {0, 3, 1, 2};
 
     private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] zPosition = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] zPosition = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] selectedVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] collision = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     static SpawnData spawnData(int projectileDirection) {
@@ -265,4 +265,40 @@ public final class PlayerArrowMotion {
     record SpawnData(int offsetX, int offsetY, int speedX, int speedY, int initialVariant) {}
 
     public record Update(RoomEntity entity, boolean collidedWithWall, boolean unloaded) {}
+
+    int[] speedX() {
+        return this.speedX;
+    }
+
+    int[] speedY() {
+        return this.speedY;
+    }
+
+    int[] speedZ() {
+        return this.speedZ;
+    }
+
+    int[] speedXAccumulator() {
+        return this.speedXAccumulator;
+    }
+
+    int[] speedYAccumulator() {
+        return this.speedYAccumulator;
+    }
+
+    int[] speedZAccumulator() {
+        return this.speedZAccumulator;
+    }
+
+    boolean[] initialized() {
+        return this.initialized;
+    }
+
+    int[] transitionCountdown() {
+        return this.transitionCountdown;
+    }
+
+    int[] zPosition() {
+        return this.zPosition;
+    }
 }

@@ -41,36 +41,41 @@ final class RoomChestInteractions {
             return new ChestOpenResult(false, -1, -1, -1);
         }
         int location = (row << 4) | column;
-        if (dependencies.roomSessionViews().objectAtRoomLocation(loaded.room, location) != 0xA0) {
+        if (dependencies.roomSessionViews().objectAtRoomLocation(loaded.room(), location) != 0xA0) {
             return new ChestOpenResult(false, -1, -1, location);
         }
         int itemType = dependencies
                 .chestContentsTable()
                 .itemForSpawn(
-                        loaded.room.mapId(),
-                        loaded.room.roomId(),
+                        loaded.room().mapId(),
+                        loaded.room().roomId(),
                         swordLevel,
-                        loaded.room.mapCategory() != Warp.CATEGORY_OVERWORLD);
-        int slot = loaded.entities.spawns().spawnChestWithItem(column << 4, row << 4, itemType);
+                        loaded.room().mapCategory() != Warp.CATEGORY_OVERWORLD);
+        int slot = loaded.entities().spawns().spawnChestWithItem(column << 4, row << 4, itemType);
         if (slot < 0) {
             return new ChestOpenResult(false, -1, -1, location);
         }
 
-        dependencies.roomObjectMutations().writeBombPuzzleObject(loaded.contents, location, 0xA1);
-        byte[] status = loaded.room.mapCategory() == Warp.CATEGORY_OVERWORLD
-                ? dependencies.roomState().overworldRoomStatus
-                : dependencies.roomSessionViews().indoorStatusTableForMap(loaded.room.mapId());
-        status[loaded.room.roomId()] |= (byte) ROOM_STATUS_CHEST_OPEN;
+        dependencies.roomObjectMutations().writeBombPuzzleObject(loaded.contents(), location, 0xA1);
+        byte[] status = loaded.room().mapCategory() == Warp.CATEGORY_OVERWORLD
+                ? dependencies.roomState().overworldRoomStatus()
+                : dependencies
+                        .roomSessionViews()
+                        .indoorStatusTableForMap(loaded.room().mapId());
+        status[loaded.room().roomId()] |= (byte) ROOM_STATUS_CHEST_OPEN;
         // writeBombPuzzleObject already updates the live GBC cell. Rebuilding
         // from the ROM overlay would discard other live mutations (cut bushes).
-        if (loaded.room.mapCategory() != Warp.CATEGORY_OVERWORLD) {
-            dependencies.roomTileRedraw().refreshActiveRoomTilemap(loaded.contents);
+        if (loaded.room().mapCategory() != Warp.CATEGORY_OVERWORLD) {
+            dependencies.roomTileRedraw().refreshActiveRoomTilemap(loaded.contents());
         }
-        dependencies.overworldCollision().setRoom(loaded.room.roomObjectsArea());
+        dependencies.overworldCollision().setRoom(loaded.room().roomObjectsArea());
         dependencies
                 .overworldCollision()
-                .setGbcOverlay(loaded.room.mapCategory() == Warp.CATEGORY_OVERWORLD ? loaded.room.gbcOverlay() : null);
-        loaded.room.replaceEntities(loaded.entities.inspection().view());
+                .setGbcOverlay(
+                        loaded.room().mapCategory() == Warp.CATEGORY_OVERWORLD
+                                ? loaded.room().gbcOverlay()
+                                : null);
+        loaded.room().replaceEntities(loaded.entities().inspection().view());
         return new ChestOpenResult(true, itemType, slot, location);
     }
 

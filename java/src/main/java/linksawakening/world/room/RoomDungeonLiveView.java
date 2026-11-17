@@ -29,7 +29,7 @@ final class RoomDungeonLiveView implements RoomDungeon.View {
 
     @Override
     public int progressFlag(int index) {
-        return Byte.toUnsignedInt(world.dungeonProgressFlags[Objects.checkIndex(index, progressFlagCount())]);
+        return Byte.toUnsignedInt(world.dungeonProgressFlags()[Objects.checkIndex(index, progressFlagCount())]);
     }
 
     @Override
@@ -39,7 +39,7 @@ final class RoomDungeonLiveView implements RoomDungeon.View {
 
     @Override
     public int currentItemFlag(int index) {
-        return world.dungeonItemState.currentFlag(index);
+        return world.dungeonItemState().currentFlag(index);
     }
 
     @Override
@@ -57,7 +57,7 @@ final class RoomDungeonLiveView implements RoomDungeon.View {
 
     private void refreshMap() {
         int currentMap = roomMapId;
-        int currentTowerLayout = world.dungeonProgressFlags[6] & 4;
+        int currentTowerLayout = world.dungeonProgressFlags()[6] & 4;
         if (initialized && mapId == currentMap && towerLayout == currentTowerLayout) return;
         int offset = currentMap < 0 ? -1 : world.indoorMapLayoutOffset(currentMap);
         if (offset >= 0) {

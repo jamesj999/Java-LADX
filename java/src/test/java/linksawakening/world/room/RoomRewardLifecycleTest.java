@@ -202,7 +202,7 @@ final class RoomRewardLifecycleTest {
         assertEquals(
                 List.of(new WitchExchangeEvent(witch.slot(), 0)),
                 RoomSessionInspection.component(session, RoomEntityBridge.class)
-                        .outbox
+                        .outbox()
                         .consumeWitchExchangeEvents());
 
         session.entityState().setEntityActionButtonsHeld(false, false);
@@ -226,7 +226,7 @@ final class RoomRewardLifecycleTest {
             tickInteractive(session, frame++, witch);
             assertTrue(session.entityState().consumeEntityDialogRequests().isEmpty());
             assertTrue(RoomSessionInspection.component(session, RoomEntityBridge.class)
-                    .outbox
+                    .outbox()
                     .consumeWitchRewardEvents()
                     .isEmpty());
         }
@@ -251,7 +251,7 @@ final class RoomRewardLifecycleTest {
         assertEquals(
                 List.of(new WitchRewardEvent(witch.slot())),
                 RoomSessionInspection.component(session, RoomEntityBridge.class)
-                        .outbox
+                        .outbox()
                         .consumeWitchRewardEvents());
         assertTrue(session.entityState().gotItemPresentationActive());
         assertTrue(RoomSessionInspection.component(session, RoomEntityBridge.class).consumeEntityEvents().stream()
@@ -323,7 +323,7 @@ final class RoomRewardLifecycleTest {
         assertEquals(
                 List.of(new KeyRewardEvent(key.slot(), ChestContentsTable.CHEST_SMALL_KEY)),
                 RoomSessionInspection.component(session, RoomEntityBridge.class)
-                        .outbox
+                        .outbox()
                         .consumeKeyRewardEvents());
     }
 
@@ -400,7 +400,7 @@ final class RoomRewardLifecycleTest {
         assertEquals(
                 List.of(new SlimeKeyRewardEvent(0, 6, 0xA2)),
                 RoomSessionInspection.component(session, RoomEntityBridge.class)
-                        .outbox
+                        .outbox()
                         .consumeSlimeKeyRewardEvents());
         assertEquals(0x10, session.dungeon().overworldRoomStatusSnapshot()[0xC6] & 0x10);
         assertEquals(List.of(new DialogRequest(0, 0xA2)), session.entityState().consumeEntityDialogRequests());
@@ -962,7 +962,7 @@ final class RoomRewardLifecycleTest {
         assertEquals(
                 List.of(new HeartContainerRewardEvent(heart.slot())),
                 RoomSessionInspection.component(session, RoomEntityBridge.class)
-                        .outbox
+                        .outbox()
                         .consumeHeartContainerRewards());
     }
 
@@ -988,17 +988,20 @@ final class RoomRewardLifecycleTest {
         assertEquals(
                 0xDF,
                 RoomSessionInspection.component(session, RoomDoorInteractions.class)
-                        .tailCaveKeyholeCountdownForTest(RoomSessionInspection.loadedRoom(session).contents));
+                        .tailCaveKeyholeCountdownForTest(
+                                RoomSessionInspection.loadedRoom(session).contents()));
         int gateTopLeft = 2 * RoomConstants.ROOM_TILE_WIDTH + 12;
         while (RoomSessionInspection.component(session, RoomDoorInteractions.class)
-                        .tailCaveKeyholeCountdownForTest(RoomSessionInspection.loadedRoom(session).contents)
+                        .tailCaveKeyholeCountdownForTest(
+                                RoomSessionInspection.loadedRoom(session).contents())
                 > 0xD8) {
             session.doors().tickTailCaveKeyholeSequence();
         }
         assertEquals(0x0C, session.rooms().activeRoomOrNull().tileIds()[gateTopLeft]);
         assertEquals(0x1C, session.rooms().activeRoomOrNull().tileIds()[gateTopLeft + RoomConstants.ROOM_TILE_WIDTH]);
         while (RoomSessionInspection.component(session, RoomDoorInteractions.class)
-                        .tailCaveKeyholeCountdownForTest(RoomSessionInspection.loadedRoom(session).contents)
+                        .tailCaveKeyholeCountdownForTest(
+                                RoomSessionInspection.loadedRoom(session).contents())
                 > 0xC8) {
             session.doors().tickTailCaveKeyholeSequence();
         }
@@ -1040,7 +1043,7 @@ final class RoomRewardLifecycleTest {
         assertEquals(ChestContentsTable.CHEST_TAIL_KEY, chest.itemType());
         session.entities().tickEntities(0, 0x40, 0x40);
         RoomSessionInspection.component(session, RoomEntityBridge.class)
-                .outbox
+                .outbox()
                 .consumeChestRewardEvents()
                 .forEach(reward -> playerState.chestRewards().applyChestReward(reward.itemType()));
         assertEquals(1, playerState.progression().tailKeyCount());

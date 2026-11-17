@@ -13,19 +13,19 @@ import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 public final class HidingZolMotion {
     static final int ENTITY_HIDING_ZOL = 0x9B;
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState1Table.
-    final int[] jumpsRemaining = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] jumpsRemaining = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] swordCollisionEnabled = new boolean[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] linkCollisionEnabled = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] swordCollisionEnabled = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] linkCollisionEnabled = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot) {
         state[slot] = 0;
@@ -209,7 +209,7 @@ public final class HidingZolMotion {
 
     record Vector(int x, int y) {}
 
-    final HidingZolStep hidingZolStep = new HidingZolStep(this);
+    private final HidingZolStep hidingZolStep = new HidingZolStep(this);
 
     static final class HidingZolStep {
         private final HidingZolMotion owner;

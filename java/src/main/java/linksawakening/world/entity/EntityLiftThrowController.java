@@ -23,24 +23,24 @@ import linksawakening.world.entity.motion.ThrownEntityMotion;
 
 /** ROM lift, carry and throw mechanics, sharing the owning room slot table. */
 public final class EntityLiftThrowController {
-    final EntityLiftState state;
-    final boolean indoorRoom;
-    final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
-    final EntityBombState bombInteractions;
-    final EntityCombatTables combatTables;
-    final EntityEventChannels events;
-    final EntityLinkState linkState;
-    final EntityMotionRegistry motions;
-    final EntityPhysicsTables physicsTables;
-    final EntityPickupState pickups;
-    final EntityPresentationState presentationState;
-    final EntityProjectileController projectiles;
-    final EntitySlotProperties slotProperties;
-    final GenieEntityController genie;
-    final EntitySlots slots;
-    final EntitySlotLifecycle lifecycle;
-    final EntityPlayerCommands playerCommands;
-    final EntityPlayerSpawns playerSpawns;
+    private final EntityLiftState state;
+    private final boolean indoorRoom;
+    private final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
+    private final EntityBombState bombInteractions;
+    private final EntityCombatTables combatTables;
+    private final EntityEventChannels events;
+    private final EntityLinkState linkState;
+    private final EntityMotionRegistry motions;
+    private final EntityPhysicsTables physicsTables;
+    private final EntityPickupState pickups;
+    private final EntityPresentationState presentationState;
+    private final EntityProjectileController projectiles;
+    private final EntitySlotProperties slotProperties;
+    private final GenieEntityController genie;
+    private final EntitySlots slots;
+    private final EntitySlotLifecycle lifecycle;
+    private final EntityPlayerCommands playerCommands;
+    private final EntityPlayerSpawns playerSpawns;
 
     EntityLiftThrowController(
             EntityLiftState state,

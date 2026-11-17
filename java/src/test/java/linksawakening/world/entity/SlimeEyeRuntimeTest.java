@@ -135,15 +135,15 @@ final class SlimeEyeRuntimeTest {
         assertEquals(2, eyes(r).size());
         assertTrue(eyes(r).stream()
                 .allMatch(e -> r.execution().slimeEye().half(e.slot())
-                        && r.inspection().combatTables.readEnemyHealth(e.slot()) == 5));
+                        && r.inspection().combatTables().readEnemyHealth(e.slot()) == 5));
         assertFalse(r.inspection().snapshot().slots().getFirst().loaded());
         int hits = 0;
         for (int i = 0; i < 2400 && !eyes(r).isEmpty(); i++) {
             for (RoomEntity e : eyes(r)) {
                 if (e.status() == EntityStatus.ACTIVE) {
-                    int before = r.inspection().combatTables.readEnemyHealth(e.slot());
+                    int before = r.inspection().combatTables().readEnemyHealth(e.slot());
                     sword(r, e, false);
-                    if (r.inspection().combatTables.readEnemyHealth(e.slot()) < before) hits++;
+                    if (r.inspection().combatTables().readEnemyHealth(e.slot()) < before) hits++;
                 }
             }
             tick(r);
@@ -170,27 +170,27 @@ final class SlimeEyeRuntimeTest {
             // Disclosed isolated comparison setup: preset handler state, not a D3 route.
             EntityRuntimeFixture.bosses(r).setSlimeEyeState(0, dead ? 0 : half ? 2 : 1);
             EntityRuntimeFixture.bosses(r).setSlimeEyeHalf(0, half ? 1 : 0);
-            r.inspection().physicsTables.writeEnemyTransitionCountdown(0, 0);
-            r.inspection().combatTables.writeEnemyHealth(0, dead ? 0 : half ? 5 : 0x50);
+            r.inspection().physicsTables().writeEnemyTransitionCountdown(0, 0);
+            r.inspection().combatTables().writeEnemyHealth(0, dead ? 0 : half ? 5 : 0x50);
             r.inspection()
-                    .slots
+                    .slots()
                     .replace(
                             0,
                             EntitySnapshots.withZ(
                                     EntitySnapshots.withStatus(
-                                            r.inspection().slots.get(0),
+                                            r.inspection().slots().get(0),
                                             dead ? EntityStatus.DYING : EntityStatus.ACTIVE),
                                     half ? 0 : 0x7E));
             StringBuilder trace = new StringBuilder(header);
             for (int i = 0; i < 33; i++)
                 r.inspection()
-                        .motions
+                        .motions()
                         .get(BossIntroMotion.class, BossIntroMotion::new)
                         .advance(0x90, 0x5B, 2, 0);
             frame = 39;
             for (int i = 0; i < (dead ? 226 : 145); i++) {
                 tick(r);
-                var e = r.inspection().slots.get(0);
+                var e = r.inspection().slots().get(0);
                 // Cleared ROM slots retain position and state bytes; the engine disables its value.
                 trace.append(frame & 255)
                         .append('\t')
@@ -206,15 +206,15 @@ final class SlimeEyeRuntimeTest {
                         .append('\t')
                         .append(r.execution().slimeEye().speedZ(0))
                         .append('\t')
-                        .append(r.inspection().physicsTables.readEnemyTransitionCountdown(0))
+                        .append(r.inspection().physicsTables().readEnemyTransitionCountdown(0))
                         .append('\t')
                         .append(r.execution().slimeEye().variant(0))
                         .append('\t')
                         .append(r.execution().slimeEye().dropping(0))
                         .append('\t')
-                        .append(r.inspection().physicsTables.readSlowTransitionCountdown(0))
+                        .append(r.inspection().physicsTables().readSlowTransitionCountdown(0))
                         .append('\t')
-                        .append(r.inspection().combatTables.readEnemyHealth(0))
+                        .append(r.inspection().combatTables().readEnemyHealth(0))
                         .append('\n');
             }
             Files.writeString(directory.resolve(name + "-engine.tsv"), trace);
@@ -370,23 +370,23 @@ final class SlimeEyeRuntimeTest {
         EntityRuntimeFixture.bosses(r).setSlimeEyeHalf(0, 1);
         EntityRuntimeFixture.bosses(r).setSlimeEyeState(0, 1);
         r.inspection()
-                .slots
-                .replace(0, EntitySnapshots.withZ(r.inspection().slots.get(0), 0));
-        r.inspection().combatTables.writeEnemyHealth(0, 1);
+                .slots()
+                .replace(0, EntitySnapshots.withZ(r.inspection().slots().get(0), 0));
+        r.inspection().combatTables().writeEnemyHealth(0, 1);
         assertTrue(RoomEntityCombatRules.supportsEnemyCollision(0x5B));
         r.execution()
                 .projectiles()
                 .applyPlayerProjectileDamage(
-                        r.inspection().slots.get(0), EntityRomConstants.DAMAGE_TYPE_ARROW, 0x20, 0);
-        assertEquals(EntityStatus.ACTIVE, r.inspection().slots.get(0).status());
-        assertEquals(1, r.inspection().combatTables.readEnemyHealth(0));
-        r.inspection().physicsTables.writeEnemyTransitionCountdown(0, 0);
-        sword(r, r.inspection().slots.get(0), false);
-        assertEquals(EntityStatus.DYING, r.inspection().slots.get(0).status());
+                        r.inspection().slots().get(0), EntityRomConstants.DAMAGE_TYPE_ARROW, 0x20, 0);
+        assertEquals(EntityStatus.ACTIVE, r.inspection().slots().get(0).status());
+        assertEquals(1, r.inspection().combatTables().readEnemyHealth(0));
+        r.inspection().physicsTables().writeEnemyTransitionCountdown(0, 0);
+        sword(r, r.inspection().slots().get(0), false);
+        assertEquals(EntityStatus.DYING, r.inspection().slots().get(0).status());
         tick(r); // active handler's lethal collision frame
         tick(r); // first destruction handler visit
         assertEquals(1, r.execution().slimeEye().state(0));
-        assertEquals(0x40, r.inspection().physicsTables.readEnemyTransitionCountdown(0));
+        assertEquals(0x40, r.inspection().physicsTables().readEnemyTransitionCountdown(0));
         r.lifecycle().disableEntityWithoutPersistence(0);
         assertFalse(r.execution().slimeEye().half(0));
         assertEquals(0, r.execution().slimeEye().state(0));
@@ -399,11 +399,11 @@ final class SlimeEyeRuntimeTest {
         EntityRuntimeFixture.bosses(r).setSlimeEyeHalf(0, 1);
         EntityRuntimeFixture.bosses(r).setSlimeEyeState(0, 1);
         r.inspection()
-                .slots
-                .replace(0, EntitySnapshots.withZ(r.inspection().slots.get(0), 1));
-        r.inspection().physicsTables.writeEnemyTransitionCountdown(0, 0);
-        r.inspection().combatTables.writeEnemyHealth(0, 5);
-        var e = r.inspection().slots.get(0);
+                .slots()
+                .replace(0, EntitySnapshots.withZ(r.inspection().slots().get(0), 1));
+        r.inspection().physicsTables().writeEnemyTransitionCountdown(0, 0);
+        r.inspection().combatTables().writeEnemyHealth(0, 5);
+        var e = r.inspection().slots().get(0);
         var events = r.combat()
                 .resolveCombat(new EntityVerticalContactFrame(
                         frame,
@@ -418,20 +418,23 @@ final class SlimeEyeRuntimeTest {
                         4,
                         new EnemyAttackContext(1, false, false, false, true)));
         assertEquals(
-                4, r.inspection().combatTables.readEnemyHealth(0), "6DDF clears boots before damage type is selected");
+                4,
+                r.inspection().combatTables().readEnemyHealth(0),
+                "6DDF clears boots before damage type is selected");
         assertEquals(0x10, events.getFirst().linkCollisionResponse().ignoreCollisionCountdown());
         assertTrue(events.getFirst().linkCollisionResponse().active());
         tick(r);
-        int z = r.inspection().slots.get(0).z();
+        int z = r.inspection().slots().get(0).z();
         assertEquals(
                 0x18,
-                r.inspection().combatTables.readEnemyFlashCountdown(0),
+                r.inspection().combatTables().readEnemyFlashCountdown(0),
                 "Fresh hit flash is not aged before its source call site");
         for (int i = 0; i < 10; i++) {
             tick(r);
-            assertEquals(z, r.inspection().slots.get(0).z(), "04:6DC8 discards the half handler return during recoil");
+            assertEquals(
+                    z, r.inspection().slots().get(0).z(), "04:6DC8 discards the half handler return during recoil");
         }
-        assertEquals(0, r.inspection().combatTables.readEnemyIgnoreHitsCountdown(0));
+        assertEquals(0, r.inspection().combatTables().readEnemyIgnoreHitsCountdown(0));
     }
 
     @Test
@@ -441,10 +444,10 @@ final class SlimeEyeRuntimeTest {
         EntityRuntimeFixture.bosses(r).setSlimeEyeHalf(0, 1);
         EntityRuntimeFixture.bosses(r).setSlimeEyeState(0, 0);
         r.inspection()
-                .slots
-                .replace(0, EntitySnapshots.withZ(r.inspection().slots.get(0), 0));
-        r.inspection().combatTables.writeEnemyHealth(0, 5);
-        var e = r.inspection().slots.get(0);
+                .slots()
+                .replace(0, EntitySnapshots.withZ(r.inspection().slots().get(0), 0));
+        r.inspection().combatTables().writeEnemyHealth(0, 5);
+        var e = r.inspection().slots().get(0);
         var events = r.combat()
                 .resolveCombat(new EntityVerticalContactFrame(
                         frame, 80, 88, false, true, true, e.x() + 8, 4, e.y() + 8, 4, EnemyAttackContext.standard()));

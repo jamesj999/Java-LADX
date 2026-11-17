@@ -23,25 +23,25 @@ public final class ZolGelMotion {
     static final int ENTITY_ZOL = 0x1B;
     static final int ENTITY_GEL = 0x1C;
 
-    final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown1Table: temporarily bypasses background interaction after a Gel split.
     // ROM wEntitiesPrivateCountdown1Table.
-    final int[] backgroundCollisionBypassCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] backgroundCollisionBypassCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown2Table: holds the walking sprite phase for eight ticks.
-    final int[] walkAnimationCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] walkAnimationCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown3Table: collision grace after the state-4 jump begins.
-    final int[] jumpCollisionGraceCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] flashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] jumpCollisionGraceCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] flashCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] spriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
-    final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedZAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] spriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     /** Mirrors EntityInitZol and EntityInitWithRandomDirection for Gel. */
     public void initialize(int slot, int entityType, IntSupplier randomByteSupplier) {
@@ -298,7 +298,7 @@ public final class ZolGelMotion {
 
     record Vector(int x, int y) {}
 
-    final ZolGelStep zolGelStep = new ZolGelStep(this);
+    private final ZolGelStep zolGelStep = new ZolGelStep(this);
 
     static ZolGelMotion.Update advanceBody(
             ZolGelMotion owner,
@@ -616,5 +616,9 @@ public final class ZolGelMotion {
                 this.completedResult = null;
             }
         }
+    }
+
+    int[] backgroundCollisionBypassCountdown() {
+        return this.backgroundCollisionBypassCountdown;
     }
 }

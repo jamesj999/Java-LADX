@@ -54,21 +54,21 @@ public final class EntityPickupController {
         return previous;
     }
 
-    final EntityPickupState state;
-    final boolean indoorRoom;
-    final EntityBossState bossRewards;
-    final EntityCombatTables combatTables;
-    final EntityEventChannels events;
-    final EntityLinkState linkState;
-    final EntityMotionRegistry motions;
-    final EntityPhysicsTables physicsTables;
-    final EntityPresentationState presentationState;
-    final EntityRoomVariables roomVariables;
-    final EntitySlotLifecycle lifecycle;
-    final EntitySlotProperties slotProperties;
-    final EntityStoryState story;
-    final EntitySlots slots;
-    final EntityChestContents chestContentsTable;
+    private final EntityPickupState state;
+    private final boolean indoorRoom;
+    private final EntityBossState bossRewards;
+    private final EntityCombatTables combatTables;
+    private final EntityEventChannels events;
+    private final EntityLinkState linkState;
+    private final EntityMotionRegistry motions;
+    private final EntityPhysicsTables physicsTables;
+    private final EntityPresentationState presentationState;
+    private final EntityRoomVariables roomVariables;
+    private final EntitySlotLifecycle lifecycle;
+    private final EntitySlotProperties slotProperties;
+    private final EntityStoryState story;
+    private final EntitySlots slots;
+    private final EntityChestContents chestContentsTable;
 
     EntityPickupController(
             EntityPickupState state,
@@ -499,7 +499,7 @@ public final class EntityPickupController {
         return state.readHeartPiecePickup(slot).started();
     }
 
-    final DroppablePickupFrameStep droppablePickupFrameStep = new DroppablePickupFrameStep(this);
+    private final DroppablePickupFrameStep droppablePickupFrameStep = new DroppablePickupFrameStep(this);
 
     static final class DroppablePickupFrameStep {
         private final linksawakening.world.entity.EntityPickupController owner;
@@ -610,5 +610,9 @@ public final class EntityPickupController {
                 this.objectUnderEntity = null;
             }
         }
+    }
+
+    EntityPickupState state() {
+        return this.state;
     }
 }
