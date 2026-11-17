@@ -105,29 +105,17 @@ final class RoomStoryState implements RoomStory {
     private final RoomNpcPresentation roomNpcPresentation;
     private final RoomFollowerSynchronizer roomFollowerSynchronizer;
 
-    RoomStoryState(LoadedRoomHandle rooms, RoomTransientState transients, Dependencies dependencies) {
+    RoomStoryState(
+            LoadedRoomHandle rooms,
+            RoomTransientState transients,
+            Dependencies dependencies,
+            RoomNpcPresentation roomNpcPresentation,
+            RoomFollowerSynchronizer roomFollowerSynchronizer) {
         this.rooms = Objects.requireNonNull(rooms);
         this.transients = Objects.requireNonNull(transients);
-        this.dependencies = dependencies;
-        roomNpcPresentation = new RoomNpcPresentation(new RoomNpcPresentation.Dependencies(dependencies.followers()));
-        roomFollowerSynchronizer = new RoomFollowerSynchronizer(new RoomFollowerSynchronizer.Dependencies(
-                dependencies.chestContentsTable(),
-                dependencies.enemyCombatTables(),
-                dependencies.entityInputs(),
-                dependencies.entityRandomByteSource(),
-                dependencies.entitySpriteHandlerCatalog(),
-                dependencies.followers(),
-                dependencies.followingNpcEntitySpawner(),
-                dependencies.owlEventDialogResolver(),
-                dependencies.romData(),
-                dependencies.romTables(),
-                dependencies.entityFrame(),
-                dependencies.roomSessionViews(),
-                dependencies.roomState(),
-                this,
-                dependencies.dropResolver(),
-                dependencies.installRoom(),
-                dependencies.roomRuntimeServices()));
+        this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
+        this.roomNpcPresentation = Objects.requireNonNull(roomNpcPresentation, "roomNpcPresentation");
+        this.roomFollowerSynchronizer = Objects.requireNonNull(roomFollowerSynchronizer, "roomFollowerSynchronizer");
     }
 
     boolean applyMarinWakeUpPresentation(RoomRuntime loaded, int x, int y, int spriteVariant) {
@@ -262,13 +250,7 @@ final class RoomStoryState implements RoomStory {
     }
 
     void configureHouseNpcStoryState(RoomRuntime loaded) {
-        loaded.entities
-                .configuration()
-                .setHouseNpcStoryState(
-                        dependencies.followers().tarinFlag,
-                        dependencies.followers().houseNpcTradeItem,
-                        Byte.toUnsignedInt(dependencies.roomState().dungeonProgressFlags[2]),
-                        Byte.toUnsignedInt(dependencies.roomState().overworldRoomStatus[0xFD]));
+        roomFollowerSynchronizer.configureHouseNpcStoryState(loaded);
     }
 
     void rememberEntityDefaultMusicTrack(int trackId) {

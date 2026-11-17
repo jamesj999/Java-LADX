@@ -69,7 +69,7 @@ final class RoomObjectMutations implements RoomTerrain {
 
     RoomObjectMutations(LoadedRoomHandle rooms, Dependencies dependencies) {
         this.rooms = Objects.requireNonNull(rooms);
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
     }
 
     /**

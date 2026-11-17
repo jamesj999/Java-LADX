@@ -17,7 +17,7 @@ public final class LinkOutputs {
     private final Dependencies dependencies;
 
     LinkOutputs(Dependencies dependencies, RoomEntityOutputSource source) {
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
         this.source = Objects.requireNonNull(source);
     }
 

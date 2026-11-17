@@ -24,9 +24,9 @@ final class RoomEntitySimulation {
             linksawakening.world.entity.EntityFrameContext.builder();
 
     RoomEntitySimulation(Dependencies dependencies, SetupDependencies setup, EffectsDependencies effects) {
-        this.setup = setup;
-        this.effects = effects;
-        this.dependencies = dependencies;
+        this.setup = Objects.requireNonNull(setup, "setup");
+        this.effects = Objects.requireNonNull(effects, "effects");
+        this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
     }
 
     List<EntityProjectileEvent> tickEntities(RoomRuntime loaded, EntityTickValues inputs) {
@@ -89,14 +89,12 @@ final class RoomEntitySimulation {
     }
 
     record Dependencies(
-            RoomEntityBridge entityBridge,
             RoomEntitySessionState entityFrame,
             RomRandomByteSource entityRandomByteSource,
             RoomFollowerState followers,
             RoomItemUseState items,
             RoomLocationState location) {
         Dependencies {
-            Objects.requireNonNull(entityBridge, "entityBridge");
             Objects.requireNonNull(entityFrame, "entityFrame");
             Objects.requireNonNull(entityRandomByteSource, "entityRandomByteSource");
             Objects.requireNonNull(followers, "followers");
@@ -235,7 +233,6 @@ final class RoomEntitySimulation {
             Objects.requireNonNull(location, "location");
             Objects.requireNonNull(puzzles, "puzzles");
             Objects.requireNonNull(terrain, "terrain");
-            Objects.requireNonNull(entityBridge, "entityBridge");
             Objects.requireNonNull(entityInputs, "entityInputs");
             Objects.requireNonNull(indoorTorchPaletteEffect, "indoorTorchPaletteEffect");
             Objects.requireNonNull(owlStatueDialogResolver, "owlStatueDialogResolver");
@@ -408,7 +405,6 @@ final class RoomEntitySimulation {
             Objects.requireNonNull(items, "items");
             Objects.requireNonNull(location, "location");
             Objects.requireNonNull(terrain, "terrain");
-            Objects.requireNonNull(entityBridge, "entityBridge");
             Objects.requireNonNull(roomEntityRewards, "roomEntityRewards");
             Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
             Objects.requireNonNull(roomPuzzleController, "roomPuzzleController");

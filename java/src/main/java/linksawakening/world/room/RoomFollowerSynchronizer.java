@@ -17,7 +17,7 @@ final class RoomFollowerSynchronizer {
     private final Dependencies dependencies;
 
     RoomFollowerSynchronizer(Dependencies dependencies) {
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
     }
 
     RoomRuntime synchronizeFollowingNpcEntitiesIfNeeded(RoomRuntime loaded) {
@@ -59,7 +59,7 @@ final class RoomFollowerSynchronizer {
         configureFollowerCollision(loaded);
         configureFollowerInputs(loaded);
         configureFollowerProgress(loaded);
-        dependencies.owner().configureHouseNpcStoryState(loaded);
+        configureHouseNpcStoryState(loaded);
         if (loaded.room.mapCategory() != Warp.CATEGORY_OVERWORLD
                 && loaded.room.mapId() == 0x10
                 && loaded.room.roomId() == 0xA3) {
@@ -91,7 +91,6 @@ final class RoomFollowerSynchronizer {
             RoomEntitySessionState dropState,
             RoomSessionViews roomSessionViews,
             RoomWorldState roomState,
-            RoomStoryState owner,
             linksawakening.world.entity.EnemyDropResolver dropResolver,
             Consumer<RoomRuntime> installRoom,
             RoomRuntime.Services roomRuntimeServices) {
@@ -109,7 +108,6 @@ final class RoomFollowerSynchronizer {
             Objects.requireNonNull(dropState, "dropState");
             Objects.requireNonNull(roomSessionViews, "roomSessionViews");
             Objects.requireNonNull(roomState, "roomState");
-            Objects.requireNonNull(owner, "owner");
         }
     }
 
@@ -165,5 +163,15 @@ final class RoomFollowerSynchronizer {
                         dependencies.entityInputs().secretSeashellPegasusCollisionActive,
                 dependencies.entityInputs().secretSeashellPegasusCollisionX,
                         dependencies.entityInputs().secretSeashellPegasusCollisionY);
+    }
+
+    void configureHouseNpcStoryState(RoomRuntime loaded) {
+        loaded.entities
+                .configuration()
+                .setHouseNpcStoryState(
+                        dependencies.followers().tarinFlag,
+                        dependencies.followers().houseNpcTradeItem,
+                        Byte.toUnsignedInt(dependencies.roomState().dungeonProgressFlags[2]),
+                        Byte.toUnsignedInt(dependencies.roomState().overworldRoomStatus[0xFD]));
     }
 }

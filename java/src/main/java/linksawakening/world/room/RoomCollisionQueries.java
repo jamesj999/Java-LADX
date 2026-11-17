@@ -31,7 +31,7 @@ final class RoomCollisionQueries {
     private final Dependencies dependencies;
 
     RoomCollisionQueries(Dependencies dependencies) {
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
     }
 
     RoomBoundaryView boundaryView(RoomRuntime loaded, int linkX, int linkY) {

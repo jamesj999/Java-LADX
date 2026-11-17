@@ -155,19 +155,19 @@ final class RoomSessionContext {
                 values.followers,
                 values.roomState,
                 transientVfxSystem);
-        values.roomPlayerItemActions = new RoomPlayerItemActions(
-                loadedRooms,
-                new RoomPlayerItemActions.Dependencies(
-                        values.followers,
-                        values.items,
-                        values.location,
-                        values.entityFrame,
-                        values.overworldBushInteraction,
-                        values.overworldCollision,
-                        values.romTables,
-                        values.roomObjectMutations,
-                        values.roomSessionViews,
-                        values.roomObjectMutations));
+
+        var shovelActions = new RoomShovelActions(new RoomShovelActions.Dependencies(
+                values.entityFrame,
+                values.followers,
+                values.items,
+                values.location,
+                values.overworldBushInteraction,
+                values.overworldCollision,
+                values.romTables,
+                values.roomObjectMutations,
+                values.roomSessionViews,
+                values.roomObjectMutations));
+        values.roomPlayerItemActions = new RoomPlayerItemActions(loadedRooms, shovelActions);
         values.roomPuzzleController = new RoomPuzzleController(new RoomPuzzleController.Dependencies(
                 values.entityFrame,
                 values.puzzles,
@@ -182,46 +182,79 @@ final class RoomSessionContext {
                 values.roomState,
                 values.roomObjectMutations,
                 values.transientVfxSystem));
+        var storyDependencies = new RoomStoryState.Dependencies(
+                values.entityFrame,
+                values.followers,
+                values.location,
+                values.puzzles,
+                values.terrain,
+                values.chestContentsTable,
+                values.enemyCombatTables,
+                values.entityInputs,
+                values.entityRandomByteSource,
+                values.entitySpriteHandlerCatalog,
+                values.followingNpcEntitySpawner,
+                values.indoorTorchPaletteEffect,
+                values.owlEventDialogResolver,
+                values.romData,
+                values.romTables,
+                values.enemyDropResolver,
+                values.roomSessionViews,
+                values.roomState,
+                installRoom,
+                values.roomRuntimeServices);
+        var npcPresentation =
+                new RoomNpcPresentation(new RoomNpcPresentation.Dependencies(storyDependencies.followers()));
+        var followerSynchronizer = new RoomFollowerSynchronizer(new RoomFollowerSynchronizer.Dependencies(
+                storyDependencies.chestContentsTable(),
+                storyDependencies.enemyCombatTables(),
+                storyDependencies.entityInputs(),
+                storyDependencies.entityRandomByteSource(),
+                storyDependencies.entitySpriteHandlerCatalog(),
+                storyDependencies.followers(),
+                storyDependencies.followingNpcEntitySpawner(),
+                storyDependencies.owlEventDialogResolver(),
+                storyDependencies.romData(),
+                storyDependencies.romTables(),
+                storyDependencies.entityFrame(),
+                storyDependencies.roomSessionViews(),
+                storyDependencies.roomState(),
+                storyDependencies.dropResolver(),
+                storyDependencies.installRoom(),
+                storyDependencies.roomRuntimeServices()));
         values.roomStoryState = new RoomStoryState(
-                loadedRooms,
-                values.roomTransientState,
-                new RoomStoryState.Dependencies(
-                        values.entityFrame,
-                        values.followers,
-                        values.location,
-                        values.puzzles,
-                        values.terrain,
-                        values.chestContentsTable,
-                        values.enemyCombatTables,
-                        values.entityInputs,
-                        values.entityRandomByteSource,
-                        values.entitySpriteHandlerCatalog,
-                        values.followingNpcEntitySpawner,
-                        values.indoorTorchPaletteEffect,
-                        values.owlEventDialogResolver,
-                        values.romData,
-                        values.romTables,
-                        values.enemyDropResolver,
-                        values.roomSessionViews,
-                        values.roomState,
-                        installRoom,
-                        values.roomRuntimeServices));
-        values.roomDoorInteractions = new RoomDoorInteractions(
-                loadedRooms,
-                new RoomDoorInteractions.Dependencies(
-                        values.entityFrame,
-                        values.followers,
-                        values.location,
-                        values.puzzles,
-                        values.chestContentsTable,
-                        values.entityFrame,
-                        values.overworldBushInteraction,
-                        values.overworldCollision,
-                        values.romData,
-                        values.roomObjectMutations,
-                        values.roomSessionViews,
-                        values.roomState,
-                        values.roomObjectMutations));
+                loadedRooms, values.roomTransientState, storyDependencies, npcPresentation, followerSynchronizer);
+        var doorDependencies = new RoomDoorInteractions.Dependencies(
+                values.entityFrame,
+                values.followers,
+                values.location,
+                values.puzzles,
+                values.chestContentsTable,
+                values.entityFrame,
+                values.overworldBushInteraction,
+                values.overworldCollision,
+                values.romData,
+                values.roomObjectMutations,
+                values.roomSessionViews,
+                values.roomState,
+                values.roomObjectMutations);
+        var chests = new RoomChestInteractions(new RoomChestInteractions.Dependencies(
+                doorDependencies.chestContentsTable(),
+                doorDependencies.overworldCollision(),
+                doorDependencies.romData(),
+                doorDependencies.roomObjectMutations(),
+                doorDependencies.roomSessionViews(),
+                doorDependencies.roomState(),
+                doorDependencies.roomTileRedraw()));
+        var lifts = new RoomLiftInteractions(new RoomLiftInteractions.Dependencies(
+                doorDependencies.entityRuntimeState(),
+                doorDependencies.followers(),
+                doorDependencies.overworldBushInteraction(),
+                doorDependencies.overworldCollision(),
+                doorDependencies.roomObjectMutations(),
+                doorDependencies.roomSessionViews(),
+                doorDependencies.roomTileRedraw()));
+        values.roomDoorInteractions = new RoomDoorInteractions(loadedRooms, doorDependencies, chests, lifts);
         values.roomLoadCoordinator = new RoomLoadCoordinator(
                 loadedRooms,
                 new RoomLoadCoordinator.Dependencies(
@@ -309,21 +342,29 @@ final class RoomSessionContext {
                 values.roomState,
                 values.roomStoryState,
                 values.roomTransitionController);
-        values.entityBridge = new RoomEntityBridge(
-                loadedRooms,
-                new RoomEntityBridge.Dependencies(
-                        values.entityFrame,
-                        values.roomState,
-                        values.entityInputs,
-                        values.followers,
-                        values.items,
-                        values.location,
-                        values.terrain,
-                        values.entityEffects,
-                        values.entityConfiguration,
-                        values.entityRandomByteSource,
-                        values.gpu,
-                        values.romData,
-                        values.roomLoadCoordinator));
+        var entityDependencies = new RoomEntityBridge.Dependencies(
+                values.entityFrame,
+                values.roomState,
+                values.entityInputs,
+                values.followers,
+                values.items,
+                values.location,
+                values.terrain,
+                values.entityEffects,
+                values.entityConfiguration,
+                values.entityRandomByteSource,
+                values.gpu,
+                values.romData,
+                values.roomLoadCoordinator);
+        var entitySimulation = new RoomEntitySimulation(
+                new RoomEntitySimulation.Dependencies(
+                        entityDependencies.entityFrame(),
+                        entityDependencies.entityRandomByteSource(),
+                        entityDependencies.followers(),
+                        entityDependencies.items(),
+                        entityDependencies.location()),
+                entityDependencies.entityConfiguration(),
+                entityDependencies.entityEffects());
+        values.entityBridge = new RoomEntityBridge(loadedRooms, entityDependencies, entitySimulation);
     }
 }

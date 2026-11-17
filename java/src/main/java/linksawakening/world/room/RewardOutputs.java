@@ -18,7 +18,7 @@ public final class RewardOutputs {
     private final RoomEntityOutputSource source;
 
     RewardOutputs(Dependencies dependencies, RoomEntityOutputSource source) {
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
         this.source = Objects.requireNonNull(source);
     }
 

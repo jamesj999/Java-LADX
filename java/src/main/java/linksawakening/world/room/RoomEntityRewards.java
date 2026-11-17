@@ -18,7 +18,7 @@ final class RoomEntityRewards {
     private final Dependencies dependencies;
 
     RoomEntityRewards(Dependencies dependencies) {
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
     }
 
     void harvestKeyQuicksandEvents(RoomRuntime loaded) {

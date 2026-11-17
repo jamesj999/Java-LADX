@@ -25,7 +25,7 @@ final class RoomShovelActions {
     private final Dependencies dependencies;
 
     RoomShovelActions(Dependencies dependencies) {
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
     }
 
     ShovelStartResult startShovel(
@@ -36,8 +36,7 @@ final class RoomShovelActions {
         if (linkAirborne || dependencies.items().shovelUseState != 0) {
             return new ShovelStartResult(false, true, -1);
         }
-        ShovelProbe probe =
-                dependencies.roomPlayerItemActions().probeShovel(loaded, linkEntityX, linkEntityY, romDirection);
+        ShovelProbe probe = probeShovel(loaded, linkEntityX, linkEntityY, romDirection);
         dependencies.items().shovelUseState = SHOVEL_STATE_ACTIVE;
         return new ShovelStartResult(true, !probe.valid(), probe.location());
     }
@@ -48,13 +47,12 @@ final class RoomShovelActions {
         }
         int normalizedTimer = timer & 0xFF;
         if (normalizedTimer == SHOVEL_DIG_TIMER) {
-            ShovelProbe probe =
-                    dependencies.roomPlayerItemActions().probeShovel(loaded, linkEntityX, linkEntityY, romDirection);
+            ShovelProbe probe = probeShovel(loaded, linkEntityX, linkEntityY, romDirection);
             if (!probe.valid()) {
                 return;
             }
             dependencies.items().shovelUseState = SHOVEL_STATE_DUG;
-            dependencies.roomPlayerItemActions().writeShovelHole(loaded, probe);
+            writeShovelHole(loaded, probe);
             dependencies.items().pendingShovelDrop = new PendingShovelDrop(
                     probe.objectLeft(),
                     probe.objectTop(),
@@ -156,7 +154,6 @@ final class RoomShovelActions {
             OverworldCollision overworldCollision,
             RomTables romTables,
             RoomObjectMutations roomObjectMutations,
-            RoomPlayerItemActions roomPlayerItemActions,
             RoomSessionViews roomSessionViews,
             RoomObjectMutations roomTileRedraw) {
         Dependencies {
@@ -168,7 +165,6 @@ final class RoomShovelActions {
             Objects.requireNonNull(overworldCollision, "overworldCollision");
             Objects.requireNonNull(romTables, "romTables");
             Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
-            Objects.requireNonNull(roomPlayerItemActions, "roomPlayerItemActions");
             Objects.requireNonNull(roomSessionViews, "roomSessionViews");
             Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
         }
