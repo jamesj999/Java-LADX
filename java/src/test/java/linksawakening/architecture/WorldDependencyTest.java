@@ -14,6 +14,20 @@ import org.junit.jupiter.api.Test;
 /** Checks compiled references, including descriptors and generic signatures. */
 class WorldDependencyTest {
     @Test
+    void worldFieldsArePrivateOrStaticFinal() throws Exception {
+        var violations = new ArrayList<String>();
+        for (var type : classes()) {
+            if (!type.name().startsWith("linksawakening/world/")) continue;
+            for (var field : type.declaredFields()) {
+                int flags = field.accessFlags();
+                if (Modifier.isPrivate(flags) || (Modifier.isStatic(flags) && Modifier.isFinal(flags))) continue;
+                violations.add(type.name() + "." + field.name());
+            }
+        }
+        assertTrue(violations.isEmpty(), String.join("\n", violations));
+    }
+
+    @Test
     void worldDoesNotDependOnApp() throws Exception {
         for (var type : classes()) {
             if (!type.name().startsWith("linksawakening/world/")) continue;

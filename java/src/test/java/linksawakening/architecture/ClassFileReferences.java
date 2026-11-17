@@ -21,11 +21,14 @@ final class ClassFileReferences {
 
     record MethodReference(String owner, String name) {}
 
+    record DeclaredField(String name, String descriptor, int accessFlags) {}
+
     record CompiledType(
             String name,
             List<String> references,
             List<FieldReference> fields,
             List<MethodReference> methods,
+            List<DeclaredField> declaredFields,
             String superclass,
             List<String> permittedSubclasses) {}
 
@@ -40,6 +43,7 @@ final class ClassFileReferences {
                 List<String> references = new ArrayList<>();
                 List<FieldReference> fields = new ArrayList<>();
                 List<MethodReference> methods = new ArrayList<>();
+                List<DeclaredField> declaredFields;
                 String superclass;
                 List<String> permittedSubclasses = new ArrayList<>();
                 try (var input = new DataInputStream(Files.newInputStream(path))) {
@@ -87,7 +91,7 @@ final class ClassFileReferences {
                     int superIndex = input.readUnsignedShort();
                     superclass = superIndex == 0 ? null : utf8[classNames[superIndex]];
                     input.skipNBytes(2L * input.readUnsignedShort()); // interfaces
-                    skipMembers(input); // fields
+                    declaredFields = readFields(input, utf8);
                     skipMembers(input); // methods
                     int attributes = input.readUnsignedShort();
                     for (int attribute = 0; attribute < attributes; attribute++) {
@@ -112,12 +116,30 @@ final class ClassFileReferences {
                         references,
                         fields,
                         methods,
+                        declaredFields,
                         superclass,
                         List.copyOf(permittedSubclasses)));
             }
         }
         assertTrue(!result.isEmpty(), "No compiled world classes found");
         return result;
+    }
+
+    private static List<DeclaredField> readFields(DataInputStream input, String[] utf8) throws IOException {
+        int count = input.readUnsignedShort();
+        List<DeclaredField> fields = new ArrayList<>(count);
+        for (int field = 0; field < count; field++) {
+            int flags = input.readUnsignedShort();
+            String name = utf8[input.readUnsignedShort()];
+            String descriptor = utf8[input.readUnsignedShort()];
+            fields.add(new DeclaredField(name, descriptor, flags));
+            int attributes = input.readUnsignedShort();
+            for (int attribute = 0; attribute < attributes; attribute++) {
+                input.readUnsignedShort();
+                input.skipNBytes(Integer.toUnsignedLong(input.readInt()));
+            }
+        }
+        return List.copyOf(fields);
     }
 
     private static void skipMembers(DataInputStream input) throws IOException {

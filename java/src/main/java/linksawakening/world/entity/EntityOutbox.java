@@ -31,36 +31,38 @@ final class EntityOutbox {
             Channel<?> channel = channels.get(i);
             if (channel.type == type && channel.name.equals(name)) return (List<T>) channel;
         }
-        Channel<T> channel = new Channel<>(type, name);
+        Channel<T> channel = new Channel<>(this, type, name);
         channels.add(channel);
         return channel;
     }
 
-    private final class Channel<T extends EntityEvent> extends AbstractList<T> {
+    private static final class Channel<T extends EntityEvent> extends AbstractList<T> {
+        private final EntityOutbox outbox;
         private final Class<T> type;
         private final String name;
 
-        private Channel(Class<T> type, String name) {
+        private Channel(EntityOutbox outbox, Class<T> type, String name) {
+            this.outbox = Objects.requireNonNull(outbox);
             this.type = type;
             this.name = name;
         }
 
         private boolean matches(int index) {
-            return names.get(index).equals(name) && type.isInstance(entries.get(index));
+            return outbox.names.get(index).equals(name) && type.isInstance(outbox.entries.get(index));
         }
 
         @Override
         public int size() {
             int count = 0;
-            for (int i = 0; i < entries.size(); i++) if (matches(i)) count++;
+            for (int i = 0; i < outbox.entries.size(); i++) if (matches(i)) count++;
             return count;
         }
 
         @Override
         public T get(int index) {
             Objects.checkIndex(index, size());
-            for (int i = 0; i < entries.size(); i++) {
-                if (matches(i) && index-- == 0) return type.cast(entries.get(i));
+            for (int i = 0; i < outbox.entries.size(); i++) {
+                if (matches(i) && index-- == 0) return type.cast(outbox.entries.get(i));
             }
             throw new IndexOutOfBoundsException();
         }
@@ -68,8 +70,8 @@ final class EntityOutbox {
         @Override
         public boolean add(T event) {
             T checked = type.cast(Objects.requireNonNull(event));
-            names.add(name);
-            entries.add(checked);
+            outbox.names.add(name);
+            outbox.entries.add(checked);
             return true;
         }
 
@@ -85,10 +87,10 @@ final class EntityOutbox {
 
         @Override
         public void clear() {
-            for (int i = entries.size() - 1; i >= 0; i--) {
+            for (int i = outbox.entries.size() - 1; i >= 0; i--) {
                 if (matches(i)) {
-                    entries.remove(i);
-                    names.remove(i);
+                    outbox.entries.remove(i);
+                    outbox.names.remove(i);
                 }
             }
         }
