@@ -17,7 +17,8 @@ public final class BomberMotion {
     static final int[] SPEED_Y_BY_RANDOM = {0xF8, 0xFA, 0x00, 0x06, 0x08, 0x06, 0x00, 0xFA};
 
     final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState1Table.
+    final int[] spawnAttemptCount = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -35,7 +36,7 @@ public final class BomberMotion {
 
     public void initialize(int slot) {
         state[slot] = 0;
-        privateState1[slot] = 0;
+        spawnAttemptCount[slot] = 0;
         inertia[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
@@ -305,8 +306,8 @@ public final class BomberMotion {
                 int direction = random & 0x07;
                 owner.speedX[slot] = BomberMotion.SPEED_X_BY_RANDOM[direction];
                 owner.speedY[slot] = BomberMotion.SPEED_Y_BY_RANDOM[direction];
-                owner.privateState1[slot] = (owner.privateState1[slot] + 1) & 0xFF;
-                if ((owner.privateState1[slot] & 0x07) == 0) {
+                owner.spawnAttemptCount[slot] = (owner.spawnAttemptCount[slot] + 1) & 0xFF;
+                if ((owner.spawnAttemptCount[slot] & 0x07) == 0) {
                     BomberMotion.Vector vector = BomberMotion.vectorTowardsLink(
                             moved.x(), moved.y(), moved.z(), linkEntityX, linkEntityY, 0x0A);
                     owner.speedX[slot] = vector.x();

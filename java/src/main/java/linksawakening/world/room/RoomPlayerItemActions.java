@@ -1,9 +1,6 @@
 package linksawakening.world.room;
 
 import java.util.Objects;
-import linksawakening.physics.OverworldCollision;
-import linksawakening.rom.RomTables;
-import linksawakening.world.object.OverworldBushInteraction;
 
 /** ApplyLinkMotionState player-item dispatch; lift, chest and shovel routines retain their own action state. */
 final class RoomPlayerItemActions implements RoomPlayerItems {
@@ -141,21 +138,10 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
 
     private final RoomShovelActions roomShovelActions;
 
-    RoomPlayerItemActions(LoadedRoomHandle rooms, Dependencies dependencies) {
+    RoomPlayerItemActions(LoadedRoomHandle rooms, RoomShovelActions roomShovelActions) {
         this.rooms = Objects.requireNonNull(rooms);
 
-        roomShovelActions = new RoomShovelActions(new RoomShovelActions.Dependencies(
-                dependencies.entityRuntimeState(),
-                dependencies.followers(),
-                dependencies.items(),
-                dependencies.location(),
-                dependencies.overworldBushInteraction(),
-                dependencies.overworldCollision(),
-                dependencies.romTables(),
-                dependencies.roomObjectMutations(),
-                this,
-                dependencies.roomSessionViews(),
-                dependencies.roomTileRedraw()));
+        this.roomShovelActions = Objects.requireNonNull(roomShovelActions, "roomShovelActions");
     }
 
     boolean throwLiftedEntity(RoomRuntime loaded, linksawakening.state.Direction linkDirection) {
@@ -333,30 +319,5 @@ final class RoomPlayerItemActions implements RoomPlayerItems {
 
     private void publishEntityView(RoomRuntime loaded) {
         loaded.room.replaceEntities(loaded.entities.inspection().view());
-    }
-
-    record Dependencies(
-            RoomFollowerState followers,
-            RoomItemUseState items,
-            RoomLocationState location,
-            RoomEntitySessionState entityRuntimeState,
-            OverworldBushInteraction overworldBushInteraction,
-            OverworldCollision overworldCollision,
-            RomTables romTables,
-            RoomObjectMutations roomObjectMutations,
-            RoomSessionViews roomSessionViews,
-            RoomObjectMutations roomTileRedraw) {
-        Dependencies {
-            Objects.requireNonNull(followers, "followers");
-            Objects.requireNonNull(items, "items");
-            Objects.requireNonNull(location, "location");
-            Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
-            Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
-            Objects.requireNonNull(overworldCollision, "overworldCollision");
-            Objects.requireNonNull(romTables, "romTables");
-            Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
-            Objects.requireNonNull(roomSessionViews, "roomSessionViews");
-            Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
-        }
     }
 }

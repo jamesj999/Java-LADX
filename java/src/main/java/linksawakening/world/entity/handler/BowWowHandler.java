@@ -24,13 +24,15 @@ final class BowWowHandler {
     }
 
     private static boolean phase1BowWow(EntityFrameExecution state) {
+        var resolvedBowWowMotion = state.motion(BowWowMotion.class, BowWowMotion::new);
+
         var slotState = state.slotFrame();
         var timerGates = state.gates();
 
         if (slotState.initialStatus() == EntityStatus.ACTIVE) {
             int slot = slotState.entity().slot();
             if (timerGates.projectileTimersInteractive()) {
-                state.motion(BowWowMotion.class, BowWowMotion::new).tickTimers(slot);
+                resolvedBowWowMotion.tickTimers(slot);
             }
             // $05:4054 selects the following tiles for every nonzero
             // quest state, including kidnapped ($80), before any gates.
@@ -46,9 +48,7 @@ final class BowWowHandler {
                                         .forEntityType(ENTITY_BOW_WOW, EntityRoomLoader.RoomTable.OVERWORLD),
                         slotState.entity().spriteVariant()));
             }
-            slotState.entity(withVariant(
-                    slotState.entity(),
-                    state.motion(BowWowMotion.class, BowWowMotion::new).selectedVariant(slot)));
+            slotState.entity(withVariant(slotState.entity(), resolvedBowWowMotion.selectedVariant(slot)));
             state.replaceEntity(slotState.entity());
             if (!timerGates.bowWowHandlerInteractive()) {
                 return false;

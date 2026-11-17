@@ -399,21 +399,12 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
 
     private final RoomEntitySimulation roomEntitySimulation;
 
-    RoomEntityBridge(LoadedRoomHandle rooms, Dependencies dependencies) {
+    RoomEntityBridge(LoadedRoomHandle rooms, Dependencies dependencies, RoomEntitySimulation roomEntitySimulation) {
         this.rooms = Objects.requireNonNull(rooms);
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
         outbox = dependencies.entityFrame().outbox;
 
-        roomEntitySimulation = new RoomEntitySimulation(
-                new RoomEntitySimulation.Dependencies(
-                        this,
-                        dependencies.entityFrame(),
-                        dependencies.entityRandomByteSource(),
-                        dependencies.followers(),
-                        dependencies.items(),
-                        dependencies.location()),
-                dependencies.entityConfiguration(),
-                dependencies.entityEffects());
+        this.roomEntitySimulation = Objects.requireNonNull(roomEntitySimulation, "roomEntitySimulation");
     }
 
     void setEnemyDropPlayerState(int maxHearts, int health, boolean activePowerUp) {

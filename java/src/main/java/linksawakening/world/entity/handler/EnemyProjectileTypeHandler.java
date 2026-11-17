@@ -28,21 +28,23 @@ final class EnemyProjectileTypeHandler {
     }
 
     private static boolean phase3EnemyProjectileType(EntityFrameExecution state) {
+        var resolvedEnemyProjectileMotion = state.motion(EnemyProjectileMotion.class, EnemyProjectileMotion::new);
+
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         var timerGates = state.gates();
 
         if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
-            boolean preexistingCollision = state.motion(EnemyProjectileMotion.class, EnemyProjectileMotion::new)
-                    .pendingLinkCollision(slotState.entity().slot());
-            boolean hasLinkCollision = state.motion(EnemyProjectileMotion.class, EnemyProjectileMotion::new)
-                            .transitionCountdown(slotState.entity().slot())
+            boolean preexistingCollision = resolvedEnemyProjectileMotion.pendingLinkCollision(
+                    slotState.entity().slot());
+            boolean hasLinkCollision = resolvedEnemyProjectileMotion.transitionCountdown(
+                            slotState.entity().slot())
                     == 0;
             if (hasLinkCollision) {
                 var collisionEvent = EnemyProjectileCollision.check(
                         slotState.entity(),
-                        state.motion(EnemyProjectileMotion.class, EnemyProjectileMotion::new)
-                                .direction(slotState.entity().slot()),
+                        resolvedEnemyProjectileMotion.direction(
+                                slotState.entity().slot()),
                         frameInput.projectileLinkState());
                 if (collisionEvent.isPresent()) {
                     EntityProjectileEvent event = collisionEvent.orElseThrow();
@@ -56,18 +58,15 @@ final class EnemyProjectileTypeHandler {
                     preexistingCollision |= event.startsWallTransition();
                 }
             }
-            EnemyProjectileMotion.Update projectileUpdate = state.motion(
-                            EnemyProjectileMotion.class, EnemyProjectileMotion::new)
-                    .advance(
-                            slotState.entity(),
-                            frameInput.backgroundCollision(),
-                            preexistingCollision,
-                            frameInput.frame(),
-                            state.background()
-                                    .entityGroundStatus(slotState.entity().slot()),
-                            state.background().groundInteractionSideScrolling(),
-                            timerGates.handlerInteractive(),
-                            timerGates.projectileTimersInteractive());
+            EnemyProjectileMotion.Update projectileUpdate = resolvedEnemyProjectileMotion.advance(
+                    slotState.entity(),
+                    frameInput.backgroundCollision(),
+                    preexistingCollision,
+                    frameInput.frame(),
+                    state.background().entityGroundStatus(slotState.entity().slot()),
+                    state.background().groundInteractionSideScrolling(),
+                    timerGates.handlerInteractive(),
+                    timerGates.projectileTimersInteractive());
             if (projectileUpdate.unloaded()) {
                 state.lifecycle()
                         .disableEntityWithoutPersistence(slotState.entity().slot());

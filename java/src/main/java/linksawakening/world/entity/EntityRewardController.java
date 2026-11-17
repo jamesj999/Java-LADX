@@ -458,8 +458,8 @@ public final class EntityRewardController {
                     || (isCommonDroppableType(entity.type())
                             && owner.bossRewards.readDroppablePrivateState3(entity.slot()) != 0)
                     || (entity.type() == EntityRomConstants.ENTITY_DROPPABLE_SECRET_SEASHELL
-                            && (secretSeashellMotion.privateState3(entity.slot()) != 0
-                                    || secretSeashellMotion.privateCountdown1(entity.slot()) != 0))
+                            && (secretSeashellMotion.hiddenMode(entity.slot()) != 0
+                                    || secretSeashellMotion.revealCountdown(entity.slot()) != 0))
                     || (!swordPickup
                             && !floating
                             && !RoomEntityPickupRules.collisionCadenceMatches(frameCounter, entity.slot()))

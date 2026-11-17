@@ -20,8 +20,9 @@ public final class PokeyMotion {
     // Data_015_4BD7 is only declared as two bytes, so the handler's indexed
     // reads continue directly into Data_015_4BD9 in the assembled ROM.
     private static final int[] SPEED_Y_BY_RANDOM_INDEX = {0xFA, 0xFC, 0x00, 0x04, 0x06, 0x04, 0x00, 0xFC};
+    // ROM wEntitiesPrivateState1Table.
 
-    private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] headAttached = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -51,7 +52,7 @@ public final class PokeyMotion {
         validateByte(newSpeedX, "Pokey segment X speed");
         validateByte(newSpeedY, "Pokey segment Y speed");
         reset(slot);
-        privateState1[slot] = 1;
+        headAttached[slot] = 1;
         speedX[slot] = newSpeedX & 0xFF;
         speedY[slot] = newSpeedY & 0xFF;
         initialized[slot] = true;
@@ -162,11 +163,11 @@ public final class PokeyMotion {
     }
 
     public boolean isSegment(int slot) {
-        return initialized[slot] && privateState1[slot] != 0;
+        return initialized[slot] && headAttached[slot] != 0;
     }
 
-    public int privateState1(int slot) {
-        return privateState1[slot];
+    public int headAttached(int slot) {
+        return headAttached[slot];
     }
 
     public int speedX(int slot) {
@@ -183,7 +184,7 @@ public final class PokeyMotion {
     }
 
     private void ensureMain(int slot) {
-        if (!initialized[slot] || privateState1[slot] != 0) {
+        if (!initialized[slot] || headAttached[slot] != 0) {
             initialize(slot);
         }
     }
@@ -192,13 +193,13 @@ public final class PokeyMotion {
         if (!initialized[slot]) {
             initializeSegment(slot, 0, 0);
         }
-        if (privateState1[slot] == 0) {
+        if (headAttached[slot] == 0) {
             throw new IllegalStateException("Pokey segment state is not initialized");
         }
     }
 
     private void reset(int slot) {
-        privateState1[slot] = 0;
+        headAttached[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;

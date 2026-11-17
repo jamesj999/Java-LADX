@@ -11,7 +11,7 @@ final class RoomEntityControl implements RoomEntityState {
     private final Dependencies dependencies;
 
     RoomEntityControl(Dependencies dependencies) {
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
     }
 
     @Override

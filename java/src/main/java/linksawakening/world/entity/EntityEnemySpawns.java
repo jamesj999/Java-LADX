@@ -630,6 +630,8 @@ public final class EntityEnemySpawns {
     }
 
     static int enemyBombSpawnsSpawnEnemyBomb(EntityEnemySpawns runtime, EnemyBombSpawn inputs) {
+        var resolvedThrownEntityMotion = runtime.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
+
         int entityX = inputs.entityX();
         int entityY = inputs.entityY();
         int entityZ = inputs.entityZ();
@@ -638,6 +640,7 @@ public final class EntityEnemySpawns {
         int speedY = inputs.speedY();
         int speedZ = inputs.speedZ();
         boolean initializeMotion = inputs.initializeMotion();
+        // ROM wEntitiesPrivateState4Table: handler-dependent register; a narrower meaning has not been established.
         int privateState4 = inputs.privateState4();
         EntitySlotValidation.validateByte(entityX, "Enemy bomb X");
         EntitySlotValidation.validateByte(entityY, "Enemy bomb Y");
@@ -672,17 +675,17 @@ public final class EntityEnemySpawns {
         runtime.bombInteractions.writeBombDirection(freeSlot, 0xFF);
         runtime.bombInteractions.writePlayerArrowBombArrow(freeSlot, false);
         runtime.bombInteractions.setBombFinalPresentationPending(freeSlot, false);
-        runtime.bombInteractions.writeBombPrivateState4(freeSlot, privateState4 & 0xFF);
-        runtime.bombInteractions.writeBombPrivateCountdown1(freeSlot, 0);
-        runtime.bombInteractions.writeBombPrivateCountdown3(freeSlot, 0);
+        runtime.bombInteractions.writeBombOrigin(freeSlot, privateState4 & 0xFF);
+        runtime.bombInteractions.writeBombCollisionGraceCountdown(freeSlot, 0);
+        runtime.bombInteractions.writeBombLiftDelay(freeSlot, 0);
         runtime.bombInteractions.writePlacedBombMotionInitialized(freeSlot, false);
         runtime.bombInteractions.writeEnemyBombMotionInitialized(freeSlot, initializeMotion);
         if (initializeMotion) {
-            var thrownEntityMotion = runtime.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
-            thrownEntityMotion.startEnemyBomb(freeSlot, speedX, speedY, speedZ);
+
+            resolvedThrownEntityMotion.startEnemyBomb(freeSlot, speedX, speedY, speedZ);
         } else {
-            var thrownEntityMotion = runtime.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
-            thrownEntityMotion.clear(freeSlot);
+
+            resolvedThrownEntityMotion.clear(freeSlot);
         }
         runtime.liftThrow.writeThrownMotionInitialized(freeSlot, false);
         runtime.combatTables.writeEnemyHitboxFlags(freeSlot, 0);

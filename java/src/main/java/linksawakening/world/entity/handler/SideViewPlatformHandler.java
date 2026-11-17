@@ -22,6 +22,8 @@ final class SideViewPlatformHandler {
     }
 
     private static boolean phase2Type(EntityFrameExecution state) {
+        var resolvedSideViewPlatformMotion = state.motion(SideViewPlatformMotion.class, SideViewPlatformMotion::new);
+
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         var timerGates = state.gates();
@@ -32,9 +34,7 @@ final class SideViewPlatformHandler {
                 && state.background().entityTimersInteractive()
                 && !frameInput.creditsGameplay()
                 && state.lifecycle().transitionSequenceCounter() == 0x04) {
-            SideViewPlatformMotion.Frame platformFrame = state.motion(
-                            SideViewPlatformMotion.class, SideViewPlatformMotion::new)
-                    .beginFrame(slotState.entity());
+            SideViewPlatformMotion.Frame platformFrame = resolvedSideViewPlatformMotion.beginFrame(slotState.entity());
             RoomEntity movedPlatform = platformFrame.entity();
             if (platformFrame.horizontalDelta() != 0
                     && frameInput
@@ -44,8 +44,8 @@ final class SideViewPlatformHandler {
                                     platformFrame.horizontalDelta() < 0 ? 1 : 0,
                                     movedPlatform.x(),
                                     movedPlatform.y())) {
-                platformFrame = state.motion(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
-                        .restoreHorizontalPosition(slotState.entity(), platformFrame);
+                platformFrame =
+                        resolvedSideViewPlatformMotion.restoreHorizontalPosition(slotState.entity(), platformFrame);
                 movedPlatform = platformFrame.entity();
             }
             if (platformFrame.verticalDelta() != 0) {
@@ -53,8 +53,8 @@ final class SideViewPlatformHandler {
                 if (frameInput
                         .backgroundCollision()
                         .blocks(slotState.entity(), direction, movedPlatform.x(), movedPlatform.y())) {
-                    platformFrame = state.motion(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
-                            .restoreVerticalPosition(slotState.entity(), platformFrame);
+                    platformFrame =
+                            resolvedSideViewPlatformMotion.restoreVerticalPosition(slotState.entity(), platformFrame);
                     movedPlatform = platformFrame.entity();
                 }
             }
@@ -73,9 +73,8 @@ final class SideViewPlatformHandler {
                         true,
                         activationAllowed));
             }
-            SideViewPlatformMotion.Update platformUpdate = state.motion(
-                            SideViewPlatformMotion.class, SideViewPlatformMotion::new)
-                    .finishFrame(movedPlatform, platformFrame, frameInput.frame(), standing, activationAllowed);
+            SideViewPlatformMotion.Update platformUpdate = resolvedSideViewPlatformMotion.finishFrame(
+                    movedPlatform, platformFrame, frameInput.frame(), standing, activationAllowed);
             slotState.updated(platformUpdate.entity());
             if (platformUpdate.rumble()) {
                 state.emit(new EntityCombatEvent(

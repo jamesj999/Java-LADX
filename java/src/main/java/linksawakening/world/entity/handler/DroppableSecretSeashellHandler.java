@@ -23,6 +23,8 @@ final class DroppableSecretSeashellHandler {
     }
 
     private static boolean phase2DroppableSecretSeashell(EntityFrameExecution state) {
+        var resolvedSecretSeashellMotion = state.motion(SecretSeashellMotion.class, SecretSeashellMotion::new);
+
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         var presentationFlags = state.presentation();
@@ -41,9 +43,8 @@ final class DroppableSecretSeashellHandler {
             }
             RoomEntityObjectSample objectUnderEntity =
                     state.background().objectQuery().sampleOrAbsent(slotState.entity());
-            SecretSeashellMotion.Update shellUpdate = state.motion(
-                            SecretSeashellMotion.class, SecretSeashellMotion::new)
-                    .advance(new SecretSeashellInteractionFrame(
+            SecretSeashellMotion.Update shellUpdate =
+                    resolvedSecretSeashellMotion.advance(new SecretSeashellInteractionFrame(
                             slotState.entity(),
                             state.roomInspection().entityRoomId(),
                             frameInput.frame(),
@@ -60,9 +61,8 @@ final class DroppableSecretSeashellHandler {
             state.slot()
                     .setOptions1Override(
                             slotState.entity().slot(),
-                            state.motion(SecretSeashellMotion.class, SecretSeashellMotion::new)
-                                                    .privateState3(
-                                                            slotState.entity().slot())
+                            resolvedSecretSeashellMotion.hiddenMode(
+                                                    slotState.entity().slot())
                                             != 0
                                     ? SECRET_SEASHELL_HIDDEN_OPTIONS1
                                     : SECRET_SEASHELL_REVEALED_OPTIONS1);

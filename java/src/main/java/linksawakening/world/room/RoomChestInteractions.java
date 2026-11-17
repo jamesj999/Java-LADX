@@ -14,7 +14,7 @@ final class RoomChestInteractions {
     private final Dependencies dependencies;
 
     RoomChestInteractions(Dependencies dependencies) {
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
     }
 
     ChestOpenResult tryOpenChest(

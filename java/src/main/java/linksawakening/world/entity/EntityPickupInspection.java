@@ -34,7 +34,7 @@ final class EntityPickupInspection {
     }
 
     int bombitePrivateCountdown1(int slot) {
-        return bombInteractions.readBombPrivateCountdown1(slot);
+        return bombInteractions.readBombCollisionGraceCountdown(slot);
     }
 
     int bombiteSpeedX(int slot) {
@@ -52,19 +52,19 @@ final class EntityPickupInspection {
         return colorShellMotion.physicsFlags(slot);
     }
 
-    int secretSeashellPrivateState3(int slot) {
+    int seashellHiddenMode(int slot) {
         var secretSeashellMotion = motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
-        return secretSeashellMotion.privateState3(slot);
+        return secretSeashellMotion.hiddenMode(slot);
     }
 
-    int secretSeashellPrivateState4(int slot) {
+    int seashellShovelRevealPending(int slot) {
         var secretSeashellMotion = motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
-        return secretSeashellMotion.privateState4(slot);
+        return secretSeashellMotion.shovelRevealPending(slot);
     }
 
-    int secretSeashellPrivateCountdown1(int slot) {
+    int seashellRevealCountdown(int slot) {
         var secretSeashellMotion = motions.get(SecretSeashellMotion.class, SecretSeashellMotion::new);
-        return secretSeashellMotion.privateCountdown1(slot);
+        return secretSeashellMotion.revealCountdown(slot);
     }
 
     int secretSeashellSlowTransitionCountdown(int slot) {

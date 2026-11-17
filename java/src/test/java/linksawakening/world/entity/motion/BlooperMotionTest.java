@@ -102,7 +102,7 @@ final class BlooperMotionTest {
 
         assertEquals(64, update.entity().x());
         assertEquals(64, update.entity().y());
-        assertEquals(0x10, motion.privateCountdown3(0));
+        assertEquals(0x10, motion.recoilCountdown(0));
     }
 
     private static RoomEntity entity(int x, int y) {

@@ -19,7 +19,10 @@ import linksawakening.world.entity.motion.ThrownEntityMotion;
 import linksawakening.world.entity.motion.UnmaskedIronMaskMotion;
 import linksawakening.world.room.ChestContentsTable;
 
-/** SpawnNewEntity / SpawnNewEntityInRange allocation and player-weapon initialization paths. */
+/** SpawnNewEntity / SpawnNewEntityInRange allocation and player-weapon initialization paths.
+ *
+ * Player-created entities share free-slot selection, slot initialization and presentation publication as one spawn transaction; ongoing item behavior belongs to the motion owners.
+ */
 public final class EntityPlayerSpawns {
     final boolean indoorRoom;
     // Optional ROM-backed input or caller override; absent values retain the established fallback.
@@ -496,7 +499,7 @@ public final class EntityPlayerSpawns {
 
     public int spawnBomb(int linkEntityX, int linkEntityY, int linkEntityZ, int romDirection) {
         EntitySlotValidation.validateRomDirection(romDirection);
-        this.bombInteractions.state.writeLastBombPlacementPlayedBump(false);
+        this.bombInteractions.writeLastBombPlacementPlayedBump(false);
         this.bombInteractions.finalizePendingBombPresentations();
         if (this.inspection.bombActive()) {
             return -1;
@@ -524,15 +527,15 @@ public final class EntityPlayerSpawns {
                 false);
         this.slots.replace(freeSlot, bomb);
         this.lifecycle.initializeHealthGroup(freeSlot);
-        this.bombInteractions.state.writeBombDirection(freeSlot, romDirection);
+        this.bombInteractions.writeBombDirection(freeSlot, romDirection);
         var thrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
         thrownEntityMotion.startPlacedBomb(freeSlot, romDirection);
-        this.bombInteractions.state.writePlacedBombMotionInitialized(freeSlot, true);
-        this.bombInteractions.state.writePlayerArrowBombArrow(freeSlot, false);
-        this.bombInteractions.state.setBombFinalPresentationPending(freeSlot, false);
-        this.bombInteractions.state.writeBombPrivateState4(freeSlot, 0);
-        this.bombInteractions.state.writeBombPrivateCountdown1(freeSlot, 0x10);
-        this.bombInteractions.state.writeBombPrivateCountdown3(freeSlot, 0);
+        this.bombInteractions.writePlacedBombMotionInitialized(freeSlot, true);
+        this.bombInteractions.writePlayerArrowBombArrow(freeSlot, false);
+        this.bombInteractions.setBombFinalPresentationPending(freeSlot, false);
+        this.bombInteractions.writeBombOrigin(freeSlot, 0);
+        this.bombInteractions.writeBombCollisionGraceCountdown(freeSlot, 0x10);
+        this.bombInteractions.writeBombLiftDelay(freeSlot, 0);
         this.combatTables.writeEnemyHitboxFlags(freeSlot, 0);
         this.physicsTables.writeEnemyTransitionCountdown(freeSlot, BombMotion.INITIAL_COUNTDOWN);
         this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
@@ -543,15 +546,15 @@ public final class EntityPlayerSpawns {
         this.physicsTables.writeEntityGroundStatus(freeSlot, 0);
         this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
         this.physicsTables.writeEntityOptions1Override(freeSlot, EntityRomConstants.BOMB_OPTIONS1);
-        if (this.bombInteractions.state.readBombArrowCooldown() != 0) {
-            this.bombInteractions.state.writeBombArrowCooldown(0);
+        if (this.bombInteractions.readBombArrowCooldown() != 0) {
+            this.bombInteractions.writeBombArrowCooldown(0);
             int arrowSlot = this.projectiles.readLatestShotArrowEntityIndex();
             if (this.roomInspection.isLoadedEntityOfType(arrowSlot, EntityRomConstants.ENTITY_ARROW)) {
                 this.bombInteractions.markArrowAsBombArrow(arrowSlot);
             }
         } else {
-            this.bombInteractions.state.writeBombArrowCooldown(EntityRomConstants.BOMB_ARROW_COOLDOWN);
-            this.bombInteractions.state.writeLatestDroppedBombEntityIndex(freeSlot);
+            this.bombInteractions.writeBombArrowCooldown(EntityRomConstants.BOMB_ARROW_COOLDOWN);
+            this.bombInteractions.writeLatestDroppedBombEntityIndex(freeSlot);
             this.bombInteractions.applyInitialBombArrowCandidateState(freeSlot, romDirection);
         }
         return freeSlot;
@@ -617,11 +620,11 @@ public final class EntityPlayerSpawns {
         this.slots.replace(freeSlot, bomb);
         this.lifecycle.initializeHealthGroup(freeSlot);
         var playerArrowMotion = this.motions.get(PlayerArrowMotion.class, PlayerArrowMotion::new);
-        this.bombInteractions.state.writeBombDirection(freeSlot, playerArrowMotion.direction(arrow.slot()));
-        this.bombInteractions.state.setBombFinalPresentationPending(freeSlot, false);
-        this.bombInteractions.state.writeBombPrivateState4(freeSlot, 0);
-        this.bombInteractions.state.writeBombPrivateCountdown1(freeSlot, 0);
-        this.bombInteractions.state.writeBombPrivateCountdown3(freeSlot, 0);
+        this.bombInteractions.writeBombDirection(freeSlot, playerArrowMotion.direction(arrow.slot()));
+        this.bombInteractions.setBombFinalPresentationPending(freeSlot, false);
+        this.bombInteractions.writeBombOrigin(freeSlot, 0);
+        this.bombInteractions.writeBombCollisionGraceCountdown(freeSlot, 0);
+        this.bombInteractions.writeBombLiftDelay(freeSlot, 0);
         this.combatTables.writeEnemyHitboxFlags(freeSlot, 0);
         this.physicsTables.writeEnemyTransitionCountdown(freeSlot, EntityRomConstants.BOMB_ARROW_EXPLOSION_COUNTDOWN);
         this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
@@ -632,7 +635,7 @@ public final class EntityPlayerSpawns {
         this.physicsTables.writeEntityGroundStatus(freeSlot, 0);
         this.physicsTables.writeBaseEntityFlipAttribute(freeSlot, 0);
         this.physicsTables.writeEntityOptions1Override(freeSlot, EntityRomConstants.BOMB_OPTIONS1);
-        this.bombInteractions.state.writePlacedBombMotionInitialized(freeSlot, true);
+        this.bombInteractions.writePlacedBombMotionInitialized(freeSlot, true);
         var thrownEntityMotion = this.motions.get(ThrownEntityMotion.class, ThrownEntityMotion::new);
         thrownEntityMotion.clear(freeSlot);
         this.physicsTables.writeDynamicEntitySpawnedThisFrame(freeSlot, true);
@@ -910,14 +913,14 @@ public final class EntityPlayerSpawns {
         runtime.combatTables.writeDyingCountdown(freeSlot, 0);
         runtime.combatTables.writePowerRecoilDeath(freeSlot, false);
         runtime.projectiles.writeLatestShotArrowEntityIndex(freeSlot);
-        if (runtime.bombInteractions.state.readBombArrowCooldown() != 0) {
-            int bombSlot = runtime.bombInteractions.state.readLatestDroppedBombEntityIndex();
-            runtime.bombInteractions.state.writeBombArrowCooldown(0);
+        if (runtime.bombInteractions.readBombArrowCooldown() != 0) {
+            int bombSlot = runtime.bombInteractions.readLatestDroppedBombEntityIndex();
+            runtime.bombInteractions.writeBombArrowCooldown(0);
             if (runtime.roomInspection.isLoadedEntityOfType(bombSlot, EntityRomConstants.ENTITY_BOMB)) {
                 runtime.lifecycle.disableEntityWithoutPersistence(bombSlot);
             }
-            runtime.bombInteractions.state.writeLatestDroppedBombEntityIndex(-1);
-            runtime.bombInteractions.state.writePlayerArrowBombArrow(freeSlot, true);
+            runtime.bombInteractions.writeLatestDroppedBombEntityIndex(-1);
+            runtime.bombInteractions.writePlayerArrowBombArrow(freeSlot, true);
             {
                 runtime.slots.replace(
                         freeSlot,
@@ -927,7 +930,7 @@ public final class EntityPlayerSpawns {
                                 romDirection));
             }
         } else {
-            runtime.bombInteractions.state.writeBombArrowCooldown(EntityRomConstants.BOMB_ARROW_COOLDOWN);
+            runtime.bombInteractions.writeBombArrowCooldown(EntityRomConstants.BOMB_ARROW_COOLDOWN);
             runtime.projectiles.writeLastArrowShotPlayedWhoosh(true);
         }
         return freeSlot;

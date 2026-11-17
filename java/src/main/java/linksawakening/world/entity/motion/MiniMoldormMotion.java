@@ -40,10 +40,13 @@ public final class MiniMoldormMotion {
     final int[] historyKey = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState1Table: sixteen-entry movement and head-sprite table index.
+    // ROM wEntitiesPrivateState1Table.
     final int[] headingIndex = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState2Table: signed step around the sixteen-heading table.
+    // ROM wEntitiesPrivateState2Table.
     final int[] turnStep = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown1Table.
+    final int[] turnCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -70,7 +73,7 @@ public final class MiniMoldormMotion {
         inertia[slot] = 0;
         headingIndex[slot] = 0;
         turnStep[slot] = 0;
-        privateCountdown1[slot] = 0;
+        turnCountdown[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;
@@ -92,7 +95,7 @@ public final class MiniMoldormMotion {
         inertia[slot] = 0;
         headingIndex[slot] = 0;
         turnStep[slot] = 0;
-        privateCountdown1[slot] = 0;
+        turnCountdown[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;
@@ -148,11 +151,11 @@ public final class MiniMoldormMotion {
         return historyY[historyKeyFor(sourceLoadOrder)][index & HISTORY_MASK];
     }
 
-    int privateState1(int slot) {
+    int headingIndex(int slot) {
         return headingIndex[slot];
     }
 
-    int privateState2(int slot) {
+    int turnStep(int slot) {
         return turnStep[slot];
     }
 
@@ -262,8 +265,8 @@ public final class MiniMoldormMotion {
             if (randomByteSupplier == null) {
                 throw new IllegalArgumentException("Mini Moldorm random source cannot be null");
             }
-            if (owner.privateCountdown1[slot] > 0) {
-                owner.privateCountdown1[slot]--;
+            if (owner.turnCountdown[slot] > 0) {
+                owner.turnCountdown[slot]--;
             }
 
             nextTransitionCountdown = transitionCountdown & 0xFF;
@@ -326,8 +329,8 @@ public final class MiniMoldormMotion {
 
         private boolean advanceDirectionAndHistory() {
 
-            if (owner.privateCountdown1[slot] == 0) {
-                owner.privateCountdown1[slot] = 0x04;
+            if (owner.turnCountdown[slot] == 0) {
+                owner.turnCountdown[slot] = 0x04;
                 owner.headingIndex[slot] = (owner.headingIndex[slot] + owner.turnStep[slot]) & 0x0F;
                 owner.headSpriteVariant[slot] = MiniMoldormMotion.HEAD_SPRITE_VARIANTS[owner.headingIndex[slot]];
                 owner.speedY[slot] = MiniMoldormMotion.Y_SPEEDS[owner.headingIndex[slot]];

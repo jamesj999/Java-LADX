@@ -70,7 +70,7 @@ final class GhiniMotionTest {
         assertEquals(-1, revealTick.spriteVariant());
         assertFalse(motion.hidden(0));
         assertEquals(0, motion.state(0));
-        assertEquals(0x30, motion.privateCountdown2(0));
+        assertEquals(0x30, motion.hidingCountdown(0));
         assertEquals(source.x(), revealTick.x());
         assertEquals(source.y(), revealTick.y());
         assertEquals(source.z(), revealTick.z());
@@ -85,14 +85,14 @@ final class GhiniMotionTest {
         RoomEntity revealTick = motion.advance(source, 0, HIDING_GHINI, 0x50, 0x50, 1, GhiniMotionTest::noRandom);
         RoomEntity visibleTick = motion.advance(revealTick, 4, HIDING_GHINI, 0x50, 0x50, 0, GhiniMotionTest::noRandom);
 
-        assertEquals(0x2F, motion.privateCountdown2(0));
+        assertEquals(0x2F, motion.hidingCountdown(0));
         assertEquals(0x0F, visibleTick.z());
         assertEquals(source.x(), visibleTick.x());
         assertEquals(source.y(), visibleTick.y());
         assertEquals(0, motion.speedX(0));
         assertEquals(0, motion.speedY(0));
         assertEquals(0, motion.transitionCountdown(0));
-        assertEquals(0, motion.privateCountdown1(0));
+        assertEquals(0, motion.verticalRetargetCountdown(0));
         assertEquals(0, visibleTick.spriteVariant());
     }
 
@@ -105,7 +105,7 @@ final class GhiniMotionTest {
 
         RoomEntity first = motion.advance(source, 0, ORDINARY_GHINI, 0, 0, 0, random);
         assertEquals(0x20, motion.transitionCountdown(0));
-        assertEquals(0x18, motion.privateCountdown1(0));
+        assertEquals(0x18, motion.verticalRetargetCountdown(0));
         assertEquals(0, motion.targetXDirection(0));
         assertEquals(0, motion.targetYDirection(0));
         assertEquals(0x01, motion.speedX(0));
@@ -113,7 +113,7 @@ final class GhiniMotionTest {
 
         motion.advance(first, 1, ORDINARY_GHINI, 0, 0, 0, random);
         assertEquals(0x1F, motion.transitionCountdown(0));
-        assertEquals(0x17, motion.privateCountdown1(0));
+        assertEquals(0x17, motion.verticalRetargetCountdown(0));
         assertEquals(0x01, motion.speedX(0));
         assertEquals(0x01, motion.speedY(0));
     }
@@ -147,7 +147,7 @@ final class GhiniMotionTest {
 
         current = motion.advance(current, 0, GIANT_GHINI, 0x50, 0x50, 1, GhiniMotionTest::noRandom);
         assertEquals(-1, current.spriteVariant());
-        assertEquals(0x30, motion.privateCountdown2(0));
+        assertEquals(0x30, motion.hidingCountdown(0));
 
         IntSupplier random = sequence(0x00, 0x00);
         for (int frame = 1; frame <= 0x40; frame++) {

@@ -14,8 +14,10 @@ public final class WaterTektiteMotion {
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState1Table.
+    private final int[] accelerationX = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState2Table.
+    private final int[] accelerationY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     /** Entity $99 uses EntityInitNoop; the handler owns all later state. */
@@ -91,12 +93,12 @@ public final class WaterTektiteMotion {
         return speedY[slot];
     }
 
-    public int privateState1(int slot) {
-        return privateState1[slot];
+    public int accelerationX(int slot) {
+        return accelerationX[slot];
     }
 
-    public int privateState2(int slot) {
-        return privateState2[slot];
+    public int accelerationY(int slot) {
+        return accelerationY[slot];
     }
 
     private void advanceState(int slot, IntSupplier randomByteSupplier, int frameCounter) {
@@ -107,15 +109,15 @@ public final class WaterTektiteMotion {
                 }
                 transitionCountdown[slot] = 0x20;
                 state[slot] = 1;
-                privateState1[slot] = ((randomByteSupplier.getAsInt() & 0x02) - 1) & 0xFF;
-                privateState2[slot] = ((randomByteSupplier.getAsInt() & 0x02) - 1) & 0xFF;
+                accelerationX[slot] = ((randomByteSupplier.getAsInt() & 0x02) - 1) & 0xFF;
+                accelerationY[slot] = ((randomByteSupplier.getAsInt() & 0x02) - 1) & 0xFF;
             }
             case 1 -> {
                 if (transitionCountdown[slot] == 0) {
                     state[slot] = 2;
                 } else if ((transitionCountdown[slot] & 0x01) == 0) {
-                    speedX[slot] = (speedX[slot] + privateState1[slot]) & 0xFF;
-                    speedY[slot] = (speedY[slot] + privateState2[slot]) & 0xFF;
+                    speedX[slot] = (speedX[slot] + accelerationX[slot]) & 0xFF;
+                    speedY[slot] = (speedY[slot] + accelerationY[slot]) & 0xFF;
                 }
             }
             case 2 -> {
@@ -173,8 +175,8 @@ public final class WaterTektiteMotion {
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
-        privateState1[slot] = 0;
-        privateState2[slot] = 0;
+        accelerationX[slot] = 0;
+        accelerationY[slot] = 0;
     }
 
     private static int signedByte(int value) {

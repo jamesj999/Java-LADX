@@ -530,7 +530,7 @@ public final class RoomEntityRuntimeBuilder {
                 combat,
                 playerCommands);
 
-        bossRewards.state.writeInBossBattle(false);
+        bossRewards.writeInBossBattle(false);
         roomInitialization.initializeRoomSlots(initial);
 
         return new RoomEntityRuntime(

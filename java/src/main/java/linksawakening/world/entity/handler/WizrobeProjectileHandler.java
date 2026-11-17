@@ -39,6 +39,8 @@ final class WizrobeProjectileHandler {
     }
 
     private static boolean phase3WizrobeProjectile(EntityFrameExecution state) {
+        var resolvedWizrobeProjectileMotion = state.motion(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new);
+
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         var presentationFlags = state.presentation();
@@ -46,18 +48,14 @@ final class WizrobeProjectileHandler {
         if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
             var collisionEvent = EnemyProjectileCollision.check(
                     slotState.entity(),
-                    state.motion(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new)
-                            .direction(slotState.entity().slot()),
+                    resolvedWizrobeProjectileMotion.direction(slotState.entity().slot()),
                     frameInput.projectileLinkState());
             if (collisionEvent.isPresent()) {
                 frameInput.projectileEvents().add(collisionEvent.orElseThrow());
             }
-            slotState.updated(state.motion(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new)
-                    .advance(slotState.entity()));
+            slotState.updated(resolvedWizrobeProjectileMotion.advance(slotState.entity()));
             slotState.updated(withFlipAttribute(
-                    slotState.updated(),
-                    state.motion(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new)
-                            .flipAttribute(frameInput.frame())));
+                    slotState.updated(), resolvedWizrobeProjectileMotion.flipAttribute(frameInput.frame())));
             presentationFlags.preserveWizrobeProjectilePresentation(true);
             boolean objectCollisionHit = frameInput.objectCollision().collides(slotState.updated());
             if (objectCollisionHit

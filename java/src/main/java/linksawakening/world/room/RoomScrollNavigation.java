@@ -3,6 +3,7 @@ package linksawakening.world.room;
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
 
+import java.util.Objects;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.world.transition.ScrollController;
@@ -15,7 +16,7 @@ final class RoomScrollNavigation {
 
     RoomScrollNavigation(Rom romData, RoomWorldState roomState) {
         this.romData = romData;
-        this.roomState = roomState;
+        this.roomState = Objects.requireNonNull(roomState, "roomState");
     }
 
     record IndoorRoomDestination(int roomId, int mapPosition) {}

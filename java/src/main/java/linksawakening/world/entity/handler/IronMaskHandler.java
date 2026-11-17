@@ -23,13 +23,13 @@ final class IronMaskHandler {
         var presentationFlags = state.presentation();
 
         if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
-            int privateState2 =
+            // ROM wEntitiesPrivateState2Table selects the masked/unmasked presentation.
+            int maskState =
                     state.slot().ironMaskPrivateState2(slotState.entity().slot());
-            int variant =
-                    privateState2 == 0 ? slotState.updated().spriteVariant() : ((frameInput.frame() >>> 4) & 0x01);
+            int variant = maskState == 0 ? slotState.updated().spriteVariant() : ((frameInput.frame() >>> 4) & 0x01);
             {
                 slotState.updated(state.sprites()
-                        .present(slotState.updated(), state.spriteViews().forIronMaskState(privateState2), variant));
+                        .present(slotState.updated(), state.spriteViews().forIronMaskState(maskState), variant));
             }
             presentationFlags.preserveIronMaskPresentation(true);
         }

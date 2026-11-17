@@ -8,7 +8,7 @@ final class RoomProgression implements RoomProgress {
     private final LoadedRoomHandle rooms;
 
     RoomProgression(Dependencies dependencies, LoadedRoomHandle rooms) {
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
         this.rooms = Objects.requireNonNull(rooms);
     }
 

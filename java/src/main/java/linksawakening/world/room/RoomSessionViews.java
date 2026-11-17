@@ -7,7 +7,7 @@ final class RoomSessionViews {
     private final Dependencies dependencies;
 
     RoomSessionViews(Dependencies dependencies) {
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
     }
 
     long roomLoadSerial() {

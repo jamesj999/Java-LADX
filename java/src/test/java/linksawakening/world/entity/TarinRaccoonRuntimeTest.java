@@ -401,7 +401,7 @@ final class TarinRaccoonRuntimeTest {
         assertEquals(tarin.x(), bomb.x());
         assertEquals(tarin.y(), bomb.y());
         assertEquals(tarin.z(), bomb.z());
-        assertEquals(0x4C, EntityRuntimeFixture.inspection(runtime).bombPrivateState4ForTest(bomb.slot()));
+        assertEquals(0x4C, EntityRuntimeFixture.inspection(runtime).bombOriginForTest(bomb.slot()));
         assertEquals(0x20, runtime.enemies().transitionCountdown(bomb.slot()));
         assertEquals(List.of(new LinkAttackClearRequest(0)), runtime.outbox().consumePendingLinkAttackClearRequests());
         assertEquals(
@@ -589,7 +589,7 @@ final class TarinRaccoonRuntimeTest {
         assertEquals(
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(bomb.slot()).status());
-        assertEquals(0x4C, EntityRuntimeFixture.inspection(runtime).bombPrivateState4ForTest(bomb.slot()));
+        assertEquals(0x4C, EntityRuntimeFixture.inspection(runtime).bombOriginForTest(bomb.slot()));
     }
 
     @Test

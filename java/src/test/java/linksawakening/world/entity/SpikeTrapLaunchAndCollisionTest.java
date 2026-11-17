@@ -157,8 +157,8 @@ final class SpikeTrapLaunchAndCollisionTest {
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 64, sequence(0x00)));
         assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapState(0));
-        assertEquals(64, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapPrivateState1(0));
-        assertEquals(64, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapPrivateState2(0));
+        assertEquals(64, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapHomeX(0));
+        assertEquals(64, new EntityEnemyInspectionQueries(runtime.enemies()).spikeTrapHomeY(0));
 
         // Link is within the Y window, so state 1 chooses the right-facing
         // $20 X speed and immediately enters state 2.

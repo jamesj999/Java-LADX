@@ -24,14 +24,14 @@ public final class MotionTestFixture {
     public static void setFleeingForTest(StalfosEvasiveMotion motion, int slot, int newSpeedX, int newSpeedY) {
         motion.reset(slot);
         motion.initialized[slot] = true;
-        motion.privateState1[slot] = 1;
+        motion.cloneMode[slot] = 1;
         motion.speedX[slot] = newSpeedX & 0xFF;
         motion.speedY[slot] = newSpeedY & 0xFF;
     }
 
     public static void setPrivateCountdownsForTest(MoblinKingMotion motion, int slot, int countdown1, int countdown2) {
         motion.hopShotCountdown[slot] = countdown1 & 0xFF;
-        motion.privateCountdown2[slot] = countdown2 & 0xFF;
+        motion.shotIntervalCountdown[slot] = countdown2 & 0xFF;
     }
 
     public static void setStateForTest(
@@ -134,9 +134,9 @@ public final class MotionTestFixture {
             int newSpeedZ) {
         motion.state[slot] = newState & 0xFF;
         motion.direction[slot] = 0;
-        motion.privateState1[slot] = 0;
-        motion.privateState2[slot] = 0;
-        motion.privateCountdown2[slot] = newPrivateCountdown2 & 0xFF;
+        motion.landingCount[slot] = 0;
+        motion.wingPhase[slot] = 0;
+        motion.wingCountdown[slot] = newPrivateCountdown2 & 0xFF;
         motion.speedX[slot] = 0;
         motion.speedY[slot] = 0;
         motion.speedZ[slot] = newSpeedZ & 0xFF;
@@ -194,7 +194,7 @@ public final class MotionTestFixture {
         HinoxMotion.validateSlot(slot);
         if (value < 0 || value > HinoxMotion.STATE_BOMB) throw new IllegalArgumentException("Invalid Hinox state");
         motion.state[slot] = value;
-        motion.privateState1[slot] = privateState1Value & 0x03;
+        motion.wanderTurnCount[slot] = privateState1Value & 0x03;
         motion.wanderStepCount[slot] = privateState3Value & 0xFF;
         motion.initialized[slot] = true;
     }
@@ -238,7 +238,7 @@ public final class MotionTestFixture {
 
     public static void setPrivateStateForTest(BooBuddyMotion motion, int slot, int value) {
         motion.ensureInitialized(slot);
-        motion.privateState1[slot] = value & 0xFF;
+        motion.reflectionPending[slot] = value & 0xFF;
     }
 
     public static void setSpeedForTest(BooBuddyMotion motion, int slot, int x, int y, int z) {
@@ -277,8 +277,8 @@ public final class MotionTestFixture {
             int newSpeedY) {
         motion.state[slot] = newState & 0xFF;
         motion.disguiseMode[slot] = newPrivateState1 & 0xFF;
-        motion.privateState2[slot] = newState == 1 ? 4 : 0;
-        motion.privateState4[slot] = newPrivateState4 & 0x01;
+        motion.crawlPhase[slot] = newState == 1 ? 4 : 0;
+        motion.crawlHeading[slot] = newPrivateState4 & 0x01;
         motion.speedX[slot] = newSpeedX & 0xFF;
         motion.speedY[slot] = newSpeedY & 0xFF;
         motion.speedXAccumulator[slot] = 0;
@@ -291,8 +291,8 @@ public final class MotionTestFixture {
             BushCrawlerMotion motion, int slot, int newPrivateState1, int transitionCountdown) {
         motion.state[slot] = 0;
         motion.disguiseMode[slot] = newPrivateState1 & 0xFF;
-        motion.privateState2[slot] = 0;
-        motion.privateState4[slot] = 0;
+        motion.crawlPhase[slot] = 0;
+        motion.crawlHeading[slot] = 0;
         motion.speedX[slot] = 0;
         motion.speedY[slot] = 0;
         motion.speedXAccumulator[slot] = 0;
@@ -302,7 +302,7 @@ public final class MotionTestFixture {
     }
 
     public static void setPrivateCountdown1ForTest(RoamingEnemyMotion motion, int slot, int value) {
-        motion.privateCountdown1[slot] = value & 0xFF;
+        motion.attackPauseCountdown[slot] = value & 0xFF;
     }
 
     public static void setStateForTest(
@@ -316,7 +316,7 @@ public final class MotionTestFixture {
         motion.state[slot] = newState & 0xFF;
         motion.transitionCountdown[slot] = newTransitionCountdown & 0xFF;
         motion.inertia[slot] = newInertia & 0xFF;
-        motion.privateState1[slot] = newPrivateState1 & 0x03;
+        motion.wanderTurnCount[slot] = newPrivateState1 & 0x03;
         motion.direction[slot] = newDirection & 0x03;
         motion.speedX[slot] = RoamingEnemyMotion.SPEED_X_BY_DIRECTION[motion.direction[slot]];
         motion.speedY[slot] = RoamingEnemyMotion.SPEED_Y_BY_DIRECTION[motion.direction[slot]];

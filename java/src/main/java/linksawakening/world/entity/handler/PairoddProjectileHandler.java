@@ -27,19 +27,19 @@ final class PairoddProjectileHandler {
     }
 
     private static boolean phase3PairoddProjectile(EntityFrameExecution state) {
+        var resolvedPairoddProjectileMotion = state.motion(PairoddProjectileMotion.class, PairoddProjectileMotion::new);
+
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
 
         if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
-            slotState.updated(state.motion(PairoddProjectileMotion.class, PairoddProjectileMotion::new)
-                    .advance(slotState.entity(), frameInput.frame()));
+            slotState.updated(resolvedPairoddProjectileMotion.advance(slotState.entity(), frameInput.frame()));
             boolean objectCollisionHit = frameInput.objectCollision().collides(slotState.updated());
             boolean removePairoddProjectile = false;
             boolean swordPokeVfxQueued = false;
             var collisionEvent = EnemyProjectileCollision.check(
                     slotState.updated(),
-                    state.motion(PairoddProjectileMotion.class, PairoddProjectileMotion::new)
-                            .direction(slotState.entity().slot()),
+                    resolvedPairoddProjectileMotion.direction(slotState.entity().slot()),
                     frameInput.projectileLinkState());
             if (collisionEvent.isPresent()) {
                 EntityProjectileEvent event = collisionEvent.orElseThrow();

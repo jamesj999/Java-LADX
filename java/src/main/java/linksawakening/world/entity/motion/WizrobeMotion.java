@@ -17,8 +17,10 @@ public final class WizrobeMotion {
     final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState1Table: raw +1/$FF step through appearance and disappearance states.
+    // ROM wEntitiesPrivateState1Table.
     final int[] phaseStep = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown1Table: appearance, firing and disappearance phase timer.
+    // ROM wEntitiesPrivateCountdown1Table.
     final int[] phaseCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] currentSpriteVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -61,11 +63,11 @@ public final class WizrobeMotion {
         return direction[slot] & 0x03;
     }
 
-    public int privateState1(int slot) {
+    public int phaseStep(int slot) {
         return phaseStep[slot] & 0xFF;
     }
 
-    public int privateCountdown1(int slot) {
+    public int phaseCountdown(int slot) {
         return phaseCountdown[slot] & 0xFF;
     }
 

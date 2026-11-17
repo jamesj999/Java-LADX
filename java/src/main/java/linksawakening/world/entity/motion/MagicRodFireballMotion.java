@@ -29,6 +29,7 @@ public final class MagicRodFireballMotion {
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown1Table: remaining fire-transition display ticks.
+    // ROM wEntitiesPrivateCountdown1Table.
     private final int[] fireTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -143,7 +144,7 @@ public final class MagicRodFireballMotion {
         return speedY[slot];
     }
 
-    public int privateCountdown1(int slot) {
+    public int fireTransitionCountdown(int slot) {
         validateSlot(slot);
         return fireTransitionCountdown[slot];
     }

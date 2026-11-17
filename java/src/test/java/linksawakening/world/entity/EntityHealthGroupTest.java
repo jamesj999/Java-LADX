@@ -35,7 +35,6 @@ class EntityHealthGroupTest {
                 .build();
         runtime.execution()
                 .bossRewards()
-                .state
                 .writeEnemyDropResolver(new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom)));
         return runtime;
     }

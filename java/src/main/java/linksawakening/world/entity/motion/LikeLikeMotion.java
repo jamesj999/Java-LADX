@@ -13,9 +13,11 @@ public final class LikeLikeMotion {
     static final int INVENTORY_SHIELD = 0x04;
     static final int LINK_MOTION_DEFAULT = 0x00;
     static final int LINK_MOTION_NON_INTERACTIVE = 0x02;
+    // ROM wEntitiesPrivateState1Table.
 
-    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
+    final int[] swallowedShieldLevel = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState3Table.
+    final int[] holdingLink = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     final GibdoMotion walkMotion = new GibdoMotion();
@@ -23,16 +25,16 @@ public final class LikeLikeMotion {
     public record Update(RoomEntity entity, int slowTransitionCountdown, LikeLikeEvent event, int spriteVariant) {}
 
     public void initialize(int slot) {
-        privateState1[slot] = 0;
-        privateState3[slot] = 0;
+        swallowedShieldLevel[slot] = 0;
+        holdingLink[slot] = 0;
         inertia[slot] = 0;
         initialized[slot] = true;
         walkMotion.initialize(slot);
     }
 
     public void clear(int slot) {
-        privateState1[slot] = 0;
-        privateState3[slot] = 0;
+        swallowedShieldLevel[slot] = 0;
+        holdingLink[slot] = 0;
         inertia[slot] = 0;
         initialized[slot] = false;
         walkMotion.clear(slot);
@@ -43,11 +45,11 @@ public final class LikeLikeMotion {
     }
 
     public int state(int slot) {
-        return privateState3[slot];
+        return holdingLink[slot];
     }
 
-    public int privateState1(int slot) {
-        return privateState1[slot];
+    public int swallowedShieldLevel(int slot) {
+        return swallowedShieldLevel[slot];
     }
 
     public int inertia(int slot) {
@@ -152,13 +154,13 @@ public final class LikeLikeMotion {
             }
             renderedVariant = owner.walkMotion.spriteVariant(slot);
 
-            if (owner.privateState3[slot] == 0) {
+            if (owner.holdingLink[slot] == 0) {
                 if (slowTransitionCountdown == 0
                         && linkZ == 0
                         && linkMotionState < LikeLikeMotion.LINK_MOTION_NON_INTERACTIVE
                         && RoomEntityCombatRules.collisionCadenceMatches(frameCounter, slot)
                         && RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
-                    owner.privateState3[slot] = 1;
+                    owner.holdingLink[slot] = 1;
                     owner.inertia[slot] = 0;
                 }
 
@@ -173,7 +175,7 @@ public final class LikeLikeMotion {
             if (actionButtonsHeld) {
                 owner.inertia[slot] = (owner.inertia[slot] + 1) & 0xFF;
                 if (owner.inertia[slot] >= 0x08) {
-                    owner.privateState3[slot] = 0;
+                    owner.holdingLink[slot] = 0;
                     slowTransitionCountdown = 0x15;
 
                     completedResult = new LikeLikeMotion.Update(
@@ -191,15 +193,15 @@ public final class LikeLikeMotion {
 
             stolenInventorySlot = -1;
             stolenShieldLevel = 0;
-            if (owner.privateState1[slot] == 0) {
+            if (owner.swallowedShieldLevel[slot] == 0) {
                 if (linkItemB == LikeLikeMotion.INVENTORY_SHIELD) {
                     if (shieldLevel < 2) {
-                        owner.privateState1[slot] = shieldLevel & 0xFF;
+                        owner.swallowedShieldLevel[slot] = shieldLevel & 0xFF;
                         stolenInventorySlot = 0;
                         stolenShieldLevel = shieldLevel & 0xFF;
                     }
                 } else if (linkItemA == LikeLikeMotion.INVENTORY_SHIELD && shieldLevel < 2) {
-                    owner.privateState1[slot] = shieldLevel & 0xFF;
+                    owner.swallowedShieldLevel[slot] = shieldLevel & 0xFF;
                     stolenInventorySlot = 1;
                     stolenShieldLevel = shieldLevel & 0xFF;
                 }

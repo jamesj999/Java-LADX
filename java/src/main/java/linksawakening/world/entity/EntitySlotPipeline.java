@@ -109,7 +109,7 @@ final class EntitySlotPipeline {
         state.slotProperties().updatePincerBodyOam();
         state.slotProperties().updateWingedOctorokOam();
         state.slotProperties().updateBowWowChain(state.inputs().frame());
-        return state.events().outbox.drain(EntityProjectileEvent.class, "projectileEvents");
+        return state.events().drainChannel(EntityProjectileEvent.class, "projectileEvents");
     }
 
     private static void copyInputs(EntityFrameExecution state) {
@@ -170,30 +170,30 @@ final class EntitySlotPipeline {
                         && state.gates().handlerLinkCollisionEnabled()
                         && state.inputs().projectileLinkState().motionState()
                                 < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
-        state.story().state.writeShouldGetLostInMysteriousWoods(false);
+        state.story().writeShouldGetLostInMysteriousWoods(false);
         state.bombInteractions().finalizePendingBombPresentations();
         state.inputs().frame(state.inputs().frameCounter() & 0xFF);
         state.inputs().romCollisionType(state.inputs().collisionType() & 0xFF);
     }
 
     private static void advanceRoomClocks(EntityFrameExecution state) {
+        var resolvedMoblinSwordMotion = state.motion(MoblinSwordMotion.class, MoblinSwordMotion::new);
 
         // WorldHandler runs $14:4B21 before AnimateEntities, even when no
         // boomerang exists or dialogs/room transitions suspend its handler.
-        if (!state.projectiles().state.readBoomerangSoundClockProvided()
+        if (!state.projectiles().readBoomerangSoundClockProvided()
                 && state.roomVariables().readGameplayWorld()
                 && !state.inputs().creditsGameplay()) {
             state.projectiles()
-                    .state
-                    .writeBoomerangSfxCounter((state.projectiles().state.readBoomerangSfxCounter() + 1)
+                    .writeBoomerangSfxCounter((state.projectiles().readBoomerangSfxCounter() + 1)
                             % EntityRomConstants.BOOMERANG_SFX_COUNTER_PERIOD);
         }
-        state.projectiles().state.writeBoomerangSoundClockProvided(false);
-        if (state.motion(MoblinSwordMotion.class, MoblinSwordMotion::new).readSwordMoblinAlertingSoundCounter() > 0) {
-            state.motion(MoblinSwordMotion.class, MoblinSwordMotion::new).postSwordMoblinAlertingSoundCounter(-1);
+        state.projectiles().writeBoomerangSoundClockProvided(false);
+        if (resolvedMoblinSwordMotion.readSwordMoblinAlertingSoundCounter() > 0) {
+            resolvedMoblinSwordMotion.postSwordMoblinAlertingSoundCounter(-1);
         }
-        if (state.bombInteractions().state.readBombArrowCooldown() > 0) {
-            state.bombInteractions().state.postBombArrowCooldown(-1);
+        if (state.bombInteractions().readBombArrowCooldown() > 0) {
+            state.bombInteractions().postBombArrowCooldown(-1);
         }
     }
 
@@ -217,8 +217,8 @@ final class EntitySlotPipeline {
         state.physicsTables().clearEnemyProjectileSpawnedThisFrame();
         state.physicsTables().clearDynamicEntitySpawnedThisFrame();
         state.genie().beginFrame();
-        Arrays.fill(state.slotProperties().state.storageWingedSwordAttackThisFrame(), false);
-        Arrays.fill(state.slotProperties().state.storageWingedStateTwoThisFrame(), false);
+        Arrays.fill(state.slotProperties().storageWingedSwordAttackThisFrame(), false);
+        Arrays.fill(state.slotProperties().storageWingedStateTwoThisFrame(), false);
         state.events().clearTransientVfxRequests();
         state.events().clearPendingLinkFinalPositionRequests();
         state.events().clearPendingRoosterLinkStateRequests();
@@ -262,12 +262,12 @@ final class EntitySlotPipeline {
 
     private static void prepareLateFrameEvents(EntityFrameExecution state) {
 
-        if (state.bossRewards().state.readBossAgonySfxCountdown() > 0) {
-            state.bossRewards().state.postBossAgonySfxCountdown(-1);
-            if (state.bossRewards().state.readBossAgonySfxCountdown() == 0) {
+        if (state.bossRewards().readBossAgonySfxCountdown() > 0) {
+            state.bossRewards().postBossAgonySfxCountdown(-1);
+            if (state.bossRewards().readBossAgonySfxCountdown() == 0) {
                 state.events()
                         .sound(
-                                state.bossRewards().state.readBossAgonySourceSlot(),
+                                state.bossRewards().readBossAgonySourceSlot(),
                                 EntityRomConstants.ENTITY_GENIE,
                                 EntityCombatEvent.SoundChannel.WAVE,
                                 0x10);
@@ -290,7 +290,7 @@ final class EntitySlotPipeline {
                             state.inputs().linkEntityY(),
                             state.linkState().readOcarinaAnimationPhase());
         }
-        state.inputs().projectileEvents(state.events().outbox.channel(EntityProjectileEvent.class, "projectileEvents"));
+        state.inputs().projectileEvents(state.events().channel(EntityProjectileEvent.class, "projectileEvents"));
         state.inputs().projectileEvents().clear();
     }
 
@@ -321,6 +321,8 @@ final class EntitySlotPipeline {
     }
 
     private static boolean prepareSlot(EntityFrameExecution state) {
+        var resolvedRollingBonesMotion = state.motion(RollingBonesMotion.class, RollingBonesMotion::new);
+
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         var timerGates = state.gates();
@@ -329,10 +331,8 @@ final class EntitySlotPipeline {
             return false;
         slotState.moldormIntroOpenedThisFrame(false);
         slotState.rollingBonesHitThisFrame(slotState.entity().type() == EntityRomConstants.ENTITY_ROLLING_BONES
-                && state.motion(RollingBonesMotion.class, RollingBonesMotion::new)
-                                .swordHitFrame(slotState.index())
-                        == frameInput.frame() + 1);
-        state.motion(RollingBonesMotion.class, RollingBonesMotion::new).setSwordHitFrame(slotState.index(), 0);
+                && resolvedRollingBonesMotion.swordHitFrame(slotState.index()) == frameInput.frame() + 1);
+        resolvedRollingBonesMotion.setSwordHitFrame(slotState.index(), 0);
         if (!slotState.entity().loaded()) {
             return false;
         }
@@ -358,7 +358,6 @@ final class EntitySlotPipeline {
                 return false;
             }
             state.bossRewards()
-                    .state
                     .writeDroppedItemBySlot(slotState.entity().slot(), EntityRomConstants.ENTITY_HIDING_SLIME_KEY);
             if (slotState.entity().sourceLoadOrder() != 0xFF) {
                 slotState.entity(withSourceLoadOrder(slotState.entity(), 0xFF));
@@ -814,13 +813,13 @@ final class EntitySlotPipeline {
     }
 
     private static boolean advanceLaserParent(EntityFrameExecution state) {
+        var resolvedLaserMotion = state.motion(LaserMotion.class, LaserMotion::new);
+
         var slotState = state.slotFrame();
         if (slotState.status() == EntityStatus.ACTIVE
                 && !slotState.wasInitializing()
-                && state.motion(LaserMotion.class, LaserMotion::new)
-                        .isParent(slotState.entity().slot())) {
-            LaserMotion.ParentUpdate laserUpdate =
-                    state.motion(LaserMotion.class, LaserMotion::new).advanceParent(slotState.entity());
+                && resolvedLaserMotion.isParent(slotState.entity().slot())) {
+            LaserMotion.ParentUpdate laserUpdate = resolvedLaserMotion.advanceParent(slotState.entity());
             slotState.updated(laserUpdate.entity());
             if (laserUpdate.spawnSensor()) {
                 state.enemySpawns().spawnLaserSensor(slotState.entity());
@@ -840,24 +839,23 @@ final class EntitySlotPipeline {
     }
 
     private static boolean advanceLaserSensor(EntityFrameExecution state) {
+        var resolvedLaserMotion = state.motion(LaserMotion.class, LaserMotion::new);
+
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         if (slotState.status() == EntityStatus.ACTIVE
                 && !slotState.wasInitializing()
-                && state.motion(LaserMotion.class, LaserMotion::new)
-                        .isSensor(slotState.entity().slot())) {
-            int ownerSlot = state.motion(LaserMotion.class, LaserMotion::new)
-                    .parentSlot(slotState.entity().slot());
+                && resolvedLaserMotion.isSensor(slotState.entity().slot())) {
+            int ownerSlot = resolvedLaserMotion.parentSlot(slotState.entity().slot());
             RoomEntity owner = ownerSlot >= 0 && ownerSlot < state.slots().size()
                     ? state.slots().get(ownerSlot)
                     : null;
-            LaserMotion.SensorUpdate sensorUpdate = state.motion(LaserMotion.class, LaserMotion::new)
-                    .advanceSensor(
-                            slotState.entity(),
-                            owner,
-                            frameInput.linkEntityX(),
-                            frameInput.linkEntityY(),
-                            frameInput.projectileLinkState().invincibilityCounter());
+            LaserMotion.SensorUpdate sensorUpdate = resolvedLaserMotion.advanceSensor(
+                    slotState.entity(),
+                    owner,
+                    frameInput.linkEntityX(),
+                    frameInput.linkEntityY(),
+                    frameInput.projectileLinkState().invincibilityCounter());
             if (sensorUpdate.triggeredParent()
                     && ownerSlot >= 0
                     && ownerSlot < state.slots().size()) {
@@ -876,16 +874,16 @@ final class EntitySlotPipeline {
     }
 
     private static boolean advanceLaserBeam(EntityFrameExecution state) {
+        var resolvedLaserMotion = state.motion(LaserMotion.class, LaserMotion::new);
+
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         if (slotState.status() == EntityStatus.ACTIVE
                 && !slotState.wasInitializing()
-                && state.motion(LaserMotion.class, LaserMotion::new)
-                        .isBeam(slotState.entity().slot())) {
+                && resolvedLaserMotion.isBeam(slotState.entity().slot())) {
             var collisionEvent = EnemyProjectileCollision.check(
                     slotState.entity(),
-                    state.motion(LaserMotion.class, LaserMotion::new)
-                            .direction(slotState.entity().slot()),
+                    resolvedLaserMotion.direction(slotState.entity().slot()),
                     frameInput.projectileLinkState());
             if (collisionEvent.isPresent()) {
                 EntityProjectileEvent event = collisionEvent.orElseThrow();
@@ -898,18 +896,17 @@ final class EntitySlotPipeline {
                 // Bank-$15 moves the beam before consuming the collision
                 // byte.  A reflected beam therefore advances once in
                 // this frame, then reverses the selected speed axis.
-                LaserMotion.BeamUpdate beamUpdate = state.motion(LaserMotion.class, LaserMotion::new)
-                        .advanceBeam(slotState.entity(), frameInput.backgroundCollision());
+                LaserMotion.BeamUpdate beamUpdate =
+                        resolvedLaserMotion.advanceBeam(slotState.entity(), frameInput.backgroundCollision());
                 if (beamUpdate.unloaded()) {
                     state.lifecycle()
                             .disableEntityWithoutPersistence(slotState.entity().slot());
                     return false;
                 }
                 slotState.updated(beamUpdate.entity());
-                state.motion(LaserMotion.class, LaserMotion::new)
-                        .reflectBeam(
-                                slotState.entity().slot(),
-                                frameInput.projectileLinkState().direction());
+                resolvedLaserMotion.reflectBeam(
+                        slotState.entity().slot(),
+                        frameInput.projectileLinkState().direction());
                 if (event.swordPokeVfx()) {
                     state.events()
                             .vfx(new TransientVfxRequest(
@@ -918,8 +915,8 @@ final class EntitySlotPipeline {
                                     slotState.updated().y()));
                 }
             } else {
-                LaserMotion.BeamUpdate beamUpdate = state.motion(LaserMotion.class, LaserMotion::new)
-                        .advanceBeam(slotState.entity(), frameInput.backgroundCollision());
+                LaserMotion.BeamUpdate beamUpdate =
+                        resolvedLaserMotion.advanceBeam(slotState.entity(), frameInput.backgroundCollision());
                 if (beamUpdate.unloaded()) {
                     state.lifecycle()
                             .disableEntityWithoutPersistence(slotState.entity().slot());
@@ -937,6 +934,9 @@ final class EntitySlotPipeline {
     }
 
     private static boolean advanceFollowersAndMotion(EntityFrameExecution state) {
+        var resolvedBowWowMotion = state.motion(BowWowMotion.class, BowWowMotion::new);
+        var resolvedFollowingNpcMotion = state.motion(FollowingNpcMotion.class, FollowingNpcMotion::new);
+
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
 
@@ -946,19 +946,17 @@ final class EntitySlotPipeline {
                 && (isDynamicFollowingNpc(slotState.entity())
                         || slotState.entity().type() == EntityRomConstants.ENTITY_BOW_WOW)) {
             if (slotState.entity().type() == EntityRomConstants.ENTITY_BOW_WOW) {
-                BowWowMotion.Update bowWowUpdate = state.motion(BowWowMotion.class, BowWowMotion::new)
-                        .advanceAfterTimers(new BowWowCollisionFrame(
-                                slotState.entity(),
-                                frameInput.frame(),
-                                frameInput.linkEntityX(),
-                                frameInput.linkEntityY(),
-                                state.linkState().readFollowingLinkZ(),
-                                frameInput.randomByteSupplier(),
-                                frameInput.backgroundCollision(),
-                                state.slots().view(),
-                                state.enemyCombatTables()::canBowWowEatEntity,
-                                state.motion(BowWowMotion.class, BowWowMotion::new)
-                                        .readBowWowState()));
+                BowWowMotion.Update bowWowUpdate = resolvedBowWowMotion.advanceAfterTimers(new BowWowCollisionFrame(
+                        slotState.entity(),
+                        frameInput.frame(),
+                        frameInput.linkEntityX(),
+                        frameInput.linkEntityY(),
+                        state.linkState().readFollowingLinkZ(),
+                        frameInput.randomByteSupplier(),
+                        frameInput.backgroundCollision(),
+                        state.slots().view(),
+                        state.enemyCombatTables()::canBowWowEatEntity,
+                        resolvedBowWowMotion.readBowWowState()));
                 slotState.updated(bowWowUpdate.entity());
                 if (bowWowUpdate.targetContact() != null) {
                     state.bossRewards()
@@ -966,18 +964,16 @@ final class EntitySlotPipeline {
                                     slotState.entity(), bowWowUpdate.targetContact(), frameInput.randomByteSupplier());
                 }
             } else {
-                slotState.updated(state.motion(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                        .advance(new FollowingNpcFrame(
-                                slotState.entity(),
-                                frameInput.frame(),
-                                frameInput.linkEntityX(),
-                                frameInput.linkEntityY(),
-                                state.linkState().readFollowingLinkZ(),
-                                state.linkState().readFollowingLinkDirection(),
-                                state.linkState().readFollowingEntityYOffset(),
-                                state.motion(FollowingNpcMotion.class, FollowingNpcMotion::new)
-                                        .readFollowingLinkPositionHistory(),
-                                frameInput.backgroundCollision())));
+                slotState.updated(resolvedFollowingNpcMotion.advance(new FollowingNpcFrame(
+                        slotState.entity(),
+                        frameInput.frame(),
+                        frameInput.linkEntityX(),
+                        frameInput.linkEntityY(),
+                        state.linkState().readFollowingLinkZ(),
+                        state.linkState().readFollowingLinkDirection(),
+                        state.linkState().readFollowingEntityYOffset(),
+                        resolvedFollowingNpcMotion.readFollowingLinkPositionHistory(),
+                        frameInput.backgroundCollision())));
             }
         }
         return true;
@@ -992,9 +988,7 @@ final class EntitySlotPipeline {
         if (slotState.status() == EntityStatus.ACTIVE
                 && !slotState.wasInitializing()
                 && !slotState.keyDropTransitionActive()
-                && state.bossRewards()
-                        .state
-                        .readEnemyDropActive(slotState.updated().slot())) {
+                && state.bossRewards().readEnemyDropActive(slotState.updated().slot())) {
             slotState.updated(state.motion(EnemyDropMotion.class, EnemyDropMotion::new)
                     .advance(
                             slotState.updated(),
@@ -1011,32 +1005,25 @@ final class EntitySlotPipeline {
 
     private static void bounceDroppedItem(
             EntityFrameExecution state, RoomEntity beforeDropPhysics, RoomEntityGroundInteraction.Result groundResult) {
+        var resolvedEnemyDropMotion = state.motion(EnemyDropMotion.class, EnemyDropMotion::new);
+
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         if (slotState.status() == EntityStatus.ACTIVE
-                && state.bossRewards()
-                        .state
-                        .readEnemyDropActive(slotState.updated().slot())) {
+                && state.bossRewards().readEnemyDropActive(slotState.updated().slot())) {
             // BouncingEntityPhysics calls the complete background helper before
             // bouncing. Ground effects alone omit the neighbouring bush walls.
             RoomEntityBackgroundInteraction dropBackground = frameInput.hinoxBackgroundInteraction();
-            slotState.updated(state.motion(EnemyDropMotion.class, EnemyDropMotion::new)
-                    .resolveWalls(
-                            beforeDropPhysics,
-                            slotState.updated(),
-                            dropBackground,
-                            state.combatTables()
-                                    .readEnemyIgnoreHitsCountdown(
-                                            slotState.updated().slot()),
-                            frameInput.frame()));
+            slotState.updated(resolvedEnemyDropMotion.resolveWalls(
+                    beforeDropPhysics,
+                    slotState.updated(),
+                    dropBackground,
+                    state.combatTables()
+                            .readEnemyIgnoreHitsCountdown(slotState.updated().slot()),
+                    frameInput.frame()));
             boolean dropGroundCollision = state.physicsTables().readGroundInteractionSideScrolling()
-                    && state.motion(EnemyDropMotion.class, EnemyDropMotion::new)
-                                    .speedY(slotState.updated().slot())
-                            != 0
-                    && (state.motion(EnemyDropMotion.class, EnemyDropMotion::new)
-                                            .speedY(slotState.updated().slot())
-                                    & 0x80)
-                            == 0
+                    && resolvedEnemyDropMotion.speedY(slotState.updated().slot()) != 0
+                    && (resolvedEnemyDropMotion.speedY(slotState.updated().slot()) & 0x80) == 0
                     && frameInput
                             .backgroundCollision()
                             .blocks(
@@ -1044,12 +1031,11 @@ final class EntitySlotPipeline {
                                     EntityBackgroundCollisionResult.DOWN,
                                     slotState.updated().x(),
                                     slotState.updated().y());
-            slotState.updated(state.motion(EnemyDropMotion.class, EnemyDropMotion::new)
-                    .bounce(
-                            slotState.updated(),
-                            groundResult.groundStatus(),
-                            state.physicsTables().readGroundInteractionSideScrolling(),
-                            dropGroundCollision));
+            slotState.updated(resolvedEnemyDropMotion.bounce(
+                    slotState.updated(),
+                    groundResult.groundStatus(),
+                    state.physicsTables().readGroundInteractionSideScrolling(),
+                    dropGroundCollision));
         }
     }
 
@@ -1177,8 +1163,7 @@ final class EntitySlotPipeline {
                 && slotState.updated().type() == EntityRomConstants.ENTITY_TIMER_BOMBITE) {
             slotState.renderFlipAttribute(slotState.renderFlipAttribute()
                     | ((state.bombInteractions()
-                                            .state
-                                            .readBombPrivateCountdown1(
+                                            .readBombCollisionGraceCountdown(
                                                     slotState.updated().slot())
                                     << 3)
                             & 0x10));

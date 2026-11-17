@@ -19,14 +19,15 @@ public final class PiranhaMotion {
     private static final int[] LOWERING_Y_OFFSETS = {0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xE8, 0xE0};
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final boolean[] privateState2Initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState1Table.
+    private final int[] waterlineY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] waterlineCaptured = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot) {
         state[slot] = 0;
-        privateState1[slot] = 0;
-        privateState2Initialized[slot] = false;
+        waterlineY[slot] = 0;
+        waterlineCaptured[slot] = false;
         initialized[slot] = true;
     }
 
@@ -40,9 +41,9 @@ public final class PiranhaMotion {
         }
 
         int countdown = transitionCountdown & 0xFF;
-        if (!privateState2Initialized[slot]) {
-            privateState2Initialized[slot] = true;
-            privateState1[slot] = entity.y() & 0xFF;
+        if (!waterlineCaptured[slot]) {
+            waterlineCaptured[slot] = true;
+            waterlineY[slot] = entity.y() & 0xFF;
         }
 
         int x = entity.x() & 0xFF;
@@ -64,7 +65,7 @@ public final class PiranhaMotion {
                 } else {
                     int index = (countdown >>> 3) & 0x07;
                     variant = RISING_VARIANTS[index];
-                    y = (privateState1[slot] + RISING_Y_OFFSETS[index]) & 0xFF;
+                    y = (waterlineY[slot] + RISING_Y_OFFSETS[index]) & 0xFF;
                 }
             }
             case 2 -> {
@@ -86,7 +87,7 @@ public final class PiranhaMotion {
                 } else {
                     int index = (countdown >>> 3) & 0x07;
                     variant = LOWERING_VARIANTS[index];
-                    y = (privateState1[slot] + LOWERING_Y_OFFSETS[index]) & 0xFF;
+                    y = (waterlineY[slot] + LOWERING_Y_OFFSETS[index]) & 0xFF;
                 }
             }
             default -> throw new IllegalStateException("Invalid Piranha Plant state: " + state[slot]);
@@ -106,8 +107,8 @@ public final class PiranhaMotion {
         return state[slot];
     }
 
-    int privateState1(int slot) {
-        return privateState1[slot];
+    int waterlineY(int slot) {
+        return waterlineY[slot];
     }
 
     private static boolean linkWithinPipeColumn(int linkEntityX, int entityX) {

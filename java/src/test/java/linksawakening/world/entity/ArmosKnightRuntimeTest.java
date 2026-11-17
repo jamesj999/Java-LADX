@@ -224,7 +224,7 @@ final class ArmosKnightRuntimeTest {
         }
         assertEquals(7, runtime.bosses().armosKnightState(0));
         assertEquals(0x30, runtime.bosses().armosKnightTransitionCountdown(0));
-        assertEquals(0x40, runtime.bosses().armosKnightPrivateCountdown1(0));
+        assertEquals(0x40, runtime.bosses().armosKnightLinkHoldCountdown(0));
         assertEquals(
                 List.of(new EntityCombatEvent(0, 0x88, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x0B)),
                 runtime.outbox().consumePendingEntityEvents());

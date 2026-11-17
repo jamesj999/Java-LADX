@@ -23,7 +23,8 @@ public final class BlooperMotion {
     final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateCountdown3 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown3Table.
+    private final int[] recoilCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public void initialize(int slot) {
@@ -90,7 +91,7 @@ public final class BlooperMotion {
         RoomEntity updated = groundResult.entity();
         if ((groundResult.groundStatus() & 0xFF) == 0) {
             // hActiveEntityPosX/Y still contain the pre-move handler position.
-            privateCountdown3[slot] = 0x10;
+            recoilCountdown[slot] = 0x10;
             updated = withPosition(
                     updated, movement.original().x(), movement.original().y());
         }
@@ -136,8 +137,8 @@ public final class BlooperMotion {
     }
 
     public void decrementPrivateCountdown3(int slot) {
-        if (privateCountdown3[slot] > 0) {
-            privateCountdown3[slot]--;
+        if (recoilCountdown[slot] > 0) {
+            recoilCountdown[slot]--;
         }
     }
 
@@ -166,8 +167,8 @@ public final class BlooperMotion {
         return speedY[slot];
     }
 
-    public int privateCountdown3(int slot) {
-        return privateCountdown3[slot];
+    public int recoilCountdown(int slot) {
+        return recoilCountdown[slot];
     }
 
     private void reset(int slot) {
@@ -178,7 +179,7 @@ public final class BlooperMotion {
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
-        privateCountdown3[slot] = 0;
+        recoilCountdown[slot] = 0;
     }
 
     private static int approachFour(int speed) {

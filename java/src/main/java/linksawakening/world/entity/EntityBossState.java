@@ -10,9 +10,13 @@ final class EntityBossState {
     private int bossAgonySfxCountdown;
     private int bossAgonySourceSlot;
     private final int[] droppedItemBySlot = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown1Table: handler-dependent register; a narrower meaning has not been established.
     private final int[] dropPrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown3Table: handler-dependent register; a narrower meaning has not been established.
     private final int[] dropPrivateCountdown3 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState3Table: handler-dependent register; a narrower meaning has not been established.
     private final int[] droppablePrivateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState4Table: handler-dependent register; a narrower meaning has not been established.
     private final int[] droppablePrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] enemyDropActive = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] bossDeathProducerState = new int[EntityRoomLoader.MAX_ENTITIES];

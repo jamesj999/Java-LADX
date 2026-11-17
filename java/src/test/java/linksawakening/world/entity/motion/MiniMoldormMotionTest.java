@@ -31,7 +31,7 @@ final class MiniMoldormMotionTest {
         assertEquals(0x60, update.entity().y());
         assertEquals(0x03, update.headSpriteVariant());
         assertEquals(0x10, update.transitionCountdown());
-        assertEquals(-1, motion.privateState2(entity.slot()));
+        assertEquals(-1, motion.turnStep(entity.slot()));
         assertEquals(0x10, motion.speedX(entity.slot()));
         assertEquals(0x00, motion.speedY(entity.slot()));
     }
@@ -95,8 +95,8 @@ final class MiniMoldormMotionTest {
 
         assertEquals(0x50, update.entity().x());
         assertEquals(0x10, update.transitionCountdown());
-        assertEquals(0x08, motion.privateState1(0));
-        assertEquals(1, motion.privateState2(0));
+        assertEquals(0x08, motion.headingIndex(0));
+        assertEquals(1, motion.turnStep(0));
         assertEquals(1, update.collisionFlags());
         assertEquals(1, probes.get());
     }

@@ -27,7 +27,7 @@ final class SparkWallFollowingTest {
         counterClockwise.tick(EntityTestFrames.frame(counterClockwise, 0));
 
         assertEquals(61, counterClockwise.inspection().snapshot().slots().get(0).y());
-        assertEquals(0, new EntityEnemyInspectionQueries(counterClockwise.enemies()).sparkPrivateState2(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(counterClockwise.enemies()).sparkWindingOffset(0));
         assertEquals(0, new EntityEnemyInspectionQueries(counterClockwise.enemies()).sparkSpeedX(0));
         assertEquals(0, new EntityEnemyInspectionQueries(counterClockwise.enemies()).sparkSpeedY(0));
 
@@ -43,7 +43,7 @@ final class SparkWallFollowingTest {
         clockwise.tick(EntityTestFrames.frame(clockwise, 0));
 
         assertEquals(67, clockwise.inspection().snapshot().slots().get(0).y());
-        assertEquals(4, new EntityEnemyInspectionQueries(clockwise.enemies()).sparkPrivateState2(0));
+        assertEquals(4, new EntityEnemyInspectionQueries(clockwise.enemies()).sparkWindingOffset(0));
     }
 
     @Test
@@ -61,7 +61,7 @@ final class SparkWallFollowingTest {
         runtime.tick(EntityTestFrames.frame(runtime, 0));
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, () -> 0));
 
-        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).sparkPrivateState1(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).sparkWallTurnIndex(0));
         assertEquals(9, new EntityEnemyInspectionQueries(runtime.enemies()).sparkTransitionCountdown(0));
         assertEquals(0x10, new EntityEnemyInspectionQueries(runtime.enemies()).sparkSpeedX(0));
         assertEquals(0x00, new EntityEnemyInspectionQueries(runtime.enemies()).sparkSpeedY(0));
@@ -87,7 +87,7 @@ final class SparkWallFollowingTest {
         RoomEntityBackgroundCollision rightWall = (entity, direction, nextX, nextY) -> direction == 0;
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, () -> 0, rightWall));
 
-        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).sparkPrivateState1(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).sparkWallTurnIndex(0));
         assertEquals(0x00, new EntityEnemyInspectionQueries(runtime.enemies()).sparkSpeedX(0));
         assertEquals(0x10, new EntityEnemyInspectionQueries(runtime.enemies()).sparkSpeedY(0));
         assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).sparkTransitionCountdown(0));

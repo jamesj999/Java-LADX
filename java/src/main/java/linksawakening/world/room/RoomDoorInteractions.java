@@ -42,28 +42,16 @@ final class RoomDoorInteractions implements RoomDoors {
 
     private final RoomLiftInteractions roomLiftInteractions;
 
-    RoomDoorInteractions(LoadedRoomHandle rooms, Dependencies dependencies) {
+    RoomDoorInteractions(
+            LoadedRoomHandle rooms,
+            Dependencies dependencies,
+            RoomChestInteractions roomChestInteractions,
+            RoomLiftInteractions roomLiftInteractions) {
         this.rooms = Objects.requireNonNull(rooms);
-        this.dependencies = dependencies;
-        roomChestInteractions = new RoomChestInteractions(new RoomChestInteractions.Dependencies(
-                dependencies.chestContentsTable(),
-                dependencies.overworldCollision(),
-                dependencies.romData(),
-                dependencies.roomObjectMutations(),
-                dependencies.roomSessionViews(),
-                dependencies.roomState(),
-                dependencies.roomTileRedraw()));
+        this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
+        this.roomChestInteractions = Objects.requireNonNull(roomChestInteractions, "roomChestInteractions");
 
-        roomLiftInteractions = new RoomLiftInteractions(new RoomLiftInteractions.Dependencies(
-                dependencies.entityRuntimeState(),
-                dependencies.followers(),
-                dependencies.overworldBushInteraction(),
-                dependencies.overworldCollision(),
-                this,
-                dependencies.roomObjectMutations(),
-                dependencies.roomSessionViews(),
-                dependencies.roomTileRedraw(),
-                this));
+        this.roomLiftInteractions = Objects.requireNonNull(roomLiftInteractions, "roomLiftInteractions");
     }
 
     @Override

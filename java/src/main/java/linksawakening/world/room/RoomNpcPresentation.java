@@ -10,7 +10,7 @@ final class RoomNpcPresentation {
     private final Dependencies dependencies;
 
     RoomNpcPresentation(Dependencies dependencies) {
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
     }
 
     boolean applyMarinWakeUpPresentation(RoomRuntime loaded, int x, int y, int spriteVariant) {

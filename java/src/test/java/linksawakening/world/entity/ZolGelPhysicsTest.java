@@ -155,10 +155,10 @@ final class ZolGelPhysicsTest {
         ZolGelMotion.Update first =
                 motion.advance(new ZolGelFrame(entity, 80, 64, 0, () -> 0, background, 0, 0, false));
         assertTrue(observedIgnoreHits.isEmpty());
-        assertEquals(1, motion.privateCountdown1(entity.slot()));
+        assertEquals(1, motion.backgroundCollisionBypassCountdown(entity.slot()));
 
         motion.advance(new ZolGelFrame(first.entity(), 80, 64, 0, () -> 0, background, 1, 0, false));
         assertEquals(List.of(0x02), observedIgnoreHits);
-        assertEquals(0, motion.privateCountdown1(entity.slot()));
+        assertEquals(0, motion.backgroundCollisionBypassCountdown(entity.slot()));
     }
 }

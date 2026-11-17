@@ -10,7 +10,7 @@ final class RoomTransientState {
     private final Dependencies dependencies;
 
     RoomTransientState(Dependencies dependencies) {
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
     }
 
     void clearTransientRoomState() {

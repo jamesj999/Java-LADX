@@ -53,7 +53,7 @@ final class RoomPuzzleController {
     private final Dependencies dependencies;
 
     RoomPuzzleController(Dependencies dependencies) {
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
     }
 
     void harvestThrownRoomEventCollisions(RoomRuntime loaded) {

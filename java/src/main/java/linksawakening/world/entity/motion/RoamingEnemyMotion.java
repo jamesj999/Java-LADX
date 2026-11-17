@@ -29,8 +29,10 @@ public final class RoamingEnemyMotion {
     final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown1Table.
+    final int[] attackPauseCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState1Table.
+    final int[] wanderTurnCount = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
     final int[] collisionsTable = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -45,8 +47,8 @@ public final class RoamingEnemyMotion {
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
-        privateState1[slot] = 0;
-        privateCountdown1[slot] = 0;
+        wanderTurnCount[slot] = 0;
+        attackPauseCountdown[slot] = 0;
         inertia[slot] = 0;
         collisionsTable[slot] = 0;
         horizontallyCollidedObject[slot] = 0;
@@ -159,7 +161,7 @@ public final class RoamingEnemyMotion {
             RoomEntity entity, int linkEntityX, int linkEntityY, boolean creditsGameplay) {
         int type = entity.type() & 0xFF;
         if (transitionCountdown[entity.slot()] != 0x0A
-                || privateCountdown1[entity.slot()] != 0
+                || attackPauseCountdown[entity.slot()] != 0
                 || type == ENTITY_IRON_MASK) {
             return null;
         }
@@ -355,8 +357,8 @@ public final class RoamingEnemyMotion {
             if (!owner.initialized[slot]) {
                 owner.initialize(slot);
             }
-            if (owner.privateCountdown1[slot] > 0) {
-                owner.privateCountdown1[slot]--;
+            if (owner.attackPauseCountdown[slot] > 0) {
+                owner.attackPauseCountdown[slot]--;
             }
             if (owner.transitionCountdown[slot] > 0) {
                 owner.transitionCountdown[slot]--;
@@ -373,8 +375,8 @@ public final class RoamingEnemyMotion {
                 if (owner.transitionCountdown[slot] == 0) {
                     owner.transitionCountdown[slot] = 0x20 | (randomByteSupplier.getAsInt() & 0x1F);
                     owner.state[slot] = 0;
-                    owner.privateState1[slot] = (owner.privateState1[slot] + 1) & 0x03;
-                    owner.direction[slot] = owner.privateState1[slot] == 0
+                    owner.wanderTurnCount[slot] = (owner.wanderTurnCount[slot] + 1) & 0x03;
+                    owner.direction[slot] = owner.wanderTurnCount[slot] == 0
                             ? RoamingEnemyMotion.directionToLink(entity.x(), entity.y(), linkEntityX, linkEntityY)
                             : randomByteSupplier.getAsInt() & 0x03;
                     owner.speedX[slot] = RoamingEnemyMotion.speedXFor(entity.type(), owner.direction[slot]);

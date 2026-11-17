@@ -182,7 +182,7 @@ final class CuccoMotionTest {
                 true,
                 0x04));
 
-        assertEquals(0x23, motion.privateState1(0));
+        assertEquals(0x23, motion.angerBuildup(0));
         assertEquals(2, motion.state(0));
         assertEquals(2, dialog.dialogTableId());
         assertEquals(0x76, dialog.dialogLowId());

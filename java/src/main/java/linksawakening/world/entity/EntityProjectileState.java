@@ -2,7 +2,8 @@ package linksawakening.world.entity;
 
 /** Shared projectile spawn latches and handler counters; owned by the room, independent of collision dispatch. */
 final class EntityProjectileState {
-    private final int[] magicPowderPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState4Table.
+    private final int[] powderSpent = new int[EntityRoomLoader.MAX_ENTITIES];
     private int latestShotArrowEntityIndex = -1;
     private boolean lastArrowShotPlayedWhoosh;
     private final int[] magicPowderState = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -14,13 +15,13 @@ final class EntityProjectileState {
     private int boomerangSfxCounter;
     private boolean boomerangSoundClockProvided;
 
-    int readMagicPowderPrivateState4(int slot) {
-        return magicPowderPrivateState4[slot];
+    int readPowderSpent(int slot) {
+        return powderSpent[slot];
     }
 
-    int writeMagicPowderPrivateState4(int slot, int value) {
-        magicPowderPrivateState4[slot] = value;
-        return magicPowderPrivateState4[slot];
+    int writePowderSpent(int slot, int value) {
+        powderSpent[slot] = value;
+        return powderSpent[slot];
     }
 
     int readLatestShotArrowEntityIndex() {

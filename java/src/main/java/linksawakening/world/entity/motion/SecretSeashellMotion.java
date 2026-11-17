@@ -83,9 +83,12 @@ public final class SecretSeashellMotion {
     private static final int[] SPECIAL_HIDDEN_ROOMS = {0xDA, 0xA5, 0x74, 0x3A, 0xA8, 0xB2};
 
     private final int[] roomId = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState3Table.
+    final int[] hiddenMode = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState4Table.
+    private final int[] shovelRevealPending = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown1Table.
+    final int[] revealCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -98,9 +101,9 @@ public final class SecretSeashellMotion {
     void initialize(int slot, int roomId) {
         validateSlot(slot);
         this.roomId[slot] = roomId & 0xFF;
-        privateState3[slot] = isTreeSeashellRoom(roomId) ? TREE_HIDDEN_STATE : NORMAL_HIDDEN_STATE;
-        privateState4[slot] = 0;
-        privateCountdown1[slot] = 0;
+        hiddenMode[slot] = isTreeSeashellRoom(roomId) ? TREE_HIDDEN_STATE : NORMAL_HIDDEN_STATE;
+        shovelRevealPending[slot] = 0;
+        revealCountdown[slot] = 0;
         slowTransitionCountdown[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
@@ -158,19 +161,19 @@ public final class SecretSeashellMotion {
         }
         int slot = entity.slot();
         this.ensureInitialized(slot, roomId);
-        if (this.privateCountdown1[slot] > 0) {
-            this.privateCountdown1[slot]--;
+        if (this.revealCountdown[slot] > 0) {
+            this.revealCountdown[slot]--;
         }
         if ((frameCounter & 0x03) == 0 && this.slowTransitionCountdown[slot] > 0) {
             this.slowTransitionCountdown[slot]--;
         }
 
-        if (this.privateState3[slot] != 0) {
+        if (this.hiddenMode[slot] != 0) {
             if (roomTransitionActive) {
                 return new SecretSeashellMotion.Update(SecretSeashellMotion.withVariant(entity, -1), true);
             }
 
-            boolean reveal = this.privateState3[slot] == TREE_HIDDEN_STATE
+            boolean reveal = this.hiddenMode[slot] == TREE_HIDDEN_STATE
                     ? screenShakeActive
                             && pegasusCollisionActive
                             && (!pegasusCollisionCoordinatesKnown
@@ -213,16 +216,16 @@ public final class SecretSeashellMotion {
             // The ROM deliberately records that these rooms contain a shell
             // which is not hidden under short grass, but still only reveals
             // it through the shovel-hole path.
-            privateState4[slot] = 1;
+            shovelRevealPending[slot] = 1;
             return objectId == OBJECT_SHOVEL_HOLE;
         }
         return objectId == OBJECT_SHORT_GRASS || objectId == OBJECT_SHOVEL_HOLE;
     }
 
     void revealAwayFromLink(int slot, int entityX, int entityY, int linkEntityX, int linkEntityY) {
-        privateState3[slot] = 0;
-        privateState4[slot] = 0;
-        privateCountdown1[slot] = REVEAL_COUNTDOWN;
+        hiddenMode[slot] = 0;
+        shovelRevealPending[slot] = 0;
+        revealCountdown[slot] = REVEAL_COUNTDOWN;
         slowTransitionCountdown[slot] = REVEAL_SLOW_COUNTDOWN;
         Vector towardLink = vectorTowardsLink(entityX, entityY, linkEntityX, linkEntityY, REVEAL_VECTOR_LENGTH);
         speedX[slot] = -towardLink.x() & 0xFF;
@@ -233,19 +236,19 @@ public final class SecretSeashellMotion {
         speedZAccumulator[slot] = 0;
     }
 
-    public int privateState3(int slot) {
+    public int hiddenMode(int slot) {
         validateSlot(slot);
-        return privateState3[slot];
+        return hiddenMode[slot];
     }
 
-    public int privateState4(int slot) {
+    public int shovelRevealPending(int slot) {
         validateSlot(slot);
-        return privateState4[slot];
+        return shovelRevealPending[slot];
     }
 
-    public int privateCountdown1(int slot) {
+    public int revealCountdown(int slot) {
         validateSlot(slot);
-        return privateCountdown1[slot];
+        return revealCountdown[slot];
     }
 
     public int slowTransitionCountdown(int slot) {
@@ -271,9 +274,9 @@ public final class SecretSeashellMotion {
     public void clear(int slot) {
         validateSlot(slot);
         roomId[slot] = 0;
-        privateState3[slot] = 0;
-        privateState4[slot] = 0;
-        privateCountdown1[slot] = 0;
+        hiddenMode[slot] = 0;
+        shovelRevealPending[slot] = 0;
+        revealCountdown[slot] = 0;
         slowTransitionCountdown[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;

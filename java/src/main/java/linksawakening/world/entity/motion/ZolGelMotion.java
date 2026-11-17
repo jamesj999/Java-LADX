@@ -26,6 +26,7 @@ public final class ZolGelMotion {
     final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown1Table: temporarily bypasses background interaction after a Gel split.
+    // ROM wEntitiesPrivateCountdown1Table.
     final int[] backgroundCollisionBypassCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown2Table: holds the walking sprite phase for eight ticks.
     final int[] walkAnimationCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -147,7 +148,7 @@ public final class ZolGelMotion {
         return speedZ[slot];
     }
 
-    public int privateCountdown1(int slot) {
+    public int backgroundCollisionBypassCountdown(int slot) {
         return backgroundCollisionBypassCountdown[slot];
     }
 

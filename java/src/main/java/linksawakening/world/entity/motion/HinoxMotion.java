@@ -26,7 +26,8 @@ public final class HinoxMotion {
     static final int[] GRAB_BODY_VARIANT = {0, 0, 0, 0, 1, 1, 1, 1, 0, 0};
 
     final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState1Table.
+    final int[] wanderTurnCount = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState3Table: wandering steps before the charge decision.
     final int[] wanderStepCount = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -35,6 +36,7 @@ public final class HinoxMotion {
     final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown1Table: Link-motion blocking interval after the grab.
+    // ROM wEntitiesPrivateCountdown1Table.
     final int[] linkHoldCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] entityCollisionFlags = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] bombOriginX = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -69,7 +71,7 @@ public final class HinoxMotion {
     public void initialize(int slot) {
         validateSlot(slot);
         state[slot] = STATE_INITIAL;
-        privateState1[slot] = 0;
+        wanderTurnCount[slot] = 0;
         wanderStepCount[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
@@ -200,7 +202,7 @@ public final class HinoxMotion {
         return inertia[slot] & 0xFF;
     }
 
-    int privateCountdown1(int slot) {
+    int linkHoldCountdown(int slot) {
         validateSlot(slot);
         return linkHoldCountdown[slot] & 0xFF;
     }
@@ -393,8 +395,8 @@ public final class HinoxMotion {
                 }
                 transition = 0x20 | (randomByteSupplier.getAsInt() & 0x1F);
                 owner.state[slot] = STATE_WANDER;
-                owner.privateState1[slot] = (owner.privateState1[slot] + 1) & 0x03;
-                int direction = owner.privateState1[slot] == 0
+                owner.wanderTurnCount[slot] = (owner.wanderTurnCount[slot] + 1) & 0x03;
+                int direction = owner.wanderTurnCount[slot] == 0
                         ? HinoxMotion.directionToLink(x, y, linkX, linkY)
                         : randomByteSupplier.getAsInt() & 0x03;
                 owner.speedX[slot] = SPEED_X_BY_DIRECTION[direction];

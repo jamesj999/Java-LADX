@@ -149,7 +149,7 @@ final class BooBuddyMotionTest {
         assertEquals(-1, motion.selectedVariant(0));
         assertEquals(0x30, hidden.entity().x());
         assertEquals(0x40, hidden.entity().y());
-        assertEquals(0, motion.privateCountdown1(0));
+        assertEquals(0, motion.reflectionCooldown(0));
     }
 
     @ParameterizedTest
@@ -210,7 +210,7 @@ final class BooBuddyMotionTest {
         assertEquals(0x51, teleported.entity().y());
         assertEquals(0, teleported.entity().spriteVariant());
         assertEquals(7, motion.selectedVariant(0));
-        assertEquals(0x20, motion.privateCountdown1(0));
+        assertEquals(0x20, motion.reflectionCooldown(0));
         assertEquals(0, motion.speedX(0));
         assertEquals(0, motion.speedY(0));
 
@@ -221,11 +221,11 @@ final class BooBuddyMotionTest {
                     })
                     .entity();
         }
-        assertEquals(1, motion.privateCountdown1(0));
+        assertEquals(1, motion.reflectionCooldown(0));
         assertEquals(0x6F, current.x());
         assertEquals(0x51, current.y());
         motion.advance(current, 36, 0x50, 0x40, 0, 0, false, () -> 0);
-        assertEquals(0, motion.privateCountdown1(0));
+        assertEquals(0, motion.reflectionCooldown(0));
         assertEquals(0xFC, motion.speedX(0));
     }
 

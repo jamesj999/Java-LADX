@@ -17,7 +17,10 @@ import linksawakening.world.entity.motion.EnemyRecoilMotion;
 import linksawakening.world.entity.motion.GenieMotion;
 import linksawakening.world.entity.motion.ThrownEntityMotion;
 
-/** Bank-$04 GenieEntityHandler jar, body, projectile and destruction sequences. */
+/** Bank-$04 GenieEntityHandler jar, body, projectile and destruction sequences.
+ *
+ * Jar, body, thrown rocks and destruction are phases of one Genie encounter whose shared slot arrays and lifecycle must advance together.
+ */
 public final class GenieEntityController {
     final State encounter;
     final EntityBossRewards bossRewards;
@@ -129,8 +132,8 @@ public final class GenieEntityController {
         if (!this.encounter.genieDeathInitialized[slot]) {
             this.encounter.genieDeathInitialized[slot] = true;
             this.encounter.genieActiveState[slot] = 0;
-            this.bossRewards.state.writeBossAgonySfxCountdown(0x03);
-            this.bossRewards.state.writeBossAgonySourceSlot(slot);
+            this.bossRewards.writeBossAgonySfxCountdown(0x03);
+            this.bossRewards.writeBossAgonySourceSlot(slot);
         }
         this.combatTables.writeEnemyFlashCountdown(slot, frameCounter & 0xFF);
         switch (this.encounter.genieActiveState[slot]) {
@@ -424,12 +427,17 @@ public final class GenieEntityController {
         // ROM wEntitiesPrivateState1Table; selects GenieState0Handler through GenieState4Handler.
         final int[] handlerState = new int[EntityRoomLoader.MAX_ENTITIES];
         // ROM wEntitiesPrivateState2Table; interpretation follows the selected Genie handler.
+        // ROM wEntitiesPrivateState2Table: handler-dependent register; a narrower meaning has not been established.
         final int[] romPrivateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
         // ROM wEntitiesPrivateState3Table; interpretation follows the selected Genie handler.
+        // ROM wEntitiesPrivateState3Table: handler-dependent register; a narrower meaning has not been established.
         final int[] romPrivateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
         // ROM wEntitiesPrivateState4Table; interpretation follows the selected Genie handler.
+        // ROM wEntitiesPrivateState4Table: handler-dependent register; a narrower meaning has not been established.
         final int[] romPrivateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
+        // ROM wEntitiesPrivateCountdown1Table: handler-dependent register; a narrower meaning has not been established.
         final int[] geniePrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
+        // ROM wEntitiesPrivateCountdown2Table: handler-dependent register; a narrower meaning has not been established.
         final int[] geniePrivateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
         final int[] genieDirection = new int[EntityRoomLoader.MAX_ENTITIES];
         final boolean[] genieDeathInitialized = new boolean[EntityRoomLoader.MAX_ENTITIES];

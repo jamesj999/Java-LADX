@@ -33,7 +33,7 @@ import linksawakening.world.room.ChestContentsTable;
 public final class EntitySlotProperties {
     private final List<BowWowChain.Entry> bowWowEntries = new ArrayList<>();
     private final List<WingedOctorokOam.Entry> wingedEntries = new ArrayList<>();
-    final EntitySlotPresentation state;
+    private final EntitySlotPresentation state;
     final boolean indoorRoom;
     final linksawakening.world.entity.EntitySpriteViews spriteHandlers;
     final EntityBossState bossRewards;
@@ -219,11 +219,7 @@ public final class EntitySlotProperties {
             }
             var wingedOctorokMotion = this.motions.get(WingedOctorokMotion.class, WingedOctorokMotion::new);
             entries.addAll(WingedOctorokOam.entries(
-                    entity.slot(),
-                    wingedOctorokMotion.privateState2(entity.slot()),
-                    entity.x(),
-                    entity.y(),
-                    entity.z()));
+                    entity.slot(), wingedOctorokMotion.wingPhase(entity.slot()), entity.x(), entity.y(), entity.z()));
         }
         state.writeWingedOctorokOam(List.copyOf(entries));
     }
@@ -366,5 +362,35 @@ public final class EntitySlotProperties {
         return type == EntityRomConstants.ENTITY_STALFOS_EVASIVE || type == EntityRomConstants.ENTITY_LIKE_LIKE
                 ? EntityRomConstants.ENTITY_OPT1_SPLASH_IN_WATER
                 : 0;
+    }
+
+    boolean readWingedStateTwoThisFrame(int slot) {
+        return state.readWingedStateTwoThisFrame(slot);
+    }
+
+    boolean readWingedSwordAttackThisFrame(int slot) {
+        return state.readWingedSwordAttackThisFrame(slot);
+    }
+
+    boolean[] storageWingedStateTwoThisFrame() {
+        return state.storageWingedStateTwoThisFrame();
+    }
+
+    boolean[] storageWingedSwordAttackThisFrame() {
+        return state.storageWingedSwordAttackThisFrame();
+    }
+
+    boolean writeWingedStateTwoThisFrame(int slot, boolean value) {
+        return state.writeWingedStateTwoThisFrame(slot, value);
+    }
+
+    boolean writeWingedSwordAttackThisFrame(int slot, boolean value) {
+        return state.writeWingedSwordAttackThisFrame(slot, value);
+    }
+
+    void initializeOam(RoomEntitySnapshot initial) {
+        state.writeHookshotChainOam(initial.hookshotChainOam());
+        state.writePincerBodyOam(initial.pincerBodyOam());
+        state.writeWingedOctorokOam(initial.wingedOctorokOam());
     }
 }

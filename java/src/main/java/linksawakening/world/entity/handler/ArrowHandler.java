@@ -18,14 +18,16 @@ final class ArrowHandler {
     }
 
     private static boolean phase1Arrow(EntityFrameExecution state) {
+        var resolvedPlayerArrowMotion = state.motion(PlayerArrowMotion.class, PlayerArrowMotion::new);
+
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         var timerGates = state.gates();
 
         if (slotState.status() == EntityStatus.ACTIVE) {
             if (state.projectiles().playerArrowBombArrow(slotState.entity().slot())
-                    && state.motion(PlayerArrowMotion.class, PlayerArrowMotion::new)
-                                    .transitionCountdown(slotState.entity().slot())
+                    && resolvedPlayerArrowMotion.transitionCountdown(
+                                    slotState.entity().slot())
                             != 0) {
                 int explosionSlot = state.playerSpawns().spawnBombFromBombArrow(slotState.entity());
                 if (explosionSlot >= 0) {
@@ -38,8 +40,8 @@ final class ArrowHandler {
             }
             // ArrowEntityHandler jumps straight to rendering/rebound
             // while its transition countdown is nonzero ($6A3D-$6A40).
-            boolean hitEntity = state.motion(PlayerArrowMotion.class, PlayerArrowMotion::new)
-                                    .transitionCountdown(slotState.entity().slot())
+            boolean hitEntity = resolvedPlayerArrowMotion.transitionCountdown(
+                                    slotState.entity().slot())
                             == 0
                     && state.projectiles().collidePlayerArrowWithEntities(slotState.entity(), frameInput.frame());
             if (hitEntity
@@ -52,16 +54,14 @@ final class ArrowHandler {
                         .disableEntityWithoutPersistence(slotState.entity().slot());
                 return false;
             }
-            PlayerArrowMotion.Update arrowUpdate = state.motion(PlayerArrowMotion.class, PlayerArrowMotion::new)
-                    .advance(
-                            slotState.entity(),
-                            frameInput.backgroundCollision(),
-                            frameInput.frame(),
-                            state.background()
-                                    .entityGroundStatus(slotState.entity().slot()),
-                            state.background().groundInteractionSideScrolling(),
-                            timerGates.handlerInteractive(),
-                            timerGates.projectileTimersInteractive());
+            PlayerArrowMotion.Update arrowUpdate = resolvedPlayerArrowMotion.advance(
+                    slotState.entity(),
+                    frameInput.backgroundCollision(),
+                    frameInput.frame(),
+                    state.background().entityGroundStatus(slotState.entity().slot()),
+                    state.background().groundInteractionSideScrolling(),
+                    timerGates.handlerInteractive(),
+                    timerGates.projectileTimersInteractive());
             if (arrowUpdate.unloaded()) {
                 state.lifecycle()
                         .disableEntityWithoutPersistence(slotState.entity().slot());

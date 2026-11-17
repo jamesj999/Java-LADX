@@ -46,9 +46,9 @@ final class EntityBossInspection {
         return armosKnightMotion.speedZ(slot);
     }
 
-    int armosKnightPrivateCountdown1(int slot) {
+    int armosKnightLinkHoldCountdown(int slot) {
         var armosKnightMotion = motions.get(ArmosKnightMotion.class, ArmosKnightMotion::new);
-        return armosKnightMotion.privateCountdown1(slot);
+        return armosKnightMotion.linkHoldCountdown(slot);
     }
 
     int armosKnightInertia(int slot) {

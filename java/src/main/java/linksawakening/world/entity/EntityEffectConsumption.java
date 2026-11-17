@@ -86,51 +86,51 @@ public final class EntityEffectConsumption {
     }
 
     public List<ThrownBackgroundCollisionEvent> consumePendingThrownBackgroundCollisions() {
-        return events.outbox.drain(ThrownBackgroundCollisionEvent.class, "pendingThrownBackgroundCollisions");
+        return events.drainChannel(ThrownBackgroundCollisionEvent.class, "pendingThrownBackgroundCollisions");
     }
 
     public List<DungeonWarpRequest> consumePendingDungeonWarpRequests() {
-        return events.outbox.drain(DungeonWarpRequest.class, "pendingDungeonWarpRequests");
+        return events.drainChannel(DungeonWarpRequest.class, "pendingDungeonWarpRequests");
     }
 
     public List<WarpLinkStateRequest> consumePendingWarpLinkStateRequests() {
-        return events.outbox.drain(WarpLinkStateRequest.class, "pendingWarpLinkStateRequests");
+        return events.drainChannel(WarpLinkStateRequest.class, "pendingWarpLinkStateRequests");
     }
 
     public List<LinkFinalPositionRequest> consumePendingLinkFinalPositionRequests() {
-        return events.outbox.drain(LinkFinalPositionRequest.class, "pendingLinkFinalPositionRequests");
+        return events.drainChannel(LinkFinalPositionRequest.class, "pendingLinkFinalPositionRequests");
     }
 
     public List<RoosterLinkStateRequest> consumePendingRoosterLinkStateRequests() {
-        return events.outbox.drain(RoosterLinkStateRequest.class, "pendingRoosterLinkStateRequests");
+        return events.drainChannel(RoosterLinkStateRequest.class, "pendingRoosterLinkStateRequests");
     }
 
     public List<LinkMotionBlockRequest> consumePendingLinkMotionBlockRequests() {
-        return events.outbox.drain(LinkMotionBlockRequest.class, "pendingLinkMotionBlockRequests");
+        return events.drainChannel(LinkMotionBlockRequest.class, "pendingLinkMotionBlockRequests");
     }
 
     public List<SideViewPlatformLinkRequest> consumePendingSideViewPlatformLinkRequests() {
-        return events.outbox.drain(SideViewPlatformLinkRequest.class, "pendingSideViewPlatformLinkRequests");
+        return events.drainChannel(SideViewPlatformLinkRequest.class, "pendingSideViewPlatformLinkRequests");
     }
 
     public List<SideViewPotLinkRequest> consumePendingSideViewPotLinkRequests() {
-        return events.outbox.drain(SideViewPotLinkRequest.class, "pendingSideViewPotLinkRequests");
+        return events.drainChannel(SideViewPotLinkRequest.class, "pendingSideViewPotLinkRequests");
     }
 
     public List<HinoxLinkEffectRequest> consumePendingHinoxLinkEffectRequests() {
-        return events.outbox.drain(HinoxLinkEffectRequest.class, "pendingHinoxLinkEffectRequests");
+        return events.drainChannel(HinoxLinkEffectRequest.class, "pendingHinoxLinkEffectRequests");
     }
 
     public List<LinkFallenPoseRequest> consumePendingLinkFallenPoseRequests() {
-        return events.outbox.drain(LinkFallenPoseRequest.class, "pendingLinkFallenPoseRequests");
+        return events.drainChannel(LinkFallenPoseRequest.class, "pendingLinkFallenPoseRequests");
     }
 
     public List<LinkFacingRequest> consumePendingLinkFacingRequests() {
-        return events.outbox.drain(LinkFacingRequest.class, "pendingLinkFacingRequests");
+        return events.drainChannel(LinkFacingRequest.class, "pendingLinkFacingRequests");
     }
 
     public List<LinkAttackClearRequest> consumePendingLinkAttackClearRequests() {
-        return events.outbox.drain(LinkAttackClearRequest.class, "pendingLinkAttackClearRequests");
+        return events.drainChannel(LinkAttackClearRequest.class, "pendingLinkAttackClearRequests");
     }
 
     public List<LinkAttackStepRequest> consumePendingLinkAttackStepRequests() {
@@ -147,39 +147,39 @@ public final class EntityEffectConsumption {
     }
 
     public List<RoomStatusPersistenceRequest> consumePendingRoomStatusPersistenceRequests() {
-        return events.outbox.drain(RoomStatusPersistenceRequest.class, "pendingRoomStatusPersistenceRequests");
+        return events.drainChannel(RoomStatusPersistenceRequest.class, "pendingRoomStatusPersistenceRequests");
     }
 
     public List<LinkHeldItemPoseRequest> consumePendingLinkHeldItemPoseRequests() {
-        return events.outbox.drain(LinkHeldItemPoseRequest.class, "pendingLinkHeldItemPoseRequests");
+        return events.drainChannel(LinkHeldItemPoseRequest.class, "pendingLinkHeldItemPoseRequests");
     }
 
     public List<LinkSwordSpinPoseRequest> consumePendingLinkSwordSpinPoseRequests() {
-        return events.outbox.drain(LinkSwordSpinPoseRequest.class, "pendingLinkSwordSpinPoseRequests");
+        return events.drainChannel(LinkSwordSpinPoseRequest.class, "pendingLinkSwordSpinPoseRequests");
     }
 
     public List<LinkSwordFinalPoseRequest> consumePendingLinkSwordFinalPoseRequests() {
-        return events.outbox.drain(LinkSwordFinalPoseRequest.class, "pendingLinkSwordFinalPoseRequests");
+        return events.drainChannel(LinkSwordFinalPoseRequest.class, "pendingLinkSwordFinalPoseRequests");
     }
 
     public List<ScreenShakeRequest> consumePendingScreenShakeRequests() {
-        return events.outbox.drain(ScreenShakeRequest.class, "pendingScreenShakeRequests");
+        return events.drainChannel(ScreenShakeRequest.class, "pendingScreenShakeRequests");
     }
 
     public List<ChestRewardEvent> consumePendingChestRewardEvents() {
-        return events.outbox.drain(ChestRewardEvent.class, "pendingChestRewardEvents");
+        return events.drainChannel(ChestRewardEvent.class, "pendingChestRewardEvents");
     }
 
     public List<KeyRewardEvent> consumePendingKeyRewardEvents() {
-        return events.outbox.drain(KeyRewardEvent.class, "pendingKeyRewardEvents");
+        return events.drainChannel(KeyRewardEvent.class, "pendingKeyRewardEvents");
     }
 
     public List<SlimeKeyRewardEvent> consumePendingSlimeKeyRewardEvents() {
-        return events.outbox.drain(SlimeKeyRewardEvent.class, "pendingSlimeKeyRewardEvents");
+        return events.drainChannel(SlimeKeyRewardEvent.class, "pendingSlimeKeyRewardEvents");
     }
 
     public List<KeyQuicksandEvent> consumePendingKeyQuicksandEvents() {
-        return events.outbox.drain(KeyQuicksandEvent.class, "pendingKeyQuicksandEvents");
+        return events.drainChannel(KeyQuicksandEvent.class, "pendingKeyQuicksandEvents");
     }
 
     public int consumePendingMusicTrack() {
@@ -195,15 +195,15 @@ public final class EntityEffectConsumption {
     }
 
     public List<LikeLikeEvent> consumePendingLikeLikeEvents() {
-        return events.outbox.drain(LikeLikeEvent.class, "pendingLikeLikeEvents");
+        return events.drainChannel(LikeLikeEvent.class, "pendingLikeLikeEvents");
     }
 
     public List<DialogRequest> consumePendingDialogRequests() {
-        return events.outbox.drain(DialogRequest.class, "pendingDialogRequests");
+        return events.drainChannel(DialogRequest.class, "pendingDialogRequests");
     }
 
     public List<BombExplosionEvent> consumeBombExplosionEvents() {
-        return events.outbox.drain(BombExplosionEvent.class, "pendingBombExplosionEvents");
+        return events.drainChannel(BombExplosionEvent.class, "pendingBombExplosionEvents");
     }
 
     public List<HeartPiecePickupUpdate> consumeHeartPieceUpdates() {

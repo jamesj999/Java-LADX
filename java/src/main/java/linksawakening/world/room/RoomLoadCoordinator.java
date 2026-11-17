@@ -199,7 +199,7 @@ final class RoomLoadCoordinator implements RoomRooms {
 
     RoomLoadCoordinator(LoadedRoomHandle rooms, Dependencies dependencies) {
         this.rooms = Objects.requireNonNull(rooms);
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
     }
 
     RoomRuntime loadInitialOverworldGeneration(int roomId) {

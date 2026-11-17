@@ -73,6 +73,7 @@ final class HookshotChainHandler {
         private boolean completedResult;
 
         private boolean prepareChain() {
+            var resolvedHookshotChainMotion = state.motion(HookshotChainMotion.class, HookshotChainMotion::new);
 
             slotState = state.slotFrame();
             frameInput = state.inputs();
@@ -83,8 +84,7 @@ final class HookshotChainHandler {
                 return false;
             }
 
-            hookshotState = state.motion(HookshotChainMotion.class, HookshotChainMotion::new)
-                    .state(slotState.entity().slot());
+            hookshotState = resolvedHookshotChainMotion.state(slotState.entity().slot());
             if (hookshotState == null) {
                 state.lifecycle().clearEntity(slotState.entity().slot());
 
@@ -100,8 +100,7 @@ final class HookshotChainHandler {
             }
             if (timerGates.projectileTimersInteractive()) {
                 hookshotState = HookshotChainMotion.decrementTransitionCountdown(hookshotState);
-                state.motion(HookshotChainMotion.class, HookshotChainMotion::new)
-                        .setState(slotState.entity().slot(), hookshotState);
+                resolvedHookshotChainMotion.setState(slotState.entity().slot(), hookshotState);
             }
             // Bank $18 has no credits exception in ReturnIfNonInteractive.
             if (!timerGates.handlerInteractive() || frameInput.creditsGameplay()) {
@@ -222,6 +221,7 @@ final class HookshotChainHandler {
         }
 
         private boolean applyWallCollision() {
+            var resolvedHookshotChainMotion = state.motion(HookshotChainMotion.class, HookshotChainMotion::new);
 
             if (blocked) {
                 HookshotChainMotion.State stopped =
@@ -234,11 +234,11 @@ final class HookshotChainHandler {
                         completedResult = false;
                         return false;
                     }
-                    state.motion(HookshotChainMotion.class, HookshotChainMotion::new)
-                            .setState(slotState.entity().slot(), HookshotChainMotion.enterPulling(stopped));
+                    resolvedHookshotChainMotion.setState(
+                            slotState.entity().slot(), HookshotChainMotion.enterPulling(stopped));
                 } else {
-                    state.motion(HookshotChainMotion.class, HookshotChainMotion::new)
-                            .setState(slotState.entity().slot(), HookshotChainMotion.deferWallPoke(stopped));
+                    resolvedHookshotChainMotion.setState(
+                            slotState.entity().slot(), HookshotChainMotion.deferWallPoke(stopped));
                 }
                 state.replaceEntity(slotState.entity());
 
@@ -272,8 +272,7 @@ final class HookshotChainHandler {
                 }
             }
 
-            state.motion(HookshotChainMotion.class, HookshotChainMotion::new)
-                    .setState(slotState.entity().slot(), step.state());
+            resolvedHookshotChainMotion.setState(slotState.entity().slot(), step.state());
             return true;
         }
 

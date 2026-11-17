@@ -74,6 +74,8 @@ final class TarinHandler {
         private boolean completedResult;
 
         private boolean advanceMotion() {
+            var resolvedTarinRaccoonMotion = state.motion(TarinRaccoonMotion.class, TarinRaccoonMotion::new);
+
             slotState = state.slotFrame();
             frameInput = state.inputs();
             presentationFlags = state.presentation();
@@ -81,9 +83,7 @@ final class TarinHandler {
             if (!(slotState.status() == EntityStatus.ACTIVE
                     && !slotState.wasInitializing()
                     && !state.roomInspection().indoorRoom()
-                    && (state.motion(TarinRaccoonMotion.class, TarinRaccoonMotion::new)
-                                            .state(slotState.entity().slot())
-                                    == 0
+                    && (resolvedTarinRaccoonMotion.state(slotState.entity().slot()) == 0
                             || state.roomInspection().tarinTransformationHandlerInteractive()))) {
                 completedResult = true;
                 return false;
@@ -91,29 +91,25 @@ final class TarinHandler {
 
             tarinBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
 
-            tarinUpdate = state.motion(TarinRaccoonMotion.class, TarinRaccoonMotion::new)
-                    .advance(
-                            slotState.updated(),
-                            new TarinRaccoonMotion.Input(
-                                    frameInput.frame(),
-                                    frameInput.linkEntityX(),
-                                    frameInput.linkEntityY(),
-                                    frameInput.romLinkDirection(),
-                                    state.link().actionButtonAHeld(),
-                                    state.link().dialogActive(),
-                                    false,
-                                    state.link().linkAttackStepAnimationCountdown(),
-                                    frameInput.linkAirborne(),
-                                    state.link().inventoryAppearing(),
-                                    state.link().dialogCooldown(),
-                                    state.link().windowY(),
-                                    state.slot()
-                                            .slowTransitionCountdown(
-                                                    slotState.entity().slot()),
-                                    state.slot()
-                                            .transitionCountdown(
-                                                    slotState.entity().slot())),
-                            tarinBackgroundInteraction);
+            tarinUpdate = resolvedTarinRaccoonMotion.advance(
+                    slotState.updated(),
+                    new TarinRaccoonMotion.Input(
+                            frameInput.frame(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.romLinkDirection(),
+                            state.link().actionButtonAHeld(),
+                            state.link().dialogActive(),
+                            false,
+                            state.link().linkAttackStepAnimationCountdown(),
+                            frameInput.linkAirborne(),
+                            state.link().inventoryAppearing(),
+                            state.link().dialogCooldown(),
+                            state.link().windowY(),
+                            state.slot()
+                                    .slowTransitionCountdown(slotState.entity().slot()),
+                            state.slot().transitionCountdown(slotState.entity().slot())),
+                    tarinBackgroundInteraction);
             slotState.updated(tarinUpdate.entity());
             state.slot().setSlowTransitionCountdown(slotState.entity().slot(), tarinUpdate.slowTransitionCountdown());
             state.slot().setTransitionCountdown(slotState.entity().slot(), tarinUpdate.transitionCountdown());

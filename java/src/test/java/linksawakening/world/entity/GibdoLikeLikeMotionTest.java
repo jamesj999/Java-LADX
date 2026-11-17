@@ -171,7 +171,7 @@ final class GibdoLikeLikeMotionTest {
         assertEquals(LikeLikeEvent.Kind.CAPTURE, hidden.event().kind());
         assertFalse(hidden.event().pinLinkPosition());
         assertEquals(stolenSlot, hidden.event().stolenInventorySlot());
-        assertEquals(stolenSlot >= 0 ? shieldLevel : 0, motion.privateState1(0));
+        assertEquals(stolenSlot >= 0 ? shieldLevel : 0, motion.swallowedShieldLevel(0));
 
         LikeLikeMotion.Update resumed = motion.advance(new LikeLikeFrame(
                 hidden.entity(),

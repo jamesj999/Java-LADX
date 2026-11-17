@@ -16,7 +16,7 @@ final class RoomLiftInteractions {
     private final Dependencies dependencies;
 
     RoomLiftInteractions(Dependencies dependencies) {
-        this.dependencies = dependencies;
+        this.dependencies = Objects.requireNonNull(dependencies, "dependencies");
     }
 
     boolean tryLiftIndoorObject(
@@ -26,10 +26,8 @@ final class RoomLiftInteractions {
             Direction linkDirection,
             boolean braceletButtonHeld,
             int pressedButtonsMask) {
-        return dependencies
-                .roomDoorInteractions()
-                .tryLiftIndoorObject(
-                        loaded, linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask, false);
+        return tryLiftIndoorObject(
+                loaded, linkPixelX, linkPixelY, linkDirection, braceletButtonHeld, pressedButtonsMask, false);
     }
 
     boolean tryLiftIndoorObject(
@@ -40,17 +38,15 @@ final class RoomLiftInteractions {
             boolean braceletButtonHeld,
             int pressedButtonsMask,
             boolean pieceOfPowerActive) {
-        return dependencies
-                .owner()
-                .tryLiftObject(
-                        loaded,
-                        linkPixelX,
-                        linkPixelY,
-                        linkDirection,
-                        braceletButtonHeld,
-                        pressedButtonsMask,
-                        pieceOfPowerActive,
-                        1);
+        return tryLiftObject(
+                loaded,
+                linkPixelX,
+                linkPixelY,
+                linkDirection,
+                braceletButtonHeld,
+                pressedButtonsMask,
+                pieceOfPowerActive,
+                1);
     }
 
     boolean tryLiftObject(
@@ -62,18 +58,16 @@ final class RoomLiftInteractions {
             int pressedButtonsMask,
             boolean pieceOfPowerActive,
             int braceletLevel) {
-        return dependencies
-                .owner()
-                .tryLiftObject(
-                        loaded,
-                        linkPixelX,
-                        linkPixelY,
-                        linkDirection,
-                        braceletButtonHeld,
-                        pressedButtonsMask,
-                        pieceOfPowerActive,
-                        braceletLevel,
-                        pieceOfPowerActive);
+        return tryLiftObject(
+                loaded,
+                linkPixelX,
+                linkPixelY,
+                linkDirection,
+                braceletButtonHeld,
+                pressedButtonsMask,
+                pieceOfPowerActive,
+                braceletLevel,
+                pieceOfPowerActive);
     }
 
     boolean tryLiftObject(
@@ -115,21 +109,17 @@ final class RoomLiftInteractions {
             RoomFollowerState followers,
             OverworldBushInteraction overworldBushInteraction,
             OverworldCollision overworldCollision,
-            RoomDoorInteractions roomDoorInteractions,
             RoomObjectMutations roomObjectMutations,
             RoomSessionViews roomSessionViews,
-            RoomObjectMutations roomTileRedraw,
-            RoomDoorInteractions owner) {
+            RoomObjectMutations roomTileRedraw) {
         Dependencies {
             Objects.requireNonNull(entityRuntimeState, "entityRuntimeState");
             Objects.requireNonNull(followers, "followers");
             Objects.requireNonNull(overworldBushInteraction, "overworldBushInteraction");
             Objects.requireNonNull(overworldCollision, "overworldCollision");
-            Objects.requireNonNull(roomDoorInteractions, "roomDoorInteractions");
             Objects.requireNonNull(roomObjectMutations, "roomObjectMutations");
             Objects.requireNonNull(roomSessionViews, "roomSessionViews");
             Objects.requireNonNull(roomTileRedraw, "roomTileRedraw");
-            Objects.requireNonNull(owner, "owner");
         }
     }
 

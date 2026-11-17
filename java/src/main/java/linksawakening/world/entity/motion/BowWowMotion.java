@@ -47,8 +47,10 @@ public final class BowWowMotion {
     // wEntitiesPrivateState4Table: setup latch, separate from active handler state.
     final int[] setupComplete = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] transitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
-    final int[] privateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateCountdown2 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown1Table.
+    final int[] wanderCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateCountdown2Table.
+    private final int[] biteCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] targetX = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] targetY = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] targetSlot = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -125,8 +127,8 @@ public final class BowWowMotion {
         selectedVariant[slot] = 0;
         setupComplete[slot] = 0;
         transitionCountdown[slot] = 0;
-        privateCountdown1[slot] = 0;
-        privateCountdown2[slot] = 0;
+        wanderCountdown[slot] = 0;
+        biteCountdown[slot] = 0;
         targetX[slot] = 0;
         targetY[slot] = 0;
         targetSlot[slot] = -1;
@@ -166,8 +168,8 @@ public final class BowWowMotion {
         return transitionCountdown[slot];
     }
 
-    public int privateCountdown2(int slot) {
-        return privateCountdown2[slot];
+    public int biteCountdown(int slot) {
+        return biteCountdown[slot];
     }
 
     int targetX(int slot) {
@@ -205,13 +207,13 @@ public final class BowWowMotion {
     }
 
     public void setPrivateCountdown2(int slot, int value) {
-        if (slot < 0 || slot >= privateCountdown2.length) {
+        if (slot < 0 || slot >= biteCountdown.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
         if (value < 0 || value > 0xFF) {
             throw new IllegalArgumentException("Private countdown 2 must be an unsigned byte: " + value);
         }
-        privateCountdown2[slot] = value;
+        biteCountdown[slot] = value;
     }
 
     RoomEntity setup(RoomEntity entity) {
@@ -232,11 +234,11 @@ public final class BowWowMotion {
         if (transitionCountdown[slot] > 0) {
             transitionCountdown[slot]--;
         }
-        if (privateCountdown1[slot] > 0) {
-            privateCountdown1[slot]--;
+        if (wanderCountdown[slot] > 0) {
+            wanderCountdown[slot]--;
         }
-        if (privateCountdown2[slot] > 0) {
-            privateCountdown2[slot]--;
+        if (biteCountdown[slot] > 0) {
+            biteCountdown[slot]--;
         }
     }
 
@@ -605,8 +607,8 @@ public final class BowWowMotion {
                 } else {
                     owner.transitionCountdown[slot] = 0x10;
                 }
-            } else if (owner.privateCountdown1[slot] == 0) {
-                owner.privateCountdown1[slot] = 0x20 + (randomByteSupplier.getAsInt() & 0x3F);
+            } else if (owner.wanderCountdown[slot] == 0) {
+                owner.wanderCountdown[slot] = 0x20 + (randomByteSupplier.getAsInt() & 0x3F);
                 owner.activeState[slot] = 1;
                 int direction = randomByteSupplier.getAsInt() & 0x07;
                 owner.speedX[slot] = SPEED_X_BY_RANDOM[direction];
@@ -617,8 +619,8 @@ public final class BowWowMotion {
         }
 
         private boolean advanceState1() {
-            if (owner.privateCountdown1[slot] == 0) {
-                owner.privateCountdown1[slot] = 0x20;
+            if (owner.wanderCountdown[slot] == 0) {
+                owner.wanderCountdown[slot] = 0x20;
                 // func_005_41CF increments the state pointer, then writes
                 // B (zero), returning to the target-selection handler.
                 owner.activeState[slot] = 0;

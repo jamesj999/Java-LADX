@@ -13,8 +13,10 @@ public final class SideViewPlatformMotion {
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState2Table.
+    private final int[] rumbleCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState4Table.
+    private final int[] pressureTicks = new int[EntityRoomLoader.MAX_ENTITIES];
 
     public record Update(
             RoomEntity entity, int verticalDelta, int speedY, int privateState2, int privateState4, boolean rumble) {}
@@ -25,7 +27,7 @@ public final class SideViewPlatformMotion {
         Objects.requireNonNull(entity, "Platform entity cannot be null");
         validateEntity(entity);
         int slot = entity.slot();
-        privateState2[slot] = 0;
+        rumbleCountdown[slot] = 0;
         int oldX = entity.x() & 0xFF;
         int oldY = entity.y() & 0xFF;
         int newX = addSpeedToPosition(oldX, speedX[slot], speedXAccumulator, slot);
@@ -60,16 +62,16 @@ public final class SideViewPlatformMotion {
         int slot = entity.slot();
         validateSlot(slot);
         if (standing) {
-            privateState2[slot] = 0x10;
+            rumbleCountdown[slot] = 0x10;
         }
         boolean rumble = false;
         if (!(standing && activationAllowed)) {
             speedY[slot] = 0;
-            privateState4[slot] = 0;
+            pressureTicks[slot] = 0;
         } else {
-            int previousState4 = privateState4[slot];
+            int previousState4 = pressureTicks[slot];
             if (previousState4 < 4) {
-                privateState4[slot] = previousState4 + 1;
+                pressureTicks[slot] = previousState4 + 1;
                 rumble = previousState4 == 3;
             }
             if ((frameCounter & 3) == 0 && ((speedY[slot] - 4) & 0x80) != 0) {
@@ -77,7 +79,12 @@ public final class SideViewPlatformMotion {
             }
         }
         return new Update(
-                frame.entity(), frame.verticalDelta(), speedY[slot], privateState2[slot], privateState4[slot], rumble);
+                frame.entity(),
+                frame.verticalDelta(),
+                speedY[slot],
+                rumbleCountdown[slot],
+                pressureTicks[slot],
+                rumble);
     }
 
     Update advance(RoomEntity entity, int frameCounter, boolean standing, boolean activationAllowed) {
@@ -116,14 +123,14 @@ public final class SideViewPlatformMotion {
         speedY[slot] = value;
     }
 
-    public int privateState2(int slot) {
+    public int rumbleCountdown(int slot) {
         validateSlot(slot);
-        return privateState2[slot];
+        return rumbleCountdown[slot];
     }
 
-    public int privateState4(int slot) {
+    public int pressureTicks(int slot) {
         validateSlot(slot);
-        return privateState4[slot];
+        return pressureTicks[slot];
     }
 
     public void clear(int slot) {
@@ -132,8 +139,8 @@ public final class SideViewPlatformMotion {
         speedX[slot] = 0;
         speedXAccumulator[slot] = 0;
         speedYAccumulator[slot] = 0;
-        privateState2[slot] = 0;
-        privateState4[slot] = 0;
+        rumbleCountdown[slot] = 0;
+        pressureTicks[slot] = 0;
     }
 
     private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {

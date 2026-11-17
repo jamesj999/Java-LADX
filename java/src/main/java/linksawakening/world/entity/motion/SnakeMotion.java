@@ -22,6 +22,7 @@ public final class SnakeMotion {
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown1Table: delay before the next Link-targeted dash.
+    // ROM wEntitiesPrivateCountdown1Table.
     final int[] dashCooldown = new int[EntityRoomLoader.MAX_ENTITIES];
     final int[] animationVariant = new int[EntityRoomLoader.MAX_ENTITIES];
     final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
@@ -66,7 +67,7 @@ public final class SnakeMotion {
         return state[slot];
     }
 
-    public int privateCountdown1(int slot) {
+    public int dashCooldown(int slot) {
         return dashCooldown[slot];
     }
 

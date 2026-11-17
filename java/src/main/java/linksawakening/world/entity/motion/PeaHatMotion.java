@@ -24,10 +24,14 @@ public final class PeaHatMotion {
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState1Table: step added to rotor-animation inertia while taking off or landing.
+    // ROM wEntitiesPrivateState1Table.
     private final int[] rotorAnimationStep = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState2 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState3 = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] privateState4 = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState2Table.
+    private final int[] orbitStep = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState3Table.
+    private final int[] orbitTurnTicks = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState4Table.
+    private final int[] orbitPhase = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -39,9 +43,9 @@ public final class PeaHatMotion {
         state[slot] = 0;
         slowTransitionCountdown[slot] = 0;
         rotorAnimationStep[slot] = 0;
-        privateState2[slot] = 0;
-        privateState3[slot] = 0;
-        privateState4[slot] = 0;
+        orbitStep[slot] = 0;
+        orbitTurnTicks[slot] = 0;
+        orbitPhase[slot] = 0;
         inertia[slot] = 0;
         speedX[slot] = 0;
         speedY[slot] = 0;
@@ -144,20 +148,20 @@ public final class PeaHatMotion {
         return slowTransitionCountdown[slot];
     }
 
-    public int privateState1(int slot) {
+    public int rotorAnimationStep(int slot) {
         return rotorAnimationStep[slot];
     }
 
-    public int privateState4(int slot) {
-        return privateState4[slot];
+    public int orbitPhase(int slot) {
+        return orbitPhase[slot];
     }
 
-    public int privateState2(int slot) {
-        return privateState2[slot];
+    public int orbitStep(int slot) {
+        return orbitStep[slot];
     }
 
-    public int privateState3(int slot) {
-        return privateState3[slot];
+    public int orbitTurnTicks(int slot) {
+        return orbitTurnTicks[slot];
     }
 
     public int speedX(int slot) {
@@ -182,18 +186,18 @@ public final class PeaHatMotion {
     }
 
     private void updateFlyingSpeed(int slot, IntSupplier randomByteSupplier) {
-        privateState3[slot] = (privateState3[slot] + 1) & 0xFF;
-        if (privateState3[slot] < 0x18) {
+        orbitTurnTicks[slot] = (orbitTurnTicks[slot] + 1) & 0xFF;
+        if (orbitTurnTicks[slot] < 0x18) {
             return;
         }
-        privateState3[slot] = 0;
-        privateState4[slot] = (privateState2[slot] + privateState4[slot]) & 0x0F;
-        speedY[slot] = signedShiftRight(SPEED_Y_BY_PHASE[privateState4[slot]], 1);
-        speedX[slot] = signedShiftRight(SPEED_X_BY_PHASE[privateState4[slot]], 1);
+        orbitTurnTicks[slot] = 0;
+        orbitPhase[slot] = (orbitStep[slot] + orbitPhase[slot]) & 0x0F;
+        speedY[slot] = signedShiftRight(SPEED_Y_BY_PHASE[orbitPhase[slot]], 1);
+        speedX[slot] = signedShiftRight(SPEED_X_BY_PHASE[orbitPhase[slot]], 1);
         if ((randomByteSupplier.getAsInt() & 0x07) != 0) {
             return;
         }
-        privateState2[slot] = ((randomByteSupplier.getAsInt() & 0x02) - 1) & 0xFF;
+        orbitStep[slot] = ((randomByteSupplier.getAsInt() & 0x02) - 1) & 0xFF;
     }
 
     private static int approachZero(int speed) {

@@ -28,6 +28,8 @@ final class MiniMoldormHandler {
     }
 
     private static boolean phase2MiniMoldorm(EntityFrameExecution state) {
+        var resolvedMiniMoldormMotion = state.motion(MiniMoldormMotion.class, MiniMoldormMotion::new);
+
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
         var presentationFlags = state.presentation();
@@ -36,8 +38,8 @@ final class MiniMoldormHandler {
             int slot = slotState.entity().slot();
             // RenderMiniMoldorm records the history before the bank-$04
             // recoil helper runs, so keep this ordering explicit.
-            state.motion(MiniMoldormMotion.class, MiniMoldormMotion::new)
-                    .beginFrame(slotState.entity(), state.slot().ignoreHits(slot) != 0);
+            resolvedMiniMoldormMotion.beginFrame(
+                    slotState.entity(), state.slot().ignoreHits(slot) != 0);
             EnemyRecoilMotion.Update recoil =
                     state.background().applyEnemyRecoilIfNeeded(slotState.entity(), frameInput.backgroundCollision());
             slotState.entity(recoil.entity());
@@ -51,15 +53,14 @@ final class MiniMoldormHandler {
                 // decrement for its direct source-derived API as well.
                 transitionForMotion = (transitionForMotion + 1) & 0xFF;
             }
-            MiniMoldormMotion.Update miniUpdate = state.motion(MiniMoldormMotion.class, MiniMoldormMotion::new)
-                    .advanceAfterHistory(
-                            slotState.entity(),
-                            transitionForMotion,
-                            state.slot().ignoreHits(slot),
-                            state.slot().flashCountdown(slot),
-                            miniBackgroundInteraction,
-                            frameInput.randomByteSupplier(),
-                            frameInput.frame());
+            MiniMoldormMotion.Update miniUpdate = resolvedMiniMoldormMotion.advanceAfterHistory(
+                    slotState.entity(),
+                    transitionForMotion,
+                    state.slot().ignoreHits(slot),
+                    state.slot().flashCountdown(slot),
+                    miniBackgroundInteraction,
+                    frameInput.randomByteSupplier(),
+                    frameInput.frame());
             slotState.updated(miniUpdate.entity());
             state.slot().setTransitionCountdown(slot, miniUpdate.transitionCountdown());
             if (state.sprites().supportsPresentation()) {
