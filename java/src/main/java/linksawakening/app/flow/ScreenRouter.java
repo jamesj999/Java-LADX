@@ -28,6 +28,10 @@ import linksawakening.ui.FileMenuRomData;
  * retained for the owning session.
  */
 public final class ScreenRouter {
+
+    private static final int ROOM_PIXEL_WIDTH = 160;
+
+    private static final int ROOM_PIXEL_HEIGHT = 128;
     private final RomServices rom;
     private final WorldServices world;
     private final PlayerServices player;
@@ -51,14 +55,6 @@ public final class ScreenRouter {
         this.input = Objects.requireNonNull(input);
         this.state = Objects.requireNonNull(state);
         this.actions = Objects.requireNonNull(actions);
-    }
-
-    private static final int ROOM_PIXEL_WIDTH = 160;
-
-    private static final int ROOM_PIXEL_HEIGHT = 128;
-
-    private void setFileMenuController(FileMenuController controller) {
-        state.screens().fileMenu.open(controller);
     }
 
     public void startIntroCutscene() {
@@ -203,5 +199,9 @@ public final class ScreenRouter {
         } else {
             startConfiguredLocation.run();
         }
+    }
+
+    private void setFileMenuController(FileMenuController controller) {
+        state.screens().fileMenu.open(controller);
     }
 }

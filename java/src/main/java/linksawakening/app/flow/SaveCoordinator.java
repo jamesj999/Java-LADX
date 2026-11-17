@@ -54,21 +54,6 @@ public final class SaveCoordinator implements SaveActions {
         this.storyActions = Objects.requireNonNull(storyActions);
     }
 
-    private void enterGameplay() {
-        state.screens().fileMenu.clear();
-        state.screens().fileSave.clear();
-        navigator.show(ScreenKind.GAMEPLAY);
-    }
-
-    private void enterFileSave() {
-        navigator.show(ScreenKind.FILE_SAVE);
-        state.screens().fileMenu.clear();
-    }
-
-    private void setFileSaveController(FileSaveController controller) {
-        state.screens().fileSave.open(controller);
-    }
-
     @Override
     public void startNewGame() {
         enterGameplay();
@@ -149,19 +134,6 @@ public final class SaveCoordinator implements SaveActions {
                                 -1),
                         saved.spawnIndoorRoom());
         storyActions.story().restoreNewGameHouseRuntimeIfNeeded(saved);
-    }
-
-    private void loadSavedRoom(SaveSlotState saved) {
-        if (saved.spawnIsIndoor() != 0) {
-            rom.gpu().loadBaseTiles(rom.romData());
-            world.roomSession()
-                    .rooms()
-                    .loadIndoorFromSavedPosition(saved.spawnMapId(), saved.spawnMapRoom(), saved.spawnIndoorRoom());
-            player.link().animation().setDirection(Direction.UP.javaIndex());
-        } else {
-            world.roomSession().rooms().loadInitialOverworld(saved.spawnMapRoom());
-            player.link().animation().setDirection(Direction.DOWN.javaIndex());
-        }
     }
 
     /** $01:42D9-4335: options 0/1 save; option 2 skips the SRAM reload via wDBD1. */
@@ -300,5 +272,33 @@ public final class SaveCoordinator implements SaveActions {
                 player.link().position().roomEntryRomPositionX(),
                 player.link().position().roomEntryRomPositionY(),
                 indoorRoom);
+    }
+
+    private void enterGameplay() {
+        state.screens().fileMenu.clear();
+        state.screens().fileSave.clear();
+        navigator.show(ScreenKind.GAMEPLAY);
+    }
+
+    private void enterFileSave() {
+        navigator.show(ScreenKind.FILE_SAVE);
+        state.screens().fileMenu.clear();
+    }
+
+    private void setFileSaveController(FileSaveController controller) {
+        state.screens().fileSave.open(controller);
+    }
+
+    private void loadSavedRoom(SaveSlotState saved) {
+        if (saved.spawnIsIndoor() != 0) {
+            rom.gpu().loadBaseTiles(rom.romData());
+            world.roomSession()
+                    .rooms()
+                    .loadIndoorFromSavedPosition(saved.spawnMapId(), saved.spawnMapRoom(), saved.spawnIndoorRoom());
+            player.link().animation().setDirection(Direction.UP.javaIndex());
+        } else {
+            world.roomSession().rooms().loadInitialOverworld(saved.spawnMapRoom());
+            player.link().animation().setDirection(Direction.DOWN.javaIndex());
+        }
     }
 }

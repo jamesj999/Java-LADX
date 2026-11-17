@@ -36,13 +36,6 @@ import linksawakening.app.story.OpeningStory;
 final class GameplayWiring {
     private GameplayWiring() {}
 
-    record PreparedGameplay(
-            GameplayInteractions interactions,
-            MusicDirector music,
-            SessionDialogSounds dialogSounds,
-            DialogBlockerPolicy blockers,
-            FrameInputCompletion completion) {}
-
     static PreparedGameplay build(SessionServices s, SessionState state) {
         var music = new MusicDirector(s.audio().musicPlayer(), s.audio().gameplayMusicController());
         var dialogSounds =
@@ -218,4 +211,11 @@ final class GameplayWiring {
                 .entityPhase(entities)
                 .animatedTilesPhase(tiles));
     }
+
+    record PreparedGameplay(
+            GameplayInteractions interactions,
+            MusicDirector music,
+            SessionDialogSounds dialogSounds,
+            DialogBlockerPolicy blockers,
+            FrameInputCompletion completion) {}
 }

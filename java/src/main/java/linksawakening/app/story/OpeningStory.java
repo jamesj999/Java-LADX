@@ -250,18 +250,6 @@ public final class OpeningStory implements OpeningRestoration {
         return update.linkMotionBlocked();
     }
 
-    private OverworldDialogBlockers currentOverworldDialogBlockers() {
-        return actions.blockers().current();
-    }
-
-    private void playDirectMusic(int track) {
-        actions.music().playDirectMusic(track);
-    }
-
-    private int newGameHouseMusicTrack() {
-        return MusicTrackIds.MUSIC_INTRO_WAKE_UP;
-    }
-
     @Override
     public void restoreWake(MarinWakeUpMotion motion) {
         state.opening().wakeUp(motion);
@@ -291,5 +279,17 @@ public final class OpeningStory implements OpeningRestoration {
                 target.restoreShield(new TarinShieldMotion());
             }
         }
+    }
+
+    private OverworldDialogBlockers currentOverworldDialogBlockers() {
+        return actions.blockers().current();
+    }
+
+    private void playDirectMusic(int track) {
+        actions.music().playDirectMusic(track);
+    }
+
+    private int newGameHouseMusicTrack() {
+        return MusicTrackIds.MUSIC_INTRO_WAKE_UP;
     }
 }

@@ -31,6 +31,16 @@ public final class EntityFrameInputsFactory implements EntityFrameValues {
     private final FrameMusicPlayer musicPlayer;
     private final PlayerState playerState;
 
+    private final EntityInputCache cache = new EntityInputCache();
+
+    private int frameCounter;
+    private final CapturedLink link = new CapturedLink();
+    // Captured domain values are published only after borrow/create fills every group.
+    private PlayerInputs player;
+    private UiInputs ui;
+    private ButtonInputs buttons;
+    private SwordBox sword;
+
     public EntityFrameInputsFactory(Inputs inputs) {
         this.dialogController = Objects.requireNonNull(inputs.dialogController);
         this.clock = Objects.requireNonNull(inputs.frameCounter);
@@ -42,16 +52,6 @@ public final class EntityFrameInputsFactory implements EntityFrameValues {
         this.musicPlayer = Objects.requireNonNull(inputs.musicPlayer);
         this.playerState = Objects.requireNonNull(inputs.playerState);
     }
-
-    private final EntityInputCache cache = new EntityInputCache();
-
-    private int frameCounter;
-    private final CapturedLink link = new CapturedLink();
-    // Captured domain values are published only after borrow/create fills every group.
-    private PlayerInputs player;
-    private UiInputs ui;
-    private ButtonInputs buttons;
-    private SwordBox sword;
 
     /** Owned snapshot. Earlier captures remain immutable when this factory is reused. */
     public EntityFrameInputs create(Sword.CollisionBox b) {
@@ -73,27 +73,6 @@ public final class EntityFrameInputsFactory implements EntityFrameValues {
         buttons = buildButtonInputs();
         sword = buildSwordBox(b);
         return this;
-    }
-
-    private void captureLink() {
-        var l = this.playerLink;
-        var p = this.playerState;
-        link.x = l.position().romEntityX();
-        link.y = l.position().romEntityY();
-        link.z = l.animation().romEntityZ();
-        link.rawDirection = l.animation().direction();
-        link.collisionType = l.position().romCollisionType();
-        link.airborne = l.airborne().isAirborne();
-        link.rawState = l.airborne().romMotionState();
-        link.shield = l.equipment().isUsingShield();
-        link.invincibility =
-                l.status().isCollisionDamageImmune() ? 1 : p.vitals().invincibilityCounter();
-        link.speedX = l.position().romSpeedX();
-        link.speedY = l.position().romSpeedY();
-        link.attackCountdown = l.equipment().romAttackStepAnimationCountdown();
-        link.finalX = l.position().romFinalPositionX();
-        link.freeMovement = l.motion().debugNoClip();
-        link.velocityZ = l.airborne().zVelocity();
     }
 
     @Override
@@ -124,6 +103,92 @@ public final class EntityFrameInputsFactory implements EntityFrameValues {
     @Override
     public SwordBox sword() {
         return sword;
+    }
+
+    private void captureLink() {
+        var l = this.playerLink;
+        var p = this.playerState;
+        link.x = l.position().romEntityX();
+        link.y = l.position().romEntityY();
+        link.z = l.animation().romEntityZ();
+        link.rawDirection = l.animation().direction();
+        link.collisionType = l.position().romCollisionType();
+        link.airborne = l.airborne().isAirborne();
+        link.rawState = l.airborne().romMotionState();
+        link.shield = l.equipment().isUsingShield();
+        link.invincibility =
+                l.status().isCollisionDamageImmune() ? 1 : p.vitals().invincibilityCounter();
+        link.speedX = l.position().romSpeedX();
+        link.speedY = l.position().romSpeedY();
+        link.attackCountdown = l.equipment().romAttackStepAnimationCountdown();
+        link.finalX = l.position().romFinalPositionX();
+        link.freeMovement = l.motion().debugNoClip();
+        link.velocityZ = l.airborne().zVelocity();
+    }
+
+    private PlayerInputs buildPlayerInputs() {
+        var p = this.playerState;
+        return cache.playerInputs(
+                cache.progressInputs(
+                        p.progression().heartPieces(),
+                        p.progression().birdKeyCount() != 0,
+                        p.progression().tailKeyCount() != 0,
+                        p.progression().tradeSequenceItem(),
+                        p.ammunition().hasToadstool(),
+                        p.ammunition().magicPowderCount(),
+                        p.progression().goldenLeavesCount()),
+                cache.inventoryInputs(
+                        p.inventory().itemA(),
+                        p.inventory().itemB(),
+                        p.equipmentLevels().tunicType() == Tunic.RED.romValue(),
+                        p.equipmentLevels().activePowerUp() == PowerUp.PIECE_OF_POWER.romValue()),
+                cache.playerLevels(
+                        p.equipmentLevels().shieldLevel(),
+                        p.equipmentLevels().swordLevel(),
+                        p.equipmentLevels().powerBraceletLevel()),
+                cache.playerHealth(
+                        p.vitals().maxHearts(),
+                        p.vitals().health(),
+                        p.equipmentLevels().activePowerUp() != PowerUp.NONE.romValue(),
+                        p.vitals().isOnLowHealth()));
+    }
+
+    private UiInputs buildUiInputs() {
+        var d = this.dialogController;
+        var m = this.inventoryMenu;
+        var p = this.musicPlayer;
+        return cache.uiInputs(
+                d.isActive(),
+                m.inventoryAppearing(),
+                d.dialogCooldown(),
+                m.windowY(),
+                d.choiceSelectionIndex(),
+                p.isMusicPlaying());
+    }
+
+    private ButtonInputs buildButtonInputs() {
+        var i = this.inputState;
+        var k = this.inputConfig;
+        var l = this.playerLink;
+        var lift = this.lift;
+        return cache.buttonInputs(
+                i.isDown(k.aKey()),
+                i.isDown(k.bKey()),
+                (i.isDown(k.upKey())
+                        || i.isDown(k.downKey())
+                        || i.isDown(k.leftKey())
+                        || i.isDown(k.rightKey())
+                        || i.isDown(k.aKey())
+                        || i.isDown(k.bKey())
+                        || i.isDown(k.selectKey())
+                        || i.isDown(k.menuOpenKey())),
+                l.controls().romPressedButtonsMask(),
+                lift.isPowerBraceletButtonHeld(),
+                lift.isBombButtonHeld());
+    }
+
+    private SwordBox buildSwordBox(Sword.CollisionBox b) {
+        return cache.swordBox(b.active(), b.x(), b.width(), b.y(), b.height());
     }
 
     private static final class CapturedLink
@@ -216,71 +281,6 @@ public final class EntityFrameInputsFactory implements EntityFrameValues {
         public boolean freeMovement() {
             return freeMovement;
         }
-    }
-
-    private PlayerInputs buildPlayerInputs() {
-        var p = this.playerState;
-        return cache.playerInputs(
-                cache.progressInputs(
-                        p.progression().heartPieces(),
-                        p.progression().birdKeyCount() != 0,
-                        p.progression().tailKeyCount() != 0,
-                        p.progression().tradeSequenceItem(),
-                        p.ammunition().hasToadstool(),
-                        p.ammunition().magicPowderCount(),
-                        p.progression().goldenLeavesCount()),
-                cache.inventoryInputs(
-                        p.inventory().itemA(),
-                        p.inventory().itemB(),
-                        p.equipmentLevels().tunicType() == Tunic.RED.romValue(),
-                        p.equipmentLevels().activePowerUp() == PowerUp.PIECE_OF_POWER.romValue()),
-                cache.playerLevels(
-                        p.equipmentLevels().shieldLevel(),
-                        p.equipmentLevels().swordLevel(),
-                        p.equipmentLevels().powerBraceletLevel()),
-                cache.playerHealth(
-                        p.vitals().maxHearts(),
-                        p.vitals().health(),
-                        p.equipmentLevels().activePowerUp() != PowerUp.NONE.romValue(),
-                        p.vitals().isOnLowHealth()));
-    }
-
-    private UiInputs buildUiInputs() {
-        var d = this.dialogController;
-        var m = this.inventoryMenu;
-        var p = this.musicPlayer;
-        return cache.uiInputs(
-                d.isActive(),
-                m.inventoryAppearing(),
-                d.dialogCooldown(),
-                m.windowY(),
-                d.choiceSelectionIndex(),
-                p.isMusicPlaying());
-    }
-
-    private ButtonInputs buildButtonInputs() {
-        var i = this.inputState;
-        var k = this.inputConfig;
-        var l = this.playerLink;
-        var lift = this.lift;
-        return cache.buttonInputs(
-                i.isDown(k.aKey()),
-                i.isDown(k.bKey()),
-                (i.isDown(k.upKey())
-                        || i.isDown(k.downKey())
-                        || i.isDown(k.leftKey())
-                        || i.isDown(k.rightKey())
-                        || i.isDown(k.aKey())
-                        || i.isDown(k.bKey())
-                        || i.isDown(k.selectKey())
-                        || i.isDown(k.menuOpenKey())),
-                l.controls().romPressedButtonsMask(),
-                lift.isPowerBraceletButtonHeld(),
-                lift.isBombButtonHeld());
-    }
-
-    private SwordBox buildSwordBox(Sword.CollisionBox b) {
-        return cache.swordBox(b.active(), b.x(), b.width(), b.y(), b.height());
     }
 
     /** Named construction inputs, consumed once by the phase constructor. */

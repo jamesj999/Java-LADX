@@ -4,7 +4,6 @@ package linksawakening.app.input;
  * retained.
  */
 public final class ApplicationKeys {
-    private ApplicationKeys() {}
 
     public static final int KEY_F1 = 290;
     public static final int KEY_F2 = 291;
@@ -14,4 +13,6 @@ public final class ApplicationKeys {
     public static final int KEY_PAGE_DOWN = 267;
     public static final int KEY_HOME = 268;
     public static final int KEY_END = 269;
+
+    private ApplicationKeys() {}
 }

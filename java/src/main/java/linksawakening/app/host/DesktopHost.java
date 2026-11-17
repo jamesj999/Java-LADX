@@ -47,22 +47,18 @@ import org.lwjgl.system.MemoryStack;
  * session.
  */
 public final class DesktopHost implements Host {
-    @Override
-    public PcmSoundOutput createPcmOutput() {
-        return new OpenAlPcmSoundOutput();
-    }
 
     private long window;
     private HostResources resources;
 
-    /** Native handle for the package-local viewport check. */
-    long windowHandle() {
-        return window;
-    }
-
     private OpenGlFramePresenter framePresenter;
     private GLFWErrorCallback errorCallback;
     private GLFWKeyCallback keyCallback;
+
+    @Override
+    public PcmSoundOutput createPcmOutput() {
+        return new OpenAlPcmSoundOutput();
+    }
 
     @Override
     public void open(BiConsumer<Integer, Integer> keys) {
@@ -74,6 +70,47 @@ public final class DesktopHost implements Host {
             resources = null;
             throw failure;
         }
+    }
+
+    @Override
+    public boolean shouldClose() {
+        return glfwWindowShouldClose(window);
+    }
+
+    @Override
+    public void pollEvents() {
+        glfwPollEvents();
+    }
+
+    @Override
+    public void present(byte[] pixels) {
+        framePresenter.present(pixels);
+    }
+
+    @Override
+    public void recordingStatus(boolean active) {
+        if (window != 0) glfwSetWindowTitle(window, "Link's Awakening DX" + (active ? " [REC]" : ""));
+    }
+
+    @Override
+    public void releasePresentation() {
+        if (framePresenter != null) {
+            var presenter = framePresenter;
+            framePresenter = null;
+            presenter.cleanup();
+        }
+    }
+
+    @Override
+    public void close() {
+        var owned = resources;
+        resources = null;
+        if (owned != null) owned.close();
+    }
+
+    /** Native handle for the package-local viewport check. */
+    long windowHandle() {
+        return window;
     }
 
     private void openWindow(BiConsumer<Integer, Integer> keys) {
@@ -169,41 +206,5 @@ public final class DesktopHost implements Host {
                     x.get(0) + (width.get(0) - windowWidth.get(0)) / 2,
                     y.get(0) + (height.get(0) - windowHeight.get(0)) / 2);
         }
-    }
-
-    @Override
-    public boolean shouldClose() {
-        return glfwWindowShouldClose(window);
-    }
-
-    @Override
-    public void pollEvents() {
-        glfwPollEvents();
-    }
-
-    @Override
-    public void present(byte[] pixels) {
-        framePresenter.present(pixels);
-    }
-
-    @Override
-    public void recordingStatus(boolean active) {
-        if (window != 0) glfwSetWindowTitle(window, "Link's Awakening DX" + (active ? " [REC]" : ""));
-    }
-
-    @Override
-    public void releasePresentation() {
-        if (framePresenter != null) {
-            var presenter = framePresenter;
-            framePresenter = null;
-            presenter.cleanup();
-        }
-    }
-
-    @Override
-    public void close() {
-        var owned = resources;
-        resources = null;
-        if (owned != null) owned.close();
     }
 }

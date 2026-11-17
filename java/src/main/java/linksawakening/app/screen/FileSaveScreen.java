@@ -12,23 +12,6 @@ import linksawakening.ui.FileSaveAction;
  * Owns save-menu ticks and returns to the requested screen. One instance is retained for the owning session.
  */
 public final class FileSaveScreen implements Screen {
-    /** Required screen collaborators, validated before the first tick. */
-    public record Dependencies(
-            ScreenState screens,
-            InputState inputState,
-            InputConfig inputConfig,
-            SaveActions actions,
-            ScreenNavigator navigator,
-            InputCompletion completeInput) {
-        public Dependencies {
-            Objects.requireNonNull(screens);
-            Objects.requireNonNull(inputState);
-            Objects.requireNonNull(inputConfig);
-            Objects.requireNonNull(actions);
-            Objects.requireNonNull(navigator);
-            Objects.requireNonNull(completeInput);
-        }
-    }
 
     private final Dependencies dependencies;
 
@@ -62,5 +45,22 @@ public final class FileSaveScreen implements Screen {
     public GameFrameState renderState(GameFrameState state) {
         var frame = dependencies.screens().fileSave.snapshotOrNull();
         return state.withFileMenuFrame(frame);
+    }
+    /** Required screen collaborators, validated before the first tick. */
+    public record Dependencies(
+            ScreenState screens,
+            InputState inputState,
+            InputConfig inputConfig,
+            SaveActions actions,
+            ScreenNavigator navigator,
+            InputCompletion completeInput) {
+        public Dependencies {
+            Objects.requireNonNull(screens);
+            Objects.requireNonNull(inputState);
+            Objects.requireNonNull(inputConfig);
+            Objects.requireNonNull(actions);
+            Objects.requireNonNull(navigator);
+            Objects.requireNonNull(completeInput);
+        }
     }
 }

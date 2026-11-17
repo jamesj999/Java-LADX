@@ -13,14 +13,6 @@ import linksawakening.render.RenderScreen;
  * session.
  */
 public final class TitleScreen implements Screen {
-    /** Required screen collaborators, validated before the first tick. */
-    public record Dependencies(CutsceneManager cutsceneManager, InputState inputState, ScreenNavigator navigator) {
-        public Dependencies {
-            Objects.requireNonNull(cutsceneManager);
-            Objects.requireNonNull(inputState);
-            Objects.requireNonNull(navigator);
-        }
-    }
 
     private final Dependencies dependencies;
 
@@ -42,5 +34,13 @@ public final class TitleScreen implements Screen {
     @Override
     public RenderScreen renderScreen() {
         return RenderScreen.TITLE;
+    }
+    /** Required screen collaborators, validated before the first tick. */
+    public record Dependencies(CutsceneManager cutsceneManager, InputState inputState, ScreenNavigator navigator) {
+        public Dependencies {
+            Objects.requireNonNull(cutsceneManager);
+            Objects.requireNonNull(inputState);
+            Objects.requireNonNull(navigator);
+        }
     }
 }

@@ -12,11 +12,10 @@ import linksawakening.scene.BackgroundSceneLoader;
 
 /** Loads the ROM and initial title presentation. Stateless factory used during session initialization. */
 final class RomWiring {
-    private RomWiring() {}
 
     private static final int GAME_BOY_BG_MAP_TILES = 32 * 32;
 
-    record Graphics(BackgroundSceneLoader backgrounds, SceneState scene, byte[] framebuffer) {}
+    private RomWiring() {}
 
     static Rom loadROM() {
         try (InputStream is = RomWiring.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
@@ -60,4 +59,6 @@ final class RomWiring {
         initial.objPalettes = objPalettes;
         return new Graphics(backgroundSceneLoader, initial, indexedDisplayBuffer);
     }
+
+    record Graphics(BackgroundSceneLoader backgrounds, SceneState scene, byte[] framebuffer) {}
 }

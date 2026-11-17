@@ -2,9 +2,6 @@ package linksawakening.gameplay;
 
 /** Caller-supplied damage side effects, retained by combat consumers and invoked in source order. */
 public interface DamageConsequences {
-    void contactHurt();
-
-    void powerUpEnded();
 
     DamageConsequences NONE = new DamageConsequences() {
         @Override
@@ -13,4 +10,8 @@ public interface DamageConsequences {
         @Override
         public void powerUpEnded() {}
     };
+
+    void contactHurt();
+
+    void powerUpEnded();
 }

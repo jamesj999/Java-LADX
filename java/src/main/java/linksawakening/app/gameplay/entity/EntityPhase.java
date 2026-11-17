@@ -35,22 +35,6 @@ public final class EntityPhase {
     private final GameplayCombatEvents combatEvents;
     private final EntityDialogRouting routing;
 
-    public EntityPhase(Inputs inputs) {
-        this.sounds = Objects.requireNonNull(inputs.gameplaySoundSink);
-        this.inventoryController = Objects.requireNonNull(inputs.inventoryController);
-        this.inventoryMenu = Objects.requireNonNull(inputs.inventoryMenu);
-        this.playerLink = Objects.requireNonNull(inputs.link);
-        this.playerState = Objects.requireNonNull(inputs.playerState);
-        this.rooms = Objects.requireNonNull(inputs.roomSession);
-        this.scrollController = Objects.requireNonNull(inputs.scrollController);
-        this.transitionController = Objects.requireNonNull(inputs.transitionController);
-        this.inputs = Objects.requireNonNull(inputs.inputs);
-        this.rewards = Objects.requireNonNull(inputs.rewards);
-        this.linkWrites = Objects.requireNonNull(inputs.linkWrites);
-        this.combatEvents = Objects.requireNonNull(inputs.combatEvents);
-        this.routing = Objects.requireNonNull(inputs.routing);
-    }
-
     /** Creates the retained entity phase and its combat-event drain for one session. */
     private final EntityFrameStages stages = new EntityFrameStages() {
         @Override
@@ -114,6 +98,22 @@ public final class EntityPhase {
         }
     };
 
+    public EntityPhase(Inputs inputs) {
+        this.sounds = Objects.requireNonNull(inputs.gameplaySoundSink);
+        this.inventoryController = Objects.requireNonNull(inputs.inventoryController);
+        this.inventoryMenu = Objects.requireNonNull(inputs.inventoryMenu);
+        this.playerLink = Objects.requireNonNull(inputs.link);
+        this.playerState = Objects.requireNonNull(inputs.playerState);
+        this.rooms = Objects.requireNonNull(inputs.roomSession);
+        this.scrollController = Objects.requireNonNull(inputs.scrollController);
+        this.transitionController = Objects.requireNonNull(inputs.transitionController);
+        this.inputs = Objects.requireNonNull(inputs.inputs);
+        this.rewards = Objects.requireNonNull(inputs.rewards);
+        this.linkWrites = Objects.requireNonNull(inputs.linkWrites);
+        this.combatEvents = Objects.requireNonNull(inputs.combatEvents);
+        this.routing = Objects.requireNonNull(inputs.routing);
+    }
+
     public void tick(Sword.CollisionBox b) {
         // The original calls AnimateEntities after Link movement and
         // room-transition application. Give handlers the same current
@@ -132,32 +132,8 @@ public final class EntityPhase {
         stages.applyResults(events);
     }
 
-    private void applyCombat(List<EntityProjectileEvent> projectileEvents) {
-        var results = EntityPhase.this.rooms.entityFrameResults();
-        var screenShakeRequests = results.presentation().consumeScreenShakeRequests();
-        for (int requestIndex = 0; requestIndex < screenShakeRequests.size(); requestIndex++) {
-            ScreenShakeRequest request = screenShakeRequests.get(requestIndex);
-            EntityPhase.this.scrollController.startScreenShake(request.countdown(), request.phase());
-        }
-        EnemyProjectileEventConsumer.consume(
-                projectileEvents,
-                EntityPhase.this.playerState,
-                EntityPhase.this.playerLink,
-                EntityPhase.this.sounds.sink(),
-                combatEvents);
-        results.presentation().drainEntityEvents(combatEvents);
-    }
-
     public void applyChestRewards() {
         EntityPhase.this.rewards.applyChestRewards();
-    }
-
-    private void applyProgressRewards() {
-        EntityPhase.this.rewards.applyProgressRewards();
-    }
-
-    private void applyWitchRewards() {
-        EntityPhase.this.rewards.applyWitchRewards();
     }
 
     public void routeDialogs() {
@@ -190,6 +166,30 @@ public final class EntityPhase {
         EntityPhase.this.routing.dialogs();
         EntityPhase.this.routing.manbo();
         EntityPhase.this.routing.instrument();
+    }
+
+    private void applyCombat(List<EntityProjectileEvent> projectileEvents) {
+        var results = EntityPhase.this.rooms.entityFrameResults();
+        var screenShakeRequests = results.presentation().consumeScreenShakeRequests();
+        for (int requestIndex = 0; requestIndex < screenShakeRequests.size(); requestIndex++) {
+            ScreenShakeRequest request = screenShakeRequests.get(requestIndex);
+            EntityPhase.this.scrollController.startScreenShake(request.countdown(), request.phase());
+        }
+        EnemyProjectileEventConsumer.consume(
+                projectileEvents,
+                EntityPhase.this.playerState,
+                EntityPhase.this.playerLink,
+                EntityPhase.this.sounds.sink(),
+                combatEvents);
+        results.presentation().drainEntityEvents(combatEvents);
+    }
+
+    private void applyProgressRewards() {
+        EntityPhase.this.rewards.applyProgressRewards();
+    }
+
+    private void applyWitchRewards() {
+        EntityPhase.this.rewards.applyWitchRewards();
     }
 
     /** Named construction inputs, consumed once by the phase constructor. */

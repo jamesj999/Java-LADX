@@ -18,6 +18,8 @@ import linksawakening.world.transition.Warp;
  * retained for the owning session.
  */
 public final class BushInteraction {
+
+    private static final int OBJECT_GROUND_STAIRS = 0xC6;
     private final WorldServices world;
     private final PlayerServices player;
     private final VisualServices visual;
@@ -29,8 +31,6 @@ public final class BushInteraction {
         this.visual = Objects.requireNonNull(visual);
         this.sounds = Objects.requireNonNull(sounds);
     }
-
-    private static final int OBJECT_GROUND_STAIRS = 0xC6;
 
     public void maybeCutBushWithSword() {
         if (!world.roomSession().rooms().hasActiveRoom()) {

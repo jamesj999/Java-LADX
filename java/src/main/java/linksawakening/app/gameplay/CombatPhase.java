@@ -34,6 +34,8 @@ public final class CombatPhase {
     private final TransientVfxSystem transientVfxSystem;
     private final TransitionController transitionController;
 
+    private final Sword.CollisionBox NO_SWORD = Sword.CollisionBox.inactive();
+
     public CombatPhase(Inputs inputs) {
         this.equipmentController = Objects.requireNonNull(inputs.equipmentController);
         this.frameInputs = Objects.requireNonNull(inputs.frameInputs);
@@ -47,8 +49,6 @@ public final class CombatPhase {
         this.transientVfxSystem = Objects.requireNonNull(inputs.transientVfxSystem);
         this.transitionController = Objects.requireNonNull(inputs.transitionController);
     }
-
-    private final Sword.CollisionBox NO_SWORD = Sword.CollisionBox.inactive();
 
     public Sword.CollisionBox tick(boolean dialogBlocksGameplay) {
         Sword.CollisionBox swordBoxForEntityTick = NO_SWORD;

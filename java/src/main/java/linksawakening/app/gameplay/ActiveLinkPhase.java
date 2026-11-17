@@ -46,6 +46,8 @@ public final class ActiveLinkPhase {
     private final LinkGroundPhase ground;
     private final LinkMotionDriver motion;
 
+    private final Sword.CollisionBox NO_SWORD = Sword.CollisionBox.inactive();
+
     public ActiveLinkPhase(Inputs inputs) {
         this.bush = Objects.requireNonNull(inputs.bush);
         this.debugState = Objects.requireNonNull(inputs.debugNoClip);
@@ -64,8 +66,6 @@ public final class ActiveLinkPhase {
         this.ground = Objects.requireNonNull(inputs.ground);
         this.motion = Objects.requireNonNull(inputs.motion);
     }
-
-    private final Sword.CollisionBox NO_SWORD = Sword.CollisionBox.inactive();
 
     public void tick(boolean swordPickupSequenceActive) {
         // AnimateEntities runs after Link motion and its normal NPC

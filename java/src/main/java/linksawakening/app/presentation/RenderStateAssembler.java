@@ -78,6 +78,14 @@ public final class RenderStateAssembler {
         return state.screens().currentScreen.renderState(inputs);
     }
 
+    public RenderScreen currentRenderScreen() {
+        return renderScreenFor(state.screens().currentScreen);
+    }
+
+    public RenderScreen renderScreenFor(Screen screen) {
+        return screen.renderScreen();
+    }
+
     private void fillRoomView() {
         inputs.withRoom(
                 world.roomSession().rooms().renderViewOrNull(), world.scrollController(), world.transitionController());
@@ -100,13 +108,5 @@ public final class RenderStateAssembler {
                         state.scene().objPalettes)
                 .withCutsceneManager(ui.cutsceneManager())
                 .withIntroFrameSnapshot(ui.cutsceneManager().frameSnapshot());
-    }
-
-    public RenderScreen currentRenderScreen() {
-        return renderScreenFor(state.screens().currentScreen);
-    }
-
-    public RenderScreen renderScreenFor(Screen screen) {
-        return screen.renderScreen();
     }
 }

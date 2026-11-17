@@ -27,6 +27,15 @@ public final class FrameInputCache {
     private final ScrollController scrollController;
     private final TransitionController transitionController;
 
+    // Absent until first use; these are cached immutable values, not session collaborators.
+    private EnemyAttackContext attack;
+
+    private SwordBox sword;
+
+    private final CombatFrame combat = new CombatFrame();
+    private final PickupFrame pickup = new PickupFrame();
+    private final GroundFrame ground = new GroundFrame();
+
     public FrameInputCache(
             DebugState debugNoClip,
             DialogController dialogController,
@@ -43,9 +52,6 @@ public final class FrameInputCache {
         this.scrollController = Objects.requireNonNull(scrollController);
         this.transitionController = Objects.requireNonNull(transitionController);
     }
-
-    // Absent until first use; these are cached immutable values, not session collaborators.
-    private EnemyAttackContext attack;
 
     public EnemyAttackContext attack(
             int swordLevel,
@@ -70,8 +76,6 @@ public final class FrameInputCache {
         return attack;
     }
 
-    private SwordBox sword;
-
     public SwordBox sword(boolean active, int x, int width, int y, int height) {
         if (sword == null
                 || sword.active() != active
@@ -81,10 +85,6 @@ public final class FrameInputCache {
                 || sword.height() != height) sword = new SwordBox(active, x, width, y, height);
         return sword;
     }
-
-    private final CombatFrame combat = new CombatFrame();
-    private final PickupFrame pickup = new PickupFrame();
-    private final GroundFrame ground = new GroundFrame();
 
     public EnemyCombatInputs combat(Sword.CollisionBox b, EnemyAttackContext attackContext) {
         combat.frameCounter = this.clock.value();

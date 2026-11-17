@@ -18,25 +18,6 @@ import linksawakening.render.RenderScreen;
  * owning session.
  */
 public final class CutsceneScreen implements Screen {
-    /** Required screen collaborators, validated before the first tick. */
-    public record Dependencies(
-            CutsceneManager cutsceneManager,
-            InputState inputState,
-            DialogController dialogController,
-            InputConfig inputConfig,
-            DialogSoundRouting sounds,
-            ScreenNavigator navigator,
-            MusicRequests music) {
-        public Dependencies {
-            Objects.requireNonNull(cutsceneManager);
-            Objects.requireNonNull(inputState);
-            Objects.requireNonNull(dialogController);
-            Objects.requireNonNull(inputConfig);
-            Objects.requireNonNull(sounds);
-            Objects.requireNonNull(navigator);
-            Objects.requireNonNull(music);
-        }
-    }
 
     private final Dependencies dependencies;
 
@@ -80,5 +61,24 @@ public final class CutsceneScreen implements Screen {
     @Override
     public RenderScreen renderScreen() {
         return RenderScreen.CUTSCENE;
+    }
+    /** Required screen collaborators, validated before the first tick. */
+    public record Dependencies(
+            CutsceneManager cutsceneManager,
+            InputState inputState,
+            DialogController dialogController,
+            InputConfig inputConfig,
+            DialogSoundRouting sounds,
+            ScreenNavigator navigator,
+            MusicRequests music) {
+        public Dependencies {
+            Objects.requireNonNull(cutsceneManager);
+            Objects.requireNonNull(inputState);
+            Objects.requireNonNull(dialogController);
+            Objects.requireNonNull(inputConfig);
+            Objects.requireNonNull(sounds);
+            Objects.requireNonNull(navigator);
+            Objects.requireNonNull(music);
+        }
     }
 }

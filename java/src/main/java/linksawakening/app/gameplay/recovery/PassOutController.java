@@ -35,6 +35,12 @@ public final class PassOutController {
     private final InputConfig inputConfig;
     private final InputState inputState;
 
+    // Optional identity/sequence state: no death presentation exists before the death trigger.
+    private Link owner;
+    private Sequence sequence = Inactive.INSTANCE;
+
+    private boolean handledFrame;
+
     public PassOutController(Inputs inputs) {
         this.sounds = Objects.requireNonNull(inputs.gameplaySoundSink);
         this.inventoryController = Objects.requireNonNull(inputs.inventoryController);
@@ -49,30 +55,6 @@ public final class PassOutController {
         this.inputConfig = Objects.requireNonNull(inputs.inputConfig);
         this.inputState = Objects.requireNonNull(inputs.inputState);
     }
-
-    // Optional identity/sequence state: no death presentation exists before the death trigger.
-    private Link owner;
-    private Sequence sequence = Inactive.INSTANCE;
-
-    private sealed interface Sequence permits Inactive, Dying, GameOver {}
-
-    private enum Inactive implements Sequence {
-        INSTANCE
-    }
-
-    private record Dying(LinkPassOutAnimation animation) implements Sequence {
-        Dying {
-            Objects.requireNonNull(animation);
-        }
-    }
-
-    private record GameOver(GameOverPresentation menu) implements Sequence {
-        GameOver {
-            Objects.requireNonNull(menu);
-        }
-    }
-
-    private boolean handledFrame;
 
     public boolean handledFrame() {
         return handledFrame;
@@ -139,6 +121,24 @@ public final class PassOutController {
                     .romData(rom)
                     .roomSession(rooms)));
         return true;
+    }
+
+    private sealed interface Sequence permits Inactive, Dying, GameOver {}
+
+    private enum Inactive implements Sequence {
+        INSTANCE
+    }
+
+    private record Dying(LinkPassOutAnimation animation) implements Sequence {
+        Dying {
+            Objects.requireNonNull(animation);
+        }
+    }
+
+    private record GameOver(GameOverPresentation menu) implements Sequence {
+        GameOver {
+            Objects.requireNonNull(menu);
+        }
     }
 
     /** Named construction inputs, consumed once by the phase constructor. */

@@ -8,6 +8,26 @@ import linksawakening.app.screen.InputCompletion;
  * simulation early. Exceptions do not advance input. One instance is retained for the owning session.
  */
 public final class GameplayFrame {
+
+    private final Transitions transitions;
+    private final Simulation simulation;
+    private final InputCompletion inputCompletion;
+
+    public GameplayFrame(Transitions transitions, Simulation simulation, InputCompletion inputCompletion) {
+        this.transitions = transitions;
+        this.simulation = simulation;
+        this.inputCompletion = inputCompletion;
+    }
+
+    public static List<Phase> phaseOrder() {
+        return List.of(Phase.TRANSITIONS, Phase.SIMULATION, Phase.INPUT_COMPLETION);
+    }
+
+    public void tick() {
+        transitions.run();
+        simulation.tick();
+        inputCompletion.complete();
+    }
     /** Transition advancement performed before simulation. */
     public interface Transitions {
         void run();
@@ -22,25 +42,5 @@ public final class GameplayFrame {
         TRANSITIONS,
         SIMULATION,
         INPUT_COMPLETION
-    }
-
-    public static List<Phase> phaseOrder() {
-        return List.of(Phase.TRANSITIONS, Phase.SIMULATION, Phase.INPUT_COMPLETION);
-    }
-
-    private final Transitions transitions;
-    private final Simulation simulation;
-    private final InputCompletion inputCompletion;
-
-    public GameplayFrame(Transitions transitions, Simulation simulation, InputCompletion inputCompletion) {
-        this.transitions = transitions;
-        this.simulation = simulation;
-        this.inputCompletion = inputCompletion;
-    }
-
-    public void tick() {
-        transitions.run();
-        simulation.tick();
-        inputCompletion.complete();
     }
 }

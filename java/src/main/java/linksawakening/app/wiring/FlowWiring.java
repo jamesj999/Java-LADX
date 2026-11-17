@@ -27,16 +27,6 @@ import linksawakening.app.state.SessionState;
 final class FlowWiring {
     private FlowWiring() {}
 
-    record Flows(
-            SaveCoordinator saves,
-            ScreenRouter router,
-            InputRouter input,
-            RenderStateAssembler renderer,
-            GameplaySimulation simulation,
-            GameplayInteractions interactions,
-            MusicDirector music,
-            PassOutController passOut) {}
-
     static Flows build(
             SessionServices s,
             SessionState state,
@@ -109,4 +99,14 @@ final class FlowWiring {
                         prepared.interactions().story(),
                         prepared.interactions().dialogs()));
     }
+
+    record Flows(
+            SaveCoordinator saves,
+            ScreenRouter router,
+            InputRouter input,
+            RenderStateAssembler renderer,
+            GameplaySimulation simulation,
+            GameplayInteractions interactions,
+            MusicDirector music,
+            PassOutController passOut) {}
 }

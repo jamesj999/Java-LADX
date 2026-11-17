@@ -10,15 +10,6 @@ public record OverworldDialogBlockers(
 
     private static final OverworldDialogBlockers[] VALUES = values();
 
-    private static OverworldDialogBlockers[] values() {
-        var values = new OverworldDialogBlockers[32];
-        for (int mask = 0; mask < values.length; mask++) {
-            values[mask] = new OverworldDialogBlockers(
-                    (mask & 1) != 0, (mask & 2) != 0, (mask & 4) != 0, (mask & 8) != 0, (mask & 16) != 0);
-        }
-        return values;
-    }
-
     /** Reuses immutable values for the five independent frame gates. */
     public static OverworldDialogBlockers of(
             boolean inventory, boolean scrolling, boolean transition, boolean dialog, boolean consumed) {
@@ -40,5 +31,14 @@ public record OverworldDialogBlockers(
 
     public boolean pausesGameplay() {
         return dialogActive || dialogInputConsumedThisFrame;
+    }
+
+    private static OverworldDialogBlockers[] values() {
+        var values = new OverworldDialogBlockers[32];
+        for (int mask = 0; mask < values.length; mask++) {
+            values[mask] = new OverworldDialogBlockers(
+                    (mask & 1) != 0, (mask & 2) != 0, (mask & 4) != 0, (mask & 8) != 0, (mask & 16) != 0);
+        }
+        return values;
     }
 }

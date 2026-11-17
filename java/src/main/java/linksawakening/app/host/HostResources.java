@@ -7,6 +7,22 @@ final class HostResources implements AutoCloseable {
     private final ArrayDeque<Runnable> cleanup = new ArrayDeque<>();
     private boolean closed;
 
+    @Override
+    public void close() {
+        if (closed) return;
+        closed = true;
+        Throwable first = null;
+        while (!cleanup.isEmpty())
+            try {
+                cleanup.removeFirst().run();
+            } catch (RuntimeException | Error failure) {
+                if (first == null) first = failure;
+                else if (first != failure) first.addSuppressed(failure);
+            }
+        if (first instanceof Error error) throw error;
+        if (first != null) throw (RuntimeException) first;
+    }
+
     void add(Runnable action) {
         if (closed) throw new IllegalStateException("Host resources already closed");
         cleanup.addFirst(action);
@@ -23,21 +39,5 @@ final class HostResources implements AutoCloseable {
             }
             throw failure;
         }
-    }
-
-    @Override
-    public void close() {
-        if (closed) return;
-        closed = true;
-        Throwable first = null;
-        while (!cleanup.isEmpty())
-            try {
-                cleanup.removeFirst().run();
-            } catch (RuntimeException | Error failure) {
-                if (first == null) first = failure;
-                else if (first != failure) first.addSuppressed(failure);
-            }
-        if (first instanceof Error error) throw error;
-        if (first != null) throw (RuntimeException) first;
     }
 }

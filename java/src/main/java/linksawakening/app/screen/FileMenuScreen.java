@@ -15,23 +15,6 @@ import linksawakening.ui.FileMenuAction;
  * owning session.
  */
 public final class FileMenuScreen implements Screen {
-    /** Required screen collaborators, validated before the first tick. */
-    public record Dependencies(
-            ScreenState screens,
-            InputState inputState,
-            InputConfig inputConfig,
-            SaveState saves,
-            SaveActions actions,
-            InputCompletion completeInput) {
-        public Dependencies {
-            Objects.requireNonNull(screens);
-            Objects.requireNonNull(inputState);
-            Objects.requireNonNull(inputConfig);
-            Objects.requireNonNull(saves);
-            Objects.requireNonNull(actions);
-            Objects.requireNonNull(completeInput);
-        }
-    }
 
     private final Dependencies dependencies;
 
@@ -84,5 +67,22 @@ public final class FileMenuScreen implements Screen {
     public GameFrameState renderState(GameFrameState state) {
         var frame = dependencies.screens().fileMenu.snapshotOrNull();
         return state.withFileMenuFrame(frame);
+    }
+    /** Required screen collaborators, validated before the first tick. */
+    public record Dependencies(
+            ScreenState screens,
+            InputState inputState,
+            InputConfig inputConfig,
+            SaveState saves,
+            SaveActions actions,
+            InputCompletion completeInput) {
+        public Dependencies {
+            Objects.requireNonNull(screens);
+            Objects.requireNonNull(inputState);
+            Objects.requireNonNull(inputConfig);
+            Objects.requireNonNull(saves);
+            Objects.requireNonNull(actions);
+            Objects.requireNonNull(completeInput);
+        }
     }
 }
