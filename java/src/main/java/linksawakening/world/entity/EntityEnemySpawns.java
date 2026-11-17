@@ -640,7 +640,7 @@ public final class EntityEnemySpawns {
         int speedY = inputs.speedY();
         int speedZ = inputs.speedZ();
         boolean initializeMotion = inputs.initializeMotion();
-        // ROM privateState4: handler-dependent register; a narrower meaning has not been established.
+        // ROM wEntitiesPrivateState4Table: handler-dependent register; a narrower meaning has not been established.
         int privateState4 = inputs.privateState4();
         EntitySlotValidation.validateByte(entityX, "Enemy bomb X");
         EntitySlotValidation.validateByte(entityY, "Enemy bomb Y");

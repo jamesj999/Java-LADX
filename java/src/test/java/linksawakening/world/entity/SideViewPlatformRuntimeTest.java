@@ -21,8 +21,8 @@ final class SideViewPlatformRuntimeTest {
         assertEquals(
                 List.of(new SideViewPlatformLinkRequest(0, 0, 0x40, 0x02, true, true)),
                 runtime.outbox().consumePendingSideViewPlatformLinkRequests());
-        assertEquals(0x10, EntityRuntimeFixture.inspection(runtime).sideViewPlatformPrivateState2ForTest(0));
-        assertEquals(1, EntityRuntimeFixture.inspection(runtime).sideViewPlatformPrivateState4ForTest(0));
+        assertEquals(0x10, EntityRuntimeFixture.inspection(runtime).sideViewPlatformRumbleCountdownForTest(0));
+        assertEquals(1, EntityRuntimeFixture.inspection(runtime).sideViewPlatformPressureTicksForTest(0));
         assertEquals(1, EntityRuntimeFixture.inspection(runtime).sideViewPlatformSpeedYForTest(0));
     }
 
@@ -37,7 +37,7 @@ final class SideViewPlatformRuntimeTest {
         assertEquals(0x40, request.positionY());
         assertTrue(request.standing());
         assertTrue(!request.activate());
-        assertEquals(0x10, EntityRuntimeFixture.inspection(runtime).sideViewPlatformPrivateState2ForTest(0));
+        assertEquals(0x10, EntityRuntimeFixture.inspection(runtime).sideViewPlatformRumbleCountdownForTest(0));
         assertEquals(0, EntityRuntimeFixture.inspection(runtime).sideViewPlatformSpeedYForTest(0));
     }
 
@@ -164,7 +164,7 @@ final class SideViewPlatformRuntimeTest {
                 new EnemyProjectileCollision.LinkState(0x48, 0x40, 0, 0, 3, false),
                 0x00,
                 0x00));
-        assertEquals(1, EntityRuntimeFixture.inspection(runtime).sideViewPlatformPrivateState4ForTest(0));
+        assertEquals(1, EntityRuntimeFixture.inspection(runtime).sideViewPlatformPressureTicksForTest(0));
         assertEquals(0x10, EntityRuntimeFixture.inspection(runtime).sideViewPlatformSpeedYForTest(0));
     }
 
@@ -305,8 +305,8 @@ final class SideViewPlatformRuntimeTest {
         runtime.lifecycle().clearEntity(0);
         assertEquals(0, EntityRuntimeFixture.inspection(runtime).sideViewPlatformSpeedYForTest(0));
         assertEquals(0, EntityRuntimeFixture.inspection(runtime).sideViewPlatformSpeedXForTest(0));
-        assertEquals(0, EntityRuntimeFixture.inspection(runtime).sideViewPlatformPrivateState2ForTest(0));
-        assertEquals(0, EntityRuntimeFixture.inspection(runtime).sideViewPlatformPrivateState4ForTest(0));
+        assertEquals(0, EntityRuntimeFixture.inspection(runtime).sideViewPlatformRumbleCountdownForTest(0));
+        assertEquals(0, EntityRuntimeFixture.inspection(runtime).sideViewPlatformPressureTicksForTest(0));
     }
 
     private static void tick(RoomEntityRuntime runtime, int frame, int linkX, int linkY, int speedX, int speedY) {

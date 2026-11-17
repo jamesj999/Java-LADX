@@ -46,24 +46,24 @@ final class EntityRuntimeWizrobeTest extends EntityRuntimeTestSupport {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 0x80, 0x50, sequence(0x00)));
         }
         assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).wizrobeState(0));
-        assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).wizrobePrivateCountdown1(0));
-        assertEquals(0x01, new EntityEnemyInspectionQueries(runtime.enemies()).wizrobePrivateState1(0));
+        assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).wizrobePhaseCountdown(0));
+        assertEquals(0x01, new EntityEnemyInspectionQueries(runtime.enemies()).wizrobePhaseStep(0));
         assertEquals(-1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         EntityRuntimeFixture.debug(runtime).setWizrobeStateForTest(0, 2, 0, 1, 2, 0);
         runtime.tick(EntityTestFrames.frame(runtime, 0x81, 0x80, 0x50, sequence(0x00)));
         assertEquals(3, new EntityEnemyInspectionQueries(runtime.enemies()).wizrobeState(0));
-        assertEquals(0x01, new EntityEnemyInspectionQueries(runtime.enemies()).wizrobePrivateState1(0));
-        assertEquals(0x01, new EntityEnemyInspectionQueries(runtime.enemies()).wizrobePrivateCountdown1(0));
+        assertEquals(0x01, new EntityEnemyInspectionQueries(runtime.enemies()).wizrobePhaseStep(0));
+        assertEquals(0x01, new EntityEnemyInspectionQueries(runtime.enemies()).wizrobePhaseCountdown(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 0x82, 0x80, 0x50, sequence(0x00)));
-        assertEquals(0x40, new EntityEnemyInspectionQueries(runtime.enemies()).wizrobePrivateCountdown1(0));
+        assertEquals(0x40, new EntityEnemyInspectionQueries(runtime.enemies()).wizrobePhaseCountdown(0));
         assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).wizrobeDirection(0));
         assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).wizrobeNextSpriteVariant(0));
 
         EntityRuntimeFixture.debug(runtime).setWizrobeStateForTest(0, 3, 0, 0xFF, 0x29, 0);
         runtime.tick(EntityTestFrames.frame(runtime, 0x83, 0x80, 0x50, sequence(0x00)));
-        assertEquals(0x28, new EntityEnemyInspectionQueries(runtime.enemies()).wizrobePrivateCountdown1(0));
+        assertEquals(0x28, new EntityEnemyInspectionQueries(runtime.enemies()).wizrobePhaseCountdown(0));
         RoomEntity projectile = runtime.inspection().snapshot().slots().get(15);
         assertEquals(EntityStatus.ACTIVE, projectile.status());
         assertEquals(-1, projectile.sourceLoadOrder());

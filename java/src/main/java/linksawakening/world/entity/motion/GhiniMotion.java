@@ -23,7 +23,7 @@ public final class GhiniMotion {
     // ROM wEntitiesPrivateCountdown1Table.
     private final int[] verticalRetargetCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateCountdown2Table.
-    private final int[] intangibleCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] hidingCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] targetXDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] targetYDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -43,7 +43,7 @@ public final class GhiniMotion {
         state[slot] = isHidingType(entityType) ? HIDDEN_STATE : 0;
         transitionCountdown[slot] = 0;
         verticalRetargetCountdown[slot] = 0;
-        intangibleCountdown[slot] = 0;
+        hidingCountdown[slot] = 0;
         targetXDirection[slot] = 0;
         targetYDirection[slot] = 0;
         speedX[slot] = 0;
@@ -70,7 +70,7 @@ public final class GhiniMotion {
         // The ordinary Ghini never enters the hiding state. Preserve the ROM
         // early return so the same state can be enabled for hiding Ghinis
         // without changing this visible branch.
-        if (intangibleCountdown[slot] != 0) {
+        if (hidingCountdown[slot] != 0) {
             return withPosition(entity, x, y, z);
         }
 
@@ -144,8 +144,8 @@ public final class GhiniMotion {
         return state[slot];
     }
 
-    int intangibleCountdown(int slot) {
-        return intangibleCountdown[slot];
+    int hidingCountdown(int slot) {
+        return hidingCountdown[slot];
     }
 
     int giantRectangleVariant(int slot) {
@@ -183,8 +183,8 @@ public final class GhiniMotion {
         if (verticalRetargetCountdown[slot] > 0) {
             verticalRetargetCountdown[slot]--;
         }
-        if (intangibleCountdown[slot] > 0) {
-            intangibleCountdown[slot]--;
+        if (hidingCountdown[slot] > 0) {
+            hidingCountdown[slot]--;
         }
     }
 
@@ -206,7 +206,7 @@ public final class GhiniMotion {
                 && withinRevealWindow(linkEntityY, entity.y())
                 && (collisionType & 0xFF) != 0) {
             state[entity.slot()] = 0;
-            intangibleCountdown[entity.slot()] = 0x30;
+            hidingCountdown[entity.slot()] = 0x30;
         }
         return hiddenEntity;
     }
@@ -220,7 +220,7 @@ public final class GhiniMotion {
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
         int z = correctZPosition(entity.z(), frameCounter);
 
-        if (intangibleCountdown[slot] == 0) {
+        if (hidingCountdown[slot] == 0) {
             refreshTargetsAndAccelerate(slot, frameCounter, x, y, z, randomByteSupplier);
         }
 

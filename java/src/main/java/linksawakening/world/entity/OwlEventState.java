@@ -5,7 +5,7 @@ import java.util.function.IntUnaryOperator;
 /** Slot state owned by the owl story controller. */
 final class OwlEventState {
     private final int[] owlEventState = new int[EntityRoomLoader.MAX_ENTITIES];
-    // ROM owlPrivateCountdown1: handler-dependent register; a narrower meaning has not been established.
+    // ROM wEntitiesPrivateCountdown1Table: handler-dependent register; a narrower meaning has not been established.
     private final int[] owlPrivateCountdown1 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] owlSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] owlSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];

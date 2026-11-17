@@ -122,7 +122,7 @@ final class LikeLikeCaptureTest {
         assertEquals(LikeLikeEvent.Kind.CAPTURE, stolen.kind());
         assertEquals(0, stolen.stolenInventorySlot());
         assertEquals(1, stolen.stolenShieldLevel());
-        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).likeLikePrivateState1(0));
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).likeLikeSwallowedShieldLevel(0));
 
         RoomEntityRuntime levelTwo = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
@@ -154,7 +154,7 @@ final class LikeLikeCaptureTest {
         LikeLikeEvent protectedShield =
                 levelTwo.outbox().consumePendingLikeLikeEvents().getFirst();
         assertEquals(-1, protectedShield.stolenInventorySlot());
-        assertEquals(0, new EntityRoomInspectionQueries(levelTwo.inspection()).likeLikePrivateState1(0));
+        assertEquals(0, new EntityRoomInspectionQueries(levelTwo.inspection()).likeLikeSwallowedShieldLevel(0));
     }
 
     @Test
@@ -192,7 +192,7 @@ final class LikeLikeCaptureTest {
         assertEquals(LikeLikeEvent.Kind.CAPTURE, events.getFirst().kind());
         assertFalse(events.getFirst().pinLinkPosition());
         assertEquals(0, events.getFirst().stolenInventorySlot());
-        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).likeLikePrivateState1(0));
+        assertEquals(1, new EntityRoomInspectionQueries(runtime.inspection()).likeLikeSwallowedShieldLevel(0));
     }
 
     @Test

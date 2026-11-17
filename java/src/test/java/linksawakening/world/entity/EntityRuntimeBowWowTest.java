@@ -396,7 +396,7 @@ final class EntityRuntimeBowWowTest extends EntityRuntimeTestSupport {
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(6).status());
         assertEquals(0, new EntityRoomInspectionQueries(runtime.inspection()).bowWowTransitionCountdown(5));
-        assertEquals(0x80, new EntityRoomInspectionQueries(runtime.inspection()).bowWowPrivateCountdown2(5));
+        assertEquals(0x80, new EntityRoomInspectionQueries(runtime.inspection()).bowWowBiteCountdown(5));
         assertEquals(List.of(new DialogRequest(1, 0x15)), runtime.outbox().consumePendingDialogRequests());
         assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
     }

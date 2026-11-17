@@ -53,7 +53,7 @@ public final class FollowingNpcMotion {
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] marinInertia = new int[EntityRoomLoader.MAX_ENTITIES];
-    // ROM marinPrivateState1: handler-dependent register; a narrower meaning has not been established.
+    // ROM wEntitiesPrivateState1Table: handler-dependent register; a narrower meaning has not been established.
     private final int[] marinPrivateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] marinDisplayDirection = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] marinLastLinkX = new int[EntityRoomLoader.MAX_ENTITIES];

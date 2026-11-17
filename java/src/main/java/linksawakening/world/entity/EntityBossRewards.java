@@ -530,7 +530,7 @@ public final class EntityBossRewards {
         }
 
         private boolean advanceState12() {
-            // ArmosKnightPrivateState1Handler: the second flash
+            // ArmosKnightPreviousHealthHandler: the second flash
             // begins only after the first countdown reaches zero.
             owner.writeBossDeathProducerState(slot, 2);
             owner.physicsTables.writeEnemyTransitionCountdown(slot, 0xC0);

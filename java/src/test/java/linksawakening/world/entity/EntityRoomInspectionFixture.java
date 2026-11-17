@@ -124,14 +124,14 @@ final class EntityRoomInspectionFixture {
                 .speedX(slot);
     }
 
-    int sideViewPlatformPrivateState2ForTest(int slot) {
+    int sideViewPlatformRumbleCountdownForTest(int slot) {
         return runtime.inspection()
                 .motions
                 .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)
                 .rumbleCountdown(slot);
     }
 
-    int sideViewPlatformPrivateState4ForTest(int slot) {
+    int sideViewPlatformPressureTicksForTest(int slot) {
         return runtime.inspection()
                 .motions
                 .get(SideViewPlatformMotion.class, SideViewPlatformMotion::new)

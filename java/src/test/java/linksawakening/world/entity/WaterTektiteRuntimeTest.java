@@ -66,8 +66,8 @@ final class WaterTektiteRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, randomBytes));
         assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).waterTektiteState(0));
         assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).waterTektiteTransitionCountdown(0));
-        assertEquals(0xFF, new EntityEnemyInspectionQueries(runtime.enemies()).waterTektitePrivateState1(0));
-        assertEquals(0x01, new EntityEnemyInspectionQueries(runtime.enemies()).waterTektitePrivateState2(0));
+        assertEquals(0xFF, new EntityEnemyInspectionQueries(runtime.enemies()).waterTektiteAccelerationX(0));
+        assertEquals(0x01, new EntityEnemyInspectionQueries(runtime.enemies()).waterTektiteAccelerationY(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, randomBytes));
         assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).waterTektiteSpeedX(0));

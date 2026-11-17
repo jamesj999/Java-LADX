@@ -26,23 +26,23 @@ final class StalfosEvasiveHandler {
     }
 
     private static boolean phase3StalfosEvasive(EntityFrameExecution state) {
+        var resolvedStalfosEvasiveMotion = state.motion(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new);
+
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
 
         if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
-            StalfosEvasiveMotion.Update evasiveUpdate = state.motion(
-                            StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
-                    .advance(new StalfosEvasiveFrame(
-                            slotState.entity(),
-                            frameInput.frame(),
-                            frameInput.linkEntityX(),
-                            frameInput.linkEntityY(),
-                            state.link().actionButtonsHeld(),
-                            state.slot().transitionCountdown(slotState.entity().slot()),
-                            state.slot().ignoreHits(slotState.entity().slot()),
-                            frameInput.randomByteSupplier(),
-                            frameInput.backgroundCollision(),
-                            state.roomInspection().entityMapId()));
+            StalfosEvasiveMotion.Update evasiveUpdate = resolvedStalfosEvasiveMotion.advance(new StalfosEvasiveFrame(
+                    slotState.entity(),
+                    frameInput.frame(),
+                    frameInput.linkEntityX(),
+                    frameInput.linkEntityY(),
+                    state.link().actionButtonsHeld(),
+                    state.slot().transitionCountdown(slotState.entity().slot()),
+                    state.slot().ignoreHits(slotState.entity().slot()),
+                    frameInput.randomByteSupplier(),
+                    frameInput.backgroundCollision(),
+                    state.roomInspection().entityMapId()));
             slotState.updated(evasiveUpdate.entity());
             state.slot().setTransitionCountdown(slotState.entity().slot(), evasiveUpdate.transitionCountdown());
             if (evasiveUpdate.cloneRequest() != null) {
@@ -68,8 +68,8 @@ final class StalfosEvasiveHandler {
             }
             {
                 EntitySpriteDefinition evasiveDefinition = state.spriteViews()
-                        .forStalfosEvasiveState(state.motion(StalfosEvasiveMotion.class, StalfosEvasiveMotion::new)
-                                .cloneMode(slotState.entity().slot()));
+                        .forStalfosEvasiveState(resolvedStalfosEvasiveMotion.cloneMode(
+                                slotState.entity().slot()));
                 slotState.updated(state.sprites()
                         .present(
                                 slotState.updated(),

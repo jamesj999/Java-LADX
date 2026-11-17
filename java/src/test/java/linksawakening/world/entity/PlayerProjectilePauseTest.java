@@ -85,13 +85,14 @@ final class PlayerProjectilePauseTest {
         runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(1, 1, 0x40, 0x40));
         tick(runtime, 0, 0);
         assertEquals(
-                0x30, new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
+                0x30,
+                new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballFireTransitionCountdown(slot));
         setGate(runtime, gate, true);
         tick(runtime, 8, 0);
         tick(runtime, 9, 0);
         assertEquals(
                 gate.equals("got_item") ? 0x2E : 0x30,
-                new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballPrivateCountdown1(slot));
+                new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballFireTransitionCountdown(slot));
         // The fireball writes its next frame before ReturnIfNonInteractive.
         assertEquals(1, runtime.inspection().snapshot().slots().get(slot).spriteVariant());
     }

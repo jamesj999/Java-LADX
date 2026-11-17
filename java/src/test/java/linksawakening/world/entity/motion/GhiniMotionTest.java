@@ -70,7 +70,7 @@ final class GhiniMotionTest {
         assertEquals(-1, revealTick.spriteVariant());
         assertFalse(motion.hidden(0));
         assertEquals(0, motion.state(0));
-        assertEquals(0x30, motion.intangibleCountdown(0));
+        assertEquals(0x30, motion.hidingCountdown(0));
         assertEquals(source.x(), revealTick.x());
         assertEquals(source.y(), revealTick.y());
         assertEquals(source.z(), revealTick.z());
@@ -85,7 +85,7 @@ final class GhiniMotionTest {
         RoomEntity revealTick = motion.advance(source, 0, HIDING_GHINI, 0x50, 0x50, 1, GhiniMotionTest::noRandom);
         RoomEntity visibleTick = motion.advance(revealTick, 4, HIDING_GHINI, 0x50, 0x50, 0, GhiniMotionTest::noRandom);
 
-        assertEquals(0x2F, motion.intangibleCountdown(0));
+        assertEquals(0x2F, motion.hidingCountdown(0));
         assertEquals(0x0F, visibleTick.z());
         assertEquals(source.x(), visibleTick.x());
         assertEquals(source.y(), visibleTick.y());
@@ -147,7 +147,7 @@ final class GhiniMotionTest {
 
         current = motion.advance(current, 0, GIANT_GHINI, 0x50, 0x50, 1, GhiniMotionTest::noRandom);
         assertEquals(-1, current.spriteVariant());
-        assertEquals(0x30, motion.intangibleCountdown(0));
+        assertEquals(0x30, motion.hidingCountdown(0));
 
         IntSupplier random = sequence(0x00, 0x00);
         for (int frame = 1; frame <= 0x40; frame++) {

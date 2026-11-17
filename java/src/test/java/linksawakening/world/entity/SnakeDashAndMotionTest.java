@@ -41,14 +41,14 @@ final class SnakeDashAndMotionTest {
 
         assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).snakeState(0));
         assertEquals(0x30, new EntityEnemyInspectionQueries(runtime.enemies()).snakeTransitionCountdown(0));
-        assertEquals(0x2F, new EntityEnemyInspectionQueries(runtime.enemies()).snakePrivateCountdown1(0));
+        assertEquals(0x2F, new EntityEnemyInspectionQueries(runtime.enemies()).snakeDashCooldown(0));
         assertEquals(0x08, new EntityEnemyInspectionQueries(runtime.enemies()).snakeSpeedX(0));
         assertEquals(0x00, new EntityEnemyInspectionQueries(runtime.enemies()).snakeSpeedY(0));
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
         runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0xFF)));
         assertEquals(0x2F, new EntityEnemyInspectionQueries(runtime.enemies()).snakeTransitionCountdown(0));
-        assertEquals(0x2E, new EntityEnemyInspectionQueries(runtime.enemies()).snakePrivateCountdown1(0));
+        assertEquals(0x2E, new EntityEnemyInspectionQueries(runtime.enemies()).snakeDashCooldown(0));
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
 
         runtime.tick(EntityTestFrames.frame(runtime, 8, 120, 120, sequence(0xFF)));
@@ -83,7 +83,7 @@ final class SnakeDashAndMotionTest {
         assertEquals(0x30, new EntityEnemyInspectionQueries(runtime.enemies()).snakeTransitionCountdown(0));
         assertEquals(0x00, new EntityEnemyInspectionQueries(runtime.enemies()).snakeSpeedX(0));
         assertEquals(0x10, new EntityEnemyInspectionQueries(runtime.enemies()).snakeSpeedY(0));
-        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).snakePrivateCountdown1(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).snakeDashCooldown(0));
     }
 
     @Test
@@ -113,7 +113,7 @@ final class SnakeDashAndMotionTest {
 
         assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).snakeState(0));
         assertEquals(0x08, new EntityEnemyInspectionQueries(runtime.enemies()).snakeTransitionCountdown(0));
-        assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).snakePrivateCountdown1(0));
+        assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).snakeDashCooldown(0));
         assertEquals(0x00, new EntityEnemyInspectionQueries(runtime.enemies()).snakeSpeedX(0));
         assertEquals(0x00, new EntityEnemyInspectionQueries(runtime.enemies()).snakeSpeedY(0));
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());

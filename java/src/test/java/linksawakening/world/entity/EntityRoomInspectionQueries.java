@@ -78,7 +78,7 @@ final class EntityRoomInspectionQueries {
         return runtime.motions.get(SwordBeamMotion.class, SwordBeamMotion::new).state(slot);
     }
 
-    int magicRodFireballPrivateCountdown1(int slot) {
+    int magicRodFireballFireTransitionCountdown(int slot) {
         return runtime.motions
                 .get(MagicRodFireballMotion.class, MagicRodFireballMotion::new)
                 .fireTransitionCountdown(slot);
@@ -141,7 +141,7 @@ final class EntityRoomInspectionQueries {
         return runtime.motions.get(BowWowMotion.class, BowWowMotion::new).targetSlot(slot);
     }
 
-    int bowWowPrivateCountdown2(int slot) {
+    int bowWowBiteCountdown(int slot) {
         return runtime.motions.get(BowWowMotion.class, BowWowMotion::new).biteCountdown(slot);
     }
 
@@ -154,7 +154,7 @@ final class EntityRoomInspectionQueries {
         return runtime.physicsTables.readEntityInertia(slot);
     }
 
-    int pokeyPrivateState1(int slot) {
+    int pokeyHeadAttached(int slot) {
         EntitySlotValidation.validateEntitySlot(slot);
         return runtime.motions.get(PokeyMotion.class, PokeyMotion::new).headAttached(slot);
     }
@@ -222,13 +222,13 @@ final class EntityRoomInspectionQueries {
                 .state(slot);
     }
 
-    int bushCrawlerPrivateState1(int slot) {
+    int bushCrawlerDisguiseMode(int slot) {
         return runtime.motions
                 .get(BushCrawlerMotion.class, BushCrawlerMotion::new)
                 .disguiseMode(slot);
     }
 
-    int bushCrawlerPrivateState4(int slot) {
+    int bushCrawlerCrawlHeading(int slot) {
         return runtime.motions
                 .get(BushCrawlerMotion.class, BushCrawlerMotion::new)
                 .crawlHeading(slot);
@@ -256,7 +256,7 @@ final class EntityRoomInspectionQueries {
         return runtime.motions.get(LikeLikeMotion.class, LikeLikeMotion::new).state(slot);
     }
 
-    int likeLikePrivateState1(int slot) {
+    int likeLikeSwallowedShieldLevel(int slot) {
         return runtime.motions.get(LikeLikeMotion.class, LikeLikeMotion::new).swallowedShieldLevel(slot);
     }
 

@@ -102,8 +102,9 @@ final class GenieHandler {
                 return false;
             }
 
-            bossIntro = !state.link().inventoryAppearing()
-                            && !state.roomInspection().roomTransitionActive()
+            boolean introCanAdvance = !state.link().inventoryAppearing()
+                    && !state.roomInspection().roomTransitionActive();
+            bossIntro = introCanAdvance
                     ? state.motion(BossIntroMotion.class, BossIntroMotion::new)
                             .advance(
                                     state.slotProperties()

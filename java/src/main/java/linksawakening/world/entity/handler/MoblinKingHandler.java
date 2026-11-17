@@ -122,16 +122,16 @@ final class MoblinKingHandler {
             state.slot().setTransitionCountdown(slotState.entity().slot(), kingUpdate.transitionCountdown());
             state.slot().setSlowTransitionCountdown(slotState.entity().slot(), kingUpdate.slowTransitionCountdown());
             state.slot().setSlowTimerInitialized(slotState.entity().slot(), true);
-            state.slot()
-                    .setOptions1Override(
-                            slotState.entity().slot(),
-                            resolvedMoblinKingMotion.state(slotState.entity().slot()) == 5
-                                    ? 0x84
-                                    : resolvedMoblinKingMotion.state(
-                                                            slotState.entity().slot())
-                                                    >= 2
-                                            ? 0xC4
-                                            : 0x40);
+            int kingState = resolvedMoblinKingMotion.state(slotState.entity().slot());
+            int options1;
+            if (kingState == 5) {
+                options1 = 0x84;
+            } else if (kingState >= 2) {
+                options1 = 0xC4;
+            } else {
+                options1 = 0x40;
+            }
+            state.slot().setOptions1Override(slotState.entity().slot(), options1);
             if (resolvedMoblinKingMotion.state(slotState.entity().slot()) == 5) {
                 state.slot().orPhysicsFlags(slotState.entity().slot(), ENTITY_PHYSICS_HARMLESS);
             } else {

@@ -32,18 +32,15 @@ final class BombHandler {
                             frameInput.projectileLinkState());
             slotState.entity(state.entityAt(slotState.index()));
             if (bombDecision.phase() == BombMotion.Phase.NORMAL) {
-                state.replaceEntity(
-                        state.bombInteractions().bombOrigin(slotState.entity().slot()) != 0
-                                ? state.liftThrow()
-                                        .advanceEnemyBombEntity(
-                                                slotState.entity(),
-                                                frameInput.backgroundCollision(),
-                                                frameInput.frame())
-                                : state.liftThrow()
-                                        .advancePlacedBombEntity(
-                                                slotState.entity(),
-                                                frameInput.backgroundCollision(),
-                                                frameInput.frame()));
+                boolean enemyBomb =
+                        state.bombInteractions().bombOrigin(slotState.entity().slot()) != 0;
+                var liftThrow = state.liftThrow();
+                var advancedBomb = enemyBomb
+                        ? liftThrow.advanceEnemyBombEntity(
+                                slotState.entity(), frameInput.backgroundCollision(), frameInput.frame())
+                        : liftThrow.advancePlacedBombEntity(
+                                slotState.entity(), frameInput.backgroundCollision(), frameInput.frame());
+                state.replaceEntity(advancedBomb);
             }
             state.liftThrow().tryLiftBombIfRequested(slotState.index(), bombDecision, frameInput);
             return false;

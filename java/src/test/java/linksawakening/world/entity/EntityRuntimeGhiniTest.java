@@ -30,7 +30,7 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 96, 96, sequence(0x00, 0x00)));
         assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniTransitionCountdown(0));
-        assertEquals(0x18, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniPrivateCountdown1(0));
+        assertEquals(0x18, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniVerticalRetargetCountdown(0));
         assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniTargetXDirection(0));
         assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniTargetYDirection(0));
         assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniSpeedX(0));
@@ -83,7 +83,7 @@ final class EntityRuntimeGhiniTest extends EntityRuntimeTestSupport {
 
         assertEquals(0x3F, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniTransitionCountdown(0));
         assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniTargetXDirection(0));
-        assertEquals(0x1F, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniPrivateCountdown1(0));
+        assertEquals(0x1F, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniVerticalRetargetCountdown(0));
         assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniTargetYDirection(0));
         assertEquals(0xFF, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniSpeedX(0));
         assertEquals(0xFF, new EntityEnemyInspectionQueries(runtime.enemies()).ghiniSpeedY(0));

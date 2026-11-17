@@ -153,7 +153,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, randomBytes));
         assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).peaHatState(0));
-        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).peaHatPrivateState1(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).peaHatRotorAnimationStep(0));
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).z());
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).spriteVariant());
 
@@ -161,7 +161,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, randomBytes));
         }
         assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).peaHatState(0));
-        assertEquals(8, new EntityEnemyInspectionQueries(runtime.enemies()).peaHatPrivateState1(0));
+        assertEquals(8, new EntityEnemyInspectionQueries(runtime.enemies()).peaHatRotorAnimationStep(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 129, 120, 120, randomBytes));
         assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).peaHatState(0));
@@ -191,7 +191,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
 
         assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).peaHatState(0));
         assertEquals(0x10, runtime.inspection().snapshot().slots().get(0).z());
-        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).peaHatPrivateState4(0));
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).peaHatOrbitPhase(0));
         assertEquals(0x07, new EntityEnemyInspectionQueries(runtime.enemies()).peaHatSpeedX(0));
         assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).peaHatSpeedY(0));
 
@@ -199,7 +199,7 @@ final class EntityRuntimeFlyingEnemiesTest extends EntityRuntimeTestSupport {
             runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, randomBytes));
         }
 
-        assertEquals(0x0F, new EntityEnemyInspectionQueries(runtime.enemies()).peaHatPrivateState4(0));
+        assertEquals(0x0F, new EntityEnemyInspectionQueries(runtime.enemies()).peaHatOrbitPhase(0));
         assertEquals(0x06, new EntityEnemyInspectionQueries(runtime.enemies()).peaHatSpeedX(0));
         assertEquals(0xFD, new EntityEnemyInspectionQueries(runtime.enemies()).peaHatSpeedY(0));
     }

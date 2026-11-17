@@ -123,13 +123,13 @@ final class EntityEnemyInspectionQueries {
                 .transitionCountdown(slot);
     }
 
-    int moblinSwordPrivateCountdown1(int slot) {
+    int moblinSwordAttackCountdown(int slot) {
         return runtime.motions
                 .get(MoblinSwordMotion.class, MoblinSwordMotion::new)
                 .attackCountdown(slot);
     }
 
-    int moblinSwordPrivateState3(int slot) {
+    int moblinSwordHideoutDialogShown(int slot) {
         return runtime.motions
                 .get(MoblinSwordMotion.class, MoblinSwordMotion::new)
                 .hideoutDialogShown(slot);
@@ -259,7 +259,7 @@ final class EntityEnemyInspectionQueries {
         return runtime.motions.get(BlooperMotion.class, BlooperMotion::new).speedY(slot);
     }
 
-    int blooperPrivateCountdown3(int slot) {
+    int blooperRecoilCountdown(int slot) {
         return runtime.motions.get(BlooperMotion.class, BlooperMotion::new).recoilCountdown(slot);
     }
 
@@ -291,11 +291,11 @@ final class EntityEnemyInspectionQueries {
         return List.copyOf(runtime.slotProperties.readPincerBodyOam());
     }
 
-    int sparkPrivateState1(int slot) {
+    int sparkWallTurnIndex(int slot) {
         return runtime.motions.get(SparkMotion.class, SparkMotion::new).wallTurnIndex(slot);
     }
 
-    int sparkPrivateState2(int slot) {
+    int sparkWindingOffset(int slot) {
         return runtime.motions.get(SparkMotion.class, SparkMotion::new).windingOffset(slot);
     }
 
@@ -343,7 +343,7 @@ final class EntityEnemyInspectionQueries {
         return runtime.motions.get(HidingZolMotion.class, HidingZolMotion::new).transitionCountdown(slot);
     }
 
-    int hidingZolPrivateState1(int slot) {
+    int hidingZolJumpsRemaining(int slot) {
         return runtime.motions.get(HidingZolMotion.class, HidingZolMotion::new).jumpsRemaining(slot);
     }
 
@@ -379,11 +379,11 @@ final class EntityEnemyInspectionQueries {
         return runtime.motions.get(SpikeTrapMotion.class, SpikeTrapMotion::new).speedY(slot);
     }
 
-    int spikeTrapPrivateState1(int slot) {
+    int spikeTrapHomeX(int slot) {
         return runtime.motions.get(SpikeTrapMotion.class, SpikeTrapMotion::new).homeX(slot);
     }
 
-    int spikeTrapPrivateState2(int slot) {
+    int spikeTrapHomeY(int slot) {
         return runtime.motions.get(SpikeTrapMotion.class, SpikeTrapMotion::new).homeY(slot);
     }
 
@@ -411,13 +411,13 @@ final class EntityEnemyInspectionQueries {
                 .speedY(slot);
     }
 
-    int waterTektitePrivateState1(int slot) {
+    int waterTektiteAccelerationX(int slot) {
         return runtime.motions
                 .get(WaterTektiteMotion.class, WaterTektiteMotion::new)
                 .accelerationX(slot);
     }
 
-    int waterTektitePrivateState2(int slot) {
+    int waterTektiteAccelerationY(int slot) {
         return runtime.motions
                 .get(WaterTektiteMotion.class, WaterTektiteMotion::new)
                 .accelerationY(slot);
@@ -525,7 +525,7 @@ final class EntityEnemyInspectionQueries {
         return runtime.physicsTables.readEnemyTransitionCountdown(slot);
     }
 
-    int snakePrivateCountdown1(int slot) {
+    int snakeDashCooldown(int slot) {
         return runtime.motions.get(SnakeMotion.class, SnakeMotion::new).dashCooldown(slot);
     }
 
@@ -587,11 +587,11 @@ final class EntityEnemyInspectionQueries {
         return runtime.motions.get(WizrobeMotion.class, WizrobeMotion::new).direction(slot);
     }
 
-    int wizrobePrivateState1(int slot) {
+    int wizrobePhaseStep(int slot) {
         return runtime.motions.get(WizrobeMotion.class, WizrobeMotion::new).phaseStep(slot);
     }
 
-    int wizrobePrivateCountdown1(int slot) {
+    int wizrobePhaseCountdown(int slot) {
         return runtime.motions.get(WizrobeMotion.class, WizrobeMotion::new).phaseCountdown(slot);
     }
 
@@ -625,19 +625,19 @@ final class EntityEnemyInspectionQueries {
         return runtime.motions.get(PeaHatMotion.class, PeaHatMotion::new).slowTransitionCountdown(slot);
     }
 
-    int peaHatPrivateState1(int slot) {
+    int peaHatRotorAnimationStep(int slot) {
         return runtime.motions.get(PeaHatMotion.class, PeaHatMotion::new).rotorAnimationStep(slot);
     }
 
-    int peaHatPrivateState2(int slot) {
+    int peaHatOrbitStep(int slot) {
         return runtime.motions.get(PeaHatMotion.class, PeaHatMotion::new).orbitStep(slot);
     }
 
-    int peaHatPrivateState3(int slot) {
+    int peaHatOrbitTurnTicks(int slot) {
         return runtime.motions.get(PeaHatMotion.class, PeaHatMotion::new).orbitTurnTicks(slot);
     }
 
-    int peaHatPrivateState4(int slot) {
+    int peaHatOrbitPhase(int slot) {
         return runtime.motions.get(PeaHatMotion.class, PeaHatMotion::new).orbitPhase(slot);
     }
 
@@ -669,7 +669,7 @@ final class EntityEnemyInspectionQueries {
         return runtime.motions.get(GhiniMotion.class, GhiniMotion::new).transitionCountdown(slot);
     }
 
-    int ghiniPrivateCountdown1(int slot) {
+    int ghiniVerticalRetargetCountdown(int slot) {
         return runtime.motions.get(GhiniMotion.class, GhiniMotion::new).verticalRetargetCountdown(slot);
     }
 

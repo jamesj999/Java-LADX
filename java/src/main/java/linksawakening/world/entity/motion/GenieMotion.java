@@ -15,7 +15,7 @@ public final class GenieMotion {
     static final int BODY_TRANSITION_COUNTDOWN = 0x27;
     static final int BODY_HEALTH = 0x08;
     static final int NOISE_SFX_BREAK = 0x29;
-    // ROM privateState1: handler-dependent register; a narrower meaning has not been established.
+    // ROM wEntitiesPrivateState1Table: handler-dependent register; a narrower meaning has not been established.
 
     private final int[] privateState1 = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] health = new int[EntityRoomLoader.MAX_ENTITIES];

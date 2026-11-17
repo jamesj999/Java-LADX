@@ -207,7 +207,7 @@ public final class BombiteMotion {
         private int linkEntityY;
         private int transitionCountdown;
         private int slowTransitionCountdown;
-        // ROM privateCountdown1: handler-dependent register; a narrower meaning has not been established.
+        // ROM wEntitiesPrivateCountdown1Table: handler-dependent register; a narrower meaning has not been established.
         private int privateCountdown1;
         private int enemyIgnoreHitsCountdown;
         private boolean runningWithPegasusBoots;
@@ -217,7 +217,7 @@ public final class BombiteMotion {
         private int slot;
         private int nextTransition;
         private int nextSlowTransition;
-        // ROM nextPrivateCountdown1: handler-dependent register; a narrower meaning has not been established.
+        // ROM wEntitiesPrivateCountdown1Table: handler-dependent register; a narrower meaning has not been established.
         private int nextPrivateCountdown1;
         private int spriteVariant;
         private boolean explode;

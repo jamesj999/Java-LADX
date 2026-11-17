@@ -31,7 +31,7 @@ public final class MotionTestFixture {
 
     public static void setPrivateCountdownsForTest(MoblinKingMotion motion, int slot, int countdown1, int countdown2) {
         motion.hopShotCountdown[slot] = countdown1 & 0xFF;
-        motion.chargePauseCountdown[slot] = countdown2 & 0xFF;
+        motion.shotIntervalCountdown[slot] = countdown2 & 0xFF;
     }
 
     public static void setStateForTest(
@@ -238,7 +238,7 @@ public final class MotionTestFixture {
 
     public static void setPrivateStateForTest(BooBuddyMotion motion, int slot, int value) {
         motion.ensureInitialized(slot);
-        motion.orbitPhase[slot] = value & 0xFF;
+        motion.reflectionPending[slot] = value & 0xFF;
     }
 
     public static void setSpeedForTest(BooBuddyMotion motion, int slot, int x, int y, int z) {

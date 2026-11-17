@@ -2,6 +2,7 @@ package linksawakening.world.entity;
 
 /** Shared projectile spawn latches and handler counters; owned by the room, independent of collision dispatch. */
 final class EntityProjectileState {
+    // ROM wEntitiesPrivateState4Table.
     private final int[] powderSpent = new int[EntityRoomLoader.MAX_ENTITIES];
     private int latestShotArrowEntityIndex = -1;
     private boolean lastArrowShotPlayedWhoosh;

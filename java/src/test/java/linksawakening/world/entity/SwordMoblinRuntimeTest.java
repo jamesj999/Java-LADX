@@ -42,7 +42,7 @@ final class SwordMoblinRuntimeTest {
         runtime.tick(EntityTestFrames.frame(runtime, 4, 0x70, 64, () -> 0));
         assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).moblinSwordState(0));
         assertEquals(0x80, new EntityEnemyInspectionQueries(runtime.enemies()).moblinSwordTransitionCountdown(0));
-        assertEquals(0x10, new EntityEnemyInspectionQueries(runtime.enemies()).moblinSwordPrivateCountdown1(0));
+        assertEquals(0x10, new EntityEnemyInspectionQueries(runtime.enemies()).moblinSwordAttackCountdown(0));
         assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).moblinSwordDirection(0));
     }
 
@@ -124,7 +124,7 @@ final class SwordMoblinRuntimeTest {
 
         assertEquals(0x04, new EntityEnemyInspectionQueries(runtime.enemies()).swordMoblinAlertingSoundCounter());
         assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).moblinSwordState(0));
-        assertEquals(0x10, new EntityEnemyInspectionQueries(runtime.enemies()).moblinSwordPrivateCountdown1(0));
+        assertEquals(0x10, new EntityEnemyInspectionQueries(runtime.enemies()).moblinSwordAttackCountdown(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0xC0, 64, () -> 0, (entity, direction, nextX, nextY) -> false));
         assertEquals(0x03, new EntityEnemyInspectionQueries(runtime.enemies()).swordMoblinAlertingSoundCounter());
@@ -145,11 +145,11 @@ final class SwordMoblinRuntimeTest {
 
         runtime.tick(EntityTestFrames.frame(runtime, 0, 0xC0, 0x40, () -> 0));
         assertEquals(List.of(new DialogRequest(1, 0x90)), runtime.outbox().consumePendingDialogRequests());
-        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).moblinSwordPrivateState3(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).moblinSwordHideoutDialogShown(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 3, 0x70, 0x40, () -> 0));
         assertTrue(runtime.outbox().consumePendingDialogRequests().isEmpty());
-        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).moblinSwordPrivateState3(0));
+        assertEquals(1, new EntityEnemyInspectionQueries(runtime.enemies()).moblinSwordHideoutDialogShown(0));
     }
 
     @Test
