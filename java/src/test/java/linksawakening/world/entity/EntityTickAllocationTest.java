@@ -7,14 +7,15 @@ import java.util.Arrays;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.testing.AllocationProbe;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 /** ROM-free steady-state AnimateEntities allocation, including three read-only inspections. */
 final class EntityTickAllocationTest {
     @Test
-    void representativeTickAllocation() {
+    void representativeTickAllocation(TestReporter reporter) {
         Mix mix = new Mix();
         double bytes = AllocationProbe.bytesPerIteration(4_000, 1_000, mix::tick);
-        System.out.printf("Entity mix allocation bytes/tick: %.2f%n", bytes);
+        reporter.publishEntry("entityMixBytesPerTick", Double.toString(bytes));
         // Active mix baseline: 6398 bytes/tick EA on, 6566 EA off.
         // EA-off optimized measurement: 874 bytes/tick; allow approximately 25% headroom.
         assertTrue(bytes <= 1_100, "Entity mix bytes/tick: " + bytes);

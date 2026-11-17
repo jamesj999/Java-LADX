@@ -20,6 +20,7 @@ import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTestFrames;
 import linksawakening.world.entity.RomEnemyCombatTables;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.RoomEntityRuntimeBuilder;
 import linksawakening.world.entity.RoomEntitySnapshot;
@@ -108,20 +109,20 @@ final class RoomSessionTestSupport {
     }
 
     static RoomEntity syntheticEntity(int type) {
-        return new RoomEntity(
-                0,
-                0,
-                type,
-                0x20,
-                0x30,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(type),
-                -1,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        return new RoomEntityBuilder()
+                .slot(0)
+                .sourceLoadOrder(0)
+                .type(type)
+                .at(0x20, 0x30)
+                .status(EntityStatus.ACTIVE)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(type))
+                .spriteVariant(-1)
+                .entityFlipAttribute(0)
+                .spriteTileOffset(0)
+                .z(0)
+                .deathSpriteVariant(-1)
+                .powerRecoilDeath(false)
+                .build();
     }
 
     static RoomEntityRuntime runtimeWithKillOrder(byte[] rom, int... killOrder) {
@@ -136,20 +137,20 @@ final class RoomSessionTestSupport {
             int slot = entitySlots[sourceOrder];
             slots.set(
                     slot,
-                    new RoomEntity(
-                            slot,
-                            sourceOrder,
-                            0x0B,
-                            entityX[sourceOrder],
-                            0x50,
-                            EntityStatus.ACTIVE,
-                            catalog.forEntityType(0x0B, EntityRoomLoader.RoomTable.INDOORS_A),
-                            0,
-                            0,
-                            0,
-                            0,
-                            -1,
-                            false));
+                    new RoomEntityBuilder()
+                            .slot(slot)
+                            .sourceLoadOrder(sourceOrder)
+                            .type(0x0B)
+                            .at(entityX[sourceOrder], 0x50)
+                            .status(EntityStatus.ACTIVE)
+                            .spriteDefinition(catalog.forEntityType(0x0B, EntityRoomLoader.RoomTable.INDOORS_A))
+                            .spriteVariant(0)
+                            .entityFlipAttribute(0)
+                            .spriteTileOffset(0)
+                            .z(0)
+                            .deathSpriteVariant(-1)
+                            .powerRecoilDeath(false)
+                            .build());
         }
         RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
                 .indoorRoom(true)

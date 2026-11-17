@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import linksawakening.world.entity.motion.MagicRodFireballMotion;
 import linksawakening.world.entity.motion.MotionTestAccess;
 import org.junit.jupiter.api.Test;
@@ -64,19 +65,20 @@ final class MagicRodMotionTest {
     }
 
     private static RoomEntity entity(int x, int y) {
-        return new RoomEntity(
-                0,
-                -1,
-                MotionTestAccess.MagicRodFireballMotion_ENTITY_TYPE,
-                x,
-                y,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(MotionTestAccess.MagicRodFireballMotion_ENTITY_TYPE),
-                0,
-                0,
-                0,
-                0,
-                -1,
-                false);
+        return new RoomEntityBuilder()
+                .slot(0)
+                .sourceLoadOrder(-1)
+                .type(MotionTestAccess.MagicRodFireballMotion_ENTITY_TYPE)
+                .at(x, y)
+                .status(EntityStatus.ACTIVE)
+                .spriteDefinition(
+                        EntitySpriteDefinition.unsupported(MotionTestAccess.MagicRodFireballMotion_ENTITY_TYPE))
+                .spriteVariant(0)
+                .entityFlipAttribute(0)
+                .spriteTileOffset(0)
+                .z(0)
+                .deathSpriteVariant(-1)
+                .powerRecoilDeath(false)
+                .build();
     }
 }

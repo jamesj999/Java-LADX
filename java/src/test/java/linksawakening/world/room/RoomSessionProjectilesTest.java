@@ -17,6 +17,7 @@ import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
 import linksawakening.world.entity.RoomEntityRuntime;
 import linksawakening.world.entity.RoomEntityRuntimeBuilder;
 import linksawakening.world.entity.RoomEntitySnapshot;
@@ -39,20 +40,20 @@ final class RoomSessionProjectilesTest {
         session.rooms().loadIndoor(0x03, 0x7C, Warp.CATEGORY_SIDESCROLL);
 
         List<RoomEntity> slots = new ArrayList<>();
-        slots.add(new RoomEntity(
-                0,
-                0,
-                SideViewPlatformMotion.ENTITY_TYPE,
-                0x40,
-                0x50,
-                EntityStatus.ACTIVE,
-                EntitySpriteDefinition.unsupported(SideViewPlatformMotion.ENTITY_TYPE),
-                0,
-                0,
-                0,
-                0,
-                -1,
-                false));
+        slots.add(new RoomEntityBuilder()
+                .slot(0)
+                .sourceLoadOrder(0)
+                .type(SideViewPlatformMotion.ENTITY_TYPE)
+                .at(0x40, 0x50)
+                .status(EntityStatus.ACTIVE)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(SideViewPlatformMotion.ENTITY_TYPE))
+                .spriteVariant(0)
+                .entityFlipAttribute(0)
+                .spriteTileOffset(0)
+                .z(0)
+                .deathSpriteVariant(-1)
+                .powerRecoilDeath(false)
+                .build());
         for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
             slots.add(RoomEntity.disabled(slot));
         }

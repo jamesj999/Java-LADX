@@ -5,11 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.testing.AllocationProbe;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 /** Active sword collision, including both immutable outcomes and the owned drain. */
 class EntityCombatAllocationTest {
     @Test
-    void overlappingTwoEnemies() {
+    void overlappingTwoEnemies(TestReporter reporter) {
         var first = TestEntities.active(9).slot(0).at(64, 64).build();
         var second = TestEntities.active(9).slot(1).at(72, 64).build();
         var runtime = new RoomEntityRuntimeBuilder(TestEntities.room(first, second)).build();
@@ -31,7 +32,7 @@ class EntityCombatAllocationTest {
             assertEquals(0, events.get(1).slot());
         };
         double bytes = AllocationProbe.bytesPerIteration(4000, 1000, hit);
-        System.out.println("Two-enemy combat bytes/frame: " + bytes);
+        reporter.publishEntry("twoEnemyCombatBytesPerFrame", Double.toString(bytes));
         // EA-off baseline 1992; achieved 456, with 25% headroom.
         assertTrue(bytes <= 570, "Combat bytes/frame: " + bytes);
     }
