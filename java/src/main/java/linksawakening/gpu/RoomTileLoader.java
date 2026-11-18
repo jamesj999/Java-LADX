@@ -185,7 +185,7 @@ final class RoomTileLoader {
         // halves, so the map-category dispatch matters.
         boolean isIndoorsB = mapId >= 0x06 && mapId < 0x1A;
         int tilesetId = rom.u8(RomSymbols.IndoorsTilesetsTable.plus((isIndoorsB ? 0x100 : 0) + roomId));
-        if (tilesetId != W_TILESET_KEEP && tilesetId != W_TILESET_NO_UPDATE) {
+        if (tilesetId != W_TILESET_NO_UPDATE) {
             int tilesetAddr = INDOOR_TILES_BASE_ADDR + (tilesetId * 0x100);
             target.loadTilesFromROM(
                     romData,
@@ -198,7 +198,10 @@ final class RoomTileLoader {
         if (mapId == MAP_HOUSE && roomId == ROOM_CAMERA_SHOP) {
             target.loadTilesFromROM(
                     romData, COLOR_DUNGEON_BG_BANK, CAMERA_SHOP_TILES_ADDR, 0x20, DUNGEON_ITEMS_VRAM_INDEX);
-            return;
+        } else if (mapId == 0) {
+            // LoadRoomSpecificTiles, $00:2F8F-2FAC, overlays Tail Cave's two CGB tiles.
+            target.loadTilesFromROM(romData, 0x35, 0x6E00, 1, 0x169);
+            target.loadTilesFromROM(romData, 0x35, 0x6E10, 1, 0x179);
         }
     }
 }

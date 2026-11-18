@@ -203,6 +203,7 @@ final class RoomLoadCoordinator implements RoomRooms {
     }
 
     RoomRuntime loadInitialOverworldGeneration(int roomId) {
+        dependencies.location().currentOverworldTilesetId(RoomSessionRules.W_TILESET_NO_UPDATE);
         dependencies.gpu().loadBaseOverworldTiles(dependencies.romData());
         this.loadRoomSpecificTilesIfNeeded(roomId);
         return this.loadOverworldGeneration(roomId);
