@@ -143,11 +143,7 @@ final class RoomObjectParser {
         applyIndoorBombableWallStatus();
         assignDoorPositionsToWarps();
         return new RoomObjectParseResult(
-                this.roomObjectsArea,
-                this.warps,
-                this.shutterDoorMask,
-                this.staircaseLocation,
-                this.shutterLocations);
+                this.roomObjectsArea, this.warps, this.shutterDoorMask, this.staircaseLocation, this.shutterLocations);
     }
 
     int updatedRoomStatus() {

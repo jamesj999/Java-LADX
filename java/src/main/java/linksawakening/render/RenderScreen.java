@@ -6,5 +6,6 @@ public enum RenderScreen {
     OVERWORLD,
     CUTSCENE,
     FILE_MENU,
+    WORLD_MAP,
     FILE_SAVE
 }

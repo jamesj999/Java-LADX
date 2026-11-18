@@ -1308,7 +1308,7 @@ final class GameplayRouteScenario {
         }
         assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
         assertEquals(0x20, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x00, 0x11) & 0x20);
-        route.awaitShuttersOpen(0x01);
+        route.awaitShuttersOpen(0x05);
 
         route.crossIndoorBoundary(ScrollController.UP);
         route.assertInRoom(0x0B);
@@ -4189,6 +4189,7 @@ final class GameplayRouteScenario {
         }
         assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
         assertEquals(0x20, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x28) & 0x20);
+        route.awaitShuttersOpen(0x08);
         assertEquals(
                 0x01,
                 RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x28) & 0x01,

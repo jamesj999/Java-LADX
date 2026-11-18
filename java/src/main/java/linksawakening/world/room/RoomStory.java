@@ -23,11 +23,16 @@ public interface RoomStory {
     void setFollowingNpcState(
             FollowingNpcState state, int linkX, int linkY, int linkZ, int entityYOffset, int linkDirection);
 
+    void restoreFollowers(FollowingNpcState state, int spawnX, int spawnY);
+
     FollowingNpcState followingNpcState();
 
     int bowWowState();
 
     void setBowWowState(int state);
+
+    linksawakening.gameplay.SignpostDialogRef useTelephone(
+            int x, int y, linksawakening.state.Direction facing, linksawakening.state.PlayerState player);
 
     int richardSpokenFlag();
 

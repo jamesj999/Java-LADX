@@ -18,6 +18,37 @@ import org.junit.jupiter.api.Test;
 final class RomCombatDamageTest {
 
     @Test
+    void poweredSwordHitWritesWaveAlongsideTheHitJingle() throws IOException {
+        var runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x09)
+                        .at(64, 64)
+                        .spriteDefinition(pairDefinition(0x09, 2))
+                        .build()))
+                .enemyCombatTables(new RomEnemyCombatTables(EntityRomTestData.view(loadRom())))
+                .build();
+
+        var event = runtime.combat()
+                .resolveCombat(new EnemyCombatFrame(
+                        0,
+                        120,
+                        120,
+                        false,
+                        0,
+                        true,
+                        true,
+                        72,
+                        1,
+                        72,
+                        1,
+                        new EnemyAttackContext(1, false, true, false, false)))
+                .getFirst();
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, event.soundChannel());
+        assertEquals(EntityCombatEvent.SoundChannel.WAVE, event.secondarySoundChannel());
+        assertEquals(0x11, event.secondarySoundId());
+    }
+
+    @Test
     void romBurningStatusUsesTheSharedSpecialDamageValueAndExpiresIntoDeath() throws IOException {
         byte[] rom = romWithSwordResult(0x09, 0xFE);
         RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));

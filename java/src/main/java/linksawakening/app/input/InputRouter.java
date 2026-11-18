@@ -18,7 +18,9 @@ import linksawakening.app.gameplay.DebugScroll;
 import linksawakening.app.screen.FileSaveScreen;
 import linksawakening.app.screen.GameplayScreen;
 import linksawakening.app.screen.Screen;
+import linksawakening.app.screen.ScreenKind;
 import linksawakening.app.screen.TitleScreen;
+import linksawakening.app.screen.WorldMapScreen;
 import linksawakening.app.services.InputServices;
 import linksawakening.app.services.PlayerServices;
 import linksawakening.app.services.UiServices;
@@ -73,7 +75,7 @@ public final class InputRouter implements DebugScroll {
                 Screen current = actions.navigator().current();
                 if (current instanceof GameplayScreen gameplay) {
                     gameplay.requestFileSave();
-                } else if (!(current instanceof FileSaveScreen)) {
+                } else if (!(current instanceof FileSaveScreen) && !(current instanceof WorldMapScreen)) {
                     actions.lifecycle().requestStop();
                 }
             }
@@ -252,6 +254,30 @@ public final class InputRouter implements DebugScroll {
                                 PRESS))
                 && canPresentFileSave()) {
             actions.saves().startFileSave();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean tryPresentWorldMap() {
+        var keys = input.inputConfig();
+        var buttons = input.inputState();
+        var rooms = world.roomSession();
+        if (!buttons.wasPressed(keys.selectKey())
+                || buttons.isDown(keys.aKey())
+                || buttons.isDown(keys.bKey())
+                || buttons.isDown(keys.menuOpenKey())
+                || !rooms.hasRoom()
+                || rooms.doors().tailCaveKeyholeSequenceActive()
+                || rooms.entityState().gotItemPresentationActive()
+                || player.link().animation().dialogGotItemActive()
+                || ui.dialogController().isActive()
+                || actions.story().marinWakeUpBlocksKeyInput()
+                || !canPresentFileSave()) {
+            return false;
+        }
+        if (actions.navigator().screen(ScreenKind.WORLD_MAP) instanceof WorldMapScreen map) {
+            map.open();
             return true;
         }
         return false;

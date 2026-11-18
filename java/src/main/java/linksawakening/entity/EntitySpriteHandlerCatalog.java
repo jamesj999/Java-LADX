@@ -346,6 +346,10 @@ public final class EntitySpriteHandlerCatalog {
         return decoder.decodeRectangle(entityType, bank, address, variantCount, spriteCount, initialVariant);
     }
 
+    public EntitySpriteDefinition forOverworldWarpHole() {
+        return states.decodeOverworldWarpHole();
+    }
+
     public EntitySpriteDefinition forEntityType(int entityType, EntityRoomLoader.RoomTable roomTable) {
         return forEntityType(entityType, roomTable, -1);
     }

@@ -18,10 +18,11 @@ public final class GameplayDialogInput {
         }
         if (dialogController.isChoicePrompt()
                 && inputConfig != null
-                && (key == inputConfig.upKey() || key == inputConfig.downKey())) {
-            dialogController.moveChoiceSelection(key == inputConfig.upKey() ? -1 : 1);
+                && (key == inputConfig.leftKey() || key == inputConfig.rightKey())) {
+            dialogController.moveChoiceSelection(key == inputConfig.leftKey() ? -1 : 1);
             return true;
         }
+        if (dialogController.isChoicePrompt() && inputConfig != null && key == inputConfig.bKey()) return true;
         if (isAdvanceKey(key, inputConfig)) {
             dialogController.advance();
             return true;

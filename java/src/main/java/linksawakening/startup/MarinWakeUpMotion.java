@@ -21,14 +21,16 @@ public final class MarinWakeUpMotion {
     private State state = State.TOSSING;
     private int slowTossingCountdown = 127;
     private boolean marinInitialized;
+    private int initialPositionOffset = 8;
     private int marinX;
     private int marinY;
     private int marinDirection = 1;
     private int marinInertia;
 
-    public static MarinWakeUpMotion postWake() {
+    public static MarinWakeUpMotion postWake(boolean hasShield) {
         MarinWakeUpMotion motion = new MarinWakeUpMotion();
         motion.state = State.COMPLETE;
+        motion.initialPositionOffset = hasShield ? 0 : 8;
         motion.slowTossingCountdown = 0;
         return motion;
     }
@@ -59,8 +61,8 @@ public final class MarinWakeUpMotion {
         if (!marinInitialized) {
             marinInitialized = true;
             initializedNow = true;
-            marinX = (sourceX - 8) & 0xFF;
-            marinY = (sourceY - 8) & 0xFF;
+            marinX = (sourceX - initialPositionOffset) & 0xFF;
+            marinY = (sourceY - initialPositionOffset) & 0xFF;
             for (int direction = 0; direction < 4; direction++)
                 for (int step = 0; step < 2; step++)
                     marinPoses[direction * 2 + step] = new MarinPresentation(

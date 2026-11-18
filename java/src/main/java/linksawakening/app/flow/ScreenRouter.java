@@ -58,6 +58,9 @@ public final class ScreenRouter {
     }
 
     public void startIntroCutscene() {
+        state.screens().menuTransition = null;
+        ui.dialogController().reset();
+        ((linksawakening.app.screen.CutsceneScreen) actions.navigator().screen(ScreenKind.CUTSCENE)).delayInput(0);
         state.screens().fileMenu().clear();
         state.screens().fileSave().clear();
         actions.navigator().show(ScreenKind.CUTSCENE);

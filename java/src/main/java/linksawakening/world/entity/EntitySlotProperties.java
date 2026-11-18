@@ -159,8 +159,8 @@ public final class EntitySlotProperties {
             this.projectiles.writeMusicalNoteSpeedX(
                     slot, (this.projectiles.readMusicalNoteSpeedX(slot) + speedXAdjustment) & 0xFF);
         }
-        int x = (entity.x() + signedByte(this.projectiles.readMusicalNoteSpeedX(slot))) & 0xFF;
-        int y = (entity.y() + signedByte(this.projectiles.readMusicalNoteSpeedY(slot))) & 0xFF;
+        int x = this.physicsTables.advanceFallingX(entity.x(), this.projectiles.readMusicalNoteSpeedX(slot), slot);
+        int y = this.physicsTables.advanceFallingY(entity.y(), this.projectiles.readMusicalNoteSpeedY(slot), slot);
         return withPositionAndVariant(entity, x, y, entity.spriteVariant());
     }
 

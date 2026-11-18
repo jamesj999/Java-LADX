@@ -18,6 +18,7 @@ import linksawakening.app.input.GameplayScreenAdapter;
 import linksawakening.app.input.SessionInput;
 import linksawakening.app.presentation.FramePresentation;
 import linksawakening.app.screen.ScreenSet;
+import linksawakening.app.screen.WorldMapScreen;
 import linksawakening.app.services.SessionServices;
 import linksawakening.app.state.DebugState;
 import linksawakening.app.state.FrameClock;
@@ -113,6 +114,15 @@ public final class SessionWiring {
                 navigator,
                 wired.saves(),
                 prepared.completion(),
+                new WorldMapScreen(
+                        s.rom().romData(),
+                        s.world().roomSession(),
+                        s.input(),
+                        s.ui(),
+                        state.sounds(),
+                        s.audio().dialogSoundSink(),
+                        navigator,
+                        prepared.completion()),
                 new GameplayScreenAdapter(wired.input(), frame, wired.passOut()));
         navigator.attach(
                 screens,

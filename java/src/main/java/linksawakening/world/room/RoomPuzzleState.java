@@ -7,6 +7,13 @@ final class RoomPuzzleState {
     private int tailCaveResumeMusicTrack = 5;
 
     static final class PerRoom {
+        private int telephoneLeafHint;
+
+        int nextTelephoneLeafHint() {
+            telephoneLeafHint = (telephoneLeafHint + 1) % 3;
+            return telephoneLeafHint;
+        }
+
         private int roomTriggerCount;
         private int activeRoomEvent;
         private boolean roomEventEffectExecuted;

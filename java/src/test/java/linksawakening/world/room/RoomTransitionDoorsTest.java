@@ -134,8 +134,7 @@ final class RoomTransitionDoorsTest {
         assertEquals(closedEastDoorObject, objectAt(session, 0x39));
         assertTrue(collision.pointBlocked(152, 56));
         int openingDeadline = frame + 16;
-        while ((session.rooms().activeRoomOrNull().shutterDoorMask() & 0x08) != 0
-                && frame < openingDeadline) {
+        while ((session.rooms().activeRoomOrNull().shutterDoorMask() & 0x08) != 0 && frame < openingDeadline) {
             tickInteractiveEntities(session, frame++, 0x50, 0x50);
         }
         assertEquals(0, session.rooms().activeRoomOrNull().shutterDoorMask() & 0x08);

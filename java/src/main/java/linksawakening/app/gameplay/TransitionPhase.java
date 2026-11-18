@@ -1,6 +1,7 @@
 package linksawakening.app.gameplay;
 
 import java.util.Objects;
+import linksawakening.app.audio.MusicDirector;
 import linksawakening.entity.Link;
 import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.TransitionController;
@@ -14,14 +15,10 @@ public final class TransitionPhase implements GameplayFrame.Transitions {
     private final TransitionController transition;
     private final Link link;
     private final int scrollSpeed;
-    private final linksawakening.app.audio.MusicDirector music;
+    private final MusicDirector music;
 
     public TransitionPhase(
-            ScrollController scroll,
-            TransitionController transition,
-            Link link,
-            int scrollSpeed,
-            linksawakening.app.audio.MusicDirector music) {
+            ScrollController scroll, TransitionController transition, Link link, int scrollSpeed, MusicDirector music) {
         this.music = Objects.requireNonNull(music);
         this.scroll = Objects.requireNonNull(scroll);
         this.transition = Objects.requireNonNull(transition);

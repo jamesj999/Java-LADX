@@ -33,11 +33,7 @@ public final class FileMenuScreen implements Screen {
         } else if (action.type() == FileMenuAction.Type.LOAD_GAME) {
             SaveSlotState saved = dependencies.saves().saveRamStore().readSlot(action.selectedSlot());
             dependencies.screens().selectSaveSlot(action.selectedSlot());
-            if (saved.spawnPositionX() == 0) {
-                dependencies.actions().startNewGame();
-            } else {
-                dependencies.actions().startSavedGame(saved);
-            }
+            dependencies.screens().fileLoad = new linksawakening.ui.FileLoadTransition(saved);
         } else if (action.type() == FileMenuAction.Type.ERASE_SLOT) {
             dependencies
                     .actions()

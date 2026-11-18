@@ -29,6 +29,7 @@ public final class OpeningStory implements OpeningRestoration {
     private final UiServices ui;
     private final SessionState state;
     private final OpeningActions actions;
+    private ActiveRoom lastMarinRoom;
 
     public OpeningStory(
             PlayerServices player,
@@ -93,8 +94,14 @@ public final class OpeningStory implements OpeningRestoration {
                 || world.roomSession().rooms().activeRoomOrNull().roomId() != 0xA3) {
             return;
         }
-        var loadedEntities =
-                world.roomSession().rooms().activeRoomOrNull().entities().loadedEntities();
+        ActiveRoom room = world.roomSession().rooms().activeRoomOrNull();
+        if (room != lastMarinRoom && state.opening().wakeUp().complete()) {
+            state.opening()
+                    .wakeUp(MarinWakeUpMotion.postWake(
+                            player.playerState().equipmentLevels().shieldLevel() != 0));
+        }
+        lastMarinRoom = room;
+        var loadedEntities = room.entities().loadedEntities();
         for (int entityIndex = 0; entityIndex < loadedEntities.size(); entityIndex++) {
             RoomEntity entity = loadedEntities.get(entityIndex);
 
@@ -272,7 +279,8 @@ public final class OpeningStory implements OpeningRestoration {
     public void restoreNewGameHouseRuntimeIfNeeded(SaveSlotState saved, OpeningRestoration target) {
         if (saved.spawnIsIndoor() != 0 && saved.spawnMapId() == 0x10 && saved.spawnMapRoom() == 0xA3) {
             if (player.playerState().equipmentLevels().swordLevel() == 0) {
-                target.restoreWake(MarinWakeUpMotion.postWake());
+                target.restoreWake(MarinWakeUpMotion.postWake(
+                        player.playerState().equipmentLevels().shieldLevel() != 0));
                 target.refreshPresentation();
             }
             if (player.playerState().equipmentLevels().shieldLevel() == 0) {

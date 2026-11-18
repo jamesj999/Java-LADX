@@ -42,7 +42,9 @@ final class GameplayDialogIntegrationTest {
         dialog.advance();
         dialog.advance();
 
-        assertTrue(GameplayDialogInput.handleOverworldKeyPress(inputConfig.downKey(), GLFW_PRESS, inputConfig, dialog));
+        assertTrue(
+                GameplayDialogInput.handleOverworldKeyPress(inputConfig.rightKey(), GLFW_PRESS, inputConfig, dialog));
+        assertTrue(GameplayDialogInput.handleOverworldKeyPress(inputConfig.bKey(), GLFW_PRESS, inputConfig, dialog));
         assertEquals(1, dialog.choiceSelectionIndex());
         assertTrue(dialog.isActive());
     }

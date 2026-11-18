@@ -31,6 +31,10 @@ final class WorldLayers {
                 if (state.roomInputs.present) fillWorld(state);
                 else background.fill(layers, state);
             }
+            case WORLD_MAP -> {
+                if (state.worldMap() != null) layers.add(state.worldMap());
+                return;
+            }
             case TITLE, CUTSCENE, FILE_MENU, FILE_SAVE -> background.fill(layers, state);
         }
         addDialog(state, painter);

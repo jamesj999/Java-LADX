@@ -105,13 +105,17 @@ public final class LinkEquipmentPhase {
     }
 
     private void prepare(boolean dialogBlocksGameplay) {
+        if (playerLink.airborne().romMotionState() < 2
+                && !scrollController.isActive()
+                && !transitionController.isInputBlocked()
+                && !inventoryController.shouldBlockOverworldInput()
+                && dialogController.allowsResourceUpdates()) {
+            playerState.playerResources().tickResourceBuffers(this.clock.value());
+            var resourceSound =
+                    playerState.playerSounds().takeResourceSound(sound -> GameplaySoundEvent.valueOf(sound.name()));
+            if (resourceSound != null) this.sounds.sink().play(resourceSound);
+        }
         if (!dialogBlocksGameplay) {
-            {
-                playerState.playerResources().tickResourceBuffers(this.clock.value());
-                var resourceSound =
-                        playerState.playerSounds().takeResourceSound(sound -> GameplaySoundEvent.valueOf(sound.name()));
-                if (resourceSound != null) this.sounds.sink().play(resourceSound);
-            }
             {
                 this.transientVfxSystem.tick();
             }

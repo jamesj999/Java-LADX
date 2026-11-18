@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.Optional;
 import linksawakening.app.debug.DebugLog;
 import linksawakening.state.PlayerState;
+import linksawakening.world.entity.FollowingNpcState;
 
 /** Host persistence adapter for the source-shaped SRAM image. */
 public final class SaveRamStore {
@@ -125,6 +126,10 @@ public final class SaveRamStore {
         image.writeDungeonProgressFlags(slot, dungeonProgressFlags);
     }
 
+    public void writeFollowers(int slot, FollowingNpcState state) {
+        image.writeFollowers(slot, state);
+    }
+
     public void writeBowWowState(int slot, int state) {
         image.writeBowWowState(slot, state);
     }
@@ -135,6 +140,10 @@ public final class SaveRamStore {
 
     public void writeRichardSpokenFlag(int slot, int flag) {
         image.writeRichardSpokenFlag(slot, flag);
+    }
+
+    public void writeWorldMapRoom(int slot, int room) {
+        image.writeWorldMapRoom(slot, room);
     }
 
     public void writeSpawnLocation(

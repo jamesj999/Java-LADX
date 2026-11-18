@@ -20,7 +20,7 @@ public final class GameplayScreenAdapter implements GameplayScreenDriver {
 
     @Override
     public boolean interceptFrameInput() {
-        return input.tryPresentFileSave();
+        return input.tryPresentFileSave() || input.tryPresentWorldMap();
     }
 
     @Override

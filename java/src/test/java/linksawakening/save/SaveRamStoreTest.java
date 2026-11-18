@@ -24,6 +24,7 @@ final class SaveRamStoreTest {
         store.writeDungeonItemFlags(2, pattern(0x2D, 0x20), pattern(0x05, 0xE0));
         store.writeDungeonProgressFlags(2, pattern(0x08, 0x01));
         store.writeBowWowState(2, 0x80);
+        store.writeFollowers(2, new linksawakening.world.entity.FollowingNpcState(false, 2, true, false, 0, 0, false));
         store.writeTarinFlag(2, 1);
 
         assertEquals(1 << 2, store.saveFilesMask());
@@ -36,6 +37,8 @@ final class SaveRamStoreTest {
         assertArrayEquals(pattern(0x05, 0xE0), store.readSlot(2).colorDungeonItemFlags());
         assertArrayEquals(pattern(0x08, 0x01), store.readSlot(2).dungeonProgressFlags());
         assertEquals(0x80, store.readSlot(2).bowWowState());
+        assertEquals(2, store.readSlot(2).followingNpcState().ghostFollowingState());
+        assertTrue(store.readSlot(2).followingNpcState().marinFollowing());
         assertEquals(1, store.readSlot(2).tarinFlag());
     }
 

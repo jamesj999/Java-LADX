@@ -9,13 +9,19 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.gameplay.SignpostDialogRef;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
+import linksawakening.state.PlayerState;
 import linksawakening.world.entity.EnemyDropResolver;
+import linksawakening.world.entity.EntityRomConstants;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.FollowingNpcEntitySpawner;
 import linksawakening.world.entity.FollowingNpcState;
 import linksawakening.world.entity.RomEnemyCombatTables;
 import linksawakening.world.entity.RomRandomByteSource;
+import linksawakening.world.transition.Warp;
 
 /** LoadRoomEntities story flags and restoration; follower and NPC presentation have distinct owners. */
 final class RoomStoryState implements RoomStory {
@@ -199,6 +205,12 @@ final class RoomStoryState implements RoomStory {
     }
 
     @Override
+    public void restoreFollowers(FollowingNpcState state, int spawnX, int spawnY) {
+        rememberFollowingNpcState(state, spawnX, spawnY, 0, 0, 0);
+        dependencies.followers().followingLinkPositionHistory().fill(spawnX, spawnY, 0, 0);
+    }
+
+    @Override
     public FollowingNpcState followingNpcState() {
         return dependencies.followers().followingNpcState();
     }
@@ -206,6 +218,62 @@ final class RoomStoryState implements RoomStory {
     @Override
     public int bowWowState() {
         return dependencies.followers().bowWowState() & 0xFF;
+    }
+
+    @Override
+    public SignpostDialogRef useTelephone(int x, int y, Direction facing, PlayerState player) {
+        RoomRuntime loaded = rooms.currentOrNull();
+        if (loaded == null || loaded.room().mapCategory() == Warp.CATEGORY_OVERWORLD) return null;
+        for (var entity : loaded.room().entityView().loadedEntities()) {
+            if (entity.type() != EntityRomConstants.ENTITY_TELEPHONE || entity.status() != EntityStatus.ACTIVE)
+                continue;
+            int dx = (byte) (x - entity.x());
+            int dy = (byte) (y - entity.y());
+            if (dx < -16 || dx >= 16 || dy < -20 || dy >= 20) continue;
+            int direction = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 1 : 0) : (dy < 0 ? 2 : 3);
+            if ((facing.romIndex() ^ 1) != direction) continue;
+            int id = telephoneDialog(loaded, player);
+            dependencies.roomState().indoorBRoomStatus()[0xA9] |= 0x20;
+            return new SignpostDialogRef(id >>> 8, id & 255);
+        }
+        return null;
+    }
+
+    // Bank 06:6A8F checks these flags in order, including the shared first-call flag.
+    private int telephoneDialog(RoomRuntime loaded, PlayerState player) {
+        if (loaded.room().roomId() == 0xA9) return 0x1FD;
+        if (player.progression().tradeSequenceItem() == 0x0A && hasInstrument(5)) return 0x16E;
+        if ((dependencies.roomState().indoorBRoomStatus()[0xA9] & 0x20) == 0) return 0x141;
+        if (!hasInstrument(1)) return 0x146;
+        if (bowWowState() == 0x80) return 0x142;
+        if (!hasInstrument(2)) return 0x143;
+        if (bowWowState() == 1) return 0x244;
+        if (richardSpokenFlag() != 2) return 0x144;
+        if (player.progression().tradeSequenceItem() < 0x05) return 0x145;
+        int leaves = player.progression().goldenLeavesCount();
+        if (leaves < 5) {
+            return 0x228 + loaded.contents().puzzles().nextTelephoneLeafHint();
+        }
+        if (leaves != 6) return 0x148;
+        if (!hasInstrument(3)) return 0x149;
+        if (player.progression().anglerKeyCount() == 0) return 0x14A;
+        if (!hasInstrument(4)) return 0x240;
+        if (followingNpcState().ghostFollowingState() != 0
+                && (dependencies.roomState().indoorARoomStatus()[0xE3] & 0x40) == 0) return 0x14B;
+        if (!hasInstrument(5)) return 0x14C;
+        if ((player.progression().ocarinaSongFlags() & 1) == 0) return 0x245;
+        if (!hasInstrument(6)) return 0x14D;
+        if (followingNpcState().roosterFollowing() && player.progression().birdKeyCount() == 0) return 0x246;
+        if (!hasInstrument(7)) return followingNpcState().roosterFollowing() ? 0x241 : 0x14E;
+        if ((dependencies.roomState().overworldRoomStatus()[0x10] & 0x30) == 0) return 0x14F;
+        if (!hasInstrument(8)) return 0x248;
+        if ((dependencies.roomState().overworldRoomStatus()[0x06] & 0x30) == 0) return 0x242;
+        if ((dependencies.roomState().indoorBRoomStatus()[0x74] & 0x40) == 0) return 0x243;
+        return player.equipmentLevels().swordLevel() < 2 ? 0x247 : 0x248;
+    }
+
+    private boolean hasInstrument(int number) {
+        return (dependencies.roomState().dungeonProgressFlags()[number - 1] & 2) != 0;
     }
 
     void rememberBowWowState(int state) {

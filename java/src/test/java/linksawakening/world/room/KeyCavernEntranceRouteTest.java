@@ -100,7 +100,10 @@ final class KeyCavernEntranceRouteTest {
         assertEquals(0, RoomDebugFixture.of(session).activeRoomEventForTest());
         for (int tick = 0; tick < 16 && (session.rooms().activeRoomOrNull().shutterDoorMask() & 1) != 0; tick++) {
             tickInteractiveEntities(
-                    session, frame++, link.position().romEntityX(), link.position().romEntityY());
+                    session,
+                    frame++,
+                    link.position().romEntityX(),
+                    link.position().romEntityY());
         }
         assertEquals(0, session.rooms().activeRoomOrNull().shutterDoorMask() & 1);
         walkToAndCrossIndoorBoundary(coordinator, transition, scroll, collision, link, ScrollController.UP);

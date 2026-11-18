@@ -27,6 +27,23 @@ final class EntitySpriteHandlerCatalogTest extends EntitySpriteHandlerCatalogFix
     }
 
     @Test
+    void overworldWarpUsesFourCommonVramSpritesAndAlternatesTheirPalette() throws Exception {
+        var catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
+        var warp = catalog.forOverworldWarpHole();
+        assertDefinition(warp, 0x19, 0x4404, EntitySpriteDefinition.Shape.DYNAMIC, 16, 0);
+        var sprites = warp.dynamicVariant(0);
+        assertEquals(4, sprites.size());
+        assertEquals(0x3E, sprites.getFirst().oam().tile());
+        assertEquals(
+                EntitySpriteDefinition.DynamicSprite.TileSource.GPU,
+                sprites.getFirst().tileSource());
+        assertEquals(4, sprites.getFirst().xOffset());
+        assertEquals(-2, sprites.getFirst().yOffset());
+        assertEquals(4, warp.dynamicVariant(1).getFirst().oam().attributes());
+        assertEquals(8, warp.dynamicVariant(2).getFirst().xOffset());
+    }
+
+    @Test
     void dungeonWarpDecodesCenterAndFourOrbitingSprites() throws Exception {
         var catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
         var warp = catalog.forEntityType(0x61, EntityRoomLoader.RoomTable.INDOORS_A, 0);

@@ -5,6 +5,7 @@ import static linksawakening.save.SaveSlotCodec.unsigned;
 import java.util.Arrays;
 import java.util.Objects;
 import linksawakening.state.PlayerState;
+import linksawakening.world.entity.FollowingNpcState;
 
 /** Mutable raw image of the source-defined SRAM save area. */
 public final class SaveRamImage {
@@ -179,6 +180,13 @@ public final class SaveRamImage {
                 SaveRamLayout.DX2_COLOR_DUNGEON_ROOM_STATUS_SIZE);
     }
 
+    public void writeWorldMapRoom(int slot, int room) {
+        SaveRamLayout.checkSlot(slot);
+        requireByte(room, "world map room");
+        int main = SaveRamLayout.slotOffset(slot) + SaveRamLayout.mainOffset();
+        bytes[main + SaveRamLayout.MAIN_WORLD_MAP_ROOM_OFFSET] = (byte) room;
+    }
+
     /** Writes the source's persistent dungeon item table and Color Dungeon extension. */
     public void writeDungeonItemFlags(int slot, byte[] dungeonItemFlags, byte[] colorDungeonItemFlags) {
         SaveRamLayout.checkSlot(slot);
@@ -212,6 +220,14 @@ public final class SaveRamImage {
                 bytes,
                 main + SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_OFFSET,
                 SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_SIZE);
+    }
+
+    public void writeFollowers(int slot, FollowingNpcState state) {
+        SaveRamLayout.checkSlot(slot);
+        int main = SaveRamLayout.slotOffset(slot) + SaveRamLayout.mainOffset();
+        bytes[main + SaveRamLayout.MAIN_MARIN_FOLLOWING_OFFSET] = (byte) (state.marinFollowing() ? 1 : 0);
+        bytes[main + SaveRamLayout.MAIN_GHOST_FOLLOWING_OFFSET] = (byte) state.ghostFollowingState();
+        bytes[main + SaveRamLayout.MAIN_ROOSTER_FOLLOWING_OFFSET] = (byte) (state.roosterFollowing() ? 1 : 0);
     }
 
     /** Writes wIsBowWowFollowingLink at DB56. */

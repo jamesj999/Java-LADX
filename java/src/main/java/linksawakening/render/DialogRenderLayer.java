@@ -28,6 +28,13 @@ final class DialogRenderLayer implements HardwareRenderLayer {
         if (!dialogController.isActive()) return;
         frame.hideSpritesUnderDialog(dialogController.boxPosition() == DialogController.BoxPosition.BOTTOM);
         windowPainter.submit(frame, dialogController, backgroundPalette);
+        if (objectPalettes != null && dialogController.isChoicePrompt() && (frameCounter & 0x10) != 0) {
+            // DrawDialogChoiceMarker ($17:7DCC) publishes OAM entry 6.
+            int x = dialogController.choiceSelectionIndex() == 0 ? 0x30 : 0x58;
+            int y = dialogController.boxPosition() == DialogController.BoxPosition.BOTTOM ? 0x78 : 0x30;
+            OamDrawing.draw8x16(
+                    RenderContext.indexed(gpu, frame), gpu, 0x3E, x - 8, y - 16, false, false, objectPalettes[0]);
+        }
         if (objectPalettes != null && dialogController.isWaitingForPageAdvance() && (frameCounter & 0x10) == 0)
             OamDrawing.draw8x16(
                     RenderContext.indexed(gpu, frame),

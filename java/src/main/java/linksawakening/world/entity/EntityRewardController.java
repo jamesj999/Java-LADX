@@ -226,7 +226,7 @@ public final class EntityRewardController {
                 this.state.writePowerUpPickupCountdown(slot, 1);
                 this.events.dialog(0, entity.type() == 0x33 ? 0x08 : 0xEC);
             } else if (countdown == 0) {
-                this.presentationState.writePendingMusicTrack(0x49);
+                // The pickup score already enters the active-power-up loop.
                 this.lifecycle.clearEntity(slot);
                 return;
             }
@@ -432,6 +432,7 @@ public final class EntityRewardController {
                 owner.state.writePowerUpPickupCountdown(entity.slot(), 0x30);
                 owner.roomVariables.writeEntityInteractionCountdown(0x30);
                 owner.presentationState.writePendingMusicTrack(0x27);
+                owner.events.sound(entity.slot(), entity.type(), EntityCombatEvent.SoundChannel.WAVE, 0x01);
             } else if (requiresHeldPickupTransition(entity.type())) {
                 owner.playerCommands.beginLift(entity.slot(), romDirection);
             } else {

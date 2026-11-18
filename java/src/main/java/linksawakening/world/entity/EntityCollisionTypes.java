@@ -221,6 +221,7 @@ final class EntityCollisionTypes {
     }
 
     static int hitboxHeight(int type) {
+        if (type == ENTITY_GRANDPA_ULRIRA) return 0x0A;
         if ((type & 0xFF) == ENTITY_WITCH) {
             return 0x0E;
         }

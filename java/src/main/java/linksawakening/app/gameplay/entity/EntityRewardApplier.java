@@ -113,7 +113,11 @@ public final class EntityRewardApplier implements RoomFrameDrain<EntityRequest> 
             }
             case MadamMeowMeowFullHealRequest r -> playerState.vitals().requestFullHeal();
             case RichardProgressEvent r -> {
-                if (r.kind() == RichardProgressEvent.Kind.RETURN_ALL_LEAVES) {
+                if (r.kind() == RichardProgressEvent.Kind.START_QUEST) {
+                    this.rooms
+                            .story()
+                            .setRichardSpokenFlag(Math.max(2, this.rooms.story().richardSpokenFlag()));
+                } else if (r.kind() == RichardProgressEvent.Kind.RETURN_ALL_LEAVES) {
                     this.playerState.progression().setGoldenLeavesCount(r.goldenLeavesCount());
                     this.gpu.replaceSlimeKeyTilesByGoldenLeaf(this.rom);
                 }

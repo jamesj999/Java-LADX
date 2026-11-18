@@ -222,6 +222,8 @@ final class RoomLoadCoordinator implements RoomRooms {
         var overrides = new RoomTerrainState.Overrides();
         dependencies.indoorTorchPaletteEffect().clear();
         dependencies.entityFrame().recentRoomEntityClears().visit(roomId);
+        // LoadRoom $00:3162 marks non-side-view rooms visited while retaining other status bits.
+        dependencies.roomState().overworldRoomStatus()[roomId] |= (byte) 0x80;
         LoadedRoom room = dependencies
                 .roomLoader()
                 .loadOverworld(

@@ -3,9 +3,11 @@ package linksawakening.world.room;
 import java.util.List;
 import java.util.Objects;
 import linksawakening.world.entity.event.EntityProjectileEvent;
+import linksawakening.world.transition.Warp;
 
 /** Owns room publication and exposes independently wired role contracts and the entity frame sequence. */
 public final class RoomSession {
+    private int worldMapRoom = 0xA3;
     private final LoadedRoomHandle loadedRooms = new LoadedRoomHandle();
     private final RoomRoleViews roles;
     private final RoomDoors doors;
@@ -88,7 +90,18 @@ public final class RoomSession {
         return frameInputs.tick(inputs);
     }
 
+    public int worldMapRoom() {
+        return worldMapRoom;
+    }
+
+    public void restoreWorldMapRoom(int room) {
+        worldMapRoom = room;
+    }
+
     void installRoom(RoomRuntime room) {
+        if (room.room().mapCategory() == Warp.CATEGORY_OVERWORLD) {
+            worldMapRoom = room.room().roomId();
+        }
         loadedRooms.install(room);
         dungeonView.setRoomMap(room.room().mapId());
     }

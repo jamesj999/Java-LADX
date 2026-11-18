@@ -57,7 +57,17 @@ public final class RenderStateAssembler {
                             world.roomSession().rooms().indoorRoomPositionForSave(),
                             state.clock().value());
         }
-        frameSceneBuilder.build(currentGameFrameState()).drawTo(visual.indexedDisplayBuffer(), rom.gpu());
+        byte[] buffer = visual.indexedDisplayBuffer();
+        Runnable draw = () -> frameSceneBuilder.build(currentGameFrameState()).drawTo(buffer, rom.gpu());
+        var load = state.screens().fileLoad;
+        if (load != null && load.beforeWorld() && !load.showSelection()) {
+            java.util.Arrays.fill(buffer, (byte) 0xFF);
+        } else if (state.screens().menuTransition != null) {
+            state.screens().menuTransition.render(buffer, draw);
+        } else {
+            draw.run();
+            if (load != null && !load.beforeWorld()) load.fadeRoom(buffer);
+        }
     }
 
     /** Borrowed inputs, valid only until this assembler's next refill and next simulation tick. */
@@ -70,11 +80,13 @@ public final class RenderStateAssembler {
         switch (screen) {
             case OVERWORLD -> fillOverworld();
             case TITLE, CUTSCENE -> fillBackground();
-            case FILE_MENU, FILE_SAVE -> {
+            case FILE_MENU, FILE_SAVE, WORLD_MAP -> {
                 /* The screen publishes its menu frame below. */
             }
         }
-        if (screen != RenderScreen.OVERWORLD && ui.dialogController().isActive()) fillRoomView();
+        if (screen != RenderScreen.OVERWORLD
+                && screen != RenderScreen.WORLD_MAP
+                && ui.dialogController().isActive()) fillRoomView();
         return state.screens().currentScreen().renderState(inputs);
     }
 

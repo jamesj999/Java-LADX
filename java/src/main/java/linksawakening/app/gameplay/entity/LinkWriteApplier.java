@@ -90,6 +90,8 @@ public final class LinkWriteApplier implements LinkWriteSink.Positions, LinkWrit
     @Override
     public void clear(LinkAttackClearRequest request) {
         this.playerLink.apply(LinkCommandAdapter.from(request));
+        Sword sword = this.equipmentController.activeSword();
+        if (sword != null) sword.cancelAttack();
     }
 
     @Override

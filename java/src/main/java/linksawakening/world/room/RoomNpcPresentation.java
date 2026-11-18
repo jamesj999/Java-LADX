@@ -25,7 +25,7 @@ final class RoomNpcPresentation {
         if (loaded.room().mapId() == 0x10
                 && loaded.room().roomId() == 0xA3
                 && dependencies.followers().tarinFlag() != 1
-                && dependencies.followers().tarinFlag() != 2
+                && !dependencies.followers().followingNpcState().marinFollowing()
                 && (frameCounter & 0x1F) == 0) {
             loaded.entities().commands().updateHouseTarinPresentation(linkX, linkY);
             loaded.room().replaceEntities(loaded.entities().inspection().view());

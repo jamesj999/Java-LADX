@@ -240,7 +240,8 @@ final class GameplayMusicControllerTest {
         assertEquals(MusicTrackIds.MUSIC_MABE_VILLAGE, controller.currentTrackId());
         controller.selectAfterTransition(new RoomMusicContext(0x40, 0, false, false, 1, false, 2).forScroll());
         assertEquals(
-                List.of(MusicTrackIds.MUSIC_MABE_VILLAGE, MusicTrackIds.MUSIC_OBTAIN_POWERUP,
+                List.of(
+                        MusicTrackIds.MUSIC_MABE_VILLAGE, MusicTrackIds.MUSIC_OBTAIN_POWERUP,
                         MusicTrackIds.MUSIC_MABE_VILLAGE, MusicTrackIds.MUSIC_ACTIVE_POWER_UP),
                 player.playedTrackIds);
     }

@@ -3,6 +3,7 @@ package linksawakening.world.room;
 import static linksawakening.world.room.RoomNavigationFixture.PowderApproach;
 import static linksawakening.world.room.RoomNavigationFixture.SwordApproach;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -363,6 +364,7 @@ final class GameplayRouteFixture {
     List<RoomEntity> clearedBossSlots;
 
     void crossIndoorBoundary(int direction) {
+        finishQueuedShutterOpenings();
         RoomNavigationFixture.walkToAndCrossIndoorBoundary(coordinator, transition, scroll, collision, link, direction);
     }
 
@@ -397,11 +399,22 @@ final class GameplayRouteFixture {
     }
 
     void awaitShuttersOpen(int mask) {
+        finishQueuedShutterOpenings();
         ActiveRoom room = session.rooms().activeRoomOrNull();
-        for (int tick = 0; tick < 40 && (room.shutterDoorMask() & mask) != 0; tick++) {
+        assertEquals(0, room.shutterDoorMask() & mask, "Shutters still closed in room " + room.roomId());
+    }
+
+    private void finishQueuedShutterOpenings() {
+        RoomPuzzleState.PerRoom puzzle =
+                RoomSessionInspection.loadedRoom(session).contents().puzzles();
+        for (int tick = 0; tick < 40 && shutterOpeningPending(puzzle); tick++) {
             tickInteractiveAtLink();
         }
-        assertEquals(0, room.shutterDoorMask() & mask, "Shutters still closed in room " + room.roomId());
+        assertFalse(shutterOpeningPending(puzzle), "Shutter opening did not finish");
+    }
+
+    private static boolean shutterOpeningPending(RoomPuzzleState.PerRoom puzzle) {
+        return puzzle.pendingShutterOpenMask() != 0 || (puzzle.shutterOpening() && puzzle.shutterCloseDirection() >= 0);
     }
 
     void tickEntitiesAtOriginFacingDown() {

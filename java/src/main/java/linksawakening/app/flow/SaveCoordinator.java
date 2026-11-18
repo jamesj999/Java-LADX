@@ -70,6 +70,7 @@ public final class SaveCoordinator implements SaveActions {
         world.roomSession().story().setBowWowState(0);
         player.link().animation().setDirection(Direction.DOWN.javaIndex());
         rom.gpu().loadBaseTiles(rom.romData());
+        world.roomSession().restoreWorldMapRoom(profile.roomId());
         world.roomSession().rooms().loadIndoor(profile.mapId(), profile.roomId());
         world.roomSession()
                 .progress()
@@ -120,6 +121,10 @@ public final class SaveCoordinator implements SaveActions {
                         player.playerState().equipmentLevels().shieldLevel(),
                         player.playerState().equipmentLevels().swordLevel(),
                         player.playerState().equipmentLevels().powerBraceletLevel());
+        world.roomSession().restoreWorldMapRoom(saved.worldMapRoom());
+        world.roomSession()
+                .story()
+                .restoreFollowers(saved.followingNpcState(), saved.spawnPositionX(), saved.spawnPositionY());
         loadSavedRoom(saved);
         player.link().position().setRoomEntryRomPosition(saved.spawnPositionX(), saved.spawnPositionY());
         world.roomSession()
@@ -203,8 +208,11 @@ public final class SaveCoordinator implements SaveActions {
 
     @Override
     public void startFileSave() {
+        var previous = state.screens().menuTransition;
+        state.screens().menuTransition = previous == null
+                ? new linksawakening.ui.MenuTransition(10)
+                : previous.enterAnotherMenu(10);
         enterFileSave();
-        rom.gpu().loadSaveMenuTiles(rom.romData());
         setFileSaveController(new FileSaveController(
                 navigator::loadFileMenuBackgroundScene, state.sounds().sink()));
         input.inputState().tickEdges();
@@ -217,6 +225,10 @@ public final class SaveCoordinator implements SaveActions {
         }
         saveState.saveRamStore().writePlayerState(state.screens().currentSaveSlot(), player.playerState());
         saveCurrentSpawnLocation();
+        saveState
+                .saveRamStore()
+                .writeWorldMapRoom(
+                        state.screens().currentSaveSlot(), world.roomSession().worldMapRoom());
         {
             saveState
                     .saveRamStore()
@@ -237,6 +249,11 @@ public final class SaveCoordinator implements SaveActions {
                     .writeDungeonProgressFlags(
                             state.screens().currentSaveSlot(),
                             world.roomSession().dungeon().dungeonProgressFlagsSnapshot());
+            saveState
+                    .saveRamStore()
+                    .writeFollowers(
+                            state.screens().currentSaveSlot(),
+                            world.roomSession().story().followingNpcState());
             saveState
                     .saveRamStore()
                     .writeBowWowState(

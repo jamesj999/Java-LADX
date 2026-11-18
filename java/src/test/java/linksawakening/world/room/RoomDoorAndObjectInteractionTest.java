@@ -19,6 +19,7 @@ import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.physics.PhysicsFlags;
 import linksawakening.rom.RomBank;
 import linksawakening.state.Direction;
+import linksawakening.state.PlayerState;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntityStatus;
@@ -34,6 +35,37 @@ import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class RoomDoorAndObjectInteractionTest {
+    @Test
+    void telephoneRemembersFirstCallAndCyclesLeafHintsOnlyDuringTheLeafQuest() throws Exception {
+        RoomSession room = newSession();
+        PlayerState player = new PlayerState();
+        room.story().setRichardSpokenFlag(2);
+        room.rooms().loadIndoor(0x10, 0x99);
+        room.entities().tickEntities(1, 0x58, 0x68);
+        org.junit.jupiter.api.Assertions.assertNull(
+                room.story().useTelephone(0x58, 0x68, linksawakening.state.Direction.DOWN, player));
+        assertEquals(
+                new linksawakening.gameplay.SignpostDialogRef(1, 0x41),
+                room.story().useTelephone(0x58, 0x68, linksawakening.state.Direction.UP, player));
+        assertEquals(0x20, room.dungeon().indoorBRoomStatusSnapshot()[0xA9] & 0x20);
+        assertEquals(
+                new linksawakening.gameplay.SignpostDialogRef(1, 0x46),
+                room.story().useTelephone(0x58, 0x68, linksawakening.state.Direction.UP, player));
+
+        room.dungeon().restoreDungeonProgressFlags(new byte[] {2, 2, 0, 0, 0, 0, 0, 0});
+        player.progression().setTradeSequenceItem(5);
+        for (int lowId : new int[] {0x29, 0x2A, 0x28}) {
+            assertEquals(
+                    new linksawakening.gameplay.SignpostDialogRef(2, lowId),
+                    room.story().useTelephone(0x58, 0x68, linksawakening.state.Direction.UP, player));
+        }
+        room.rooms().loadIndoor(0x10, 0xA9);
+        room.entities().tickEntities(2, 0x28, 0x40);
+        assertEquals(
+                new linksawakening.gameplay.SignpostDialogRef(1, 0xFD),
+                room.story().useTelephone(0x28, 0x40, linksawakening.state.Direction.UP, player));
+    }
+
     @Test
     void owlStatuePushUsesVisualOffsetBeforeDialogGateButSkipsAirborneLink() {
         RoomSession session = newSession();

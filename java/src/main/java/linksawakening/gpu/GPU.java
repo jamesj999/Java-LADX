@@ -84,6 +84,12 @@ public final class GPU {
         titleIntro.loadIntroSequenceTiles(romData);
     }
 
+    public void loadWorldMapTiles(Rom rom) {
+        loadBaseOverworldTiles(rom);
+        vram.loadTilesFromROM(rom, 0x2C, 0x7800, 0x80, 0x0F0);
+        vram.loadTilesFromROM(rom, 0x2C, 0x5000, 0x10, 0x020);
+    }
+
     public void loadBaseOverworldTiles(Rom romData) {
         inventory.resetPowderIcon();
         animatedTiles.currentMapId = 0;

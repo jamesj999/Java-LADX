@@ -104,6 +104,8 @@ public final class SaveRamLayout {
     // wSpawnMapId ($DB60), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_SPAWN_MAP_ID_OFFSET = 0x360;
     // wSpawnMapRoom ($DB61), relative to wOverworldRoomStatus ($D800).
+    public static final int MAIN_WORLD_MAP_ROOM_OFFSET = 0x354; // wWorldMapRoom ($DB54)
+
     public static final int MAIN_SPAWN_MAP_ROOM_OFFSET = 0x361;
     // wSpawnPositionX ($DB62), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_SPAWN_X_OFFSET = 0x362;
@@ -115,6 +117,9 @@ public final class SaveRamLayout {
     public static final int MAIN_DUNGEON_PROGRESS_FLAGS_OFFSET = 0x365;
     public static final int MAIN_DUNGEON_PROGRESS_FLAGS_SIZE = 0x08;
     // wIsBowWowFollowingLink ($DB56), relative to wOverworldRoomStatus ($D800).
+    public static final int MAIN_MARIN_FOLLOWING_OFFSET = 0x373;
+    public static final int MAIN_GHOST_FOLLOWING_OFFSET = 0x379;
+    public static final int MAIN_ROOSTER_FOLLOWING_OFFSET = 0x37B;
     public static final int MAIN_BOW_WOW_STATE_OFFSET = 0x356;
     // wRichardSpokenFlag at DB55, relative to wOverworldRoomStatus at D800.
     // wRichardSpokenFlag ($DB55), relative to wOverworldRoomStatus ($D800).

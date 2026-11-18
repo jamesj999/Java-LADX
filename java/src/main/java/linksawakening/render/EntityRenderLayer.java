@@ -1,5 +1,8 @@
 package linksawakening.render;
 
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_RICHARD;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_RICHARD_FROG;
+
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.gpu.EntitySpriteTileSnapshot;
@@ -132,7 +135,11 @@ final class EntityRenderLayer implements HardwareRenderLayer {
         EntitySpriteDefinition death = deathDefinition(entities, entity);
         boolean renderingDeath = death != null;
         EntitySpriteDefinition definition = renderingDeath ? death : liveDefinition(entities, entity);
-        int transitionVisualYOffset = entities.visualYOffset(entity.slot());
+        int visualYOffset = entities.visualYOffset(entity.slot());
+        if (entity.type() == ENTITY_RICHARD) {
+            visualYOffset += 0x21 - entity.y();
+        }
+        int transitionVisualYOffset = visualYOffset;
         if (entity.type() == ENTITY_BOMB
                 && definition.bank() == BOMB_NORMAL_DEFINITION_BANK
                 && definition.address() == BOMB_NORMAL_DEFINITION_ADDRESS) {
@@ -143,6 +150,24 @@ final class EntityRenderLayer implements HardwareRenderLayer {
             return;
         }
         int variant = renderingDeath ? entity.deathSpriteVariant() : entity.spriteVariant();
+        if (!renderingDeath && entity.type() == 0x61 && definition.address() == 0x4404 && variant >= 0) {
+            variant = (frameCounter >>> 2) & 0x0F;
+        }
+        if (!renderingDeath
+                && entity.type() == ENTITY_RICHARD_FROG
+                && entity.z() > 0
+                && !entities.sideScrolling()
+                && ((frameCounter ^ entity.slot()) & 1) == 0) {
+            painter.renderPackedOamSprite(
+                    context,
+                    palettes,
+                    null,
+                    0x26,
+                    0,
+                    entity.x() + offset.x() + 4 - OAM_X_SCREEN_ORIGIN,
+                    entity.y() + offset.y() + 10 - OAM_Y_SCREEN_ORIGIN,
+                    false);
+        }
         if (!renderingDeath && entity.type() == ENTITY_WINGED_OCTOROK) {
             // The pair is allocated before func_007_5805's rectangle in
             // OAM. Draw the later rectangle first so the earlier pair
@@ -180,7 +205,7 @@ final class EntityRenderLayer implements HardwareRenderLayer {
                     offset.x(),
                     offset.y(),
                     entities.sideScrolling(),
-                    entities.visualYOffset(entity.slot()));
+                    visualYOffset);
         } finally {
             painter.renderingDeath = false;
         }

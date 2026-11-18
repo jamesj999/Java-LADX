@@ -114,6 +114,9 @@ import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_WIZROBE_PR
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_ZOL;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_ZOMBIE;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_ZORA;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_RICHARD;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_RICHARD_FROG;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_TELEPHONE;
 
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
@@ -1267,6 +1270,15 @@ final class EntitySpriteRegistrationData {
             // list before PushLinkOutOfEntity_18 ($18:4D69).
             var variants = linksawakening.rom.RomSymbols.GrandmaUlrira1SpriteVariants;
             return EntitySpriteRecipe.pair(entityType, variants.bank(), variants.address(), 3, 0);
+        }
+        if (entityType == ENTITY_RICHARD) {
+            return EntitySpriteRecipe.pair(entityType, 0x06, 0x4000, 8, 0);
+        }
+        if (entityType == ENTITY_RICHARD_FROG) {
+            return EntitySpriteRecipe.pair(entityType, 0x19, 0x5BA0, 8, 0);
+        }
+        if (entityType == ENTITY_TELEPHONE) {
+            return EntitySpriteRecipe.pair(entityType, 0x06, 0x6A78, 1, 0);
         }
         if (entityType == ENTITY_GRANDPA_ULRIRA) {
             return EntitySpriteRecipe.rectangle(

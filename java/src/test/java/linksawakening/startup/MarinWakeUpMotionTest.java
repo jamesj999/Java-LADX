@@ -97,7 +97,10 @@ final class MarinWakeUpMotionTest {
 
     @Test
     void restoredHouseStartsMarinTalkableWithoutReplayingWakeUp() {
-        MarinWakeUpMotion motion = MarinWakeUpMotion.postWake();
+        MarinWakeUpMotion motion = MarinWakeUpMotion.postWake(true);
+        var pose = motion.tickMarinPresentation(0, 0x48, 0x58, 0x40, 0x60);
+        assertEquals(0x48, pose.romX());
+        assertEquals(0x58, pose.romY());
 
         MarinWakeUpMotion.Update update = motion.tick(1, false, false);
 
