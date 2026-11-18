@@ -44,7 +44,7 @@ final class RoomRenderLayer implements HardwareRenderLayer {
         int shakeX = -scrollController.screenShakeHorizontal();
         int shakeY = -scrollController.screenShakeVertical();
         if (!scrollController.isActive()) {
-            int[][] palettes = transitionController.applyFade(roomPalettes);
+            int[][] palettes = transitionController.applyManboFade(roomPalettes);
             int[] waveOffsets = transitionController.manboWaveOffsets(ROOM_PIXEL_HEIGHT);
             if (waveOffsets == null) {
                 HardwareBackgroundRenderer.renderRoom(frame, gpu, tileIds, tileAttrs, palettes, shakeX, shakeY);

@@ -134,14 +134,7 @@ public final class InventoryTransition {
         boolean out = state == State.MAP_FADE_OUT || state == State.FADE_OUT;
         boolean in = state == State.FADE_IN || state == State.WORLD_FADE_IN;
         if (!out && !in) return 0xFFFFFF;
-        int calls = (fadeCalls + (object ? 0 : 1)) / 2;
-        int result = 0;
-        for (int shift = 16; shift >= 0; shift -= 8) {
-            int target = (rgb >> shift & 255) >> 3;
-            int value = out ? Math.min(31, target + calls * 4) : Math.max(target, 31 - calls * 4);
-            result |= ((value << 3) | (value >> 2)) << shift;
-        }
-        return result;
+        return linksawakening.gpu.CgbPaletteFade.color(rgb, fadeCalls, object, out);
     }
 
     private void enter(State next) {

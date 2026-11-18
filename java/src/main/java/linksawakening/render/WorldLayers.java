@@ -35,7 +35,9 @@ final class WorldLayers {
         }
         addDialog(state, painter);
         if (state.screen() == RenderScreen.OVERWORLD
-                && ((state.overworld.hasLink() && state.link().status().isPassingOut())
+                && ((state.overworld.hasTransitionController()
+                                && state.transitionController().isMapFade())
+                        || (state.overworld.hasLink() && state.link().status().isPassingOut())
                         || (state.overworld.hasInventoryController()
                                 && state.inventoryController().transition().blocksWorld()))) {
             for (int i = 0; i < layers.size(); i++) {

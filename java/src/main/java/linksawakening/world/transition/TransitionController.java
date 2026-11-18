@@ -7,14 +7,6 @@ import linksawakening.rom.Rom;
  * {@code ApplyMapFadeOutTransition} path (bank0.asm:866) and its per-frame
  * handler {@code LinkMotionMapFadeOutHandler} (bank0.asm:2723).
  *
- * <p>Timing model matches the original: every 4 frames the BG palette darkens
- * one "step", where a step on DMG decrements each non-zero 2-bit color in the
- * {@code BGP} register by 1 (see {@code FadeOutMusic}, bank20.asm:2092-2140).
- * Four steps = 16 frames = fully faded. The original DMG progression
- * {@code $E4 → $94 → $54 → $00} lands on $00 (all colors map to white), so on
- * DMG this is a fade-to-white. On CGB the equivalent effect is brightening
- * each palette color toward white over four discrete steps.
- *
  * <p>State machine:
  * <pre>
  *   IDLE --startFadeOut()--> FADING_OUT (16 frames) --[midpoint]--> (callback loads room)
@@ -174,13 +166,22 @@ public final class TransitionController {
         }
     }
 
+    public boolean isMapFade() {
+        return state == State.FADING_IN || state == State.FADING_OUT;
+    }
+
+    public int mapFadeColor(int rgb, boolean object) {
+        return linksawakening.gpu.CgbPaletteFade.color(rgb, frameInPhase, object, state == State.FADING_OUT);
+    }
+
     /**
-     * Apply the current fade level to a palette array. Produces a new array so
+     * Apply the current Manbo fade level to a palette array. Produces a new array so
      * the caller's source palettes remain untouched. On DMG the equivalent op
      * decrements each non-zero 2-bit BGP slot toward 0 (white); here we
      * brighten each CGB RGB color toward full-white in {@code STEPS} steps.
      */
-    public int[][] applyFade(int[][] sourcePalettes) {
+    public int[][] applyManboFade(int[][] sourcePalettes) {
+        if (state != State.MANBO_IN && state != State.MANBO_OUT) return sourcePalettes;
         int level = fadeLevel();
         if (level == 0) {
             return sourcePalettes;

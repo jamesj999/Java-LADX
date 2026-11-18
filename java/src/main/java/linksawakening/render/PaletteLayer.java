@@ -23,18 +23,39 @@ final class PaletteLayer implements HardwareRenderLayer {
     @SuppressWarnings("UnnecessaryLambda")
     private final IntUnaryOperator object = rgb -> inventory.color(rgb, true);
 
+    private linksawakening.world.transition.TransitionController mapFade;
+    private final IntUnaryOperator mapBackground = this::mapBackgroundColor;
+    private final IntUnaryOperator mapObject = this::mapObjectColor;
+    private final Runnable drawInventory = this::drawInventory;
     private final Runnable draw = this::drawChild, inner = this::drawInner, sourced = this::drawSourced;
 
     @Override
     public void submit(HardwareFrame frame, GPU gpu) {
         this.frame = frame;
         this.gpu = gpu;
+        if (mapFade != null) frame.withPaletteTransforms(mapBackground, mapObject, drawInventory);
+        else drawInventory();
+    }
+
+    private int mapBackgroundColor(int rgb) {
+        return mapFade.mapFadeColor(rgb, false);
+    }
+
+    private int mapObjectColor(int rgb) {
+        return mapFade.mapFadeColor(rgb, true);
+    }
+
+    private void drawInventory() {
         if (inventoryPalette) frame.withPaletteTransforms(background, object, sourced);
         else drawSourced();
     }
 
     void configure(RenderLayer layer, GameFrameState state) {
         child = (HardwareRenderLayer) layer;
+        mapFade = state.overworld.hasTransitionController()
+                        && state.transitionController().isMapFade()
+                ? state.transitionController()
+                : null;
         passOut = state.screen() == RenderScreen.OVERWORLD
                 && state.overworld.hasLink()
                 && state.link().status().isPassingOut()
