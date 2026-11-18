@@ -32,14 +32,16 @@ public final class RoomEntitySnapshot {
         if (other == null
                 || spriteSelection() != other.spriteSelection()
                 || spriteTiles() != other.spriteTiles()
-                || sideScrolling() != other.sideScrolling()) return false;
+                || sideScrolling() != other.sideScrolling()
+                || data.shallowWaterSlots() != other.data.shallowWaterSlots()) return false;
         if (!sameValues(slots(), other.slots())
                 || !sameValues(hookshotChainOam(), other.hookshotChainOam())
                 || !sameValues(pincerBodyOam(), other.pincerBodyOam())
                 || !sameValues(wingedOctorokOam(), other.wingedOctorokOam())
                 || !sameValues(bowWowChainOam(), other.bowWowChainOam())) return false;
         for (int slot = 0; slot < RoomEntity.SLOT_COUNT; slot++)
-            if (visualYOffset(slot) != other.visualYOffset(slot)) return false;
+            if (visualYOffset(slot) != other.visualYOffset(slot)
+                    || !Objects.equals(data.roamingPose(slot), other.data.roamingPose(slot))) return false;
         return true;
     }
 
@@ -180,6 +182,32 @@ public final class RoomEntitySnapshot {
             List<WingedOctorokOam.Entry> wingedOctorokOam,
             int[] visualYOffsetBySlot,
             List<BowWowChain.Entry> bowWowChainOam) {
+        this(
+                slots,
+                spriteSelection,
+                spriteTiles,
+                sideScrolling,
+                hookshotChainOam,
+                pincerBodyOam,
+                wingedOctorokOam,
+                visualYOffsetBySlot,
+                bowWowChainOam,
+                0,
+                new RoomEntity[RoomEntity.SLOT_COUNT]);
+    }
+
+    RoomEntitySnapshot(
+            List<RoomEntity> slots,
+            EntitySpriteSelection spriteSelection,
+            EntitySpriteTileSnapshot spriteTiles,
+            boolean sideScrolling,
+            List<HookshotChainOam.Entry> hookshotChainOam,
+            List<PincerBodyOam.Entry> pincerBodyOam,
+            List<WingedOctorokOam.Entry> wingedOctorokOam,
+            int[] visualYOffsetBySlot,
+            List<BowWowChain.Entry> bowWowChainOam,
+            int shallowWaterSlots,
+            RoomEntity[] roamingDisplayOam) {
         List<BowWowChain.Entry> ownedBowWowChainOam = List.copyOf(bowWowChainOam);
         if (slots == null || slots.size() != EntityRoomLoader.MAX_ENTITIES) {
             throw new IllegalArgumentException(
@@ -227,7 +255,9 @@ public final class RoomEntitySnapshot {
                 ownedPincerBodyOam,
                 ownedWingedOctorokOam,
                 ownedVisualYOffsetBySlot,
-                ownedBowWowChainOam);
+                ownedBowWowChainOam,
+                shallowWaterSlots,
+                roamingDisplayOam.clone());
     }
 
     public RoomEntitySnapshot withSpriteSelection(
@@ -243,7 +273,9 @@ public final class RoomEntitySnapshot {
                 data.pincerBodyOam(),
                 data.wingedOctorokOam(),
                 data.visualYOffsetBySlot(),
-                data.bowWowChainOam());
+                data.bowWowChainOam(),
+                data.shallowWaterSlots(),
+                data.roamingDisplayOam());
     }
 
     public RoomEntitySnapshot withSpriteTiles(
@@ -259,7 +291,9 @@ public final class RoomEntitySnapshot {
                 data.pincerBodyOam(),
                 data.wingedOctorokOam(),
                 data.visualYOffsetBySlot(),
-                data.bowWowChainOam());
+                data.bowWowChainOam(),
+                data.shallowWaterSlots(),
+                data.roamingDisplayOam());
     }
 
     /** Returns whether the room uses the side-scroll OAM path. */
@@ -278,7 +312,20 @@ public final class RoomEntitySnapshot {
                 data.pincerBodyOam(),
                 data.wingedOctorokOam(),
                 data.visualYOffsetBySlot(),
-                data.bowWowChainOam());
+                data.bowWowChainOam(),
+                data.shallowWaterSlots(),
+                data.roamingDisplayOam());
+    }
+
+    public boolean inShallowWater(int slot) {
+        Objects.checkIndex(slot, RoomEntity.SLOT_COUNT);
+        return data.inShallowWater(slot);
+    }
+
+    public RoomEntity displayPose(RoomEntity entity) {
+        RoomEntity pose = data.roamingPose(entity.slot());
+        if (pose == null || pose.type() != entity.type() || entity.status() != EntityStatus.ACTIVE) return entity;
+        return EntitySnapshots.withPositionAndVariant(entity, pose.x(), pose.y(), pose.spriteVariant());
     }
 
     public List<RoomEntity> slots() {
@@ -316,7 +363,9 @@ public final class RoomEntitySnapshot {
                 data.pincerBodyOam(),
                 data.wingedOctorokOam(),
                 data.visualYOffsetBySlot(),
-                entries);
+                entries,
+                data.shallowWaterSlots(),
+                data.roamingDisplayOam());
     }
 
     public List<BowWowChain.Entry> bowWowChainOam() {
@@ -351,7 +400,9 @@ public final class RoomEntitySnapshot {
                 data.pincerBodyOam(),
                 data.wingedOctorokOam(),
                 offsets,
-                data.bowWowChainOam());
+                data.bowWowChainOam(),
+                data.shallowWaterSlots(),
+                data.roamingDisplayOam());
     }
 
     public RoomEntitySnapshot withHookshotChainOam(List<HookshotChainOam.Entry> hookshotChainOam) {
@@ -365,7 +416,9 @@ public final class RoomEntitySnapshot {
                 data.pincerBodyOam(),
                 data.wingedOctorokOam(),
                 data.visualYOffsetBySlot(),
-                data.bowWowChainOam());
+                data.bowWowChainOam(),
+                data.shallowWaterSlots(),
+                data.roamingDisplayOam());
     }
 
     public RoomEntitySnapshot withPincerBodyOam(List<PincerBodyOam.Entry> pincerBodyOam) {
@@ -379,7 +432,9 @@ public final class RoomEntitySnapshot {
                 pincerBodyOam,
                 data.wingedOctorokOam(),
                 data.visualYOffsetBySlot(),
-                data.bowWowChainOam());
+                data.bowWowChainOam(),
+                data.shallowWaterSlots(),
+                data.roamingDisplayOam());
     }
 
     public RoomEntitySnapshot withWingedOctorokOam(List<WingedOctorokOam.Entry> wingedOctorokOam) {
@@ -393,7 +448,9 @@ public final class RoomEntitySnapshot {
                 data.pincerBodyOam(),
                 wingedOctorokOam,
                 data.visualYOffsetBySlot(),
-                data.bowWowChainOam());
+                data.bowWowChainOam(),
+                data.shallowWaterSlots(),
+                data.roamingDisplayOam());
     }
 
     /** Two actual representations: immutable captured values and a live room view. */
@@ -419,6 +476,18 @@ public final class RoomEntitySnapshot {
         List<BowWowChain.Entry> bowWowChainOam();
 
         int visualYOffset(int slot);
+
+        int shallowWaterSlots();
+
+        default boolean inShallowWater(int slot) {
+            return (shallowWaterSlots() & (1 << slot)) != 0;
+        }
+
+        RoomEntity[] roamingDisplayOam();
+
+        default RoomEntity roamingPose(int slot) {
+            return roamingDisplayOam()[slot];
+        }
     }
 
     private record Owned(
@@ -431,7 +500,9 @@ public final class RoomEntitySnapshot {
             List<PincerBodyOam.Entry> pincerBodyOam,
             List<WingedOctorokOam.Entry> wingedOctorokOam,
             int[] visualYOffsetBySlot,
-            List<BowWowChain.Entry> bowWowChainOam)
+            List<BowWowChain.Entry> bowWowChainOam,
+            int shallowWaterSlots,
+            RoomEntity[] roamingDisplayOam)
             implements Data {
         @Override
         public int visualYOffset(int slot) {
@@ -443,6 +514,26 @@ public final class RoomEntitySnapshot {
 
     private record Live(EntityRoomInspection room, List<RoomEntity> slots, List<RoomEntity> loadedEntities)
             implements Data {
+        @Override
+        public boolean inShallowWater(int slot) {
+            return room.groundStatus(slot) == 2;
+        }
+
+        @Override
+        public int shallowWaterSlots() {
+            return room.shallowWaterSlots();
+        }
+
+        @Override
+        public RoomEntity[] roamingDisplayOam() {
+            return room.copyRoamingDisplayOam();
+        }
+
+        @Override
+        public RoomEntity roamingPose(int slot) {
+            return room.slots().roamingDisplayPose(slot);
+        }
+
         @Override
         public EntitySpriteSelection spriteSelection() {
             return room.presentationState().snapshotSelection();

@@ -743,7 +743,7 @@ final class GameplayRouteScenario {
         route.crossIndoorBoundary(ScrollController.RIGHT);
         route.assertInRoom(0x17);
         assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
-        assertEquals(0, route.session.rooms().activeRoomOrNull().shutterDoorMask());
+        route.awaitShuttersOpen(0x0F);
     }
 
     private static void pressTheEntranceButtonAndCollectItsKey(GameplayRouteFixture route) throws Exception {
@@ -922,7 +922,7 @@ final class GameplayRouteScenario {
     }
 
     private static void flipSpikedBeetlesAndRevealHiddenStairs(GameplayRouteFixture route) throws Exception {
-        assertEquals(0, route.session.rooms().activeRoomOrNull().shutterDoorMask());
+        route.awaitShuttersOpen(0x0F);
         assertEquals(0, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x00, 0x04) & 0x10);
 
         route.crossIndoorBoundary(ScrollController.LEFT);
@@ -1308,6 +1308,7 @@ final class GameplayRouteScenario {
         }
         assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
         assertEquals(0x20, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x00, 0x11) & 0x20);
+        route.awaitShuttersOpen(0x05);
 
         route.crossIndoorBoundary(ScrollController.UP);
         route.assertInRoom(0x0B);
@@ -1450,7 +1451,7 @@ final class GameplayRouteScenario {
                 .forEach(reward -> route.playerState.vitals().applyHeartContainerReward());
         assertEquals(route.previousMaxHearts + 1, route.playerState.vitals().maxHearts());
         assertEquals(0x20, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x00, 0x06) & 0x20);
-        assertEquals(0, route.session.rooms().activeRoomOrNull().shutterDoorMask());
+        route.awaitShuttersOpen(0x0F);
 
         route.crossIndoorBoundary(ScrollController.UP);
         route.assertInRoom(0x02);
@@ -1713,7 +1714,7 @@ final class GameplayRouteScenario {
                             route.frame++, 0x20, 0x70, 0, 0, Direction.RIGHT.javaIndex(), false);
         }
         assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
-        assertEquals(0, route.session.rooms().activeRoomOrNull().shutterDoorMask() & 0x01);
+        route.awaitShuttersOpen(0x01);
 
         route.crossIndoorBoundary(ScrollController.UP);
         route.assertInRoom(0xE0);
@@ -1772,7 +1773,7 @@ final class GameplayRouteScenario {
                             route.frame++, 0x50, 0x50, 0, 0, Direction.RIGHT.javaIndex(), false);
         }
         assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
-        assertEquals(0, route.session.rooms().activeRoomOrNull().shutterDoorMask() & 0x08);
+        route.awaitShuttersOpen(0x08);
         route.crossIndoorBoundary(ScrollController.RIGHT);
         route.assertInRoom(0xE1);
     }
@@ -1910,7 +1911,7 @@ final class GameplayRouteScenario {
                         Direction.DOWN.javaIndex(),
                         false);
         assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
-        assertEquals(0, route.session.rooms().activeRoomOrNull().shutterDoorMask() & 0x02);
+        route.awaitShuttersOpen(0x02);
         route.crossIndoorBoundary(ScrollController.DOWN);
         route.assertInRoom(0xF0);
         route.hideoutExit = route.session.rooms().activeRoomOrNull().warps().stream()
@@ -2163,7 +2164,7 @@ final class GameplayRouteScenario {
         }
         assertEquals(2, RoomDebugFixture.of(route.session).roomTriggerCountForTest());
         assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
-        assertEquals(0, route.session.rooms().activeRoomOrNull().shutterDoorMask() & 0x08);
+        route.awaitShuttersOpen(0x08);
 
         route.crossIndoorBoundary(ScrollController.RIGHT);
         route.assertInRoom(0x32);
@@ -3138,7 +3139,7 @@ final class GameplayRouteScenario {
             route.tickInteractiveAtLink();
         }
         assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
-        assertEquals(0, route.session.rooms().activeRoomOrNull().shutterDoorMask() & 0x01);
+        route.awaitShuttersOpen(0x01);
         route.crossIndoorBoundary(ScrollController.UP);
         route.assertInRoom(0x2E);
         assertEquals(0x21, RoomDebugFixture.of(route.session).activeRoomEventForTest());
@@ -4188,6 +4189,7 @@ final class GameplayRouteScenario {
         }
         assertEquals(0, RoomDebugFixture.of(route.session).activeRoomEventForTest());
         assertEquals(0x20, RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x28) & 0x20);
+        route.awaitShuttersOpen(0x08);
         assertEquals(
                 0x01,
                 RoomDebugFixture.of(route.session).indoorRoomStatusForTest(0x01, 0x28) & 0x01,

@@ -46,6 +46,16 @@ public final class FileMenuRomData {
         return readUnsignedBytes("FileMenuQuitOkTilemap.data", 1, 0x4E46, 14);
     }
 
+    /** English DX CHECKNAME compares the five stored character codes, including case. */
+    public static boolean matchesSpecialFileName(int[] name) {
+        return name.length == 5
+                && name[0] == 'Z' + 1
+                && name[1] == 'E' + 1
+                && name[2] == 'L' + 1
+                && name[3] == 'D' + 1
+                && name[4] == 'A' + 1;
+    }
+
     public int[] selectionCursorYPositions() {
         return readUnsignedBytes("Data_001_48E4", FILE_MENU_BANK, SELECTION_CURSOR_Y_ADDRESS, SELECTION_CURSOR_Y_COUNT);
     }

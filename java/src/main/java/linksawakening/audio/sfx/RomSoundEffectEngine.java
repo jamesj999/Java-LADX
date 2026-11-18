@@ -35,6 +35,45 @@ final class RomSoundEffectEngine {
         tables = new RomSoundEffectTables(romData);
     }
 
+    private int bank = RomSoundEffectTables.SFX_BANK;
+    private boolean silencedMusic;
+
+    void request(SoundEffect effect) {
+        tables.beginHandlerAddress(effect);
+        write8(
+                switch (effect.namespace()) {
+                    case JINGLE -> 0xFFF2;
+                    case WAVE -> 0xFFF3;
+                    case NOISE -> 0xFFF4;
+                },
+                effect.id());
+    }
+
+    int advanceFrame() {
+        silencedMusic = false;
+        if ((apu.readRegister(GameBoyApu.NR52) & 0x80) == 0) cpu.runFrom(0x4000);
+        cpu.runFrom(0x7FCC); // Copy h* SFX requests to the dispatcher slots.
+        cpu.runFrom(0x4006); // Dispatch in ROM order, including cross-slot cancellation.
+        int track = read8(0xD368);
+        write8(0xD368, 0);
+        return track;
+    }
+
+    boolean silencedMusic() {
+        return silencedMusic;
+    }
+
+    void changeMusicTrack(int musicBank, boolean stopping) {
+        bank = musicBank;
+        try {
+            // Run the bank-specific SFX cleanup before Java loads the new score.
+            if (stopping) cpu.runFrom(bank == 0x1B ? 0x410F : 0x4137);
+            else cpu.runFrom(bank == 0x1B ? 0x433C : 0x43C0, bank == 0x1B ? 0x4361 : 0x43E5);
+        } finally {
+            bank = RomSoundEffectTables.SFX_BANK;
+        }
+    }
+
     void start(SoundEffect effect) {
         Objects.requireNonNull(effect, "effect");
         tables.beginHandlerAddress(effect);
@@ -68,7 +107,7 @@ final class RomSoundEffectEngine {
 
     boolean ownsChannel(int channel) {
         if (channel < 1 || channel > 4) throw new IllegalArgumentException("Channel out of range: " + channel);
-        return (read8(0xD30F + channel * 0x10) & 0x80) != 0;
+        return (channel == 3 && read8(0xD371) != 0) || (read8(0xD30F + channel * 0x10) & 0x80) != 0;
     }
 
     boolean takeWaveRestoreRequest() {
@@ -104,7 +143,7 @@ final class RomSoundEffectEngine {
     int read8(int address) {
         address &= 0xFFFF;
         if (address >= 0x4000 && address <= 0x7FFF) {
-            int offset = RomBank.romOffset(RomSoundEffectTables.SFX_BANK, address);
+            int offset = RomBank.romOffset(bank, address);
             if (offset < 0 || offset >= romBytes.size()) {
                 throw new IllegalStateException("SFX ROM read outside bank 0x1F at 0x" + hex16(address));
             }
@@ -123,6 +162,7 @@ final class RomSoundEffectEngine {
         address &= 0xFFFF;
         int unsigned = value & 0xFF;
         memory[address] = unsigned;
+        if (address == 0xD369 && unsigned == 0) silencedMusic = true;
         if (address >= 0xFF10 && address <= 0xFF26) {
             apu.writeRegister(address & 0xFF, unsigned);
         } else if (address >= 0xFF30 && address <= 0xFF3F) {

@@ -7,6 +7,7 @@ import linksawakening.save.SaveSlotComponents.Inventory;
 import linksawakening.save.SaveSlotComponents.Progression;
 import linksawakening.save.SaveSlotComponents.Resources;
 import linksawakening.save.SaveSlotComponents.Spawn;
+import linksawakening.state.FollowerFlags;
 
 /**
  * Immutable view of the currently modeled fields in one raw SRAM slot.
@@ -45,6 +46,15 @@ public record SaveSlotState(
     @Override
     public byte[] rawSlot() {
         return rawSlot.clone();
+    }
+
+    public int photoCount() {
+        int offset = SaveRamLayout.dx3Offset();
+        return Integer.bitCount(rawSlot[offset + 1] & 0xFF) + Integer.bitCount(rawSlot[offset + 2] & 0x0F);
+    }
+
+    public int worldMapRoom() {
+        return Byte.toUnsignedInt(rawSlot[SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_WORLD_MAP_ROOM_OFFSET]);
     }
 
     /** Begins construction from the slot identity and complete original SRAM bytes. */
@@ -238,6 +248,16 @@ public record SaveSlotState(
         return roomStatus(
                 SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_OFFSET,
                 SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_SIZE);
+    }
+
+    public FollowerFlags followerFlags() {
+        int main = SaveRamLayout.mainOffset();
+        int ghost = rawSlot[main + SaveRamLayout.MAIN_GHOST_FOLLOWING_OFFSET] & 255;
+        return new FollowerFlags(
+                rawSlot[main + SaveRamLayout.MAIN_ROOSTER_FOLLOWING_OFFSET] != 0,
+                ghost <= 2 ? ghost : 0,
+                rawSlot[main + SaveRamLayout.MAIN_MARIN_FOLLOWING_OFFSET] != 0,
+                rawSlot[main + SaveRamLayout.MAIN_FOLLOWER_CONTEXT_OFFSET] != 0);
     }
 
     public int bowWowState() {

@@ -18,7 +18,9 @@ import linksawakening.app.gameplay.DebugScroll;
 import linksawakening.app.screen.FileSaveScreen;
 import linksawakening.app.screen.GameplayScreen;
 import linksawakening.app.screen.Screen;
+import linksawakening.app.screen.ScreenKind;
 import linksawakening.app.screen.TitleScreen;
+import linksawakening.app.screen.WorldMapScreen;
 import linksawakening.app.services.InputServices;
 import linksawakening.app.services.PlayerServices;
 import linksawakening.app.services.UiServices;
@@ -67,13 +69,18 @@ public final class InputRouter implements DebugScroll {
     }
 
     public void onKeyEvent(int key, int action) {
+        var fileLoad = state.screens().fileLoad;
+        if (fileLoad != null && fileLoad.blocksControl()) {
+            input.inputState().onKeyEvent(key, action);
+            return;
+        }
         // Desktop shortcut only: Escape never enters the Game Boy button state.
         if (key == KEY_ESCAPE) {
             if (action == PRESS) {
                 Screen current = actions.navigator().current();
                 if (current instanceof GameplayScreen gameplay) {
                     gameplay.requestFileSave();
-                } else if (!(current instanceof FileSaveScreen)) {
+                } else if (!(current instanceof FileSaveScreen) && !(current instanceof WorldMapScreen)) {
                     actions.lifecycle().requestStop();
                 }
             }
@@ -98,7 +105,7 @@ public final class InputRouter implements DebugScroll {
     }
 
     public void gameplayKey(int key, int action) {
-        if (player.link().status().isPassingOut()) return;
+        if (player.link().status().isPassingOut() || player.link().airborne().warpHoleControlsLink()) return;
         if (action != PRESS) return;
 
         if (world.roomSession().doors().tailCaveKeyholeSequenceActive()) {
@@ -257,6 +264,30 @@ public final class InputRouter implements DebugScroll {
         return false;
     }
 
+    public boolean tryPresentWorldMap() {
+        var keys = input.inputConfig();
+        var buttons = input.inputState();
+        var rooms = world.roomSession();
+        if (!buttons.wasPressed(keys.selectKey())
+                || buttons.isDown(keys.aKey())
+                || buttons.isDown(keys.bKey())
+                || buttons.isDown(keys.menuOpenKey())
+                || !rooms.hasRoom()
+                || rooms.doors().tailCaveKeyholeSequenceActive()
+                || rooms.entityState().gotItemPresentationActive()
+                || player.link().animation().dialogGotItemActive()
+                || ui.dialogController().isActive()
+                || actions.story().marinWakeUpBlocksKeyInput()
+                || !canPresentFileSave()) {
+            return false;
+        }
+        if (actions.navigator().screen(ScreenKind.WORLD_MAP) instanceof WorldMapScreen map) {
+            map.open();
+            return true;
+        }
+        return false;
+    }
+
     public static boolean shouldEnterFileSave(InputConfig inputConfig, InputState inputState, int key, int action) {
         if (inputConfig == null || inputState == null || action != PRESS) {
             return false;
@@ -274,6 +305,7 @@ public final class InputRouter implements DebugScroll {
 
     public boolean canPresentFileSave() {
         return !player.link().status().recoveryBlocksInput()
+                && !player.link().airborne().warpHoleControlsLink()
                 && !world.scrollController().isActive()
                 && !world.transitionController().isInputBlocked()
                 && !ui.inventoryController().shouldBlockOverworldInput()

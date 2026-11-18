@@ -24,6 +24,7 @@ public final class MusicDriver {
     BooleanSupplier takeWaveRestoreRequest = () -> false;
 
     private boolean playing;
+    private boolean sharedChip;
     int trackBank;
     private int speedTablePointer;
     private int musicTranspose;
@@ -43,14 +44,23 @@ public final class MusicDriver {
     }
 
     public void start(MusicTrack track) {
-        Objects.requireNonNull(track, "track");
-        resetChannelState();
-        trackBank = track.bank();
-
         apu.reset();
         writeRegister(GameBoyApu.NR52, 0x80);
         writeRegister(GameBoyApu.NR50, 0x77);
         writeRegister(GameBoyApu.NR51, 0xFF);
+        loadTrack(track);
+    }
+
+    void startShared(MusicTrack track) {
+        loadTrack(track);
+        sharedChip = true;
+    }
+
+    private void loadTrack(MusicTrack track) {
+        sharedChip = false;
+        Objects.requireNonNull(track, "track");
+        resetChannelState();
+        trackBank = track.bank();
 
         int headerOffset = track.romOffset();
         requireReadable(headerOffset, HEADER_SIZE, trackBank, track.headerAddress());
@@ -69,9 +79,13 @@ public final class MusicDriver {
     }
 
     public void stop() {
+        clearScore();
+        apu.reset();
+    }
+
+    void clearScore() {
         playing = false;
         resetChannelState();
-        apu.reset();
     }
 
     public void tick60Hz() {
@@ -79,6 +93,7 @@ public final class MusicDriver {
             return;
         }
 
+        voice.observeEffectOwnership();
         voice.tickNoiseFfSequence();
 
         for (MusicChannelState state : channels) {
@@ -96,6 +111,10 @@ public final class MusicDriver {
         }
 
         playing = hasActiveChannel();
+    }
+
+    boolean usesSharedChip() {
+        return sharedChip;
     }
 
     public boolean isPlaying() {
@@ -279,6 +298,7 @@ public final class MusicDriver {
             voice.noteTicks[i] = 0;
             voice.articulationApplied[i] = false;
         }
+        voice.interruptedChannels = 0;
         voice.waveformPointer = 0;
         musicTranspose = 0;
         voice.noiseFfPhase = 0;

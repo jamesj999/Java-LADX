@@ -42,9 +42,9 @@ public final class PlayerSaveLoader {
         vitals.setHealth(saved.health());
         wallet.setRupees(saved.rupees());
         progression.setHeartPieces(saved.heartPieces());
+        progression.photoCount = saved.photoCount();
         progression.setSeashells(saved.seashells());
         progression.setHasFlippers(saved.hasFlippers() != 0);
-        progression.setHasMedicine(saved.hasMedicine() != 0);
         progression.setTradeSequenceItem(saved.tradeSequenceItem());
         progression.setMedicineCount(saved.medicineCount());
         progression.setTailKeyCount(saved.tailKeyCount());

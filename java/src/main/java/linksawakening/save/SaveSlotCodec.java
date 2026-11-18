@@ -40,13 +40,11 @@ final class SaveSlotCodec {
         bytes[main + SaveRamLayout.MAIN_FLIPPERS_OFFSET] =
                 (byte) (playerState.progression().hasFlippers() ? 1 : 0);
         bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET] =
-                (byte) (playerState.progression().hasMedicine() ? 1 : 0);
+                (byte) playerState.progression().medicineCount();
         bytes[main + SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET] =
                 (byte) playerState.progression().tradeSequenceItem();
         bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET] =
                 (byte) encodeBcd(playerState.progression().seashells());
-        bytes[main + SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET] =
-                (byte) playerState.progression().medicineCount();
         bytes[main + SaveRamLayout.MAIN_TAIL_KEY_OFFSET] =
                 (byte) playerState.progression().tailKeyCount();
         bytes[main + SaveRamLayout.MAIN_ANGLER_KEY_OFFSET] =
@@ -130,9 +128,9 @@ final class SaveSlotCodec {
                 .progression(new Progression(
                         new Quest(
                                 unsigned(bytes[main + SaveRamLayout.MAIN_FLIPPERS_OFFSET]),
-                                unsigned(bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET]),
+                                bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET] == 0 ? 0 : 1,
                                 unsigned(bytes[main + SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET]),
-                                unsigned(bytes[main + SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET]),
+                                unsigned(bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET]),
                                 unsigned(bytes[main + SaveRamLayout.MAIN_HAS_TOADSTOOL_OFFSET]),
                                 unsigned(bytes[
                                         slotOffset + SaveRamLayout.dx3Offset() + SaveRamLayout.DX3_TUNIC_OFFSET])),

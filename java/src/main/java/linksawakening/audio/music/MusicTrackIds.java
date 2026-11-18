@@ -26,6 +26,10 @@ public final class MusicTrackIds {
     public static final int MUSIC_OVERWORLD_SWORDLESS = 0x1D;
     public static final int MUSIC_2D_UNDERGROUND = 0x21;
     public static final int MUSIC_CAVE = 0x26;
+    public static final int MUSIC_ULRIRA = 0x33;
+    public static final int MUSIC_RICHARD_HOUSE = 0x40;
+    public static final int MUSIC_FILE_SELECT_ZELDA = 0x60;
+    public static final int MUSIC_OBTAIN_POWERUP = 0x27;
     public static final int MUSIC_ACTIVE_POWER_UP = 0x49;
     public static final int MUSIC_COLOR_DUNGEON = 0x61;
     public static final int MUSIC_SILENCE = 0xFF;

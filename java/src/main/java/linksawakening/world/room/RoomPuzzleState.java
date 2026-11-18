@@ -1,8 +1,5 @@
 package linksawakening.world.room;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /** ROM puzzle/title/music registers that survive room replacement; PerRoom is owned by RoomContents. */
 final class RoomPuzzleState {
     private int switchButtonPressed;
@@ -10,6 +7,13 @@ final class RoomPuzzleState {
     private int tailCaveResumeMusicTrack = 5;
 
     static final class PerRoom {
+        private int telephoneLeafHint;
+
+        int nextTelephoneLeafHint() {
+            telephoneLeafHint = (telephoneLeafHint + 1) % 3;
+            return telephoneLeafHint;
+        }
+
         private int roomTriggerCount;
         private int activeRoomEvent;
         private boolean roomEventEffectExecuted;
@@ -38,7 +42,8 @@ final class RoomPuzzleState {
         private int shutterCloseTicks;
         private int shutterCloseLocation = -1;
         private boolean shutterCloseStarted;
-        private final Map<Integer, Integer> shutterTileOverrides = new HashMap<>();
+        private int pendingShutterOpenMask;
+        private boolean shutterOpening;
         private int tailCaveKeyholeCountdown;
         private boolean tailCaveFinalMotionBlockPending;
         private int nextWorldMusicTrackCountdown;
@@ -122,8 +127,20 @@ final class RoomPuzzleState {
             return this.shutterCloseStarted;
         }
 
-        Map<Integer, Integer> shutterTileOverrides() {
-            return this.shutterTileOverrides;
+        int pendingShutterOpenMask() {
+            return pendingShutterOpenMask;
+        }
+
+        void pendingShutterOpenMask(int value) {
+            pendingShutterOpenMask = value;
+        }
+
+        boolean shutterOpening() {
+            return shutterOpening;
+        }
+
+        void shutterOpening(boolean value) {
+            shutterOpening = value;
         }
 
         int roomTriggerCount() {

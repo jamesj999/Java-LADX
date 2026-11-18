@@ -143,9 +143,8 @@ public final class Vitals {
             health--;
         }
         // UpdateHealth.noHealth ($02:63A3): consume medicine on a lethal tick.
-        if (health == 0 && progression.hasMedicine) {
+        if (health == 0 && progression.hasMedicine()) {
             progression.medicineCount = Math.max(0, progression.medicineCount - 1);
-            progression.hasMedicine = progression.medicineCount != 0;
             health = HP_PER_HEART;
             addHealthBuffer = (addHealthBuffer + 0x80) & 0xFF;
             invincibilityCounter = 0xA0;

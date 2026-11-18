@@ -9,6 +9,13 @@ import linksawakening.state.GroundStatus;
 final class LinkPitFall {
 
     private boolean fallingIntoPit;
+    boolean overworldWarpHoleRoom;
+    int warpHoleCharge;
+    boolean warpHoleLanding;
+
+    boolean warpHoleControlsLink() {
+        return warpHoleCharge != 0 || warpHoleLanding || (overworldWarpHoleRoom && fallingIntoPit);
+    }
 
     private GroundStatus groundStatus = GroundStatus.NORMAL;
 
@@ -188,6 +195,10 @@ final class LinkPitFall {
         hasPitSlipTarget = false;
         pitSlippingCounter = 0;
         fallingFrameCounter = 0;
+        if (overworldWarpHoleRoom) {
+            warpHoleCharge = 1;
+            return;
+        }
         // LinkMotionFallingDownHandler ($02:512B-5136): only $50
         // takes pit damage; the well's solid byte follows the warp path.
         if (pitSlipPhysicsFlag != PhysicsFlags.NORMAL_PIT) {

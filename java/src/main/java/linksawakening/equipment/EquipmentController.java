@@ -64,11 +64,11 @@ public final class EquipmentController {
 
     private void dispatchButtonEdges(int glfwKey, int inventoryId) {
         EquipmentItem item = itemRegistry.item(inventoryId);
-        if (inputState.wasPressed(glfwKey)) {
-            item.onPress();
-        }
-        if (inputState.wasReleased(glfwKey)) {
-            item.onRelease();
-        }
+        boolean pressed = inputState.wasPressed(glfwKey);
+        boolean released = inputState.wasReleased(glfwKey);
+        boolean releaseFirst = released && inputState.isDown(glfwKey);
+        if (releaseFirst) item.onRelease();
+        if (pressed) item.onPress();
+        if (released && !releaseFirst) item.onRelease();
     }
 }

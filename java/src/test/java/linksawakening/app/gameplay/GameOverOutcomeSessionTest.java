@@ -67,7 +67,7 @@ class GameOverOutcomeSessionTest {
         assertEquals(0, player.equipmentLevels().powerUpHits());
         if (option == 1) {
             assertInstanceOf(
-                    linksawakening.app.screen.FileMenuScreen.class, game.state().screens().currentScreen);
+                    linksawakening.app.screen.CutsceneScreen.class, game.state().screens().currentScreen);
         } else {
             assertEquals(0x92, room.rooms().currentRoomId());
             assertEquals(0, room.rooms().mapCategory());

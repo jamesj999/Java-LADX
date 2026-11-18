@@ -24,13 +24,15 @@ public final class InventoryController {
     }
 
     public void tick() {
-        menu.tick();
+        menu.tick(inputState.isDown(inputConfig.selectKey()));
     }
 
     public void dispatchMenuInput() {
         if (!menu.isFullyOpen()) {
             return;
         }
+        if (inputState.wasPressed(inputConfig.selectKey())) menu.requestStatusPanel();
+        if (menu.isStatusPanelActive()) return;
         int dx = (inputState.wasPressed(inputConfig.rightKey()) ? 1 : 0)
                 - (inputState.wasPressed(inputConfig.leftKey()) ? 1 : 0);
         int dy = (inputState.wasPressed(inputConfig.downKey()) ? 1 : 0)

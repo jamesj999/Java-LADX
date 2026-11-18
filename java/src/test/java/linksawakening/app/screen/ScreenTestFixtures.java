@@ -74,6 +74,11 @@ public final class ScreenTestFixtures {
             }
 
             @Override
+            public void createFile(int slot, int[] name) {
+                throw new AssertionError("Unexpected file creation");
+            }
+
+            @Override
             public void persistFileMenuMutation(Runnable mutation) {
                 throw new AssertionError("Unexpected mutation");
             }

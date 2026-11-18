@@ -24,7 +24,7 @@ final class BackgroundLayers {
     private List<IntroSprite> sprites;
     private int[] revealTiles;
 
-    void fill(List<RenderLayer> layers, GameFrameState state) {
+    void fill(List<RenderLayer> layers, GameFrameState state, boolean showMenuObjects) {
         var menu = state.fileMenuFrame();
         var intro = state.introFrameSnapshot();
         if (!state.background.hasFileMenuFrame()
@@ -42,7 +42,7 @@ final class BackgroundLayers {
             obj = menuObj;
             scrollX = scrollY = 0;
             lineX = null;
-            sprites = menu.sprites();
+            sprites = showMenuObjects ? menu.sprites() : List.of();
         } else if (state.background.hasIntroFrameSnapshot()) {
             capture(intro);
             tiles = introTiles;

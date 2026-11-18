@@ -38,6 +38,13 @@ public final class InventoryTransition {
         return state == State.WORLD || state == State.WORLD_FADE_IN;
     }
 
+    public boolean audioAttenuated() {
+        return switch (state) {
+            case LOAD1, LOAD2, LOAD3, LOAD4, LOAD5, FADE_IN, INTERACTIVE, FADE_OUT -> true;
+            default -> false;
+        };
+    }
+
     public boolean interactive() {
         return state == State.INTERACTIVE;
     }

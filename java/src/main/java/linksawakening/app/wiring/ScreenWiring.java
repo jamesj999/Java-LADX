@@ -12,6 +12,7 @@ import linksawakening.app.screen.SaveActions;
 import linksawakening.app.screen.ScreenNavigator;
 import linksawakening.app.screen.ScreenSet;
 import linksawakening.app.screen.TitleScreen;
+import linksawakening.app.screen.WorldMapScreen;
 import linksawakening.app.services.InputServices;
 import linksawakening.app.services.UiServices;
 import linksawakening.app.state.SaveState;
@@ -19,7 +20,7 @@ import linksawakening.app.state.ScreenState;
 import linksawakening.app.story.MusicRequests;
 
 /**
- * Builds the five screens after their concrete collaborators have been constructed. Stateless factory used
+ * Builds the screens after their concrete collaborators have been constructed. Stateless factory used
  * during session initialization.
  */
 final class ScreenWiring {
@@ -30,6 +31,7 @@ final class ScreenWiring {
             ScreenNavigator navigator,
             SaveActions saves,
             InputCompletion completion,
+            WorldMapScreen worldMap,
             GameplayScreenDriver driver) {
         return new ScreenSet(
                 new TitleScreen(new TitleScreen.Dependencies(
@@ -51,6 +53,7 @@ final class ScreenWiring {
                         completion)),
                 new FileSaveScreen(new FileSaveScreen.Dependencies(
                         c.screens(), c.input().inputState(), c.input().inputConfig(), saves, navigator, completion)),
+                worldMap,
                 new GameplayScreen(driver));
     }
 

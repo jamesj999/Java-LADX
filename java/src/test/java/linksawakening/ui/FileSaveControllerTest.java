@@ -30,7 +30,8 @@ final class FileSaveControllerTest {
         assertEquals(1, controller.snapshot().sprites().size());
         assertEquals(0xBE, controller.snapshot().sprites().get(0).tileIndex());
         assertEquals(0x1C, controller.snapshot().sprites().get(0).x());
-        assertEquals(0x40, controller.snapshot().sprites().get(0).y());
+        assertEquals(0x38, controller.snapshot().sprites().get(0).y());
+        assertEquals(16, controller.snapshot().sprites().get(0).height());
     }
 
     @Test

@@ -52,6 +52,13 @@ final class MusicVoiceEmitter {
     private final GameBoyApu apu;
 
     int waveformPointer;
+    int interruptedChannels;
+
+    void observeEffectOwnership() {
+        for (int channel = 1; channel <= 3; channel++) {
+            if (driver.sfxOwnsChannel.test(channel)) interruptedChannels |= 1 << channel;
+        }
+    }
 
     final int[] softwareEnvelope = new int[4];
 
@@ -130,8 +137,12 @@ final class MusicVoiceEmitter {
         int frequency = frequencyRegister(noteCode);
         int low = frequency & 0xFF;
         int high = ((frequency >>> 8) & 0x07) | TRIGGER;
+        int bit = 1 << state.channel;
+        boolean interrupted = (interruptedChannels & bit) != 0;
+        if (!driver.sfxOwnsChannel.test(state.channel)) interruptedChannels &= ~bit;
 
         if (state.channel == 1) {
+            if (driver.usesSharedChip() || interrupted) driver.writeRegister(GameBoyApu.NR10, 0);
             driver.writeRegister(GameBoyApu.NR11, state.dutyLength);
             driver.writeRegister(GameBoyApu.NR12, state.envelope);
             driver.writeRegister(GameBoyApu.NR13, low);
@@ -147,7 +158,10 @@ final class MusicVoiceEmitter {
                 channel3VolumeEffectCounter = 0;
             }
             // label_01B_42AB restores the music waveform on the next wave note.
-            if (!driver.sfxOwnsChannel.test(3) && driver.takeWaveRestoreRequest.getAsBoolean()) loadWaveform();
+            if (!driver.sfxOwnsChannel.test(3)) {
+                boolean restoreRequested = driver.takeWaveRestoreRequest.getAsBoolean();
+                if ((interrupted || restoreRequested) && waveformPointer != 0) loadWaveform();
+            }
             driver.writeRegister(GameBoyApu.NR30, 0x80);
             driver.writeRegister(GameBoyApu.NR32, state.waveOutputLevel);
             driver.writeRegister(GameBoyApu.NR33, low);
@@ -203,6 +217,7 @@ final class MusicVoiceEmitter {
         int[] envelopeTable = softwareEnvelopeTable();
         int envelope = envelopeTable[Math.min(envelopeIndex, envelopeTable.length - 1)];
         articulationApplied[index] = true;
+        if ((interruptedChannels & (1 << state.channel)) != 0) return;
         if (state.channel == 1) {
             driver.writeRegister(GameBoyApu.NR12, envelope);
             driver.writeRegister(GameBoyApu.NR14, apu.readRegister(GameBoyApu.NR14) | TRIGGER);
@@ -218,14 +233,13 @@ final class MusicVoiceEmitter {
         }
 
         channel3VolumeEffectCounter++;
+        if (channel3VolumeEffectCounter == 13) channel3VolumeEffectMode = 2;
+        if ((interruptedChannels & (1 << 3)) != 0) return;
         if (channel3VolumeEffectCounter == 3) {
             driver.writeRegister(GameBoyApu.NR32, 0x40);
         } else if (channel3VolumeEffectCounter == 5 || channel3VolumeEffectCounter == 10) {
             driver.writeRegister(GameBoyApu.NR32, 0x60);
-        } else if (channel3VolumeEffectCounter == 7) {
-            driver.writeRegister(GameBoyApu.NR32, 0x00);
-        } else if (channel3VolumeEffectCounter == 13) {
-            channel3VolumeEffectMode = 2;
+        } else if (channel3VolumeEffectCounter == 7 || channel3VolumeEffectCounter == 13) {
             driver.writeRegister(GameBoyApu.NR32, 0x00);
         }
     }

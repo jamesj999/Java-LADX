@@ -37,8 +37,6 @@ import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.rom.Rom;
-import linksawakening.rom.RomAddress;
-import linksawakening.rom.RomBank;
 import linksawakening.rom.RomTables;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
@@ -314,53 +312,50 @@ final class RoomPuzzleController {
     }
 
     boolean tickShutterClosing(RoomContents contents) {
-        if (!contents.puzzles().shutterCloseStarted()) return false;
-        if (contents.puzzles().shutterCloseDirection() < 0) {
-            if (contents.puzzles().pendingShutterCloseMask() == 0) return false;
+        var puzzle = contents.puzzles();
+        if (puzzle.shutterCloseDirection() < 0) {
+            boolean opening = puzzle.pendingShutterOpenMask() != 0;
+            if (!opening && !puzzle.shutterCloseStarted()) return false;
+            int pending = opening ? puzzle.pendingShutterOpenMask() : puzzle.pendingShutterCloseMask();
+            if (pending == 0) return false;
+            int direction = Integer.numberOfTrailingZeros(pending);
+            puzzle.shutterOpening(opening);
+            puzzle.shutterCloseDirection(direction);
+            if (opening) puzzle.pendingShutterOpenMask(pending & ~(1 << direction));
+            else puzzle.andPendingShutterCloseMask(~(1 << direction));
             contents.puzzles()
-                    .shutterCloseDirection(
-                            Integer.numberOfTrailingZeros(contents.puzzles().pendingShutterCloseMask()));
-            contents.puzzles()
-                    .andPendingShutterCloseMask(~(1 << contents.puzzles().shutterCloseDirection()));
-            contents.puzzles()
-                    .shutterCloseLocation(new RoomObjectParser(dependencies.romData())
-                            .indoorShutterLocation(
-                                    contents.room().roomObjectsArea(),
-                                    contents.puzzles().shutterCloseDirection()));
+                    .shutterCloseLocation(
+                            contents.room().shutterLocation(contents.puzzles().shutterCloseDirection()));
             contents.puzzles().shutterCloseTicks(0);
             return true;
         }
         dependencies.entityFrame().worldLinkMotionBlockPending(true);
-        if (contents.puzzles().shutterCloseLocation() >= 0) {
-            int direction = contents.puzzles().shutterCloseDirection();
-            int left = (contents.puzzles().shutterCloseLocation() & 15) * 16
-                    + dependencies.romData().u8(RomAddress.fromOffset(RomBank.romOffset(2, 0x5BE0 + direction + 4)));
-            int top = (contents.puzzles().shutterCloseLocation() >>> 4) * 16;
-            int source = RomBank.romOffset(2, 0x5BC4 + direction * 4);
-            int rowOffset = RomBank.romOffset(2, 0x5BE8 + direction + 4);
-            for (int row = 0; row < 2; row++) {
-                int y = top + dependencies.romData().u8(RomAddress.fromOffset(rowOffset + row * 4));
-                int index = (y / 8) * RoomConstants.ROOM_TILE_WIDTH + left / 8;
-                for (int col = 0; col < 2; col++) {
-                    int tile = dependencies.romData().u8(RomAddress.fromOffset(source + row * 2 + col));
-                    if (index + col < contents.room().tileIds().length) {
-                        contents.room().tileIds()[index + col] = tile;
-                        contents.puzzles().shutterTileOverrides().put(index + col, tile);
-                    }
-                }
+        if (puzzle.incrementShutterCloseTicks() == 1)
+            dependencies.roomTileRedraw().drawMovingShutter(contents);
+        if (puzzle.shutterCloseTicks() < 8) return true;
+        int direction = puzzle.shutterCloseDirection();
+        if (puzzle.shutterOpening()) {
+            int location = puzzle.shutterCloseLocation();
+            if (location >= 0) {
+                new RoomObjectParser(dependencies.romData())
+                        .applyIndoorDoorMacro(contents.room().roomObjectsArea(), 0xF4 + direction, location);
+                persistOpenShutter(contents, direction);
             }
+            puzzle.closedShutterMask(puzzle.closedShutterMask() & ~(1 << direction));
+            contents.room().retainClosedShutterDoors(~(1 << direction));
+        } else {
+            new RoomObjectParser(dependencies.romData())
+                    .applyIndoorShutterClosedState(
+                            contents.room().roomObjectsArea(),
+                            direction,
+                            contents.puzzles().shutterCloseLocation());
+            contents.puzzles().orClosedShutterMask(1 << direction);
+            // $02:5D21 uses indoor A even for indoor B (the original's bank selection).
+            byte[] status = contents.room().mapId() == 0xFF
+                    ? dependencies.roomState().colorDungeonRoomStatus()
+                    : dependencies.roomState().indoorARoomStatus();
+            status[contents.room().roomId()] &= (byte) ~KEY_DOOR_CURRENT_STATUS[direction];
         }
-        if (contents.puzzles().incrementShutterCloseTicks() < 8) return true;
-        int direction = contents.puzzles().shutterCloseDirection();
-        contents.puzzles().shutterTileOverrides().clear();
-        new RoomObjectParser(dependencies.romData())
-                .applyIndoorShutterClosedState(contents.room().roomObjectsArea(), 1 << direction);
-        contents.puzzles().orClosedShutterMask(1 << direction);
-        // $02:5D21 uses indoor A even for indoor B (the original's bank selection).
-        byte[] status = contents.room().mapId() == 0xFF
-                ? dependencies.roomState().colorDungeonRoomStatus()
-                : dependencies.roomState().indoorARoomStatus();
-        status[contents.room().roomId()] &= (byte) ~KEY_DOOR_CURRENT_STATUS[direction];
         contents.puzzles().shutterCloseDirection(contents.puzzles().shutterCloseLocation(-1));
         dependencies.roomTileRedraw().refreshActiveRoomTilemap(contents);
         dependencies.overworldCollision().setRoom(contents.room().roomObjectsArea());
@@ -372,9 +367,14 @@ final class RoomPuzzleController {
     }
 
     void openActiveRoomShutterDoors(RoomContents contents, boolean persistDirectionalStatus) {
+        if (persistDirectionalStatus && contents.puzzles().closedShutterMask() != 0) {
+            contents.puzzles().pendingShutterOpenMask(contents.puzzles().closedShutterMask());
+            contents.puzzles().pendingShutterCloseMask(0);
+            return;
+        }
         contents.puzzles().pendingShutterCloseMask(contents.puzzles().closedShutterMask(0));
         contents.puzzles().shutterCloseDirection(contents.puzzles().shutterCloseLocation(-1));
-        contents.puzzles().shutterTileOverrides().clear();
+        contents.puzzles().pendingShutterOpenMask(0);
 
         int shutterMask = contents.room().shutterDoorMask();
         if (shutterMask != 0 && contents.room().mapCategory() != Warp.CATEGORY_OVERWORLD) {
@@ -382,20 +382,13 @@ final class RoomPuzzleController {
             int[] openDoorTypes = {0xF4, 0xF5, 0xF6, 0xF7};
             for (int direction = 0; direction < openDoorTypes.length; direction++) {
                 if ((shutterMask & (1 << direction)) != 0) {
-                    int location = parser.indoorShutterLocation(contents.room().roomObjectsArea(), direction);
+                    int location = contents.room().shutterLocation(direction);
                     if (location < 0) {
                         continue;
                     }
                     parser.applyIndoorDoorMacro(contents.room().roomObjectsArea(), openDoorTypes[direction], location);
                     if (persistDirectionalStatus) {
-                        byte[] status = dependencies
-                                .roomSessionViews()
-                                .indoorStatusTableForMap(contents.room().mapId());
-                        status[contents.room().roomId()] |= (byte) KEY_DOOR_CURRENT_STATUS[direction];
-                        int adjacentRoom = dependencies
-                                .roomSessionViews()
-                                .adjacentIndoorRoomIdForBombWall(contents.room(), direction);
-                        status[adjacentRoom] |= (byte) KEY_DOOR_ADJACENT_STATUS[direction];
+                        persistOpenShutter(contents, direction);
                     }
                 }
             }
@@ -404,6 +397,15 @@ final class RoomPuzzleController {
             dependencies.overworldCollision().setGbcOverlay(null);
         }
         contents.room().openShutterDoors();
+    }
+
+    private void persistOpenShutter(RoomContents contents, int direction) {
+        byte[] status = dependencies
+                .roomSessionViews()
+                .indoorStatusTableForMap(contents.room().mapId());
+        status[contents.room().roomId()] |= (byte) KEY_DOOR_CURRENT_STATUS[direction];
+        int adjacent = dependencies.roomSessionViews().adjacentIndoorRoomIdForBombWall(contents.room(), direction);
+        status[adjacent] |= (byte) KEY_DOOR_ADJACENT_STATUS[direction];
     }
 
     record Dependencies(

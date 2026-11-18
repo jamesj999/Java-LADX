@@ -186,7 +186,12 @@ final class LinkAirborne {
         linkAnimator.get().jumpAnimationCounter(0);
         linkAnimator.get().jumpAnimationFrame(0);
         pit.refreshGroundStatus();
-        playLandingSound();
+        if (pit.warpHoleLanding) {
+            pit.warpHoleLanding = false;
+            linkServices.get().soundSink.play(GameplaySoundEvent.LINK_FOOTSTEP);
+        } else {
+            playLandingSound();
+        }
     }
 
     void playLandingSound() {

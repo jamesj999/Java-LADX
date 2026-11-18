@@ -14,6 +14,28 @@ final class DefaultLinkAirborneRole implements LinkAirborneRole {
     }
 
     @Override
+    public void setOverworldWarpHoleRoom(boolean enabled) {
+        linkAirborne.pit().overworldWarpHoleRoom = enabled;
+    }
+
+    @Override
+    public boolean warpHoleControlsLink() {
+        return linkAirborne.pit().warpHoleControlsLink();
+    }
+
+    @Override
+    public boolean warpHoleReady() {
+        return linkAirborne.pit().warpHoleCharge >= 96;
+    }
+
+    @Override
+    public void startWarpHoleLanding() {
+        linkAirborne.pit().warpHoleCharge = 0;
+        linkAirborne.pit().warpHoleLanding = true;
+        linkAirborne.accessSetPitWarpArrival(0x78);
+    }
+
+    @Override
     public int romMotionState() {
         return linkAirborne.accessRomMotionState();
     }

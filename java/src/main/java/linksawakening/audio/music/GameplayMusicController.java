@@ -18,9 +18,16 @@ public final class GameplayMusicController {
         this.resolver = Objects.requireNonNull(resolver, "resolver");
         this.catalog = Objects.requireNonNull(catalog, "catalog");
         this.player = Objects.requireNonNull(player, "player");
+        if (player instanceof FrameAudioPlayer audio) {
+            audio.onEffectMusicRequest(() -> currentTrackId = MusicTrackIds.MUSIC_NONE, this::playRequestedTrack);
+        }
     }
 
     public void selectAfterTransition(RoomMusicContext context) {
+        selectAfterTransition(context, MusicTrackIds.MUSIC_NONE);
+    }
+
+    public void selectAfterTransition(RoomMusicContext context, int residentTrack) {
         Objects.requireNonNull(context, "context");
         fadeOutCountdown = 0;
         if (continueMusicAfterWarp) {
@@ -31,18 +38,24 @@ public final class GameplayMusicController {
         // RoomTransitionPrepareHandler.C1CFIsZero, $02:7AE9-7B34: scrolling
         // indoors/swordless leaves music alone; overworld scrolling compares
         // hDefaultMusicTrack, not the currently playing event track.
-        int areaTrackId = resolver.resolveDefault(context);
+        int areaTrackId = residentTrack == MusicTrackIds.MUSIC_NONE ? resolver.resolveDefault(context) : residentTrack;
         if (context.scrollingTransition()
                 && (context.indoor() || context.swordLevel() == 0 || areaTrackId == defaultTrackId)) {
             return;
         }
         defaultTrackId = areaTrackId;
-        int nextTrackId = resolver.resolve(context);
+        int nextTrackId = residentTrack == MusicTrackIds.MUSIC_NONE ? resolver.resolve(context) : residentTrack;
         nextDefaultMusicTrack = nextTrackId;
+        if (nextTrackId == MusicTrackIds.MUSIC_ACTIVE_POWER_UP && currentTrackId == MusicTrackIds.MUSIC_OBTAIN_POWERUP)
+            return;
         if (nextTrackId == currentTrackId) {
             return;
         }
 
+        playRequestedTrack(nextTrackId);
+    }
+
+    private void playRequestedTrack(int nextTrackId) {
         currentTrackId = nextTrackId;
         if (nextTrackId == MusicTrackIds.MUSIC_NONE || nextTrackId == MusicTrackIds.MUSIC_SILENCE) {
             player.stop();
@@ -65,12 +78,10 @@ public final class GameplayMusicController {
             return;
         }
 
-        currentTrackId = nextTrackId;
-        if (nextTrackId == MusicTrackIds.MUSIC_NONE || nextTrackId == MusicTrackIds.MUSIC_SILENCE) {
-            player.stop();
-            return;
+        if (nextTrackId == MusicTrackIds.MUSIC_OBTAIN_POWERUP) {
+            nextDefaultMusicTrack = MusicTrackIds.MUSIC_ACTIVE_POWER_UP;
         }
-        player.play(catalog.requireTrack(nextTrackId));
+        playRequestedTrack(nextTrackId);
     }
 
     /** ApplyLinkCollisionWithEnemy, $03:6DCE-6DDD. */

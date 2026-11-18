@@ -338,6 +338,12 @@ public final class Sword implements EquipmentItem {
         suppressesJumpAnimation = false;
     }
 
+    public void cancelAttack() {
+        resetSpinAttack();
+        state = STATE_NONE;
+        timer = 0;
+    }
+
     public void resetSpinAttack() {
         boolean wasActive = spin.active();
         spin.clearQueue();

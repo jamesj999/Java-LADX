@@ -11,6 +11,9 @@ import linksawakening.app.gameplay.interaction.DialogInteractions;
 import linksawakening.app.gameplay.interaction.LiftInteraction;
 import linksawakening.app.input.InputRouter;
 import linksawakening.app.presentation.RenderStateAssembler;
+import linksawakening.app.screen.FileSaveScreen;
+import linksawakening.app.screen.GameplayScreen;
+import linksawakening.app.screen.WorldMapScreen;
 import linksawakening.app.services.SessionServices;
 import linksawakening.app.state.FrameClock;
 import linksawakening.app.state.GameplaySounds;
@@ -187,9 +190,39 @@ public class GameSession implements AutoCloseable {
         // The engine's frame boundary uses scanline zero for non-entity draws.
         random.beginFrame(clock.value(), 0);
 
-        context.runtime().flows().music().tick();
+        var screens = context.state().screens();
+        var load = screens.fileLoad;
+        if (load != null) {
+            load.tick();
+            if (load.stopFileMusic()) {
+                flows().music().playDirectMusic(linksawakening.audio.music.MusicTrackIds.MUSIC_NONE);
+            }
+            if (load.startWorld()) {
+                services().player().link().motion().resetTransientStateForDebug();
+                if (load.slot().spawnPositionX() == 0) saves().startNewGame(load.slot());
+                else saves().startSavedGame(load.slot());
+            }
+            if (load.finished()) screens.fileLoad = null;
+        }
+        if (load == null || !load.blocksControl()) {
+            screens.currentScreen().tick();
+        } else {
+            if (screens.currentScreen() instanceof GameplayScreen gameplay) {
+                gameplay.clearPendingInput();
+            }
+            services().input().inputState().tickEdges();
+            context.state().input().complete();
+        }
 
-        context.state().screens().currentScreen().tick();
+        boolean attenuated = ((screens.currentScreen() instanceof WorldMapScreen
+                                || screens.currentScreen() instanceof FileSaveScreen)
+                        && (screens.menuTransition == null || screens.menuTransition.menuAudioActive()))
+                || (screens.currentScreen() instanceof GameplayScreen
+                        && context.services().ui().inventoryMenu().transition().audioAttenuated());
+        context.runtime().flows().music().setMenuAttenuated(attenuated);
+        boolean manboFrameHeld = screens.currentScreen() instanceof GameplayScreen
+                && context.services().world().transitionController().isHoldingManboFrame();
+        context.runtime().flows().music().tick(!manboFrameHeld);
     }
 
     void cleanup() {
@@ -205,9 +238,7 @@ public class GameSession implements AutoCloseable {
     void onKeyEvent(int key, int action) {
         if (key >= 0 && key == context.services().input().inputConfig().recordingKey()) {
             if (action == linksawakening.input.KeyCodes.PRESS
-                    && (recording.active()
-                            || context.state().screens().currentScreen()
-                                    instanceof linksawakening.app.screen.GameplayScreen)) {
+                    && (recording.active() || context.state().screens().currentScreen() instanceof GameplayScreen)) {
                 recording.toggle();
             }
             return;

@@ -66,6 +66,11 @@ final class AudioAllocationTest {
 
     private static byte[] syntheticRom() {
         byte[] rom = new byte[0x80000];
+        // The synthetic score has no ROM SFX driver. Supply empty driver entry points.
+        rom[0x1F * 0x4000] = (byte) 0xC9;
+        rom[0x1F * 0x4000 + 6] = (byte) 0xC9;
+        rom[0x1F * 0x4000 + 0x3FCC] = (byte) 0xC9;
+        rom[0x1B * 0x4000 + 0x33C] = (byte) 0xC9;
         int base = 0x1b * 0x4000 - 0x4000;
         word(rom, base + 0x5001, 0x5100);
         word(rom, base + 0x5003, 0x5200);

@@ -21,14 +21,24 @@ public final class FileSaveScreen implements Screen {
 
     @Override
     public void tick() {
+        var transition = dependencies.screens().menuTransition;
+        if (transition != null && !transition.transitionFinished()) {
+            transition.tick();
+            if (transition.transitionFinished() && transition.returningToRoom()) {
+                dependencies.screens().menuTransition = null;
+                dependencies.screens().fileSave().clear();
+                dependencies.navigator().show(ScreenKind.GAMEPLAY);
+            }
+            dependencies.completeInput().complete();
+            return;
+        }
         FileSaveAction action =
                 dependencies.screens().fileSave().tick(dependencies.inputState(), dependencies.inputConfig());
         if (action.type() == FileSaveAction.Type.RETURN_TO_GAME) {
-            dependencies.screens().fileSave().clear();
-            dependencies.navigator().show(ScreenKind.GAMEPLAY);
+            transition.close();
         } else if (action.type() == FileSaveAction.Type.SAVE_AND_QUIT) {
             dependencies.actions().saveCurrentPlayerState();
-            dependencies.navigator().startFileSelection();
+            dependencies.navigator().restartIntroAfterSave();
         }
         dependencies.completeInput().complete();
     }

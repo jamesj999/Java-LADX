@@ -46,6 +46,8 @@ public final class DialogStoryPhase {
     }
 
     public boolean tick() {
+        if (transitionController.isManboTransition()
+                || transitionController.state() == TransitionController.State.ROOM_LOAD) return false;
         if (this.inventoryMenu.isFullyClosed()) {
             this.playerState.vitals().latchFullHearts();
         }

@@ -345,6 +345,11 @@ MenuFileSaveTilemap
 
 MenuFileSaveAttrmap
 
+# World map scene
+WorldMapTilemap
+WorldMapAttrmap
+WorldMapPalette
+
 # Entity runtime tables and room navigation
 DestroyedEntityHealthGroupOffsetTable
 DropTableByIndex
@@ -359,6 +364,7 @@ InitialHealthForGroup
 EntityDamagesForGroup
 BowWowEatableEntitiesTable
 DungeonWarps
+WarpLocationsTable
 MapLayout0
 MapLayout11
 MapLayout12

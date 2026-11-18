@@ -2,6 +2,7 @@ package linksawakening.gameplay;
 
 import java.util.List;
 import java.util.Objects;
+import linksawakening.audio.sfx.SoundEffectNamespace;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.vfx.TransientVfxType;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -67,7 +68,7 @@ public final class EnemyCombatEventConsumer {
     }
 
     private static void consumeSoundWrite(EntityCombatEvent.SoundChannel channel, int id, GameplaySoundSink soundSink) {
-        if (channel == null || channel == EntityCombatEvent.SoundChannel.NONE || id < 0) {
+        if (channel == null || channel == EntityCombatEvent.SoundChannel.NONE || id <= 0) {
             return;
         }
         if (channel == EntityCombatEvent.SoundChannel.JINGLE) {
@@ -79,6 +80,10 @@ public final class EnemyCombatEventConsumer {
                 soundSink.play(GameplaySoundEvent.SWITCH_BLOCK_TOGGLE);
             } else if (id == WAVE_SECRET_SEASHELL_ID) {
                 soundSink.play(GameplaySoundEvent.SECRET_SEASHELL);
+            } else if (id == 3) {
+                soundSink.play(GameplaySoundEvent.LINK_HURT);
+            } else {
+                soundSink.playRomSound(SoundEffectNamespace.WAVE, id);
             }
         }
     }
@@ -102,10 +107,7 @@ public final class EnemyCombatEventConsumer {
             case JINGLE_MAGIC_POWDER_POOF_ID -> soundSink.play(GameplaySoundEvent.MAGIC_POWDER_POOF);
             case JINGLE_SWORD_BEAM_ID -> soundSink.play(GameplaySoundEvent.SWORD_BEAM);
             case JINGLE_WRONG_ANSWER_ID -> soundSink.play(GameplaySoundEvent.WRONG_ANSWER);
-            default -> {
-                // Unknown ROM sound writes must not be guessed or routed
-                // to an unrelated gameplay effect.
-            }
+            default -> soundSink.playRomSound(SoundEffectNamespace.JINGLE, id);
         }
     }
 
@@ -123,10 +125,7 @@ public final class EnemyCombatEventConsumer {
             case NOISE_SHIELD_DRAW_ID -> soundSink.play(GameplaySoundEvent.SHIELD_DRAW);
             case NOISE_BOMB_EXPLOSION_ID -> soundSink.play(GameplaySoundEvent.BOMB_EXPLOSION);
             case NOISE_DOOR_UNLOCKED_ID -> soundSink.play(GameplaySoundEvent.DOOR_UNLOCKED);
-            default -> {
-                // Unknown ROM sound writes must not be guessed or routed
-                // to an unrelated gameplay effect.
-            }
+            default -> soundSink.playRomSound(SoundEffectNamespace.NOISE, id);
         }
     }
 }

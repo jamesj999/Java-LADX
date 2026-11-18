@@ -24,6 +24,16 @@ public final class GameFrameState {
     private RenderScreen screen = RenderScreen.TITLE;
 
     private int frameCounter;
+    private WorldMapLayer worldMap;
+
+    public GameFrameState withWorldMap(WorldMapLayer map) {
+        worldMap = map;
+        return this;
+    }
+
+    WorldMapLayer worldMap() {
+        return worldMap;
+    }
 
     final RoomInputs roomInputs = new RoomInputs();
 
@@ -200,6 +210,7 @@ public final class GameFrameState {
         overworld.inventoryController.bind(null);
         overworld.dialogController.bind(null);
         frameCounter = 0;
+        worldMap = null;
         background.introFrameSnapshot.bind(null);
         background.fileMenuFrame.bind(null);
         roomInputs.capture(null);
@@ -217,6 +228,7 @@ public final class GameFrameState {
                 .withDroppableRupees(source.droppableRupeeSystem())
                 .withInventoryController(source.inventoryController())
                 .withDialogController(source.dialogController())
+                .withWorldMap(source.worldMap())
                 .withFrameCounter(source.frameCounter())
                 .withIntroFrameSnapshot(source.introFrameSnapshot())
                 .withFileMenuFrame(source.fileMenuFrame());
@@ -262,6 +274,7 @@ public final class GameFrameState {
                 && Objects.equals(overworld.droppableRupeeSystem.value, other.overworld.droppableRupeeSystem.value)
                 && Objects.equals(overworld.inventoryController.value, other.overworld.inventoryController.value)
                 && Objects.equals(overworld.dialogController.value, other.overworld.dialogController.value)
+                && worldMap == other.worldMap
                 && frameCounter == other.frameCounter
                 && Objects.equals(background.introFrameSnapshot.value, other.background.introFrameSnapshot.value)
                 && Objects.equals(background.fileMenuFrame.value, other.background.fileMenuFrame.value);

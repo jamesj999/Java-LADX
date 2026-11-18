@@ -115,6 +115,7 @@ final class RoomTransitionDoorsTest {
         int[] closedEastDoorTiles = roomObjectTiles(session, 0x39);
         assertEquals(0x3B, closedEastDoorObject);
         assertEquals(0x3C, objectAt(session, 0x49));
+        assertTrue(collision.pointBlocked(152, 56));
 
         int frame = 0;
         assertTrue(session.playerItems().sprinkleMagicPowder(0x33, 0x39, 0, 0));
@@ -128,9 +129,18 @@ final class RoomTransitionDoorsTest {
 
         assertEquals(2, RoomDebugFixture.of(session).roomTriggerCountForTest());
         assertEquals(0, RoomDebugFixture.of(session).activeRoomEventForTest());
+        tickInteractiveEntities(session, frame++, 0x50, 0x50);
+        assertEquals(0x08, session.rooms().activeRoomOrNull().shutterDoorMask() & 0x08);
+        assertEquals(closedEastDoorObject, objectAt(session, 0x39));
+        assertTrue(collision.pointBlocked(152, 56));
+        int openingDeadline = frame + 16;
+        while ((session.rooms().activeRoomOrNull().shutterDoorMask() & 0x08) != 0 && frame < openingDeadline) {
+            tickInteractiveEntities(session, frame++, 0x50, 0x50);
+        }
         assertEquals(0, session.rooms().activeRoomOrNull().shutterDoorMask() & 0x08);
         assertEquals(0x0B, objectAt(session, 0x39));
         assertEquals(0x0C, objectAt(session, 0x49));
+        assertFalse(collision.pointBlocked(152, 56));
         assertFalse(Arrays.equals(closedEastDoorTiles, roomObjectTiles(session, 0x39)));
     }
 
@@ -203,7 +213,7 @@ final class RoomTransitionDoorsTest {
         link.position().setPixelPosition(0x48, RoomConstants.ROOM_PIXEL_HEIGHT);
 
         coordinator.handleWarpAndIndoorBoundaries(link);
-        for (int frame = 0; frame < 16; frame++) transition.tick();
+        for (int frame = 0; frame < 19; frame++) transition.tick();
 
         assertEquals(Warp.CATEGORY_OVERWORLD, session.rooms().mapCategory());
         assertEquals(0xA2, session.rooms().currentRoomId());

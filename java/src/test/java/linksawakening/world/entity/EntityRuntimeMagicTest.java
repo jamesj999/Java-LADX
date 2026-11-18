@@ -143,8 +143,8 @@ final class EntityRuntimeMagicTest extends EntityRuntimeTestSupport {
         runtime.tick(EntityTestFrames.frame(runtime, 1, 0x40, 0x50, sequence(0x00)));
 
         RoomEntity movedNote = runtime.inspection().snapshot().slots().get(note.slot());
-        assertEquals(0x4E, movedNote.x());
-        assertEquals(0x44, movedNote.y());
+        assertEquals(0x48, movedNote.x());
+        assertEquals(0x47, movedNote.y());
         assertEquals(0x3F, EntityRuntimeFixture.enemies(runtime).musicalNoteInertiaForTest(note.slot()));
     }
 

@@ -10,6 +10,7 @@ import linksawakening.gameplay.GameplayDialogInput;
 import linksawakening.gameplay.LinkDialogPosition;
 import linksawakening.gameplay.OverworldDialogInteraction;
 import linksawakening.gameplay.SignpostDialogRef;
+import linksawakening.state.Direction;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.ChestOpenResult;
 
@@ -43,6 +44,28 @@ public final class DialogInteractions {
             return false;
         }
         ActiveRoom room = world.roomSession().rooms().activeRoomOrNull();
+        if (key == input.inputConfig().aKey()
+                && !player.link().airborne().isAirborne()
+                && !dialogBlockers.current().blocksOpening()
+                && ui.dialogController().dialogCooldown() == 0
+                && ui.inventoryMenu().isFullyClosed()) {
+            var link = player.link();
+            var ref = world.roomSession()
+                    .story()
+                    .useTelephone(
+                            link.position().romEntityX(),
+                            link.position().romEntityY(),
+                            Direction.fromJavaOrUnknown(link.animation().direction()),
+                            player.playerState());
+            if (ref != null) {
+                ui.dialogController()
+                        .openPreformattedForLinkY(
+                                ui.dialogTextLoader().load(ref),
+                                LinkDialogPosition.dialogYFromTopLeft(
+                                        link.position().pixelY()));
+                return true;
+            }
+        }
         return ui.overworldDialogInteraction()
                 .tryOpenSignpostDialog(
                         room.roomId(),
@@ -66,8 +89,7 @@ public final class DialogInteractions {
                 .tryOpenChest(
                         player.link().position().pixelX(),
                         player.link().position().pixelY(),
-                        linksawakening.state.Direction.fromJavaOrUnknown(
-                                player.link().animation().direction()),
+                        Direction.fromJavaOrUnknown(player.link().animation().direction()),
                         true,
                         player.playerState().equipmentLevels().swordLevel());
         return result.opened();

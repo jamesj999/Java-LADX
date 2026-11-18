@@ -15,6 +15,8 @@ public interface ScreenNavigator {
 
     void startFileSelection();
 
+    void restartIntroAfterSave();
+
     void startDebugGameplay();
 
     BackgroundScene loadFileMenuBackgroundScene(String sceneId);

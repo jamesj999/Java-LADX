@@ -300,6 +300,25 @@ final class EntitySpriteStates {
     }
 
     /** Bank $19:43A9: center pair followed by four orbiting single sprites. */
+    EntitySpriteDefinition decodeOverworldWarpHole() {
+        List<List<EntitySpriteDefinition.DynamicSprite>> variants = new ArrayList<>(16);
+        int tile = decoder.readByte(0x19, 0x4404);
+        int baseAttributes = decoder.readByte(0x19, 0x4405);
+        for (int phase = 0; phase < 16; phase++) {
+            var sprites = new ArrayList<EntitySpriteDefinition.DynamicSprite>(4);
+            var oam = new EntitySpriteDefinition.OamAttribute(tile, (phase & 1) == 0 ? baseAttributes : 4);
+            for (int orbit = 0; orbit < 8; orbit += 2) {
+                int angle = ((phase >>> 1) + orbit) & 7;
+                int x = 4 + signedByte(decoder.readByte(0x19, 0x43FC + angle));
+                int y = 4 + signedByte(decoder.readByte(0x19, 0x43FA + angle));
+                sprites.add(new EntitySpriteDefinition.DynamicSprite(
+                        y, x, oam, EntitySpriteDefinition.DynamicSprite.TileSource.GPU, false));
+            }
+            variants.add(List.copyOf(sprites));
+        }
+        return EntitySpriteDefinition.dynamic(0x61, 0x19, 0x4404, 0, variants);
+    }
+
     EntitySpriteDefinition decodeDungeonWarp() {
         EntitySpriteDefinition center = decoder.decodePair(0x61, 0x19, 0x4393, 2, 0);
         EntitySpriteDefinition dots = decoder.decodeSingle(0x61, 0x19, 0x43A5, 2, 0);

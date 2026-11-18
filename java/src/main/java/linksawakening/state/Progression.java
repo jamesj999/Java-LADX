@@ -5,9 +5,14 @@ import static linksawakening.state.PlayerNumbers.clamp;
 /** Persistent quest, collectible and song state used by ROM {@code wTradeSequenceItem}. */
 public final class Progression {
     int heartPieces;
+    int photoCount;
+
+    public int photoCount() {
+        return photoCount;
+    }
+
     int seashells;
     boolean hasFlippers;
-    boolean hasMedicine;
     int tradeSequenceItem;
     int medicineCount;
     int tailKeyCount;
@@ -45,11 +50,11 @@ public final class Progression {
     }
 
     public boolean hasMedicine() {
-        return hasMedicine;
+        return medicineCount != 0;
     }
 
     public void setHasMedicine(boolean value) {
-        hasMedicine = value;
+        medicineCount = value ? Math.max(1, medicineCount) : 0;
     }
 
     public int tradeSequenceItem() {

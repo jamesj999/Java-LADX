@@ -58,6 +58,9 @@ public final class ScreenRouter {
     }
 
     public void startIntroCutscene() {
+        state.screens().fileLoad = null;
+        state.screens().menuTransition = null;
+        ((linksawakening.app.screen.CutsceneScreen) actions.navigator().screen(ScreenKind.CUTSCENE)).delayInput(0);
         state.screens().fileMenu().clear();
         state.screens().fileSave().clear();
         actions.navigator().show(ScreenKind.CUTSCENE);
@@ -75,6 +78,8 @@ public final class ScreenRouter {
     }
 
     public void startTitleScreenWithoutIntro() {
+        state.screens().fileLoad = null;
+        state.screens().menuTransition = null;
         state.screens().fileMenu().clear();
         state.screens().fileSave().clear();
         actions.navigator().show(ScreenKind.TITLE);
@@ -82,6 +87,8 @@ public final class ScreenRouter {
     }
 
     public void startFileSelection() {
+        state.screens().fileLoad = null;
+        state.screens().menuTransition = null;
         actions.navigator().show(ScreenKind.FILE_MENU);
         state.screens().fileSave().clear();
         rom.gpu().loadMenuTiles(rom.romData());
@@ -98,7 +105,8 @@ public final class ScreenRouter {
                 savedMask,
                 savedNames,
                 new int[] {firstSlot.maxHearts(), secondSlot.maxHearts(), thirdSlot.maxHearts()},
-                new int[] {firstSlot.deathCountBcd(), secondSlot.deathCountBcd(), thirdSlot.deathCountBcd()}));
+                new int[] {firstSlot.deathCountBcd(), secondSlot.deathCountBcd(), thirdSlot.deathCountBcd()},
+                state.sounds().sink()));
         actions.music().playDirectMusic(MusicDirector.fileSelectionMusicTrack());
         // The Enter event that leaves the title must not also activate the
         // first empty file. Its edge belongs to the title screen.
@@ -137,6 +145,8 @@ public final class ScreenRouter {
     }
 
     public void startDebugGameplay() {
+        state.screens().fileLoad = null;
+        state.screens().menuTransition = null;
         if (actions.navigator().current() == actions.navigator().screen(ScreenKind.CUTSCENE)) {
             ui.cutsceneManager().skipIntroToTitle();
         }
@@ -160,6 +170,8 @@ public final class ScreenRouter {
     }
 
     public void startConfiguredLocationGameplay() {
+        state.screens().fileLoad = null;
+        state.screens().menuTransition = null;
         state.screens().fileMenu().clear();
         state.screens().fileSave().clear();
         state.screens().selectSaveSlot(-1);

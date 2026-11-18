@@ -2,6 +2,7 @@ package linksawakening.app.wiring;
 
 import java.util.function.UnaryOperator;
 import linksawakening.app.audio.RoomMusicSelection;
+import linksawakening.app.audio.SessionDialogSounds;
 import linksawakening.app.debug.DebugTeleporter;
 import linksawakening.app.debug.DebugTools;
 import linksawakening.app.flow.FrameLoopServices;
@@ -18,6 +19,7 @@ import linksawakening.app.input.GameplayScreenAdapter;
 import linksawakening.app.input.SessionInput;
 import linksawakening.app.presentation.FramePresentation;
 import linksawakening.app.screen.ScreenSet;
+import linksawakening.app.screen.WorldMapScreen;
 import linksawakening.app.services.SessionServices;
 import linksawakening.app.state.DebugState;
 import linksawakening.app.state.FrameClock;
@@ -30,6 +32,7 @@ import linksawakening.app.state.ScreenState;
 import linksawakening.app.state.SessionOptions;
 import linksawakening.app.state.SessionState;
 import linksawakening.app.wiring.ScreenWiring.ScreenDependencies;
+import linksawakening.dialog.DialogController;
 import linksawakening.gameplay.PcmSoundOutput;
 import linksawakening.gpu.GPU;
 import linksawakening.world.entity.RomRandomByteSource;
@@ -107,18 +110,32 @@ public final class SessionWiring {
             GameplayWiring.PreparedGameplay prepared,
             FlowWiring.Flows wired) {
         var frame = gameplayFrame(s, prepared, wired);
+        var worldMapDialog = DialogController.forGameplay();
         var screens = ScreenWiring.build(
                 new ScreenDependencies(
                         s.ui(), s.input(), state.screens(), saveState, prepared.dialogSounds(), wired.music()),
                 navigator,
                 wired.saves(),
                 prepared.completion(),
+                new WorldMapScreen(
+                        s.rom().romData(),
+                        s.world().roomSession(),
+                        s.input(),
+                        s.ui(),
+                        state.sounds(),
+                        worldMapDialog,
+                        new SessionDialogSounds(worldMapDialog, s.audio().dialogSoundSink()),
+                        new WorldMapScreen.Navigation(
+                                navigator, prepared.completion(), state.screens(), wired.saves())),
                 new GameplayScreenAdapter(wired.input(), frame, wired.passOut()));
         navigator.attach(
                 screens,
                 wired.router(),
                 new RoomMusicSelection(
-                        wired.music(), s.player().playerState(), s.world().roomSession()));
+                        wired.music(),
+                        s.player().playerState(),
+                        s.world().roomSession(),
+                        s.world().transitionController()));
         state.screens().selectScreen(screens.title());
         var teleporter = new DebugTeleporter(
                 s.world().roomSession(),
@@ -149,7 +166,8 @@ public final class SessionWiring {
                         s.world().scrollController(),
                         s.world().transitionController(),
                         s.player().link(),
-                        4),
+                        4,
+                        wired.music()),
                 wired.simulation(),
                 prepared.completion());
     }

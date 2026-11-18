@@ -107,6 +107,9 @@ public final class EntitySpriteHandlerCatalog {
     public static final int ENTITY_MIMIC = 0x28;
     public static final int ENTITY_MINI_MOLDORM = 0x29;
     public static final int ENTITY_MOLDORM = 0x59;
+    public static final int ENTITY_TELEPHONE = 0x80;
+    public static final int ENTITY_RICHARD = 0x95;
+    public static final int ENTITY_RICHARD_FROG = 0x96;
     public static final int ENTITY_ROLLING_BONES = 0x81;
     public static final int ENTITY_ROLLING_BONES_BAR = 0x82;
     public static final int ENTITY_THREE_OF_A_KIND = 0x90;
@@ -344,6 +347,10 @@ public final class EntitySpriteHandlerCatalog {
     public EntitySpriteDefinition decodeRectangle(
             int entityType, int bank, int address, int variantCount, int spriteCount, int initialVariant) {
         return decoder.decodeRectangle(entityType, bank, address, variantCount, spriteCount, initialVariant);
+    }
+
+    public EntitySpriteDefinition forOverworldWarpHole() {
+        return states.decodeOverworldWarpHole();
     }
 
     public EntitySpriteDefinition forEntityType(int entityType, EntityRoomLoader.RoomTable roomTable) {

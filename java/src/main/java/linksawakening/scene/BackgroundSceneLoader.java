@@ -21,10 +21,13 @@ public final class BackgroundSceneLoader {
     }
 
     public BackgroundScene load(BackgroundSceneSpec spec) {
-        int[] tilemap =
-                RomBank.decodeBackgroundMap(romData, sceneAddress(spec.tilemapBank(), spec.tilemapAddr()), 0x7E);
-        int[] attrmap =
-                RomBank.decodeBackgroundMap(romData, sceneAddress(spec.attrmapBank(), spec.attrmapAddr()), 0x00);
+        var tileAddress = sceneAddress(spec.tilemapBank(), spec.tilemapAddr());
+        boolean save = spec.equals(BackgroundSceneCatalog.FILE_SAVE);
+        int[] tilemap = save
+                ? RomBank.decodeBackgroundMap(romData, tileAddress, saveMenuBase())
+                : RomBank.decodeBackgroundMap(romData, tileAddress, 0x7E);
+        int[] attrmap = RomBank.decodeBackgroundMap(
+                romData, sceneAddress(spec.attrmapBank(), spec.attrmapAddr()), save ? 0x06 : 0x00);
         // Erase/copy attrmaps are partial writes over the selection screen's VRAM.
         if (spec.equals(BackgroundSceneCatalog.FILE_ERASE) || spec.equals(BackgroundSceneCatalog.FILE_COPY)) {
             var selection = BackgroundSceneCatalog.FILE_SELECTION_COMMANDS;
@@ -38,6 +41,16 @@ public final class BackgroundSceneLoader {
                 attrmap,
                 RomBank.loadPalettes(romData, sceneAddress(spec.palettesBank(), spec.palettesAddr()), 8),
                 RomBank.loadPalettes(romData, sceneAddress(spec.palettesBank(), spec.palettesAddr() + 0x40), 8));
+    }
+
+    private static int[] saveMenuBase() {
+        int[] tiles = new int[BG_MAP_TILE_COUNT];
+        for (int y = 0; y < BG_MAP_TILE_HEIGHT; y++) {
+            for (int x = 0; x < SCREEN_TILE_WIDTH; x++) {
+                tiles[y * BG_MAP_TILE_WIDTH + x] = 0xAE + ((x + y) & 1);
+            }
+        }
+        return tiles;
     }
 
     /** Preserve the scene specification's file-offset arithmetic, including CPU-window aliases. */

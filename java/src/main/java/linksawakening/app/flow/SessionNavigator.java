@@ -51,6 +51,13 @@ public final class SessionNavigator implements ScreenNavigator, RoomLoadListener
     }
 
     @Override
+    public void restartIntroAfterSave() {
+        state.selectSaveSlot(-1);
+        targets().router().startIntroCutscene();
+        targets().screens().cutscene().delayInput(0x18);
+    }
+
+    @Override
     public void startDebugGameplay() {
         targets().router().startDebugGameplay();
     }

@@ -29,18 +29,11 @@ public final class FileMenuScreen implements Screen {
         if (action.type() == FileMenuAction.Type.CREATE_FILE) {
             // $01:4B26 -> label_001_4555: creation returns to file selection.
             // Only selecting a stored nonzero name can start gameplay.
-            dependencies.actions().persistFileMenuMutation(() -> dependencies
-                    .saves()
-                    .saveRamStore()
-                    .createNewGame(action.selectedSlot(), action.nameBytes()));
+            dependencies.actions().createFile(action.selectedSlot(), action.nameBytes());
         } else if (action.type() == FileMenuAction.Type.LOAD_GAME) {
             SaveSlotState saved = dependencies.saves().saveRamStore().readSlot(action.selectedSlot());
             dependencies.screens().selectSaveSlot(action.selectedSlot());
-            if (saved.spawnPositionX() == 0) {
-                dependencies.actions().startNewGame();
-            } else {
-                dependencies.actions().startSavedGame(saved);
-            }
+            dependencies.screens().fileLoad = new linksawakening.ui.FileLoadTransition(saved);
         } else if (action.type() == FileMenuAction.Type.ERASE_SLOT) {
             dependencies
                     .actions()

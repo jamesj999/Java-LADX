@@ -12,7 +12,11 @@ public final class GameFrameSceneBuilder {
 
     /** Refills a borrowed scene, valid until this builder's next build. Capture inputs are copied by test-side FrameSnapshots. */
     public FrameScene build(GameFrameState state) {
-        world.fill(state, dialogWindowPainter);
+        return build(state, true);
+    }
+
+    public FrameScene build(GameFrameState state, boolean showMenuObjects) {
+        world.fill(state, dialogWindowPainter, showMenuObjects);
         return scene.observedBy(observer);
     }
     /** Uses alternate owned glyphs/window submission; null restores ROM-backed dialog rendering. */

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import linksawakening.state.Progression;
 import linksawakening.testing.TestRoms;
 import org.junit.jupiter.api.Test;
 
@@ -28,8 +29,12 @@ final class InventoryDungeonPanelTest {
         String[] values = lines.getFirst().split(" ");
         byte[] status = new byte[64];
         for (int i = 0; i < 64; i++) status[i] = (byte) Integer.parseInt(values[i]);
-        new InventoryDungeonPanel(linksawakening.rom.Rom.of(rom))
-                .apply(map, attrs, 0, false, new byte[] {1, 1, 0, 0, 2}, status);
+        byte[] items = {1, 1, 0, 0, 2};
+        var romData = linksawakening.rom.Rom.of(rom);
+        new InventoryDungeonPanel(romData).apply(map, attrs, 0, false, items, status);
+        var quest = new InventoryQuestItems(romData);
+        quest.prepare(map, attrs, loader.palettes(), new Progression(), items);
+        quest.copyRowsInto(map, attrs);
         for (String line : lines.subList(1, lines.size())) {
             String[] cell = line.split(" ");
             int x = Integer.parseInt(cell[0]), y = Integer.parseInt(cell[1]);

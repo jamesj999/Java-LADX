@@ -31,10 +31,14 @@ final class SfxCpu {
     }
 
     void runFrom(int entryAddress) {
+        runFrom(entryAddress, -1);
+    }
+
+    void runFrom(int entryAddress, int endAddress) {
         pc = entryAddress & 0xFFFF;
         stackSize = a = b = c = d = e = h = l = 0;
         flagZ = flagN = flagH = flagC = stopped = false;
-        run();
+        run(endAddress);
     }
 
     private void step() {
@@ -215,8 +219,9 @@ final class SfxCpu {
         }
     }
 
-    private void run() {
+    private void run(int endAddress) {
         for (int instructions = 0; !stopped && instructions < MAX_INSTRUCTIONS_PER_TICK; instructions++) {
+            if (pc == endAddress) return;
             step();
         }
         if (!stopped) {

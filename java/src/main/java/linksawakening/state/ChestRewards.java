@@ -62,7 +62,6 @@ public final class ChestRewards {
             }
             case ChestItemValues.CHEST_SWORD -> inventory.giveInventoryItem(InventoryItem.SWORD.romValue());
             case ChestItemValues.CHEST_MEDICINE -> {
-                progression.hasMedicine = true;
                 progression.medicineCount = incrementByte(progression.medicineCount);
             }
             case ChestItemValues.CHEST_TAIL_KEY -> progression.tailKeyCount = incrementByte(progression.tailKeyCount);

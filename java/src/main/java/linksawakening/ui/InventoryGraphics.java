@@ -8,10 +8,14 @@ import linksawakening.rom.Rom;
 /** Inventory ROM graphics capabilities, or an explicit overlay-only presentation. */
 public final class InventoryGraphics {
     private final Instruments instruments;
+    private final InventoryStatusRenderer status;
+    private final InventoryQuestItems quest;
     private final Dungeon dungeon;
     private final TileTransfers transfers;
 
-    private InventoryGraphics(Instruments instruments, Dungeon dungeon, TileTransfers transfers) {
+    private InventoryGraphics(Instruments instruments, Dungeon dungeon, TileTransfers transfers, Rom rom) {
+        status = rom == null ? null : new InventoryStatusRenderer(rom);
+        quest = rom == null ? null : new InventoryQuestItems(rom);
         this.instruments = Objects.requireNonNull(instruments, "instruments");
         this.dungeon = Objects.requireNonNull(dungeon, "dungeon");
         this.transfers = Objects.requireNonNull(transfers, "transfers");
@@ -20,12 +24,20 @@ public final class InventoryGraphics {
     public static InventoryGraphics fromRom(Rom rom) {
         Objects.requireNonNull(rom, "rom");
         return new InventoryGraphics(
-                new InventoryInstrumentPanel(rom), new InventoryDungeonPanel(rom), new RomTransfers(rom));
+                new InventoryInstrumentPanel(rom), new InventoryDungeonPanel(rom), new RomTransfers(rom), rom);
     }
 
     /** Draws the base inventory overlay without ROM panels or VRAM transfers. */
     public static InventoryGraphics overlayOnly() {
-        return new InventoryGraphics(Empty.INSTANCE, Empty.INSTANCE, Empty.INSTANCE);
+        return new InventoryGraphics(Empty.INSTANCE, Empty.INSTANCE, Empty.INSTANCE, null);
+    }
+
+    InventoryStatusRenderer status() {
+        return status;
+    }
+
+    InventoryQuestItems quest() {
+        return quest;
     }
 
     Instruments instruments() {

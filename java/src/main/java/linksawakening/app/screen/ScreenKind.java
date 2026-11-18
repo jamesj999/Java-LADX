@@ -6,5 +6,6 @@ public enum ScreenKind {
     CUTSCENE,
     FILE_MENU,
     FILE_SAVE,
+    WORLD_MAP,
     GAMEPLAY
 }

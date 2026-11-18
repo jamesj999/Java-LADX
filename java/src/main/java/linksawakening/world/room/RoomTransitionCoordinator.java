@@ -45,6 +45,19 @@ public final class RoomTransitionCoordinator {
         }
         ActiveRoom room = loaded.room();
 
+        if (room.mapCategory() == Warp.CATEGORY_OVERWORLD
+                && Warp.isOverworldWarpHoleRoom(room.roomId())
+                && link.airborne().warpHoleReady()) {
+            Warp target = dependencies.roomTransitionController().overworldWarpHoleDestination(room.roomId());
+            link.position().setPixelPosition(target.javaPixelX(), target.javaPixelY());
+            transitionController.startFadeOut(() -> {
+                applyWarp(target, link);
+                link.airborne().startWarpHoleLanding();
+            });
+            return;
+        }
+        if (link.airborne().warpHoleControlsLink()) return;
+
         // $02:5136-5167 uses wWarp0, independent of the door warp positions.
         if (link.status().pitWarpPending() && room.hasWarps()) {
             link.status().consumePitWarp();
@@ -80,7 +93,7 @@ public final class RoomTransitionCoordinator {
                         link.animation().romEntityZ(),
                         link.actions().isCarryingLiftedObject());
         if (staircaseWarp != null) {
-            startEntranceWarp(staircaseWarp, link);
+            startEntranceWarp(staircaseWarp, link, fadesMusicOnStairs(room));
             return;
         }
 
@@ -88,7 +101,7 @@ public final class RoomTransitionCoordinator {
         // ApplyCollisionWithDoor has requested the fade ($02:71BB).
         if (!link.position().consumeDoorWarp()) return;
         if (room.mapCategory() != Warp.CATEGORY_OVERWORLD) {
-            startEntranceWarp(room.firstWarp(), link);
+            startEntranceWarp(room.firstWarp(), link, fadesMusicOnStairs(room));
             return;
         }
         int linkTile =
@@ -101,13 +114,14 @@ public final class RoomTransitionCoordinator {
                         + " map=" + String.format("%02X", target.destMap())
                         + " room=" + String.format("%02X", target.destRoom())
                         + " at (" + target.destX() + "," + target.destY() + ")");
-                startEntranceWarp(target, link);
+                startEntranceWarp(target, link, true);
                 return;
             }
         }
     }
 
     void handleOverworldBoundary(RoomRuntime loaded, Link link) {
+        if (link.airborne().warpHoleControlsLink()) return;
 
         int previousX = link.position().pixelX();
         int previousY = link.position().pixelY();
@@ -136,20 +150,20 @@ public final class RoomTransitionCoordinator {
 
     /** Starts a pending Ocarina Mambo transition after entity playback ends. */
     boolean handlePendingManboTransition(RoomRuntime loaded, Link link) {
-        if (link == null || transitionController.isActive()) {
+        if (link == null || transitionController.isActive() || link.airborne().warpHoleControlsLink()) {
             return false;
         }
         Warp target = dependencies.roomTransitionController().consumeManboPondTransitionRequest(loaded);
         if (target == null) {
             return false;
         }
-        transitionController.startManboIn(() -> applyWarp(target, link));
+        transitionController.startManboIn(target.category() != Warp.CATEGORY_OVERWORLD, () -> applyWarp(target, link));
         return true;
     }
 
     /** Starts disableMovementInTransition after the Sirens Instrument effect. */
     boolean handlePendingInstrumentTransition(RoomRuntime loaded, Link link) {
-        if (link == null || transitionController.isActive()) {
+        if (link == null || transitionController.isActive() || link.airborne().warpHoleControlsLink()) {
             return false;
         }
         Warp target = dependencies.roomTransitionController().consumeInstrumentTransitionRequest(loaded);
@@ -160,11 +174,15 @@ public final class RoomTransitionCoordinator {
         return true;
     }
 
-    private void startEntranceWarp(Warp target, Link link) {
+    private static boolean fadesMusicOnStairs(ActiveRoom room) {
+        return room.mapCategory() == Warp.CATEGORY_OVERWORLD || room.firstWarp().category() != Warp.CATEGORY_INDOOR;
+    }
+
+    private void startEntranceWarp(Warp target, Link link, boolean fadeMusic) {
         // ApplyMapFadeOutTransitionWithNoise/WithSound both reach
         // playNoiseStairs ($00:0C9A): hNoiseSfx = NOISE_SFX_STAIRS.
         soundSink.play(GameplaySoundEvent.STAIRS);
-        transitionController.startFadeOut(() -> applyWarp(target, link));
+        transitionController.startDoorFade(fadeMusic, () -> applyWarp(target, link));
     }
 
     private void applyWarp(Warp warp, Link link) {
@@ -223,12 +241,12 @@ public final class RoomTransitionCoordinator {
                     + " map=" + String.format("%02X", target.destMap())
                     + " room=" + String.format("%02X", target.destRoom())
                     + " at (" + target.destX() + "," + target.destY() + ")");
-            startEntranceWarp(target, link);
+            startEntranceWarp(target, link, true);
             return true;
         }
         if (boundary.type() == RoomBoundaryDecision.Type.SIDE_SCROLL_VERTICAL_WARP && room.hasWarps()) {
             Warp target = room.firstWarp();
-            transitionController.startFadeOut(() -> applyWarp(target, link));
+            startEntranceWarp(target, link, true);
             return true;
         }
         if (boundary.type() == RoomBoundaryDecision.Type.INDOOR_SCROLL) {

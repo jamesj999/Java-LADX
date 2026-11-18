@@ -13,6 +13,27 @@ import org.junit.jupiter.api.Test;
 final class EntityPickupTimingTest {
 
     @Test
+    void powerUpCollectionStartsHeldSequenceAndEmitsThePickupWave() {
+        int type = 0x33;
+        var runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(type)
+                        .at(24, 32)
+                        .spriteDefinition(pairDefinition(type, 2))
+                        .build()))
+                .build();
+
+        assertNotNull(runtime.pickups().collectIfNeeded(1, 24, 34, false, true));
+        var event = runtime.outbox().consumePendingEntityEvents().getFirst();
+        assertEquals(linksawakening.world.entity.event.EntityCombatEvent.SoundChannel.WAVE, event.soundChannel());
+        assertEquals(0x01, event.soundId());
+        assertNull(runtime.pickups().collectIfNeeded(3, 24, 34, false, true));
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().getFirst().status());
+    }
+
+    @Test
     void collectionUsesTheRomPickableTableAndFrameSlotCadence() {
         EntitySpriteDefinition definition = pairDefinition(0x2D, 1);
         RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()

@@ -224,6 +224,9 @@ public final class RomSymbols { private RomSymbols() {}
     public static final RomAddress MenuFileCopyAttrmap = new RomAddress(0x24, 0x617D);
     public static final RomAddress MenuFileSaveTilemap = new RomAddress(0x08, 0x6A6D);
     public static final RomAddress MenuFileSaveAttrmap = new RomAddress(0x24, 0x6262);
+    public static final RomAddress WorldMapTilemap = new RomAddress(0x08, 0x62E9);
+    public static final RomAddress WorldMapAttrmap = new RomAddress(0x24, 0x66E1);
+    public static final RomAddress WorldMapPalette = new RomAddress(0x21, 0x786E);
     public static final RomAddress DestroyedEntityHealthGroupOffsetTable = new RomAddress(0x03, 0x4826);
     public static final RomAddress DropTableByIndex = new RomAddress(0x03, 0x559D);
     public static final RomAddress RandomDropChanceTable = new RomAddress(0x03, 0x55AB);
@@ -237,6 +240,7 @@ public final class RomSymbols { private RomSymbols() {}
     public static final RomAddress EntityDamagesForGroup = new RomAddress(0x03, 0x47F1);
     public static final RomAddress BowWowEatableEntitiesTable = new RomAddress(0x14, 0x5218);
     public static final RomAddress DungeonWarps = new RomAddress(0x19, 0x4201);
+    public static final RomAddress WarpLocationsTable = new RomAddress(0x19, 0x5C6A);
     public static final RomAddress MapLayout0 = new RomAddress(0x14, 0x4220);
     public static final RomAddress MapLayout11 = new RomAddress(0x14, 0x44E0);
     public static final RomAddress MapLayout12 = new RomAddress(0x14, 0x4520);

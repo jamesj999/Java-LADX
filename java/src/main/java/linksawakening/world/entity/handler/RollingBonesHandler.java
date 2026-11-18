@@ -3,11 +3,8 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES_BAR;
 
-import linksawakening.world.entity.EntityBossRewards;
 import linksawakening.world.entity.EntityFrameExecution;
-import linksawakening.world.entity.EntityFrameInputLatch;
 import linksawakening.world.entity.EntityHandlerRegistry;
-import linksawakening.world.entity.EntitySlotExecution;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
 import linksawakening.world.entity.RoomEntity;
@@ -18,10 +15,7 @@ import linksawakening.world.entity.motion.RollingBonesMotion;
 final class RollingBonesHandler {
     static void install(EntityHandlerRegistry registry) {
         registry.registerTick(
-                ENTITY_ROLLING_BONES,
-                EntityTickStage.PHASE_2_DYING,
-                2,
-                frame -> phase2RollingBones(frame.slotFrame(), frame.inputs(), frame.bossRewards()));
+                ENTITY_ROLLING_BONES, EntityTickStage.PHASE_2_DYING, 2, RollingBonesHandler::phase2RollingBones);
         registry.registerTick(
                 ENTITY_ROLLING_BONES,
                 EntityTickStage.PHASE_4_BEFORE_FOLLOWER,
@@ -29,9 +23,14 @@ final class RollingBonesHandler {
                 RollingBonesHandler::phase4RollingBones);
     }
 
-    private static boolean phase2RollingBones(
-            EntitySlotExecution slotState, EntityFrameInputLatch frameInput, EntityBossRewards bossRewards) {
-        bossRewards.advanceRollingBonesDestruction(slotState.entity(), frameInput.randomByteSupplier());
+    private static boolean phase2RollingBones(EntityFrameExecution frame) {
+        var entity = frame.slotFrame().entity();
+        frame.bossRewards()
+                .advanceRollingBonesDestruction(entity, frame.inputs().randomByteSupplier());
+        // DidKillEnemy is preceded by SelectMusicTrackAfterTransition at $06:6CBE.
+        if (!frame.entityAt(entity.slot()).loaded()) {
+            frame.requestMusic(frame.roomInspection().defaultMusicTrack());
+        }
         return false;
     }
 

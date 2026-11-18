@@ -36,7 +36,7 @@ final class SaveRamLayoutTest {
         assertEquals(0x30D, SaveRamLayout.MAIN_MEDICINE_OFFSET);
         assertEquals(0x30E, SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET);
         assertEquals(0x30F, SaveRamLayout.MAIN_SEASHELLS_OFFSET);
-        assertEquals(0x310, SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET);
+        assertEquals(0x310, SaveRamLayout.MAIN_FOLLOWER_CONTEXT_OFFSET);
         assertEquals(0x311, SaveRamLayout.MAIN_TAIL_KEY_OFFSET);
         assertEquals(0x312, SaveRamLayout.MAIN_ANGLER_KEY_OFFSET);
         assertEquals(0x313, SaveRamLayout.MAIN_FACE_KEY_OFFSET);

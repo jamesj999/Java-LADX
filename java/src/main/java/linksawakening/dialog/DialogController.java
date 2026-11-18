@@ -190,6 +190,16 @@ public final class DialogController {
         return waitingForPageAdvance && (!romTimed || pageWaitAge > 0);
     }
 
+    public boolean allowsResourceUpdates() {
+        return !active
+                || choicePrompt
+                || (closingAge < 0
+                        && !waitingForPageAdvance
+                        && !hasNextPage()
+                        && visibleCharactersOnPage >= currentPageLength()
+                        && !isAtChoicePromptMarker());
+    }
+
     public boolean isChoicePrompt() {
         return choicePrompt;
     }

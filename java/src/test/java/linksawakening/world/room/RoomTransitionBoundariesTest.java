@@ -251,7 +251,7 @@ final class RoomTransitionBoundariesTest {
         coordinator.handlePendingManboTransition(link);
         assertEquals(TransitionController.State.MANBO_IN, transitionController.state());
 
-        for (int frame = 0; frame < TransitionController.MANBO_TRANSITION_FRAMES; frame++) {
+        for (int frame = 0; frame < 267; frame++) {
             transitionController.tick();
         }
 
@@ -260,9 +260,7 @@ final class RoomTransitionBoundariesTest {
         assertEquals(0x48, link.position().pixelX());
         assertEquals(0x6C, link.position().pixelY());
 
-        for (int frame = TransitionController.MANBO_OUT_INITIAL_FRAME;
-                frame < TransitionController.MANBO_TRANSITION_FRAMES;
-                frame++) {
+        for (int frame = 0; frame < 156; frame++) {
             transitionController.tick();
         }
         assertEquals(TransitionController.State.IDLE, transitionController.state());

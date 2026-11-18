@@ -23,6 +23,7 @@ final class RoomLocationState {
     private linksawakening.world.transition.Warp respawnPoint;
 
     private int respawnIndoorRoom;
+    private int worldMapRoom = 0xA3;
     private Runnable mapBoundaryWarp = () -> {};
     private int currentOverworldTilesetId = W_TILESET_NO_UPDATE;
     private boolean shouldGetLostInMysteriousWoods;
@@ -52,6 +53,14 @@ final class RoomLocationState {
     int indoorMapPosition(int value) {
         this.indoorMapPosition = value;
         return this.indoorMapPosition;
+    }
+
+    int worldMapRoom() {
+        return worldMapRoom;
+    }
+
+    void setWorldMapRoom(int room) {
+        worldMapRoom = room;
     }
 
     int respawnIndoorRoom() {

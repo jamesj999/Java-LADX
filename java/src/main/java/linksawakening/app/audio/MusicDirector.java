@@ -6,9 +6,11 @@ import linksawakening.audio.music.FrameMusicPlayer;
 import linksawakening.audio.music.GameplayMusicController;
 import linksawakening.audio.music.MusicTrackIds;
 import linksawakening.audio.music.RoomMusicContext;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.state.PlayerState;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.RoomSession;
+import linksawakening.world.transition.TransitionController;
 
 /** Session-local track selection, preserving ROM area and event track ownership. */
 public final class MusicDirector implements MusicRequests {
@@ -26,7 +28,17 @@ public final class MusicDirector implements MusicRequests {
         Objects.requireNonNull(roomSession, "roomSession");
         RoomMusicContext context = RoomMusicContext.from(room, playerState);
         if (roomSession.rooms().musicSelectionIsScroll()) context = context.forScroll();
-        gameplayMusicController.selectAfterTransition(context);
+        int residentTrack = MusicTrackIds.MUSIC_NONE;
+        if (context.indoor() && context.swordLevel() != 0 && !context.scrollingTransition()) {
+            for (var entity : room.entities().slots()) {
+                switch (entity.type()) {
+                    case EntitySpriteHandlerCatalog.ENTITY_TELEPHONE -> residentTrack = MusicTrackIds.MUSIC_ULRIRA;
+                    case EntitySpriteHandlerCatalog.ENTITY_RICHARD -> residentTrack = MusicTrackIds.MUSIC_RICHARD_HOUSE;
+                    default -> {}
+                }
+            }
+        }
+        gameplayMusicController.selectAfterTransition(context, residentTrack);
         roomSession.story().setEntityDefaultMusicTrack(gameplayMusicController.defaultTrackId());
     }
 
@@ -61,8 +73,25 @@ public final class MusicDirector implements MusicRequests {
         return MusicTrackIds.MUSIC_FILE_SELECT;
     }
 
+    public void setMenuAttenuated(boolean attenuated) {
+        musicPlayer.setMenuAttenuated(attenuated);
+    }
+
+    public void continueMusicAfterNextWarp() {
+        gameplayMusicController.continueMusicAfterNextWarp();
+    }
+
+    public void updateWarpSound(TransitionController transition) {
+        if (transition.stopDoorMusic()) playDirectMusic(MusicTrackIds.MUSIC_NONE);
+        musicPlayer.setWarpVolume(transition.doorVolume());
+    }
+
     public void tick() {
-        musicPlayer.update();
-        gameplayMusicController.tickFadeOut();
+        tick(true);
+    }
+
+    public void tick(boolean advanceDriver) {
+        if (advanceDriver) gameplayMusicController.tickFadeOut();
+        musicPlayer.update(advanceDriver);
     }
 }

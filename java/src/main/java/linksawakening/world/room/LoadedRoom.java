@@ -26,7 +26,8 @@ public record LoadedRoom(
                 List.copyOf(exits.warps()),
                 exits.indoorHasSouthEntrance(),
                 exits.shutterDoorMask() & 0x0F,
-                exits.staircaseLocation());
+                exits.staircaseLocation(),
+                exits.shutterLocations());
         if (exits.staircaseLocation() < -1 || exits.staircaseLocation() > 0xFF)
             throw new IllegalArgumentException("Staircase location must be -1 or an unsigned byte");
     }
@@ -114,6 +115,7 @@ public record LoadedRoom(
         hash = 31 * hash + Boolean.hashCode(exits.indoorHasSouthEntrance());
         hash = 31 * hash + Integer.hashCode(exits.shutterDoorMask());
         hash = 31 * hash + Integer.hashCode(exits.staircaseLocation());
+        hash = 31 * hash + exits.shutterLocations().hashCode();
         hash = 31 * hash + Objects.hashCode(entities);
         return hash;
     }

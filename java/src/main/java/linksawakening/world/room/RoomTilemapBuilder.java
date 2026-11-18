@@ -119,6 +119,26 @@ final class RoomTilemapBuilder {
         return new RoomTilemap(tileIds, tileAttrs, gbcOverlay, renderValues);
     }
 
+    /** The middle two tiles of each door row change before the collision objects do. */
+    void drawShutterFrame(ActiveRoom room, int direction, int location, boolean opening) {
+        int x = (location & 15) * 2 + (direction < 2 ? 1 : 0);
+        int y = (location >>> 4) * 2 + (direction < 2 ? 0 : 1);
+        int source = 4 * (direction + (opening ? 4 : 0));
+        int tiles = RomBank.romOffset(2, opening ? 0x59D4 : 0x5BC4);
+        int objects = RomBank.romOffset(0x1A, opening ? 0x6640 : 0x6688);
+        int quadrants = RomBank.romOffset(0x1A, opening ? 0x66A8 : 0x66F0);
+        int attributes = room.mapId() == MAP_COLOR_DUNGEON
+                ? RomBank.romOffset(COLOR_DUNGEON_OBJECT_ATTR_BANK, COLOR_DUNGEON_OBJECT_ATTR_ADDR)
+                : indoorObjectAttrOffset(room.mapId(), room.roomId());
+        for (int i = 0; i < 4; i++) {
+            int tile = (y + i / 2) * RoomConstants.ROOM_TILE_WIDTH + x + i % 2;
+            int object = readRomByte(objects + source + i);
+            int quadrant = readRomByte(quadrants + source + i);
+            room.tileIds()[tile] = readRomByte(tiles + source + i);
+            room.tileAttrs()[tile] = attributes < 0 ? 0 : readRomByte(attributes + object * 4 + quadrant);
+        }
+    }
+
     private int overworldObjectAttrOffset(int roomId) {
         int attrBankOffset = RomBank.romOffset(OVERWORLD_OBJ_ATTR_BANKS_BANK, OVERWORLD_OBJ_ATTR_BANKS_ADDR + roomId);
         int attrBank = readRomByte(attrBankOffset);

@@ -221,6 +221,18 @@ public final class EntityStoryController {
         }
     }
 
+    public void advanceGrandpaUlrira(RoomEntity entity, int frame, int linkX, int linkY) {
+        RoomEntity updated = entity.y() == 0x49 ? entity : entity.withPosition(entity.x(), 0x49);
+        if (this.inspection.tarinTransformationHandlerInteractive()) {
+            int variant = (frame >>> 5) & 1;
+            if (updated.spriteVariant() != variant) updated = updated.withSpriteVariant(variant);
+            if (RoomEntityCombatRules.overlapsLink(updated, linkX, linkY)) {
+                this.backgroundMechanics.requestLinkPush(updated, EntityLinkCollisionRules.STANDARD_PUSH);
+            }
+        }
+        if (!updated.equals(entity)) this.slots.replace(updated.slot(), updated);
+    }
+
     public void advanceRichard(
             RoomEntity entity, int frameCounter, int linkEntityX, int linkEntityY, boolean linkAirborne) {
         this.richardStep.run(entity, frameCounter, linkEntityX, linkEntityY, linkAirborne);

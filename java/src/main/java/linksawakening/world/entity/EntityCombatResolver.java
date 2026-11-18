@@ -561,6 +561,11 @@ public final class EntityCombatResolver {
         slot.soundChannel = EntityCombatEvent.SoundChannel.JINGLE;
         slot.soundId = slot.swordResultApplied ? 0x03 : 0x09;
         EntityCombatResolver.entitySwordStatusApply(slot);
+        if (frame.attackContext().powerRecoil() && slot.secondarySoundChannel == EntityCombatEvent.SoundChannel.NONE) {
+            // EnemyCollidedWithSword writes the power impact to the independent wave channel.
+            slot.secondarySoundChannel = EntityCombatEvent.SoundChannel.WAVE;
+            slot.secondarySoundId = 0x11;
+        }
     }
 
     static boolean entitySwordImpactPrepare(EntityCombatSlot slot) {

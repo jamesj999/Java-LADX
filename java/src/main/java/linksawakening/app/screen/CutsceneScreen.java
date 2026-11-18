@@ -20,6 +20,11 @@ import linksawakening.render.RenderScreen;
 public final class CutsceneScreen implements Screen {
 
     private final Dependencies dependencies;
+    private int inputDelay;
+
+    public void delayInput(int frames) {
+        inputDelay = frames;
+    }
 
     public CutsceneScreen(Dependencies dependencies) {
         this.dependencies = Objects.requireNonNull(dependencies);
@@ -27,6 +32,7 @@ public final class CutsceneScreen implements Screen {
 
     @Override
     public void tick() {
+        if (inputDelay > 0) inputDelay--;
 
         dependencies.dialogController().tick();
         dependencies.sounds().route();
@@ -43,6 +49,7 @@ public final class CutsceneScreen implements Screen {
 
     @Override
     public void onKey(int key, int action) {
+        if (inputDelay > 0) return;
         if (key == KEY_ENTER
                 && action == PRESS
                 && dependencies.cutsceneManager().skipIntroToTitle()) {

@@ -54,6 +54,8 @@ final class LinkAnimator {
     }
 
     int resolveAnimationState() {
+        int warpCharge = linkAirborne.get().pit().warpHoleCharge;
+        if (warpCharge > 0 && warpCharge < 67) return 0xFF;
         if (romAnimationStateOverride >= 0) {
             return romAnimationStateOverride;
         }

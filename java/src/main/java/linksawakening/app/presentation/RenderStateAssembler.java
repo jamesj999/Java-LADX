@@ -23,6 +23,7 @@ public final class RenderStateAssembler {
     private final GameFrameSceneBuilder frameSceneBuilder = new GameFrameSceneBuilder();
     private final int[] greenObjectsSpritePalette = {0, 0, 0x0010A840, 0x00F8B888};
     private final RomServices rom;
+    private linksawakening.gpu.GPU saveMenuTiles;
     private final WorldServices world;
     private final PlayerServices player;
     private final UiServices ui;
@@ -57,7 +58,33 @@ public final class RenderStateAssembler {
                             world.roomSession().rooms().indoorRoomPositionForSave(),
                             state.clock().value());
         }
-        frameSceneBuilder.build(currentGameFrameState()).drawTo(visual.indexedDisplayBuffer(), rom.gpu());
+        byte[] buffer = visual.indexedDisplayBuffer();
+        var gpu = rom.gpu();
+        if (currentRenderScreen() == RenderScreen.FILE_SAVE) {
+            if (saveMenuTiles == null) {
+                saveMenuTiles = new linksawakening.gpu.GPU();
+                saveMenuTiles.loadSaveMenuTiles(rom.romData());
+            }
+            gpu = saveMenuTiles;
+        }
+        var tiles = gpu;
+        var menu = state.screens().menuTransition;
+        boolean showMenuObjects = currentRenderScreen() != RenderScreen.FILE_SAVE
+                || menu == null
+                || menu.transitionFinished()
+                || menu.returningToRoom();
+        var load = state.screens().fileLoad;
+        if (load != null && load.beforeWorld() && !load.showSelection()) {
+            java.util.Arrays.fill(buffer, (byte) 0xFF);
+        } else if (menu != null) {
+            menu.render(buffer, () -> frameSceneBuilder
+                    .build(currentGameFrameState(), showMenuObjects)
+                    .drawTo(buffer, tiles));
+        } else if (load != null && !load.beforeWorld()) {
+            frameSceneBuilder.build(currentGameFrameState()).drawWithFileLoadFade(buffer, rom.gpu(), load);
+        } else {
+            frameSceneBuilder.build(currentGameFrameState()).drawTo(buffer, tiles);
+        }
     }
 
     /** Borrowed inputs, valid only until this assembler's next refill and next simulation tick. */
@@ -70,11 +97,13 @@ public final class RenderStateAssembler {
         switch (screen) {
             case OVERWORLD -> fillOverworld();
             case TITLE, CUTSCENE -> fillBackground();
-            case FILE_MENU, FILE_SAVE -> {
+            case FILE_MENU, FILE_SAVE, WORLD_MAP -> {
                 /* The screen publishes its menu frame below. */
             }
         }
-        if (screen != RenderScreen.OVERWORLD && ui.dialogController().isActive()) fillRoomView();
+        if (screen != RenderScreen.OVERWORLD
+                && screen != RenderScreen.WORLD_MAP
+                && ui.dialogController().isActive()) fillRoomView();
         return state.screens().currentScreen().renderState(inputs);
     }
 

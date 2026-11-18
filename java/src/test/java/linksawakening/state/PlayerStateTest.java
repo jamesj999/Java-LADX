@@ -606,9 +606,8 @@ final class PlayerStateTest {
         bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET] = 0x19;
         bytes[main + SaveRamLayout.MAIN_FLIPPERS_OFFSET] = 1;
         bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET] = 2;
-        bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET] = 1;
         bytes[main + SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET] = 0x0E;
-        bytes[main + SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET] = 2;
+        bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET] = 2;
         bytes[main + SaveRamLayout.MAIN_TAIL_KEY_OFFSET] = 1;
         bytes[main + SaveRamLayout.MAIN_ANGLER_KEY_OFFSET] = 2;
         bytes[main + SaveRamLayout.MAIN_FACE_KEY_OFFSET] = 3;

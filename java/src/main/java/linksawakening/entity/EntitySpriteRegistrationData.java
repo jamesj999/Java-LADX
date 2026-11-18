@@ -86,6 +86,8 @@ import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_PINCER;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_PIRANHA_PLANT;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_POKEY;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_POLS_VOICE;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_RICHARD;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_RICHARD_FROG;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES_BAR;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_SAND_CRAB;
@@ -102,6 +104,7 @@ import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_SWORD_BEAM
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_SWORD_SHIELD_PICKUP;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_TARIN;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_TEKTITE;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_TELEPHONE;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_THREE_OF_A_KIND;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_TIMER_BOMBITE;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_URCHIN;
@@ -1267,6 +1270,15 @@ final class EntitySpriteRegistrationData {
             // list before PushLinkOutOfEntity_18 ($18:4D69).
             var variants = linksawakening.rom.RomSymbols.GrandmaUlrira1SpriteVariants;
             return EntitySpriteRecipe.pair(entityType, variants.bank(), variants.address(), 3, 0);
+        }
+        if (entityType == ENTITY_RICHARD) {
+            return EntitySpriteRecipe.pair(entityType, 0x06, 0x4000, 8, 0);
+        }
+        if (entityType == ENTITY_RICHARD_FROG) {
+            return EntitySpriteRecipe.pair(entityType, 0x19, 0x5BA0, 8, 0);
+        }
+        if (entityType == ENTITY_TELEPHONE) {
+            return EntitySpriteRecipe.pair(entityType, 0x06, 0x6A78, 1, 0);
         }
         if (entityType == ENTITY_GRANDPA_ULRIRA) {
             return EntitySpriteRecipe.rectangle(

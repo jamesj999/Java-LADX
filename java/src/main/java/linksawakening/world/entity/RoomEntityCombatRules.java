@@ -76,7 +76,7 @@ public final class RoomEntityCombatRules {
     static final int ENTITY_OWL_STATUE = 0x42;
     static final int ENTITY_TRENDY_GAME_OWNER = 0x4F;
 
-    static final int ENTITY_GRANDPA_ULRIRA = 0x77;
+    static final int ENTITY_GRANDPA_ULRIRA = EntityRomConstants.ENTITY_GRANDPA_ULRIRA;
     static final int ENTITY_MADAM_MEOWMEOW = 0x79;
     static final int ENTITY_CRAZY_TRACY = 0x7B;
 
@@ -316,6 +316,7 @@ public final class RoomEntityCombatRules {
     }
 
     private static int hitboxY(int type) {
+        if (type == ENTITY_GRANDPA_ULRIRA) return 0x08;
         if ((type & 0xFF) == ENTITY_WITCH) {
             return 0x0C;
         }
