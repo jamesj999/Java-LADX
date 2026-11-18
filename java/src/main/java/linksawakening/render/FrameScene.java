@@ -44,6 +44,14 @@ public final class FrameScene {
         drawTo(buffer, gpu, observer);
     }
 
+    public void drawWithFileLoadFade(byte[] buffer, GPU gpu, linksawakening.ui.FileLoadTransition load) {
+        reusableFrame.reset();
+        reusableFrame.withPaletteTransforms(
+                load::backgroundColor, load::objectColor, () -> hardwareFrame(gpu, reusableFrame));
+        reusableFrame.compose(buffer);
+        observer.drawn(this, buffer, gpu);
+    }
+
     public int layerCount() {
         return layers.size();
     }

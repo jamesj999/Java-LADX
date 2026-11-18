@@ -86,6 +86,8 @@ import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_PINCER;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_PIRANHA_PLANT;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_POKEY;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_POLS_VOICE;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_RICHARD;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_RICHARD_FROG;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES_BAR;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_SAND_CRAB;
@@ -102,6 +104,7 @@ import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_SWORD_BEAM
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_SWORD_SHIELD_PICKUP;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_TARIN;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_TEKTITE;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_TELEPHONE;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_THREE_OF_A_KIND;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_TIMER_BOMBITE;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_URCHIN;
@@ -114,9 +117,6 @@ import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_WIZROBE_PR
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_ZOL;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_ZOMBIE;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_ZORA;
-import static linksawakening.world.entity.EntityRomConstants.ENTITY_RICHARD;
-import static linksawakening.world.entity.EntityRomConstants.ENTITY_RICHARD_FROG;
-import static linksawakening.world.entity.EntityRomConstants.ENTITY_TELEPHONE;
 
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;

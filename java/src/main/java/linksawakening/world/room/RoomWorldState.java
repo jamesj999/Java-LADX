@@ -213,6 +213,18 @@ final class RoomWorldState implements RoomDungeon {
         return this.dungeonItemState;
     }
 
+    int nextVisitedWarpHole(int source) {
+        // WarpLocationsTable ($19:5C6A) is a four-room cycle.
+        var table = RomSymbols.WarpLocationsTable;
+        int next = source;
+        for (int i = 0; i < 4; i++) {
+            next = romData.u8(table.plus(next));
+            if (!Warp.isOverworldWarpHoleRoom(next)) break;
+            if ((overworldRoomStatus[next] & 0x80) != 0) return next;
+        }
+        return source;
+    }
+
     byte[] overworldRoomStatus() {
         return this.overworldRoomStatus;
     }

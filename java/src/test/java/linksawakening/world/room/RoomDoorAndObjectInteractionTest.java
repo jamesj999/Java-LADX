@@ -1047,7 +1047,7 @@ final class RoomDoorAndObjectInteractionTest {
 
         assertEquals(0xE1, session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex]);
         assertEquals(0xE1, session.rooms().activeRoomOrNull().renderValues()[areaIndex]);
-        assertEquals(0x04, RoomDebugFixture.of(session).overworldRoomStatusForTest(0x13));
+        assertEquals(0x84, RoomDebugFixture.of(session).overworldRoomStatusForTest(0x13) & 0x84);
         assertEquals(location, session.rooms().activeRoomOrNull().firstWarp().tileLocation());
 
         int tileIndex = 0x0A;

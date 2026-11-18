@@ -4,8 +4,8 @@ import static linksawakening.save.SaveSlotCodec.unsigned;
 
 import java.util.Arrays;
 import java.util.Objects;
+import linksawakening.state.FollowerFlags;
 import linksawakening.state.PlayerState;
-import linksawakening.world.entity.FollowingNpcState;
 
 /** Mutable raw image of the source-defined SRAM save area. */
 public final class SaveRamImage {
@@ -222,9 +222,12 @@ public final class SaveRamImage {
                 SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_SIZE);
     }
 
-    public void writeFollowers(int slot, FollowingNpcState state) {
+    public void writeFollowers(int slot, FollowerFlags state) {
         SaveRamLayout.checkSlot(slot);
         int main = SaveRamLayout.slotOffset(slot) + SaveRamLayout.mainOffset();
+        int context = main + SaveRamLayout.MAIN_FOLLOWER_CONTEXT_OFFSET;
+        if (!state.db10()) bytes[context] = 0;
+        else if (bytes[context] == 0) bytes[context] = 1;
         bytes[main + SaveRamLayout.MAIN_MARIN_FOLLOWING_OFFSET] = (byte) (state.marinFollowing() ? 1 : 0);
         bytes[main + SaveRamLayout.MAIN_GHOST_FOLLOWING_OFFSET] = (byte) state.ghostFollowingState();
         bytes[main + SaveRamLayout.MAIN_ROOSTER_FOLLOWING_OFFSET] = (byte) (state.roosterFollowing() ? 1 : 0);

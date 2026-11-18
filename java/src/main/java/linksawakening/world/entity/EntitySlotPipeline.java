@@ -89,11 +89,14 @@ final class EntitySlotPipeline {
         prepareLateFrameEvents(state);
         prepareFollowerState(state);
 
+        // VBlank displays the preceding frame's shadow OAM.
+        state.slots().transferRoamingOam();
         for (state.slotFrame().index(state.slots().size() - 1);
                 state.slotFrame().index() >= 0;
                 state.slotFrame().postIndex(-1)) {
             if (!prepareSlotAndTimers(state)) continue;
             if (!advanceSlotStatus(state)) continue;
+            state.slots().captureRoamingOam(state.slotFrame().updated());
             if (!advanceLaserSite(state)) continue;
             if (!advanceFollowersAndMotion(state)) continue;
             applyGroundAndCommitSlot(state);

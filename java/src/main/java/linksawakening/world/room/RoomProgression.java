@@ -18,6 +18,16 @@ final class RoomProgression implements RoomProgress {
     }
 
     @Override
+    public int worldMapRoom() {
+        return dependencies.location().worldMapRoom();
+    }
+
+    @Override
+    public void restoreWorldMapRoom(int room) {
+        dependencies.location().setWorldMapRoom(room);
+    }
+
+    @Override
     public Warp respawnPoint() {
         return dependencies.location().respawnPoint();
     }

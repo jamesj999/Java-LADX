@@ -74,6 +74,9 @@ class FileMenuBehaviorTest {
                     s.c.state().screens().fileMenu.activeController().snapshot().creation());
             s.press("a");
             assertEquals(
+                    RenderScreen.FILE_MENU, s.c.state().screens().currentScreen.renderScreen());
+            s.frames(39);
+            assertEquals(
                     RenderScreen.OVERWORLD, s.c.state().screens().currentScreen.renderScreen());
         }
     }
@@ -236,6 +239,9 @@ class FileMenuBehaviorTest {
                     name,
                     s.c.state().screens().fileMenu.activeController().snapshot().nameBytes());
             s.press("a");
+            assertEquals(
+                    RenderScreen.FILE_MENU, s.c.state().screens().currentScreen.renderScreen());
+            s.frames(39);
             assertEquals(
                     RenderScreen.OVERWORLD, s.c.state().screens().currentScreen.renderScreen());
             s.c.runtime().flows().router().startFileSelection();

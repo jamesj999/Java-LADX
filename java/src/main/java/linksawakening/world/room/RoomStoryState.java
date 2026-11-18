@@ -205,7 +205,22 @@ final class RoomStoryState implements RoomStory {
     }
 
     @Override
-    public void restoreFollowers(FollowingNpcState state, int spawnX, int spawnY) {
+    public linksawakening.state.FollowerFlags followerFlags() {
+        var state = followingNpcState();
+        return new linksawakening.state.FollowerFlags(
+                state.roosterFollowing(), state.ghostFollowingState(), state.marinFollowing(), state.db10());
+    }
+
+    @Override
+    public void restoreFollowers(linksawakening.state.FollowerFlags flags, int braceletLevel, int spawnX, int spawnY) {
+        var state = new FollowingNpcState(
+                flags.roosterFollowing(),
+                flags.ghostFollowingState(),
+                flags.marinFollowing(),
+                bowWowState() == 1,
+                dependencies.roomState().dungeonProgressFlags()[3] & 255,
+                braceletLevel,
+                flags.db10());
         rememberFollowingNpcState(state, spawnX, spawnY, 0, 0, 0);
         dependencies.followers().followingLinkPositionHistory().fill(spawnX, spawnY, 0, 0);
     }

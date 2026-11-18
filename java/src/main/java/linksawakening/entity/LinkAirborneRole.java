@@ -4,6 +4,14 @@ package linksawakening.entity;
 public interface LinkAirborneRole {
     void setPitWarpArrival(int z);
 
+    void setOverworldWarpHoleRoom(boolean enabled);
+
+    boolean warpHoleControlsLink();
+
+    boolean warpHoleReady();
+
+    void startWarpHoleLanding();
+
     int romMotionState();
 
     boolean isAirborne();

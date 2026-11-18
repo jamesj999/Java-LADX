@@ -45,6 +45,19 @@ public final class RoomTransitionCoordinator {
         }
         ActiveRoom room = loaded.room();
 
+        if (room.mapCategory() == Warp.CATEGORY_OVERWORLD
+                && Warp.isOverworldWarpHoleRoom(room.roomId())
+                && link.airborne().warpHoleReady()) {
+            Warp target = dependencies.roomTransitionController().overworldWarpHoleDestination(room.roomId());
+            link.position().setPixelPosition(target.javaPixelX(), target.javaPixelY());
+            transitionController.startFadeOut(() -> {
+                applyWarp(target, link);
+                link.airborne().startWarpHoleLanding();
+            });
+            return;
+        }
+        if (link.airborne().warpHoleControlsLink()) return;
+
         // $02:5136-5167 uses wWarp0, independent of the door warp positions.
         if (link.status().pitWarpPending() && room.hasWarps()) {
             link.status().consumePitWarp();
@@ -108,6 +121,7 @@ public final class RoomTransitionCoordinator {
     }
 
     void handleOverworldBoundary(RoomRuntime loaded, Link link) {
+        if (link.airborne().warpHoleControlsLink()) return;
 
         int previousX = link.position().pixelX();
         int previousY = link.position().pixelY();
@@ -136,7 +150,7 @@ public final class RoomTransitionCoordinator {
 
     /** Starts a pending Ocarina Mambo transition after entity playback ends. */
     boolean handlePendingManboTransition(RoomRuntime loaded, Link link) {
-        if (link == null || transitionController.isActive()) {
+        if (link == null || transitionController.isActive() || link.airborne().warpHoleControlsLink()) {
             return false;
         }
         Warp target = dependencies.roomTransitionController().consumeManboPondTransitionRequest(loaded);
@@ -149,7 +163,7 @@ public final class RoomTransitionCoordinator {
 
     /** Starts disableMovementInTransition after the Sirens Instrument effect. */
     boolean handlePendingInstrumentTransition(RoomRuntime loaded, Link link) {
-        if (link == null || transitionController.isActive()) {
+        if (link == null || transitionController.isActive() || link.airborne().warpHoleControlsLink()) {
             return false;
         }
         Warp target = dependencies.roomTransitionController().consumeInstrumentTransitionRequest(loaded);

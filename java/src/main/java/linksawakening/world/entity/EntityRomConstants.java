@@ -92,9 +92,9 @@ public final class EntityRomConstants {
     public static final int ENTITY_SLEEPY_TOADSTOOL = 0x3A;
     public static final int ENTITY_HIDING_SLIME_KEY = 0x3C;
     public static final int ENTITY_GRANDPA_ULRIRA = 0x77;
-    public static final int ENTITY_TELEPHONE = 0x80;
-    public static final int ENTITY_RICHARD = 0x95;
-    public static final int ENTITY_RICHARD_FROG = 0x96;
+    public static final int ENTITY_TELEPHONE = EntitySpriteHandlerCatalog.ENTITY_TELEPHONE;
+    public static final int ENTITY_RICHARD = EntitySpriteHandlerCatalog.ENTITY_RICHARD;
+    public static final int ENTITY_RICHARD_FROG = EntitySpriteHandlerCatalog.ENTITY_RICHARD_FROG;
     static final int ROOM_OW_POTHOLE_FIELD_SLIME_KEY = 0xC6;
     static final int GOLDEN_LEAVES_FINAL_COUNT = 0x06;
     static final int GOLDEN_LEAVES_FIVE_COUNT = 0x05;

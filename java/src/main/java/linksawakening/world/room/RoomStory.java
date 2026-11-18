@@ -23,7 +23,9 @@ public interface RoomStory {
     void setFollowingNpcState(
             FollowingNpcState state, int linkX, int linkY, int linkZ, int entityYOffset, int linkDirection);
 
-    void restoreFollowers(FollowingNpcState state, int spawnX, int spawnY);
+    void restoreFollowers(linksawakening.state.FollowerFlags flags, int braceletLevel, int spawnX, int spawnY);
+
+    linksawakening.state.FollowerFlags followerFlags();
 
     FollowingNpcState followingNpcState();
 

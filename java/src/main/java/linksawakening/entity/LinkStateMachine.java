@@ -74,11 +74,34 @@ final class LinkStateMachine {
 
     void update() {
         if (!beginFrame()) return;
+        if (advanceWarpHoleCharge()) return;
         if (!advanceSpecialMotion()) return;
         if (!advanceHazardMotion()) return;
         if (!prepareGroundMotion()) return;
         resolveSpeeds();
         applyMotion();
+    }
+
+    private static final int[] WARP_HOLE_DIRECTIONS = {0, 3, 1, 2};
+
+    private boolean advanceWarpHoleCharge() {
+        var airborne = linkAirborne.get();
+        var pit = airborne.pit();
+        if (pit.warpHoleCharge == 0) return false;
+        int frame = ++pit.warpHoleCharge;
+        status.motionState(LinkMotionState.TELEPORT);
+        linkAnimationState.get().movingThisFrame = false;
+        linkMotion.get().position().forcedSpeedPending(false);
+        if (frame == 65) {
+            linkServices.get().soundSink.play(linksawakening.gameplay.GameplaySoundEvent.OVERWORLD_WARP_HOLE);
+        }
+        if (frame >= 67) {
+            int worldFrame = linkGroundMotion.get().worldMotionFrame;
+            if (worldFrame < 0) worldFrame = status.frameCounter();
+            linkAnimationState.get().direction = Direction.fromRom(WARP_HOLE_DIRECTIONS[(worldFrame >>> 2) & 3]);
+            airborne.elevation().zSubPixels(Math.min(0x78, (frame - 66) * 4) << Link.SUB_PIXEL_SHIFT);
+        }
+        return true;
     }
 
     // $02:4409-4427 selects the second row only for Piece of Power.

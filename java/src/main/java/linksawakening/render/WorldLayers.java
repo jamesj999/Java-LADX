@@ -24,18 +24,18 @@ final class WorldLayers {
     private final BackgroundLayers background = new BackgroundLayers();
     private final ArrayList<PaletteLayer> paletteLayers = new ArrayList<>();
 
-    void fill(GameFrameState state, DialogWindowPainter painter) {
+    void fill(GameFrameState state, DialogWindowPainter painter, boolean showMenuObjects) {
         layers.clear();
         switch (state.screen()) {
             case OVERWORLD -> {
                 if (state.roomInputs.present) fillWorld(state);
-                else background.fill(layers, state);
+                else background.fill(layers, state, showMenuObjects);
             }
             case WORLD_MAP -> {
                 if (state.worldMap() != null) layers.add(state.worldMap());
                 return;
             }
-            case TITLE, CUTSCENE, FILE_MENU, FILE_SAVE -> background.fill(layers, state);
+            case TITLE, CUTSCENE, FILE_MENU, FILE_SAVE -> background.fill(layers, state, showMenuObjects);
         }
         addDialog(state, painter);
         if (state.screen() == RenderScreen.OVERWORLD

@@ -239,6 +239,20 @@ public final class EntityRoomInspection {
         return EntityRoomInspection.entityRoomQueriesSnapshot(this);
     }
 
+    int shallowWaterSlots() {
+        int mask = 0;
+        for (int slot = 0; slot < slots.size(); slot++) {
+            if (groundStatus(slot) == 2) mask |= 1 << slot;
+        }
+        return mask;
+    }
+
+    RoomEntity[] copyRoamingDisplayOam() {
+        RoomEntity[] poses = new RoomEntity[slots.size()];
+        for (int slot = 0; slot < poses.length; slot++) poses[slot] = slots.roamingDisplayPose(slot);
+        return poses;
+    }
+
     public int groundStatus(int slot) {
         if (slot < 0 || slot >= this.physicsTables.slotCount()) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
@@ -589,7 +603,9 @@ public final class EntityRoomInspection {
                 runtime.slotProperties.readPincerBodyOam(),
                 runtime.slotProperties.readWingedOctorokOam(),
                 runtime.physicsTables.copyFallingVisualYOffset(),
-                runtime.slotProperties.readBowWowChainOam());
+                runtime.slotProperties.readBowWowChainOam(),
+                runtime.shallowWaterSlots(),
+                runtime.copyRoamingDisplayOam());
     }
 
     static boolean entityRoomQueriesHasNoGroundInteractionOverride(EntityRoomInspection runtime, int slot) {

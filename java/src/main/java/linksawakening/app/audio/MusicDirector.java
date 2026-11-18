@@ -6,8 +6,8 @@ import linksawakening.audio.music.FrameMusicPlayer;
 import linksawakening.audio.music.GameplayMusicController;
 import linksawakening.audio.music.MusicTrackIds;
 import linksawakening.audio.music.RoomMusicContext;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.state.PlayerState;
-import linksawakening.world.entity.EntityRomConstants;
 import linksawakening.world.room.ActiveRoom;
 import linksawakening.world.room.RoomSession;
 import linksawakening.world.transition.TransitionController;
@@ -32,8 +32,8 @@ public final class MusicDirector implements MusicRequests {
         if (context.indoor() && context.swordLevel() != 0 && !context.scrollingTransition()) {
             for (var entity : room.entities().slots()) {
                 switch (entity.type()) {
-                    case EntityRomConstants.ENTITY_TELEPHONE -> residentTrack = MusicTrackIds.MUSIC_ULRIRA;
-                    case EntityRomConstants.ENTITY_RICHARD -> residentTrack = MusicTrackIds.MUSIC_RICHARD_HOUSE;
+                    case EntitySpriteHandlerCatalog.ENTITY_TELEPHONE -> residentTrack = MusicTrackIds.MUSIC_ULRIRA;
+                    case EntitySpriteHandlerCatalog.ENTITY_RICHARD -> residentTrack = MusicTrackIds.MUSIC_RICHARD_HOUSE;
                     default -> {}
                 }
             }

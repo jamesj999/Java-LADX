@@ -235,7 +235,7 @@ final class RoomSessionProjectilesTest {
             assertEquals(0x09, session.rooms().activeRoomOrNull().roomObjectsArea()[areaIndex]);
             assertEquals(0x09, session.rooms().activeRoomOrNull().renderValues()[areaIndex]);
         }
-        assertEquals(0x04, RoomDebugFixture.of(session).overworldRoomStatusForTest(0x97));
+        assertEquals(0x84, RoomDebugFixture.of(session).overworldRoomStatusForTest(0x97) & 0x84);
 
         session.rooms().loadOverworld(0x97);
         for (int location : skullLocations) {
@@ -253,7 +253,7 @@ final class RoomSessionProjectilesTest {
         boolean destroyed = false;
         for (int frame = 0; frame <= 140; frame++) {
             session.entities().tickEntities(frame, 0, 0);
-            if (RoomDebugFixture.of(session).overworldRoomStatusForTest(0x97) == 0x04) {
+            if ((RoomDebugFixture.of(session).overworldRoomStatusForTest(0x97) & 0x04) != 0) {
                 destroyed = true;
                 break;
             }

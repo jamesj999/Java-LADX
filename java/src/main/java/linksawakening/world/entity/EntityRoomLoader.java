@@ -9,14 +9,10 @@ import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
 import linksawakening.world.entity.motion.FloatingItemMotion;
 import linksawakening.world.entity.motion.WarpMotion;
+import linksawakening.world.transition.Warp;
 
 /** ROM-backed decoder for the four room entity pointer tables in bank $16. */
 public final class EntityRoomLoader {
-    private static boolean isOverworldWarpHoleRoom(int room) {
-        // These three entity markers trigger pit exits instead of drawing an orbit.
-        return room != 0xCF && room != 0xDE && room != 0xCE;
-    }
-
     public static final int MAX_ENTITIES = RoomEntity.SLOT_COUNT;
 
     private static final int ENTITY_STREAM_END = 0xFF;
@@ -139,7 +135,7 @@ public final class EntityRoomLoader {
                 int[] initializedPosition = applyInitialPositionTransform(table, roomId, type, x, y);
                 EntitySpriteDefinition spriteDefinition = table == RoomTable.OVERWORLD
                                 && type == WarpMotion.ENTITY_TYPE
-                                && isOverworldWarpHoleRoom(roomId)
+                                && Warp.isOverworldWarpHoleRoom(roomId)
                         ? spriteHandlers.forOverworldWarpHole()
                         : spriteHandlers.forEntityType(type, table, mapId);
                 int spriteVariant = initialSpriteVariant(

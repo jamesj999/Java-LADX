@@ -1,7 +1,7 @@
 package linksawakening.render;
 
-import static linksawakening.world.entity.EntityRomConstants.ENTITY_RICHARD;
-import static linksawakening.world.entity.EntityRomConstants.ENTITY_RICHARD_FROG;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_RICHARD;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_RICHARD_FROG;
 
 import linksawakening.dialog.DialogController;
 import linksawakening.entity.EntitySpriteDefinition;
@@ -134,6 +134,7 @@ final class EntityRenderLayer implements HardwareRenderLayer {
         EntitySpriteTileSnapshot tiles = entities.spriteTiles();
         EntitySpriteDefinition death = deathDefinition(entities, entity);
         boolean renderingDeath = death != null;
+        entity = entities.displayPose(entity);
         EntitySpriteDefinition definition = renderingDeath ? death : liveDefinition(entities, entity);
         int visualYOffset = entities.visualYOffset(entity.slot());
         if (entity.type() == ENTITY_RICHARD) {
@@ -192,6 +193,18 @@ final class EntityRenderLayer implements HardwareRenderLayer {
                         entry.rawY() + offset.y() - OAM_Y_SCREEN_ORIGIN,
                         false);
             }
+        }
+        if (entities.inShallowWater(entity.slot()) && entity.status() != EntityStatus.LIFTED) {
+            // Water follows the body in OAM, so draw it underneath.
+            int x = entity.x() + offset.x() - OAM_X_SCREEN_ORIGIN;
+            int y = entity.y()
+                    + offset.y()
+                    - OAM_Y_SCREEN_ORIGIN
+                    - entity.z()
+                    + visualYOffset
+                    + (entity.type() == ENTITY_BOMB ? 9 : 11);
+            painter.renderPackedOamSprite(context, palettes, null, 0x1C, 0, x, y, false);
+            painter.renderPackedOamSprite(context, palettes, null, 0x1C, 0x20, x + 8, y, false);
         }
         painter.renderingDeath = renderingDeath;
         try {

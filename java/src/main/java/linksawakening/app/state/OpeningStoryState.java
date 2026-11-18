@@ -33,7 +33,14 @@ public final class OpeningStoryState {
     }
 
     public void initialize() {
-        wakeUp = new MarinWakeUpMotion();
-        shield = new TarinShieldMotion();
+        initialize(0, 0);
+    }
+
+    public void initialize(int swordLevel, int shieldLevel) {
+        wakeUp = null;
+        if (swordLevel == 0) {
+            wakeUp = shieldLevel == 0 ? new MarinWakeUpMotion() : MarinWakeUpMotion.postWake(true);
+        }
+        shield = shieldLevel == 0 ? new TarinShieldMotion() : null;
     }
 }

@@ -99,6 +99,7 @@ public final class GameplaySoundEffectMap {
         put(effects, catalog, GameplaySoundEvent.OCARINA_MAMBO, SoundEffectNamespace.WAVE, 0x0B);
         put(effects, catalog, GameplaySoundEvent.OCARINA_FROG, SoundEffectNamespace.WAVE, 0x0A);
         put(effects, catalog, GameplaySoundEvent.OCARINA_NO_SONG, SoundEffectNamespace.WAVE, 0x15);
+        put(effects, catalog, GameplaySoundEvent.OVERWORLD_WARP_HOLE, SoundEffectNamespace.JINGLE, 0x25);
         put(effects, catalog, GameplaySoundEvent.MANBO_WARP, SoundEffectNamespace.JINGLE, 0x2C);
         put(effects, catalog, GameplaySoundEvent.RUPEE, SoundEffectNamespace.WAVE, 0x05);
         put(effects, catalog, GameplaySoundEvent.LOW_HEARTS, SoundEffectNamespace.WAVE, 0x04);

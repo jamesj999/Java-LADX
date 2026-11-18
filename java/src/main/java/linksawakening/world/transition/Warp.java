@@ -47,6 +47,10 @@ public final class Warp {
         return new Warp(category, destMap, destRoom, destX, destY, newTileLocation);
     }
 
+    public static boolean isOverworldWarpHoleRoom(int roomId) {
+        return roomId == 0x01 || roomId == 0x2C || roomId == 0x95 || roomId == 0xEC;
+    }
+
     public int category() {
         return category;
     }

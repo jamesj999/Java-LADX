@@ -85,6 +85,13 @@ public final class BackgroundSceneCatalog {
             RomSymbols.MenuFileSaveAttrmap.address(),
             RomSymbols.Data_021_75B6.bank(),
             RomSymbols.Data_021_75B6.address());
+    public static final BackgroundSceneSpec WORLD_MAP = new BackgroundSceneSpec(
+            RomSymbols.WorldMapTilemap.bank(),
+            RomSymbols.WorldMapTilemap.address(),
+            RomSymbols.WorldMapAttrmap.bank(),
+            RomSymbols.WorldMapAttrmap.address(),
+            RomSymbols.WorldMapPalette.bank(),
+            RomSymbols.WorldMapPalette.address());
 
     private BackgroundSceneCatalog() {}
 

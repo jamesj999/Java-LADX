@@ -231,6 +231,11 @@ final class RoomTransitionController implements RoomTransitions, RoomBoundaryOpe
         return dependencies.items().ocarinaAnimationPhase() == 0 ? 0x76 : 0x75;
     }
 
+    Warp overworldWarpHoleDestination(int sourceRoom) {
+        return new Warp(
+                Warp.CATEGORY_OVERWORLD, 0, dependencies.roomState().nextVisitedWarpHole(sourceRoom), 0x68, 0x70, 0x66);
+    }
+
     Warp consumeManboPondTransitionRequest(RoomRuntime loaded) {
         if (!dependencies.items().pendingManboTransition()) {
             return null;

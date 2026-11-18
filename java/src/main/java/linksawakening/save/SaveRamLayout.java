@@ -51,7 +51,7 @@ public final class SaveRamLayout {
     public static final int MAIN_TRADE_SEQUENCE_ITEM_OFFSET = 0x30E;
     // wSeashellsCount ($DB0F), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_SEASHELLS_OFFSET = 0x30F;
-    public static final int MAIN_MEDICINE_COUNT_OFFSET = 0x310;
+    public static final int MAIN_FOLLOWER_CONTEXT_OFFSET = 0x310;
     // wHasTailKey ($DB11), relative to wOverworldRoomStatus ($D800).
     public static final int MAIN_TAIL_KEY_OFFSET = 0x311;
     // wHasAnglerKey ($DB12), relative to wOverworldRoomStatus ($D800).

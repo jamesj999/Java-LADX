@@ -5,6 +5,10 @@ import linksawakening.world.transition.Warp;
 public interface RoomProgress {
     void onMapBoundaryWarp(Runnable callback);
 
+    int worldMapRoom();
+
+    void restoreWorldMapRoom(int room);
+
     Warp respawnPoint();
 
     int respawnIndoorRoom();

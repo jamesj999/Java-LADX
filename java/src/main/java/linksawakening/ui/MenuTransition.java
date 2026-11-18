@@ -7,6 +7,7 @@ public final class MenuTransition {
     private byte[] openingFrame;
     private byte[] roomFrame;
     private final int entryLoadFrames;
+    private final boolean enteredFromMenu;
     private int transitionFrame;
     private boolean closing;
 
@@ -15,20 +16,20 @@ public final class MenuTransition {
     private static final int RETURN_LOAD_FRAMES = 16;
 
     public MenuTransition(int entryLoadFrames) {
-        this(null, null, entryLoadFrames);
+        this(null, entryLoadFrames, false);
     }
 
     public MenuTransition enterAnotherMenu(int entryLoadFrames) {
-        return new MenuTransition(null, roomFrame, entryLoadFrames);
+        return new MenuTransition(roomFrame, entryLoadFrames, true);
     }
 
     public boolean menuAudioActive() {
-        return closing ? transitionFrame < FADE_FRAMES : transitionFrame >= FADE_FRAMES;
+        return closing ? transitionFrame < FADE_FRAMES : enteredFromMenu || transitionFrame >= FADE_FRAMES;
     }
 
-    private MenuTransition(byte[] openingFrame, byte[] returnFrame, int entryLoadFrames) {
-        this.openingFrame = openingFrame;
-        this.roomFrame = returnFrame == null ? openingFrame : returnFrame;
+    private MenuTransition(byte[] roomFrame, int entryLoadFrames, boolean enteredFromMenu) {
+        this.roomFrame = roomFrame;
+        this.enteredFromMenu = enteredFromMenu;
         this.entryLoadFrames = entryLoadFrames;
     }
 

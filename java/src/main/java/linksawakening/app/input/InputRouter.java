@@ -69,6 +69,11 @@ public final class InputRouter implements DebugScroll {
     }
 
     public void onKeyEvent(int key, int action) {
+        var fileLoad = state.screens().fileLoad;
+        if (fileLoad != null && fileLoad.blocksControl()) {
+            input.inputState().onKeyEvent(key, action);
+            return;
+        }
         // Desktop shortcut only: Escape never enters the Game Boy button state.
         if (key == KEY_ESCAPE) {
             if (action == PRESS) {
@@ -100,7 +105,7 @@ public final class InputRouter implements DebugScroll {
     }
 
     public void gameplayKey(int key, int action) {
-        if (player.link().status().isPassingOut()) return;
+        if (player.link().status().isPassingOut() || player.link().airborne().warpHoleControlsLink()) return;
         if (action != PRESS) return;
 
         if (world.roomSession().doors().tailCaveKeyholeSequenceActive()) {
@@ -300,6 +305,7 @@ public final class InputRouter implements DebugScroll {
 
     public boolean canPresentFileSave() {
         return !player.link().status().recoveryBlocksInput()
+                && !player.link().airborne().warpHoleControlsLink()
                 && !world.scrollController().isActive()
                 && !world.transitionController().isInputBlocked()
                 && !ui.inventoryController().shouldBlockOverworldInput()

@@ -5,8 +5,8 @@ import linksawakening.gpu.GPU;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomAddress;
 import linksawakening.scene.BackgroundScene;
+import linksawakening.scene.BackgroundSceneCatalog;
 import linksawakening.scene.BackgroundSceneLoader;
-import linksawakening.scene.BackgroundSceneSpec;
 
 /** Select map from bank $01, including the visited-room overlay and location inspector. */
 public final class WorldMapLayer implements HardwareRenderLayer {
@@ -22,10 +22,11 @@ public final class WorldMapLayer implements HardwareRenderLayer {
     private int iconRoom;
     private int iconIn;
     private int iconOut;
+    private boolean showObjects;
 
     public WorldMapLayer(Rom rom) {
         this.rom = rom;
-        scene = new BackgroundSceneLoader(rom).load(new BackgroundSceneSpec(0x08, 0x62E9, 0x24, 0x66E1, 0x21, 0x786E));
+        scene = new BackgroundSceneLoader(rom).load(BackgroundSceneCatalog.WORLD_MAP);
         tiles.loadWorldMapTiles(rom);
     }
 
@@ -95,7 +96,8 @@ public final class WorldMapLayer implements HardwareRenderLayer {
         return locationDialogIndex() == 0xA7 || cursor == 0x37 ? 1 : 0;
     }
 
-    public void configureDialog(DialogController controller) {
+    public void configurePresentation(DialogController controller, boolean showObjects) {
+        this.showObjects = showObjects;
         dialog.configure(controller, scene.palettes()[1], scene.objectPalettes(), frame);
     }
 
@@ -103,6 +105,7 @@ public final class WorldMapLayer implements HardwareRenderLayer {
     public void submit(HardwareFrame hardware, GPU ignored) {
         HardwareBackgroundRenderer.renderBackground(
                 hardware, tiles, scene.tilemap(), scene.attrmap(), scene.palettes(), 32, 32, 20, 18, 0, 0);
+        if (!showObjects) return;
         var context = RenderContext.indexed(tiles, hardware);
         int x = (cursor & 15) * 8 + 12;
         int y = (cursor >> 4) * 8 + 4;

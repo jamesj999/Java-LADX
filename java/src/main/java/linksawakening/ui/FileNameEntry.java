@@ -16,6 +16,7 @@ final class FileNameEntry {
     private int selectedCharacter;
 
     private int namePosition;
+    private int heldDirectionFrames;
 
     private int[] currentName = new int[NAME_LENGTH];
 
@@ -26,6 +27,7 @@ final class FileNameEntry {
     void reset() {
         selectedCharacter = 0;
         namePosition = 0;
+        heldDirectionFrames = 0;
         currentName = new int[NAME_LENGTH];
     }
 
@@ -49,18 +51,18 @@ final class FileNameEntry {
             sounds.play(GameplaySoundEvent.MENU_VALIDATE);
             return new FileMenuAction(FileMenuAction.Type.CREATE_FILE, selectedSlot, currentName);
         }
-        int previousCharacter = selectedCharacter;
-        if (inputState.wasPressed(inputConfig.leftKey())) {
-            selectedCharacter = (selectedCharacter + NAME_ENTRY_CHARACTER_COUNT - 1) % NAME_ENTRY_CHARACTER_COUNT;
-        } else if (inputState.wasPressed(inputConfig.rightKey())) {
-            selectedCharacter = (selectedCharacter + 1) % NAME_ENTRY_CHARACTER_COUNT;
-        } else if (inputState.wasPressed(inputConfig.upKey())) {
-            selectedCharacter = (selectedCharacter + NAME_ENTRY_CHARACTER_COUNT - 0x10) % NAME_ENTRY_CHARACTER_COUNT;
-        } else if (inputState.wasPressed(inputConfig.downKey())) {
-            selectedCharacter = (selectedCharacter + 0x10) % NAME_ENTRY_CHARACTER_COUNT;
+        int step = cursorStep(inputState::wasPressed, inputConfig);
+        int heldStep = cursorStep(inputState::isDown, inputConfig);
+        if (step != 0 || heldStep == 0) {
+            heldDirectionFrames = 0;
+        } else if (++heldDirectionFrames == 24) {
+            heldDirectionFrames = 21;
+            step = heldStep;
         }
-
-        if (selectedCharacter != previousCharacter) sounds.play(GameplaySoundEvent.MENU_MOVE);
+        if (step != 0) {
+            selectedCharacter = Math.floorMod(selectedCharacter + step, NAME_ENTRY_CHARACTER_COUNT);
+            sounds.play(GameplaySoundEvent.MENU_MOVE);
+        }
         if (inputState.wasPressed(inputConfig.bKey())) {
             sounds.play(GameplaySoundEvent.MENU_VALIDATE);
             namePosition = Math.max(0, namePosition - 1);
@@ -71,5 +73,13 @@ final class FileNameEntry {
         }
 
         return FileMenuAction.none(selectedSlot);
+    }
+
+    private static int cursorStep(java.util.function.IntPredicate pressed, InputConfig keys) {
+        if (pressed.test(keys.upKey())) return -0x10;
+        if (pressed.test(keys.downKey())) return 0x10;
+        if (pressed.test(keys.leftKey())) return -1;
+        if (pressed.test(keys.rightKey())) return 1;
+        return 0;
     }
 }

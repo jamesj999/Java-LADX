@@ -1,11 +1,10 @@
 package linksawakening.app.screen;
 
-import linksawakening.app.audio.SessionDialogSounds;
+import linksawakening.app.gameplay.interaction.DialogSoundRouting;
 import linksawakening.app.services.InputServices;
 import linksawakening.app.services.UiServices;
 import linksawakening.app.state.GameplaySounds;
 import linksawakening.dialog.DialogController;
-import linksawakening.gameplay.DialogSoundSink;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.SignpostDialogRef;
 import linksawakening.render.GameFrameState;
@@ -24,12 +23,20 @@ public final class WorldMapScreen implements Screen {
     private final InputServices input;
     private final UiServices ui;
     private final GameplaySounds sounds;
-    private final DialogController dialog = DialogController.forGameplay();
-    private final SessionDialogSounds dialogSounds;
+    private final DialogController dialog;
+    private final DialogSoundRouting dialogSounds;
     private final ScreenNavigator navigator;
     private final InputCompletion completion;
+    private final linksawakening.app.state.ScreenState screens;
+    private final SaveActions saves;
     private WorldMapLayer map;
     private int directionHeldFrames;
+
+    public record Navigation(
+            ScreenNavigator navigator,
+            InputCompletion completion,
+            linksawakening.app.state.ScreenState screens,
+            SaveActions saves) {}
 
     public WorldMapScreen(
             Rom rom,
@@ -37,30 +44,47 @@ public final class WorldMapScreen implements Screen {
             InputServices input,
             UiServices ui,
             GameplaySounds sounds,
-            DialogSoundSink dialogSoundSink,
-            ScreenNavigator navigator,
-            InputCompletion completion) {
+            DialogController dialog,
+            DialogSoundRouting dialogSounds,
+            Navigation navigation) {
         this.rom = rom;
         this.rooms = rooms;
         this.input = input;
         this.ui = ui;
         this.sounds = sounds;
-        this.dialogSounds = new SessionDialogSounds(dialog, dialogSoundSink);
-        this.navigator = navigator;
-        this.completion = completion;
+        this.dialog = dialog;
+        this.dialogSounds = dialogSounds;
+        this.navigator = navigation.navigator();
+        this.completion = navigation.completion();
+        this.screens = navigation.screens();
+        this.saves = navigation.saves();
     }
 
     public void open() {
         if (map == null) map = new WorldMapLayer(rom);
-        map.open(rooms.worldMapRoom(), rooms.dungeon().overworldRoomStatusSnapshot());
+        map.open(rooms.progress().worldMapRoom(), rooms.dungeon().overworldRoomStatusSnapshot());
         directionHeldFrames = 0;
+        screens.menuTransition = new linksawakening.ui.MenuTransition(9);
         navigator.show(ScreenKind.WORLD_MAP);
         completion.complete();
-        sounds.sink().play(GameplaySoundEvent.MENU_VALIDATE);
     }
 
     @Override
     public void tick() {
+        var transition = screens.menuTransition;
+        if (!transition.transitionFinished()) {
+            transition.tick();
+            if (transition.transitionFinished()) {
+                if (transition.returningToRoom()) {
+                    screens.menuTransition = null;
+                    navigator.show(ScreenKind.GAMEPLAY);
+                } else {
+                    sounds.sink().play(GameplaySoundEvent.MENU_VALIDATE);
+                }
+            }
+            completion.complete();
+            return;
+        }
         map.tick();
         var keys = input.inputConfig();
         var buttons = input.inputState();
@@ -70,9 +94,12 @@ public final class WorldMapScreen implements Screen {
             if (a || b) dialog.advance();
             dialog.tick();
             dialogSounds.route();
+        } else if (linksawakening.app.input.InputRouter.shouldEnterFileSave(
+                keys, buttons, keys.selectKey(), linksawakening.input.KeyCodes.PRESS)) {
+            saves.startFileSave();
         } else if (b || buttons.wasPressed(keys.selectKey())) {
-            navigator.show(ScreenKind.GAMEPLAY);
-        } else if (a) {
+            transition.close();
+        } else if (a && map.locationDialogIndex() >= 0) {
             var ref = new SignpostDialogRef(map.locationDialogTable(), map.locationDialogIndex());
             var position =
                     map.cursorRoom() < 0x70 ? DialogController.BoxPosition.BOTTOM : DialogController.BoxPosition.TOP;
@@ -117,7 +144,8 @@ public final class WorldMapScreen implements Screen {
 
     @Override
     public GameFrameState renderState(GameFrameState state) {
-        map.configureDialog(dialog);
+        var transition = screens.menuTransition;
+        map.configurePresentation(dialog, transition.transitionFinished() || transition.returningToRoom());
         return state.withWorldMap(map);
     }
 }

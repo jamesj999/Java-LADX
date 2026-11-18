@@ -338,6 +338,9 @@ final class RoomLoadCoordinator implements RoomRooms {
                 .rom(dependencies.romData())
                 .build();
         RoomRuntime loaded = new RoomRuntime(contents, runtime, dependencies.roomRuntimeServices());
+        if (active.mapCategory() == Warp.CATEGORY_OVERWORLD) {
+            dependencies.location().setWorldMapRoom(active.roomId());
+        }
         dependencies.installRoom().accept(loaded);
         configureRuntimeWorld(loaded);
         configureRuntimeInputs(loaded);

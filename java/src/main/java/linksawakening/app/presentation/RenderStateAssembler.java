@@ -23,6 +23,7 @@ public final class RenderStateAssembler {
     private final GameFrameSceneBuilder frameSceneBuilder = new GameFrameSceneBuilder();
     private final int[] greenObjectsSpritePalette = {0, 0, 0x0010A840, 0x00F8B888};
     private final RomServices rom;
+    private linksawakening.gpu.GPU saveMenuTiles;
     private final WorldServices world;
     private final PlayerServices player;
     private final UiServices ui;
@@ -58,15 +59,31 @@ public final class RenderStateAssembler {
                             state.clock().value());
         }
         byte[] buffer = visual.indexedDisplayBuffer();
-        Runnable draw = () -> frameSceneBuilder.build(currentGameFrameState()).drawTo(buffer, rom.gpu());
+        var gpu = rom.gpu();
+        if (currentRenderScreen() == RenderScreen.FILE_SAVE) {
+            if (saveMenuTiles == null) {
+                saveMenuTiles = new linksawakening.gpu.GPU();
+                saveMenuTiles.loadSaveMenuTiles(rom.romData());
+            }
+            gpu = saveMenuTiles;
+        }
+        var tiles = gpu;
+        var menu = state.screens().menuTransition;
+        boolean showMenuObjects = currentRenderScreen() != RenderScreen.FILE_SAVE
+                || menu == null
+                || menu.transitionFinished()
+                || menu.returningToRoom();
         var load = state.screens().fileLoad;
         if (load != null && load.beforeWorld() && !load.showSelection()) {
             java.util.Arrays.fill(buffer, (byte) 0xFF);
-        } else if (state.screens().menuTransition != null) {
-            state.screens().menuTransition.render(buffer, draw);
+        } else if (menu != null) {
+            menu.render(buffer, () -> frameSceneBuilder
+                    .build(currentGameFrameState(), showMenuObjects)
+                    .drawTo(buffer, tiles));
+        } else if (load != null && !load.beforeWorld()) {
+            frameSceneBuilder.build(currentGameFrameState()).drawWithFileLoadFade(buffer, rom.gpu(), load);
         } else {
-            draw.run();
-            if (load != null && !load.beforeWorld()) load.fadeRoom(buffer);
+            frameSceneBuilder.build(currentGameFrameState()).drawTo(buffer, tiles);
         }
     }
 

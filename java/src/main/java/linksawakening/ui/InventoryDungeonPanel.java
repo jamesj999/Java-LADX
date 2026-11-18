@@ -77,21 +77,6 @@ final class InventoryDungeonPanel implements InventoryGraphics.Dungeon {
         }
         int arrow = 0x6DCA + 2 * (mapId == 0xFF ? 15 : mapId);
         command(tilemap, read(1, arrow) | read(1, arrow + 1) << 8, 0, new int[] {0xA3});
-        // InventoryLoad1Handler: dungeon map, compass, beak, Nightmare Key, small keys.
-        int[] commands = bytes(0x20, 0x5994, 0x33);
-        for (int i = 0; i < 9; i++) {
-            int value = i >= 4 ? Byte.toUnsignedInt(items[i - 4]) : 0;
-            if (value == 0 || value == 255) {
-                int offset = read(0x20, 0x59C7 + i);
-                commands[offset] = commands[offset + 1] = 0x7F;
-                if (i == 2) commands[offset + 7] = commands[offset + 8] = 0x7F;
-            }
-        }
-        if (items[4] != 0) commands[0x31] = 0xB0 + Byte.toUnsignedInt(items[4]);
-        commands(tilemap, commands);
-        commands(attrs, bytes(0x20, 0x596A, 0x1F));
-        commands(attrs, bytes(0x20, 0x5989, 0x0B));
-        if (items[4] != 0) attrs[5 * 20 + 18] = attrs[6 * 20 + 18] = 1;
     }
 
     @Override

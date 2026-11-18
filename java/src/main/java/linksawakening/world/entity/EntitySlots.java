@@ -11,6 +11,32 @@ final class EntitySlots {
     private final EntityPhysicsTables physics = new EntityPhysicsTables();
     private final RoomEntity[] values;
     private final List<RoomEntity> view;
+    private RoomEntity[] roamingShadowOam = new RoomEntity[RoomEntity.SLOT_COUNT];
+    private RoomEntity[] roamingDisplayOam = new RoomEntity[RoomEntity.SLOT_COUNT];
+
+    void transferRoamingOam() {
+        RoomEntity[] previous = roamingDisplayOam;
+        roamingDisplayOam = roamingShadowOam;
+        roamingShadowOam = previous;
+        Arrays.fill(roamingShadowOam, null);
+    }
+
+    void captureRoamingOam(RoomEntity entity) {
+        if (entity.status() == EntityStatus.ACTIVE
+                && (entity.type() == EntityRomConstants.ENTITY_OCTOROK
+                        || entity.type() == EntityRomConstants.ENTITY_MOBLIN)) {
+            roamingShadowOam[entity.slot()] = entity;
+        }
+    }
+
+    RoomEntity roamingDisplayPose(int slot) {
+        return roamingDisplayOam[slot];
+    }
+
+    private void clearRoamingOam(int slot) {
+        roamingDisplayOam[slot] = null;
+        roamingShadowOam[slot] = null;
+    }
 
     EntitySlots(List<RoomEntity> initial) {
         values = initial.toArray(RoomEntity[]::new);
@@ -34,10 +60,13 @@ final class EntitySlots {
     }
 
     void replace(int slot, RoomEntity entity) {
-        values[slot] = Objects.requireNonNull(entity);
+        Objects.requireNonNull(entity);
+        if (values[slot].type() != entity.type() || !entity.loaded()) clearRoamingOam(slot);
+        values[slot] = entity;
     }
 
     void clear(int slot) {
+        clearRoamingOam(slot);
         values[slot] = RoomEntity.disabled(slot);
     }
 

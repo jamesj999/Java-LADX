@@ -32,9 +32,26 @@ final class SaveRoundTripTest {
             store.writeTarinFlag(0, 1);
             game.saveState().saveRamStore = store;
             game.flows().router().startFileSelection();
-            press(game, "a");
+            byte[] selection = game.headlessFrame();
+            press(game, "a"); // Launch frame 0 on press and frame 1 on release.
+            assertArrayEquals(selection, game.headlessFrame()); // Frame 2 still shows selection.
+            byte[] blank = game.headlessFrame();
+            byte[] white = new byte[blank.length];
+            java.util.Arrays.fill(white, (byte) 0xFF);
+            assertArrayEquals(white, blank); // Frame 3 starts the blank transfer.
+            for (int frame = 4; frame < 39; frame++) assertArrayEquals(white, game.headlessFrame());
+            assertEquals(
+                    RenderScreen.FILE_MENU, game.state().screens().currentScreen.renderScreen());
+            assertArrayEquals(white, game.headlessFrame()); // Room loaded at frame 39, palettes still white.
+            assertEquals(
+                    RenderScreen.OVERWORLD, game.state().screens().currentScreen.renderScreen());
             RoomSession room = game.services().world().roomSession();
-            for (int frame = 0; frame < 40; frame++) game.headlessFrame();
+            assertArrayEquals(white, game.headlessFrame()); // Frame 40 still has both palette floors at white.
+            org.junit.jupiter.api.Assertions.assertFalse(java.util.Arrays.equals(white, game.headlessFrame()));
+            var launch = game.state().screens().fileLoad;
+            assertEquals(0xDEDEDE, launch.backgroundColor(0));
+            assertEquals(0xFFFFFF, launch.objectColor(0)); // OBJ upload follows BG by one frame.
+            for (int frame = 42; frame <= 56; frame++) game.headlessFrame();
             assertEquals(0, room.rooms().mapCategory());
             assertEquals(0xA2, room.rooms().currentRoomId());
             game.headlessButton("down", true);
@@ -68,6 +85,33 @@ final class SaveRoundTripTest {
     @Test
     void gameOverSaveAndQuitFlushesGameplay(@TempDir Path directory) throws Exception {
         roundTrip(directory.resolve("azle.sav"), 1);
+    }
+
+    @Test
+    void gameOverContinueRestoresLiveProgressWithoutWritingSram(@TempDir Path directory) throws Exception {
+        try (GameSession game = new GameSession((pcm, rate) -> {})) {
+            game.initializeHeadlessNewGame();
+            Path path = directory.resolve("azle.sav");
+            SaveRamStore store = SaveRamStore.open(path);
+            store.createNewGame(0, new int[] {1, 0, 0, 0, 0});
+            store.flush();
+            byte[] original = java.nio.file.Files.readAllBytes(path);
+            game.saveState().saveRamStore = store;
+            game.state().screens().selectSaveSlot(0);
+            PlayerState player = game.services().player().playerState();
+            player.wallet().setRupees(237);
+            player.vitals().setHealth(0);
+
+            game.flows().saves().finishGameOver(2);
+
+            assertEquals(
+                    RenderScreen.OVERWORLD, game.state().screens().currentScreen.renderScreen());
+            assertEquals(237, player.wallet().rupees());
+            assertEquals(0x80, player.vitals().invincibilityCounter());
+            assertEquals(0xA3, game.services().world().roomSession().rooms().currentRoomId());
+            assertArrayEquals(original, java.nio.file.Files.readAllBytes(path));
+            assertEquals(0, store.readSlot(0).rupees());
+        }
     }
 
     @Test
@@ -110,6 +154,7 @@ final class SaveRoundTripTest {
             assertEquals(
                     RenderScreen.FILE_MENU, game.state().screens().currentScreen.renderScreen());
             press(game, "a");
+            for (int frame = 0; frame < 56; frame++) game.headlessFrame();
             assertEquals(
                     RenderScreen.OVERWORLD, game.state().screens().currentScreen.renderScreen());
             PlayerState player = game.services().player().playerState();
@@ -131,11 +176,21 @@ final class SaveRoundTripTest {
                 assertEquals(
                         RenderScreen.FILE_SAVE,
                         game.state().screens().currentScreen.renderScreen());
+                for (int frame = 0; frame < 42; frame++) game.headlessFrame();
                 press(game, "down");
                 press(game, "a");
             } else {
                 player.vitals().setHealth(0);
                 saves.finishGameOver(gameOverOption);
+            }
+            assertEquals(
+                    gameOverOption == 0 ? RenderScreen.OVERWORLD : RenderScreen.CUTSCENE,
+                    game.state().screens().currentScreen.renderScreen());
+            if (gameOverOption != 0) {
+                press(game, "start");
+                assertEquals(
+                        RenderScreen.CUTSCENE,
+                        game.state().screens().currentScreen.renderScreen());
             }
             SaveSlotState expected = store.readSlot(0);
             assertEquals(1, store.saveFilesMask());
@@ -150,6 +205,7 @@ final class SaveRoundTripTest {
                 relaunched.saveState().saveRamStore = reopened;
                 relaunched.flows().router().startFileSelection();
                 press(relaunched, "a");
+                for (int frame = 0; frame < 53; frame++) relaunched.headlessFrame();
                 assertEquals(
                         RenderScreen.OVERWORLD,
                         relaunched.state().screens().currentScreen.renderScreen());

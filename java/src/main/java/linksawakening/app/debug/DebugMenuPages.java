@@ -133,16 +133,7 @@ final class DebugMenuPages {
                 v -> p.ammunition().setHasToadstool(v != 0),
                 0,
                 1);
-        menu.add(
-                3,
-                "Medicine",
-                p.progression()::medicineCount,
-                v -> {
-                    p.progression().setMedicineCount(v);
-                    p.progression().setHasMedicine(v != 0);
-                },
-                0,
-                255);
+        menu.add(3, "Medicine", p.progression()::medicineCount, p.progression()::setMedicineCount, 0, 255);
         menu.add(
                 3,
                 "Tail key",

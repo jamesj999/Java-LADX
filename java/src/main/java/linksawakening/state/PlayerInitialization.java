@@ -57,9 +57,9 @@ public final class PlayerInitialization {
         ammunition.maxMagicPowder = clamp(maxMagicPowder, 0, 99);
         progression.deathCount = 0;
         progression.heartPieces = 0;
+        progression.photoCount = 0;
         progression.seashells = 0;
         progression.hasFlippers = false;
-        progression.hasMedicine = false;
         progression.tradeSequenceItem = 0;
         progression.medicineCount = 0;
         progression.tailKeyCount = 0;
@@ -107,7 +107,6 @@ public final class PlayerInitialization {
                 | OcarinaSong.MANBO_MAMBO.romValue()
                 | OcarinaSong.BALLAD_OF_THE_WIND_FISH.romValue());
         progression.setHasFlippers(true);
-        progression.setHasMedicine(true);
         progression.setMedicineCount(1);
         progression.setTailKeyCount(1);
         progression.setAnglerKeyCount(1);

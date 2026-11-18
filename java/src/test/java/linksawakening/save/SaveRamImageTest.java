@@ -385,9 +385,9 @@ final class SaveRamImageTest {
         }
         put(bytes, main, SaveRamLayout.MAIN_SEASHELLS_OFFSET, 0x17);
         put(bytes, main, SaveRamLayout.MAIN_FLIPPERS_OFFSET, 1);
-        put(bytes, main, SaveRamLayout.MAIN_MEDICINE_OFFSET, 1);
+        put(bytes, main, SaveRamLayout.MAIN_MEDICINE_OFFSET, 2);
         put(bytes, main, SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET, 0x0E);
-        put(bytes, main, SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET, 2);
+        put(bytes, main, SaveRamLayout.MAIN_FOLLOWER_CONTEXT_OFFSET, 0);
         put(bytes, main, SaveRamLayout.MAIN_TAIL_KEY_OFFSET, 1);
         put(bytes, main, SaveRamLayout.MAIN_ANGLER_KEY_OFFSET, 2);
         put(bytes, main, SaveRamLayout.MAIN_FACE_KEY_OFFSET, 3);
@@ -404,7 +404,7 @@ final class SaveRamImageTest {
         put(bytes, main, SaveRamLayout.MAIN_RUPEE_HIGH_OFFSET, 0x05);
         put(bytes, main, SaveRamLayout.MAIN_RUPEE_LOW_OFFSET, 0x09);
         put(bytes, main, SaveRamLayout.MAIN_POWER_BRACELET_OFFSET, 2);
-        put(bytes, main, SaveRamLayout.MAIN_MEDICINE_OFFSET, 1);
+        put(bytes, main, SaveRamLayout.MAIN_MEDICINE_OFFSET, 2);
         put(bytes, main, SaveRamLayout.MAIN_SPAWN_INDOOR_OFFSET, 1);
         put(bytes, main, SaveRamLayout.MAIN_SPAWN_MAP_ID_OFFSET, 0x10);
         put(bytes, main, SaveRamLayout.MAIN_SPAWN_MAP_ROOM_OFFSET, 0xA3);

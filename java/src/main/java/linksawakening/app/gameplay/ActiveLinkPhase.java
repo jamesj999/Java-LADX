@@ -76,6 +76,11 @@ public final class ActiveLinkPhase {
         configureRoomMotion();
         playerLink.motion().setGelClinging(this.rooms.entityState().gelClingingToLink(), this.clock.value());
         this.motion.capture(this.playerLink);
+        if (playerLink.airborne().warpHoleControlsLink()) {
+            motion.update(playerLink);
+            roomTransitionCoordinator.handleWarpAndIndoorBoundaries(playerLink);
+            return;
+        }
         boolean keyholeSequenceActive = this.rooms.doors().tailCaveKeyholeSequenceActive();
         if (keyholeSequenceActive) {
             this.playerLink.motion().blockNextRomMotionFrame();
@@ -103,6 +108,10 @@ public final class ActiveLinkPhase {
     private void configureRoomMotion() {
         {
             int roomId = this.rooms.rooms().currentRoomId();
+            playerLink
+                    .airborne()
+                    .setOverworldWarpHoleRoom(rooms.rooms().mapCategory() == Warp.CATEGORY_OVERWORLD
+                            && Warp.isOverworldWarpHoleRoom(roomId));
             playerLink.sideView().setSideScrolling(this.rooms.rooms().mapCategory() == Warp.CATEGORY_SIDESCROLL);
             // $02:6CB6's manual exits precede the normal recoil gate.
             boolean sideViewManualExit =

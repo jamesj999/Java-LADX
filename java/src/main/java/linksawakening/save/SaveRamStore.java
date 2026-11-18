@@ -13,8 +13,8 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 import linksawakening.app.debug.DebugLog;
+import linksawakening.state.FollowerFlags;
 import linksawakening.state.PlayerState;
-import linksawakening.world.entity.FollowingNpcState;
 
 /** Host persistence adapter for the source-shaped SRAM image. */
 public final class SaveRamStore {
@@ -61,6 +61,11 @@ public final class SaveRamStore {
 
     public static SaveRamStore inMemory() {
         return new SaveRamStore(null, SaveRamImage.empty());
+    }
+
+    /** Snapshot with no host file attached, for gameplay recovery without saving. */
+    public SaveRamStore detachedCopy() {
+        return new SaveRamStore(null, image());
     }
 
     /** Original wrong-sized image preserved during open, when present. */
@@ -126,7 +131,7 @@ public final class SaveRamStore {
         image.writeDungeonProgressFlags(slot, dungeonProgressFlags);
     }
 
-    public void writeFollowers(int slot, FollowingNpcState state) {
+    public void writeFollowers(int slot, FollowerFlags state) {
         image.writeFollowers(slot, state);
     }
 

@@ -82,7 +82,8 @@ public final class FileSaveController {
                 .attrmap(scene.attrmap())
                 .bgPalettes(scene.palettes())
                 .objectPalettes(scene.objectPalettes())
-                .sprites(List.of(new IntroSprite(SAVE_ARROW_TILE, SAVE_ARROW_OAM_X - 8, oamY - 8, 0, false, false)))
+                .sprites(
+                        List.of(new IntroSprite(SAVE_ARROW_TILE, SAVE_ARROW_OAM_X - 8, oamY - 16, 0, false, false, 16)))
                 .build();
     }
 }
