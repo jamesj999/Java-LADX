@@ -16,12 +16,15 @@ public final class DialogController {
     private String playerName = DEFAULT_PLAYER_NAME;
     private int pageStart;
     private int visibleCharactersOnPage;
-    private int visibleNonSpaceCharactersOnPage;
+    private int pageStartCharacterIndex;
+    private String revealText = "";
     private int revealTicks;
     private int dialogCooldown;
     private boolean active;
     private boolean waitingForPageAdvance;
     private boolean choicePrompt;
+    private int selectedChoiceIndex;
+    private int dialogFrame;
     private BoxPosition boxPosition = BoxPosition.BOTTOM;
     private final List<SoundEvent> soundEvents = new ArrayList<>();
 
@@ -43,7 +46,7 @@ public final class DialogController {
 
     public enum BoxPosition {
         TOP(8),
-        BOTTOM(96);
+        BOTTOM(80);
 
         private final int y;
 
@@ -85,12 +88,16 @@ public final class DialogController {
 
     private void open(String text, BoxPosition boxPosition, boolean preformatted) {
         ParsedText parsedText = parse(text == null ? "" : text);
-        this.text = preformatted ? formatPreformatted(parsedText.text()) : wrap(parsedText.text());
+        // ROM sound decisions use the source byte, including a name token before substitution.
+        revealText = preformatted ? formatPreformatted(parsedText.text()) : wrap(substituteNameTokens(parsedText.text()));
+        this.text = preformatted ? substituteNameTokens(revealText) : revealText;
         this.choicePrompt = false;
+        selectedChoiceIndex = 0;
+        dialogFrame = 0;
         this.boxPosition = boxPosition == null ? BoxPosition.BOTTOM : boxPosition;
         pageStart = 0;
         visibleCharactersOnPage = 0;
-        visibleNonSpaceCharactersOnPage = 0;
+        pageStartCharacterIndex = 0;
         revealTicks = 0;
         waitingForPageAdvance = false;
         soundEvents.clear();
@@ -98,7 +105,11 @@ public final class DialogController {
     }
 
     public void tick() {
-        if (!active || waitingForPageAdvance) {
+        if (!active) {
+            return;
+        }
+        dialogFrame++;
+        if (choicePrompt || waitingForPageAdvance) {
             return;
         }
         if (visibleCharactersOnPage >= currentPageLength()) {
@@ -116,14 +127,16 @@ public final class DialogController {
             enterChoicePrompt();
             return;
         }
-        visibleCharactersOnPage++;
-        if (!Character.isWhitespace(revealed)) {
-            visibleNonSpaceCharactersOnPage++;
-            if ((visibleNonSpaceCharactersOnPage & 0x01) == 1) {
-                soundEvents.add(SoundEvent.TEXT_PRINT);
-            }
+        if (revealed != ' ' && ((pageStartCharacterIndex + visibleCharactersOnPage) & 1) == 0) {
+            soundEvents.add(SoundEvent.TEXT_PRINT);
         }
+        visibleCharactersOnPage++;
         enterPageWaitIfNeeded();
+    }
+
+    /** The ROM reads A/B at page waits and choices, after printing the text. */
+    public void pressAdvanceButton() {
+        if (!isRevealingPage()) advance();
     }
 
     public void advance() {
@@ -135,12 +148,12 @@ public final class DialogController {
             return;
         }
         if (waitingForPageAdvance) {
+            pageStartCharacterIndex += currentPageLength();
             pageStart = nextPageStart();
             visibleCharactersOnPage = 0;
-            visibleNonSpaceCharactersOnPage = 0;
             revealTicks = 0;
             waitingForPageAdvance = false;
-        } else if (visibleCharactersOnPage < currentPageLength()) {
+        } else if (isRevealingPage()) {
             visibleCharactersOnPage = currentPageLength();
             enterPageWaitIfNeeded();
         } else if (isAtChoicePromptMarker()) {
@@ -154,12 +167,38 @@ public final class DialogController {
         return active;
     }
 
+    /** Bank 2 resumes resource updates in DIALOG_END and DIALOG_CHOICE. */
+    public boolean allowsResourceUpdates() {
+        return !active || choicePrompt || (!waitingForPageAdvance && !hasNextPage()
+            && visibleCharactersOnPage >= currentPageLength() && !isAtChoicePromptMarker());
+    }
+
     public boolean isWaitingForPageAdvance() {
         return waitingForPageAdvance;
     }
 
+    private boolean isRevealingPage() {
+        return active && !choicePrompt && visibleCharactersOnPage < currentPageLength();
+    }
+
     public boolean isChoicePrompt() {
         return choicePrompt;
+    }
+
+    /** Zero for the left option and one for the right. Retained until the next open. */
+    public int selectedChoiceIndex() {
+        return selectedChoiceIndex;
+    }
+
+    public void toggleChoiceSelection() {
+        if (choicePrompt) {
+            selectedChoiceIndex ^= 1;
+            soundEvents.add(SoundEvent.MOVE_SELECTION);
+        }
+    }
+
+    boolean isChoiceCursorVisible() {
+        return choicePrompt && (dialogFrame & 0x10) != 0;
     }
 
     public int dialogCooldown() {
@@ -250,7 +289,7 @@ public final class DialogController {
         int cell = 0;
         int end = pageEnd(start);
         for (int i = start; i < end; i++) {
-            char current = text.charAt(i);
+            char current = revealText.charAt(i);
             if (current == '\n') {
                 continue;
             }
@@ -385,7 +424,7 @@ public final class DialogController {
     private ParsedText parse(String rawText) {
         String normalized = normalizeAskMarkers(rawText);
         String terminated = stripAfterTerminator(normalized);
-        return new ParsedText(substituteNameTokens(terminated));
+        return new ParsedText(terminated);
     }
 
     private String substituteNameTokens(String value) {

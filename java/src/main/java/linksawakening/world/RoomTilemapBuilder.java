@@ -8,8 +8,6 @@ public final class RoomTilemapBuilder {
     private static final int MAP_COLOR_DUNGEON = 0xFF;
     private static final int MAP_HOUSE = 0x10;
     private static final int ROOM_CAMERA_SHOP = 0xB5;
-    private static final int MAP_INDOORS_B_START = 0x06;
-    private static final int MAP_INDOORS_B_END = 0x1A;
 
     private static final int INDOOR_OBJECT_TILEMAP_BANK = 0x08;
     private static final int INDOOR_OBJECT_TILEMAP_ADDR = 0x43B0;
@@ -20,7 +18,6 @@ public final class RoomTilemapBuilder {
     private static final int BG_ATTR_PTRS_INDOORS_A_BANK = 0x1A;
     private static final int BG_ATTR_PTRS_INDOORS_A_ADDR = 0x6076;
     private static final int BG_ATTR_PTRS_INDOORS_B_ADDR = 0x6276;
-    private static final int CAMERA_SHOP_ATTR_POINTER_OFFSET = 0x1FE;
     private static final int INDOORS_A_ATTRMAPS_BANK = 0x23;
     private static final int INDOORS_B_ATTRMAPS_BANK = 0x24;
 
@@ -116,6 +113,26 @@ public final class RoomTilemapBuilder {
         return new RoomTilemap(tileIds, tileAttrs, gbcOverlay, renderValues);
     }
 
+    /** The middle two tiles of each door row change before the collision objects do. */
+    void drawShutterFrame(ActiveRoom room, int direction, int location, boolean opening) {
+        int x = (location & 15) * 2 + (direction < 2 ? 1 : 0);
+        int y = (location >>> 4) * 2 + (direction < 2 ? 0 : 1);
+        int source = 4 * (direction + (opening ? 4 : 0));
+        int tiles = RomBank.romOffset(2, opening ? 0x59D4 : 0x5BC4);
+        int objects = RomBank.romOffset(0x1A, opening ? 0x6640 : 0x6688);
+        int quadrants = RomBank.romOffset(0x1A, opening ? 0x66A8 : 0x66F0);
+        int attributes = room.mapId() == MAP_COLOR_DUNGEON
+            ? RomBank.romOffset(COLOR_DUNGEON_OBJECT_ATTR_BANK, COLOR_DUNGEON_OBJECT_ATTR_ADDR)
+            : indoorObjectAttrOffset(room.mapId(), room.roomId());
+        for (int i = 0; i < 4; i++) {
+            int tile = (y + i / 2) * RoomConstants.ROOM_TILE_WIDTH + x + i % 2;
+            int object = Byte.toUnsignedInt(romData[objects + source + i]);
+            int quadrant = Byte.toUnsignedInt(romData[quadrants + source + i]);
+            room.tileIds()[tile] = Byte.toUnsignedInt(romData[tiles + source + i]);
+            room.tileAttrs()[tile] = attributes < 0 ? 0 : Byte.toUnsignedInt(romData[attributes + object * 4 + quadrant]);
+        }
+    }
+
     private int overworldObjectAttrOffset(int roomId) {
         int attrBankOffset = RomBank.romOffset(OVERWORLD_OBJ_ATTR_BANKS_BANK, OVERWORLD_OBJ_ATTR_BANKS_ADDR + roomId);
         int attrBank = Byte.toUnsignedInt(romData[attrBankOffset]);
@@ -127,22 +144,26 @@ public final class RoomTilemapBuilder {
     }
 
     private int indoorObjectAttrOffset(int mapId, int roomId) {
-        if (mapId == MAP_HOUSE && roomId == ROOM_CAMERA_SHOP) {
-            int pointer = RomBank.romOffset(BG_ATTR_PTRS_INDOORS_A_BANK,
-                BG_ATTR_PTRS_INDOORS_B_ADDR + CAMERA_SHOP_ATTR_POINTER_OFFSET);
-            return RomBank.romOffset(INDOORS_B_ATTRMAPS_BANK, readPointer(pointer));
+        // GetBGAttributesAddressForObject (1A:65B2) indexes by map, with
+        // room-specific overrides for interiors that share a map ID.
+        boolean dungeon = mapId <= 0x08;
+        int table = dungeon ? BG_ATTR_PTRS_INDOORS_A_ADDR : BG_ATTR_PTRS_INDOORS_B_ADDR;
+        int group = mapId;
+        if (mapId == 0x0A && roomId == 0xFD || mapId == 0x11 && (roomId == 0xC0 || roomId == 0xC1)) {
+            group = 0x0F;
+        } else if (mapId == 0x0F && roomId == 0xA0) {
+            group = 0;
+        } else if (mapId == 0x1F && (roomId == 0xEB || roomId == 0xEC)) {
+            group = 0x14;
+        } else if (mapId == MAP_HOUSE && roomId == 0xE9) {
+            group = 0x13;
+        } else if (mapId == MAP_HOUSE && roomId == ROOM_CAMERA_SHOP) {
+            group = 0xFF;
         }
-        boolean isIndoorsB = mapId >= MAP_INDOORS_B_START && mapId < MAP_INDOORS_B_END;
-        int attrPtrsAddr = isIndoorsB ? BG_ATTR_PTRS_INDOORS_B_ADDR : BG_ATTR_PTRS_INDOORS_A_ADDR;
-        int attrmapsBank = isIndoorsB ? INDOORS_B_ATTRMAPS_BANK : INDOORS_A_ATTRMAPS_BANK;
-        int indoorAttrPtrsOffset = RomBank.romOffset(BG_ATTR_PTRS_INDOORS_A_BANK, attrPtrsAddr + roomId * 2);
-        int attrPtrLo = Byte.toUnsignedInt(romData[indoorAttrPtrsOffset]);
-        int attrPtrHi = Byte.toUnsignedInt(romData[indoorAttrPtrsOffset + 1]);
-        int attrTableAddr = (attrPtrHi << 8) | attrPtrLo;
-        if (attrTableAddr == 0) {
-            return -1;
-        }
-        return RomBank.romOffset(attrmapsBank, attrTableAddr);
+        boolean southShrine = mapId == 0x16 && (roomId == 0x6F || roomId == 0x7F || roomId == 0x8F);
+        int bank = dungeon || southShrine ? INDOORS_A_ATTRMAPS_BANK : INDOORS_B_ATTRMAPS_BANK;
+        int address = readPointer(RomBank.romOffset(BG_ATTR_PTRS_INDOORS_A_BANK, table + group * 2));
+        return address == 0 ? -1 : RomBank.romOffset(bank, address);
     }
 
     private int readPointer(int offset) {

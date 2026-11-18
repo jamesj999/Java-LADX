@@ -1,6 +1,11 @@
 package linksawakening.dialog;
 
 import linksawakening.gpu.Framebuffer;
+import linksawakening.rom.RomBank;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.Arrays;
 
 public final class DialogRenderer {
 
@@ -15,22 +20,33 @@ public final class DialogRenderer {
     private static final int VISIBLE_LINES = 2;
     private static final int BOX_COLOR = 0x000000;
     private static final int TEXT_COLOR = 0xF8F8F8;
-    private static final DialogFont FONT = DialogFont.loadDefault();
+    private static final RomGraphics GRAPHICS = RomGraphics.load();
 
     private DialogRenderer() {
     }
 
     public static void render(byte[] buffer, DialogController dialog) {
+        render(buffer, dialog, BOX_COLOR, TEXT_COLOR);
+    }
+
+    public static void render(byte[] buffer, DialogController dialog, int[] palette) {
+        render(buffer, dialog, palette[3], palette[0]);
+    }
+
+    private static void render(byte[] buffer, DialogController dialog, int boxColor, int textColor) {
         if (buffer == null || dialog == null || !dialog.isActive()) {
             return;
         }
 
         int boxY = dialog.boxY();
-        fillRect(buffer, BOX_X, boxY, BOX_WIDTH, BOX_HEIGHT, BOX_COLOR);
-        drawText(buffer, dialog.visibleText(), TEXT_X, boxY + TEXT_Y_OFFSET);
+        fillRect(buffer, BOX_X, boxY, BOX_WIDTH, BOX_HEIGHT, boxColor);
+        drawText(buffer, dialog.visibleText(), TEXT_X, boxY + TEXT_Y_OFFSET, textColor);
+        if (dialog.isChoiceCursorVisible()) {
+            GRAPHICS.draw(buffer, dialog);
+        }
     }
 
-    private static void drawText(byte[] buffer, String text, int x, int y) {
+    private static void drawText(byte[] buffer, String text, int x, int y, int textColor) {
         int column = 0;
         int row = 0;
         for (int i = 0; i < text.length() && row < VISIBLE_LINES; i++) {
@@ -48,13 +64,14 @@ public final class DialogRenderer {
                 }
             }
             if (codepoint != ' ') {
-                drawGlyph(buffer, FONT.tileFor(codepoint), x + column * CELL_SIZE, y + row * LINE_HEIGHT);
+                drawGlyph(buffer, GRAPHICS.font().tileFor(codepoint), x + column * CELL_SIZE, y + row * LINE_HEIGHT,
+                    textColor);
             }
             column++;
         }
     }
 
-    private static void drawGlyph(byte[] buffer, byte[] tile, int x, int y) {
+    private static void drawGlyph(byte[] buffer, byte[] tile, int x, int y, int textColor) {
         for (int row = 0; row < CELL_SIZE; row++) {
             int low = Byte.toUnsignedInt(tile[row * 2]);
             int high = Byte.toUnsignedInt(tile[row * 2 + 1]);
@@ -62,7 +79,48 @@ public final class DialogRenderer {
                 int bit = 7 - col;
                 int color = ((high >> bit) & 1) << 1 | ((low >> bit) & 1);
                 if (color == 0) {
-                    putPixel(buffer, x + col, y + row, TEXT_COLOR);
+                    putPixel(buffer, x + col, y + row, textColor);
+                }
+            }
+        }
+    }
+
+    private record RomGraphics(DialogFont font, byte[] cursorTiles, int[] cursorPalette,
+                               int[] cursorX, int[] cursorY) {
+        static RomGraphics load() {
+            try (var stream = DialogRenderer.class.getResourceAsStream("/rom/azle.gbc")) {
+                if (stream == null) {
+                    throw new IllegalStateException("Missing classpath ROM resource /rom/azle.gbc");
+                }
+                byte[] rom = stream.readAllBytes();
+                // DrawDialogChoiceMarker uses OAM tile $3E and attributes $00.
+                // LoadBaseTiles copies this pair from the GBC LinkCharacterTiles sheet.
+                int tileOffset = RomBank.romOffset(0x2C, 0x43E0);
+                int positionOffset = RomBank.romOffset(0x17, 0x7DC8);
+                int[] y = {Byte.toUnsignedInt(rom[positionOffset]) - 16,
+                           Byte.toUnsignedInt(rom[positionOffset + 1]) - 16};
+                int[] x = {Byte.toUnsignedInt(rom[positionOffset + 2]) - 8,
+                           Byte.toUnsignedInt(rom[positionOffset + 3]) - 8};
+                return new RomGraphics(DialogFont.loadFromRom(rom),
+                    Arrays.copyOfRange(rom, tileOffset, tileOffset + 32),
+                    RomBank.loadPalettes(rom, 0x21, 0x5518, 1)[0], x, y);
+            } catch (IOException exception) {
+                throw new UncheckedIOException("Unable to read dialogue graphics from the ROM", exception);
+            }
+        }
+
+        void draw(byte[] buffer, DialogController dialog) {
+            int x = cursorX[dialog.selectedChoiceIndex()];
+            int y = cursorY[dialog.boxPosition() == DialogController.BoxPosition.TOP ? 0 : 1];
+            for (int row = 0; row < 16; row++) {
+                int low = Byte.toUnsignedInt(cursorTiles[row * 2]);
+                int high = Byte.toUnsignedInt(cursorTiles[row * 2 + 1]);
+                for (int col = 0; col < CELL_SIZE; col++) {
+                    int bit = 7 - col;
+                    int color = ((high >> bit) & 1) << 1 | ((low >> bit) & 1);
+                    if (color != 0) {
+                        putPixel(buffer, x + col, y + row, cursorPalette[color]);
+                    }
                 }
             }
         }

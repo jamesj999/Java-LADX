@@ -345,6 +345,10 @@ public final class RomTables {
         return entityOptions1[entityType];
     }
 
+    public static boolean isBossEntity(byte[] rom, int entityType) {
+        return (rom[romOffset(ENTITY_OPTIONS_BANK, ENTITY_OPTIONS_ADDR) + entityType] & 0x80) != 0;
+    }
+
     /** ROM {@code HitboxFlagsForEntity[entityType]}. */
     public int entityHitboxFlags(int entityType) {
         if (entityType < 0 || entityType >= entityHitboxFlags.length) {
@@ -407,13 +411,21 @@ public final class RomTables {
         return objectPhysicsFlag(PHYSICS_TABLE_OVERWORLD, objectId);
     }
 
-    /** Signed 8-bit speed increment for the given D-Pad mask (R<<3|L<<2|U<<1|D). */
+    /** Signed walking speed indexed by the directional mask and the Piece of Power row bit. */
     public int linkSpeedX(int joypadMask) {
-        return linkSpeedX[joypadMask & 0x0F];
+        return linkSpeedX(joypadMask, false);
+    }
+
+    public int linkSpeedX(int joypadMask, boolean poweredWalk) {
+        return linkSpeedX[(joypadMask & 0x0F) | (poweredWalk ? 0x10 : 0)];
     }
 
     public int linkSpeedY(int joypadMask) {
-        return linkSpeedY[joypadMask & 0x0F];
+        return linkSpeedY(joypadMask, false);
+    }
+
+    public int linkSpeedY(int joypadMask, boolean poweredWalk) {
+        return linkSpeedY[(joypadMask & 0x0F) | (poweredWalk ? 0x10 : 0)];
     }
 
     /** Signed swimming target speed from Data_002_4EF0/4F10 or its fast row. */

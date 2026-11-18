@@ -315,6 +315,10 @@ public class GPU {
      * tiles (unchanged from overworld) and toadstool/golden-leaf dynamic swaps.
      */
     public void loadIndoorTiles(byte[] romData, int mapId, int roomId) {
+        loadIndoorTiles(romData, mapId, roomId, false);
+    }
+
+    public void loadIndoorTiles(byte[] romData, int mapId, int roomId, boolean sideScrolling) {
         currentMapId = mapId;
         stageAnimatedScrollingTiles(romData, mapId, roomId);
         if (mapId == MAP_COLOR_DUNGEON) {
@@ -370,6 +374,14 @@ public class GPU {
             }
         }
 
+        // LoadRoomSpecificTiles selects a full side-view sheet at $9000.
+        if (sideScrolling) {
+            boolean secondSheet = mapId != 0x06 && (mapId < 0x0A || roomId == 0xE9);
+            loadTilesFromROM(romData, DUNGEONS_TILES_BANK | 0x20,
+                secondSheet ? 0x7800 : 0x7000, 0x80, 0x100);
+            return;
+        }
+
         // Per-room indoor tileset at VRAM tile 0x100 (vTiles2 base).
         // IndoorsTilesetsTable is actually two 256-byte halves: IndoorsA at
         // $6EB3 and IndoorsB at $6FB3 (bank0.asm:1031 — `inc h` for IndoorsB
@@ -380,7 +392,7 @@ public class GPU {
         int tilesetsTableOffset = bankAddrToRomOffset(INDOORS_TILESETS_TABLE_BANK,
             tilesetTableAddr + roomId);
         int tilesetId = Byte.toUnsignedInt(romData[tilesetsTableOffset]);
-        if (tilesetId != W_TILESET_KEEP && tilesetId != W_TILESET_NO_UPDATE) {
+        if (tilesetId != W_TILESET_NO_UPDATE) {
             int tilesetAddr = INDOOR_TILES_BASE_ADDR + (tilesetId * 0x100);
             loadTilesFromROM(romData, DUNGEONS_TILES_BANK | 0x20,
                 tilesetAddr, INDOOR_TILES_COUNT_PER_SET, INDOOR_TILES_VRAM_INDEX);
@@ -389,7 +401,10 @@ public class GPU {
         if (mapId == MAP_HOUSE && roomId == ROOM_CAMERA_SHOP) {
             loadTilesFromROM(romData, COLOR_DUNGEON_BG_BANK, CAMERA_SHOP_TILES_ADDR,
                 0x20, DUNGEON_ITEMS_VRAM_INDEX);
-            return;
+        } else if (mapId == 0) {
+            // Tail Cave has two GBC-specific background tiles from PhotoAlbumTiles.
+            loadTilesFromROM(romData, 0x35, 0x6E00, 1, 0x169);
+            loadTilesFromROM(romData, 0x35, 0x6E10, 1, 0x179);
         }
     }
 
@@ -568,6 +583,51 @@ public class GPU {
 
     public void loadMabeVillageTiles(byte[] romData) {
         loadTilesFromROM(romData, MABE_VILLAGE_TILES_BANK, MABE_VILLAGE_TILES_ADDR, MABE_VILLAGE_TILES_COUNT, 0x00);
+    }
+
+    public void loadWorldMapTiles(byte[] romData) {
+        loadBaseOverworldTiles(romData);
+        loadTilesFromROM(romData, 0x2C, 0x7800, 0x80, 0x0F0);
+        loadTilesFromROM(romData, 0x2C, 0x5000, 0x10, 0x020);
+    }
+
+    public void loadInventoryStatusTiles(byte[] romData) {
+        loadTilesFromROM(romData, 0x35, 0x4000, 0x40, 0x40);
+    }
+
+    public void loadDungeonMinimapTiles(byte[] romData) {
+        loadBaseOverworldTiles(romData);
+        // Indoor inventory icons at $8C00 followed by LoadDungeonMinimapTiles at $8D00.
+        loadTilesFromROM(romData, 0x32, 0x7D00, 0x30, 0x0C0);
+    }
+
+    public void loadInventoryQuestTiles(byte[] romData, int tradeItem, int leaves, boolean dungeon) {
+        loadBaseOverworldTiles(romData);
+        if (tradeItem >= 2 && tradeItem <= 14) {
+            loadTilesFromROM(romData, 0x2C, 0x4400 + (tradeItem - 2) * 0x40, 4, 0x9A);
+        }
+        if (dungeon) loadTilesFromROM(romData, 0x32, 0x7D00, 0x10, 0xC0);
+        else if (leaves >= 6) loadTilesFromROM(romData, 0x2C, 0x68E0, 2, 0xCA);
+    }
+
+    public void loadInventoryInstrumentTiles(byte[] romData) {
+        // The digits and placeholder come from LoadBaseTiles. CopySirenInstrumentTiles
+        // then loads eight four-tile blocks from the unadjusted bank into $8D00.
+        loadTilesFromROM(romData, 0x2C, 0x4B00, 0x10, 0x0B0);
+        loadTilesFromROM(romData, 0x2C, 0x57C0, 1, 0x17C);
+        loadTilesFromROM(romData, 0x0C, 0x4D00, 0x20, 0x0D0);
+    }
+
+    /** The toadstool temporarily replaces the two magic powder patterns at $88E0. */
+    public void updatePowderTiles(byte[] romData, boolean hasToadstool) {
+        int address = hasToadstool ? 0x68C0 : 0x48E0;
+        int source = romOffset(0x2C, address);
+        int destination = 0x8E * TILE_DATA_SIZE;
+        int size = 2 * TILE_DATA_SIZE;
+        if (!java.util.Arrays.equals(vram, destination, destination + size,
+                romData, source, source + size)) {
+            loadTilesFromROM(romData, 0x2C, address, 2, 0x8E);
+        }
     }
 
     public void loadInventoryTiles(byte[] romData) {

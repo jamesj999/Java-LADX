@@ -996,10 +996,19 @@ final class RoomEntityRuntimeTest {
         RoomEntityRuntime runtime = RoomEntityRuntime.from(initial);
         IntSupplier randomBytes = sequence(0x02, 0x03);
 
+        // The room-entry handler renders variant zero throughout the palette fade.
+        runtime.setTransitionSequenceCounter(3);
+        runtime.tick(0, 200, 32, randomBytes);
+        assertEquals(0, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(0, runtime.octorokTransitionCountdown(0));
+        runtime.setTransitionSequenceCounter(4);
+
         // State 0 pauses for ($10 + random & $0F) frames, then state 1
         // selects direction 3 (down) and the ROM's +8/16 fixed-point speed.
         runtime.tick(0, 200, 32, randomBytes);
         assertEquals(1, runtime.octorokState(0));
+        assertEquals(6, runtime.snapshot().slots().get(0).spriteVariant());
+        assertEquals(0, runtime.displayEntities(runtime.snapshot()).slots().get(0).spriteVariant());
         assertEquals(0x12, runtime.octorokTransitionCountdown(0));
         assertEquals(0, runtime.octorokSpeedY(0));
 
@@ -1274,7 +1283,7 @@ final class RoomEntityRuntimeTest {
             new RoomEntity(0, 0, 0x14, 0x50, 0x40, EntityStatus.ACTIVE,
                 pairDefinition(0x14, 8), 6)));
         runtime.setEntityMapIdForTest(0x15);
-        runtime.setTransitionSequenceCounterForTest(0x04);
+        runtime.setTransitionSequenceCounter(0x04);
 
         runtime.tick(0, 0xC0, 0x40, () -> 0);
         runtime.tick(1, 0x70, 0x40, () -> 0);
@@ -3963,9 +3972,8 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void ocarinaAnimationSpawnsAndAdvancesTheRomMusicalNoteEntity() {
-        byte[] rom = syntheticRom();
-        write(rom, 0x05, 0x7EF8, 0x0E, 0x13);
+    void ocarinaAnimationSpawnsAndAdvancesTheRomMusicalNoteEntity() throws IOException {
+        byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(rom);
         RoomEntityRuntime runtime = RoomEntityRuntime.from(
             snapshot(), true, null, catalog);
@@ -3980,14 +3988,14 @@ final class RoomEntityRuntimeTest {
         assertEquals(0x48, note.x());
         assertEquals(0x48, note.y());
         assertEquals(0x05, note.spriteDefinition().bank());
-        assertEquals(0x7EF8, note.spriteDefinition().address());
+        assertEquals(0x7EF6, note.spriteDefinition().address());
         assertEquals(0x40, runtime.musicalNoteInertiaForTest(note.slot()));
 
         runtime.tick(1, 0x40, 0x50, sequence(0x00));
 
         RoomEntity movedNote = runtime.snapshot().slots().get(note.slot());
-        assertEquals(0x4E, movedNote.x());
-        assertEquals(0x44, movedNote.y());
+        assertEquals(0x48, movedNote.x());
+        assertEquals(0x47, movedNote.y());
         assertEquals(0x3F, runtime.musicalNoteInertiaForTest(note.slot()));
     }
 
@@ -6267,7 +6275,7 @@ final class RoomEntityRuntimeTest {
     }
 
     @Test
-    void transitionPickupsRemainInTheHeldStateAfterCollection() {
+    void pieceOfPowerUnloadsWhenItsPresentationStarts() {
         EntitySpriteDefinition definition = pairDefinition(0x33, 2);
         RoomEntitySnapshot initial = snapshot(
             new RoomEntity(0, 0, 0x33, 24, 32, EntityStatus.ACTIVE, definition, 0));
@@ -6277,7 +6285,7 @@ final class RoomEntityRuntimeTest {
 
         assertNotNull(pickup);
         assertEquals(1, pickup.persistentClearMask());
-        assertEquals(EntityStatus.LIFTED, runtime.snapshot().slots().get(0).status());
+        assertEquals(EntityStatus.DISABLED, runtime.snapshot().slots().get(0).status());
         assertNull(runtime.collectIfNeeded(1, 24, 34, false, true));
     }
 

@@ -108,8 +108,8 @@ public final class ActiveRoom {
         return shutterDoorMask;
     }
 
-    void openShutterDoors() {
-        shutterDoorMask = 0;
+    void setShutterDoorMask(int mask) {
+        shutterDoorMask = mask;
     }
 
     public RoomEntitySnapshot entities() {
@@ -137,6 +137,10 @@ public final class ActiveRoom {
     }
 
     public RoomRenderSnapshot renderSnapshot() {
-        return new RoomRenderSnapshot(tileIds, tileAttrs, palettes, entities);
+        return renderSnapshot(entities);
+    }
+
+    RoomRenderSnapshot renderSnapshot(RoomEntitySnapshot display) {
+        return new RoomRenderSnapshot(tileIds, tileAttrs, palettes, display);
     }
 }

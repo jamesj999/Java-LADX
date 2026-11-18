@@ -8,12 +8,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 final class InventorySubscreenOverlayTest {
 
     @Test
-    void dynamicInventoryItemsApplyRomPaletteIndexes() {
+    void dynamicInventoryItemsApplyRomPaletteIndexes() throws Exception {
         int[] tilemap = new int[InventoryTilemapLoader.WIDTH * InventoryTilemapLoader.HEIGHT];
         int[] attrmap = new int[tilemap.length];
+        InventoryTilemapLoader loader;
+        try (var rom = getClass().getResourceAsStream("/rom/azle.gbc")) {
+            loader = InventoryTilemapLoader.loadFromRom(rom.readAllBytes());
+        }
         PlayerState player = new PlayerState();
 
-        InventorySubscreenOverlay.apply(tilemap, attrmap, player, 0, false);
+        InventorySubscreenOverlay.apply(tilemap, attrmap, player, 0, false, loader);
 
         assertEquals(0x88, tilemap[index(5, 6)]);
         assertEquals(0x89, tilemap[index(5, 7)]);

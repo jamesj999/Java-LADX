@@ -1,6 +1,8 @@
 package linksawakening.ui;
 
 import linksawakening.cutscene.IntroSprite;
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.scene.BackgroundScene;
@@ -12,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.IntPredicate;
 
 /**
  * Input/state model for the ROM-backed file-selection and New Game screens.
@@ -39,6 +42,12 @@ public final class FileMenuController {
         0x9925 - BG_MAP_BASE,
         0x9985 - BG_MAP_BASE
     };
+    private static final int FIRST_SAVE_HEART_OFFSET = 0xCB;
+    private static final int FIRST_SAVE_DEATH_COUNT_OFFSET = 0xE7;
+    private static final int SAVE_SLOT_ROW_STRIDE = 0x60;
+    private static final int HEARTS_PER_ROW = 7;
+    private static final int SAVE_HEART_TILE = 0xAE;
+    private static final int SAVE_DIGIT_ZERO_TILE = 0xB0;
     private static final int[] COPY_SOURCE_NAME_OFFSETS = {0xC4, 0x124, 0x184};
     private static final int[] COPY_TARGET_NAME_OFFSETS = {0xCD, 0x12D, 0x18D};
     private static final int QUIT_OK_OFFSET = 0x99E4 - BG_MAP_BASE;
@@ -50,6 +59,7 @@ public final class FileMenuController {
     private static final int DARK_BACKGROUND_TILE = 0x7E;
 
     private final Function<String, BackgroundScene> sceneProvider;
+    private final GameplaySoundSink soundSink;
     private final Map<String, BackgroundScene> sceneCache = new HashMap<>();
     private final int[] selectionCursorYPositions;
     private final int[] nameEntryCharacterTable;
@@ -59,6 +69,7 @@ public final class FileMenuController {
     private final int[] codepointToTileMap;
     private final int saveFilesMask;
     private final int[][] savedNames;
+    private final SlotStats[] slotStats;
 
     private int selectedSlot;
     private boolean commandRowArrowShifted;
@@ -67,17 +78,39 @@ public final class FileMenuController {
     private int targetSlot;
     private boolean confirmationOk;
     private int selectedCharacter;
+    private int heldDirectionFrames;
     private int namePosition;
     private int frameCounter;
     private int[] currentName = new int[NAME_LENGTH];
     private FileMenuFrameSnapshot snapshot;
 
+    public record SlotStats(int health, int maxHearts, int deathCount) {
+    }
+
     public FileMenuController(FileMenuRomData romData,
                               Function<String, BackgroundScene> sceneProvider,
                               int saveFilesMask,
                               int[][] savedNames) {
+        this(romData, sceneProvider, saveFilesMask, savedNames, GameplaySoundSink.none());
+    }
+
+    public FileMenuController(FileMenuRomData romData,
+                              Function<String, BackgroundScene> sceneProvider,
+                              int saveFilesMask,
+                              int[][] savedNames,
+                              GameplaySoundSink soundSink) {
+        this(romData, sceneProvider, saveFilesMask, savedNames, new SlotStats[3], soundSink);
+    }
+
+    public FileMenuController(FileMenuRomData romData,
+                              Function<String, BackgroundScene> sceneProvider,
+                              int saveFilesMask,
+                              int[][] savedNames,
+                              SlotStats[] slotStats,
+                              GameplaySoundSink soundSink) {
         Objects.requireNonNull(romData, "romData");
         this.sceneProvider = Objects.requireNonNull(sceneProvider, "sceneProvider");
+        this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
         this.selectionCursorYPositions = romData.selectionCursorYPositions();
         this.nameEntryCharacterTable = romData.nameEntryCharacterTable();
         this.nameCursorYPositions = romData.nameCursorYPositions();
@@ -86,6 +119,10 @@ public final class FileMenuController {
         this.codepointToTileMap = romData.codepointToTileMap();
         this.saveFilesMask = saveFilesMask & 0x07;
         this.savedNames = copySavedNames(savedNames);
+        if (slotStats.length != this.savedNames.length) {
+            throw new IllegalArgumentException("Expected one stats entry per save slot");
+        }
+        this.slotStats = slotStats.clone();
         refreshSnapshot();
     }
 
@@ -117,6 +154,8 @@ public final class FileMenuController {
 
     private FileMenuAction tickSelection(InputState inputState, InputConfig inputConfig) {
         int maximumSlot = hasSavedFile() ? 3 : 2;
+        int previousSlot = selectedSlot;
+        boolean previousArrowShift = commandRowArrowShifted;
         if (inputState.wasPressed(inputConfig.upKey())) {
             selectedSlot = selectedSlot == 0 ? maximumSlot : selectedSlot - 1;
         } else if (inputState.wasPressed(inputConfig.downKey())) {
@@ -130,8 +169,11 @@ public final class FileMenuController {
             }
         }
 
-        if (inputState.wasPressed(inputConfig.aKey())
-            || inputState.wasPressed(inputConfig.menuOpenKey())) {
+        if (selectedSlot != previousSlot || commandRowArrowShifted != previousArrowShift) {
+            soundSink.play(GameplaySoundEvent.MENU_MOVE);
+        }
+        if (activated(inputState, inputConfig)) {
+            soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
             if (selectedSlot < 3) {
                 int[] name = savedNames[selectedSlot];
                 if (hasStoredName(name)) {
@@ -139,6 +181,7 @@ public final class FileMenuController {
                 }
                 mode = Mode.CREATE;
                 selectedCharacter = 0;
+                heldDirectionFrames = 0;
                 namePosition = 0;
                 currentName = new int[NAME_LENGTH];
             } else {
@@ -159,6 +202,7 @@ public final class FileMenuController {
                 return returnToSelection();
             }
             if (hasStoredName(savedNames[selectedSlot])) {
+                soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
                 sourceSlot = selectedSlot;
                 confirmationOk = false;
                 mode = Mode.ERASE_CONFIRM;
@@ -179,6 +223,9 @@ public final class FileMenuController {
         }
         mode = Mode.SELECT;
         selectedSlot = 0;
+        if (confirmationOk) {
+            soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
+        }
         return confirmationOk
             ? new FileMenuAction(FileMenuAction.Type.ERASE_SLOT, sourceSlot, new int[0])
             : FileMenuAction.none(selectedSlot);
@@ -194,6 +241,7 @@ public final class FileMenuController {
                 return returnToSelection();
             }
             if (hasStoredName(savedNames[selectedSlot])) {
+                soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
                 sourceSlot = selectedSlot;
                 targetSlot = 0;
                 selectedSlot = targetSlot;
@@ -214,6 +262,7 @@ public final class FileMenuController {
             if (selectedSlot == 3) {
                 return returnToSelection();
             }
+            soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
             targetSlot = selectedSlot;
             confirmationOk = false;
             mode = Mode.COPY_CONFIRM;
@@ -233,16 +282,23 @@ public final class FileMenuController {
         }
         mode = Mode.SELECT;
         selectedSlot = 0;
+        if (confirmationOk) {
+            soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
+        }
         return confirmationOk
             ? new FileMenuAction(FileMenuAction.Type.COPY_SLOT, sourceSlot, targetSlot, new int[0])
             : FileMenuAction.none(selectedSlot);
     }
 
     private void moveFourRowCursor(InputState inputState, InputConfig inputConfig) {
+        int previousSlot = selectedSlot;
         if (inputState.wasPressed(inputConfig.upKey())) {
             selectedSlot = (selectedSlot + 3) & 3;
         } else if (inputState.wasPressed(inputConfig.downKey())) {
             selectedSlot = (selectedSlot + 1) & 3;
+        }
+        if (previousSlot != selectedSlot) {
+            soundSink.play(GameplaySoundEvent.MENU_MOVE);
         }
     }
 
@@ -250,6 +306,7 @@ public final class FileMenuController {
         if (inputState.wasPressed(inputConfig.leftKey())
             || inputState.wasPressed(inputConfig.rightKey())) {
             confirmationOk = !confirmationOk;
+            soundSink.play(GameplaySoundEvent.MENU_MOVE);
         }
     }
 
@@ -269,30 +326,51 @@ public final class FileMenuController {
     }
 
     private FileMenuAction tickCreation(InputState inputState, InputConfig inputConfig) {
-        if (inputState.wasPressed(inputConfig.leftKey())) {
-            selectedCharacter = (selectedCharacter + NAME_ENTRY_CHARACTER_COUNT - 1)
-                % NAME_ENTRY_CHARACTER_COUNT;
-        } else if (inputState.wasPressed(inputConfig.rightKey())) {
-            selectedCharacter = (selectedCharacter + 1) % NAME_ENTRY_CHARACTER_COUNT;
-        } else if (inputState.wasPressed(inputConfig.upKey())) {
-            selectedCharacter = (selectedCharacter + NAME_ENTRY_CHARACTER_COUNT - 0x10)
-                % NAME_ENTRY_CHARACTER_COUNT;
-        } else if (inputState.wasPressed(inputConfig.downKey())) {
-            selectedCharacter = (selectedCharacter + 0x10) % NAME_ENTRY_CHARACTER_COUNT;
+        if (inputState.wasPressed(inputConfig.menuOpenKey())) {
+            soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
+            FileMenuAction action = new FileMenuAction(FileMenuAction.Type.REGISTER_FILE,
+                selectedSlot, currentName);
+            returnToSelection();
+            return action;
         }
 
-        if (inputState.wasPressed(inputConfig.bKey())) {
+        int step = nameCursorStep(inputState::wasPressed, inputConfig);
+        if (step == 0) {
+            int heldStep = nameCursorStep(inputState::isDown, inputConfig);
+            if (heldStep == 0) {
+                heldDirectionFrames = 0;
+            } else if (++heldDirectionFrames == 0x18) {
+                // FileCreationInteractiveHandler repeats every three frames after the initial delay.
+                heldDirectionFrames = 0x15;
+                step = heldStep;
+            }
+        }
+        if (step != 0) {
+            selectedCharacter = Math.floorMod(selectedCharacter + step, NAME_ENTRY_CHARACTER_COUNT);
+            soundSink.play(GameplaySoundEvent.MENU_MOVE);
+        }
+
+        boolean backspace = inputState.wasPressed(inputConfig.bKey());
+        boolean insert = inputState.wasPressed(inputConfig.aKey());
+        if (backspace || insert) {
+            soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
+        }
+        if (backspace) {
             namePosition = Math.max(0, namePosition - 1);
-        } else if (inputState.wasPressed(inputConfig.aKey())) {
+        } else if (insert) {
             currentName[namePosition] = nameEntryCharacterTable[selectedCharacter];
             namePosition = Math.min(NAME_LENGTH - 1, namePosition + 1);
         }
 
-        if (inputState.wasPressed(inputConfig.menuOpenKey())) {
-            savedNames[selectedSlot] = currentName.clone();
-            return new FileMenuAction(FileMenuAction.Type.START_NEW_GAME, selectedSlot, currentName);
-        }
         return FileMenuAction.none(selectedSlot);
+    }
+
+    private static int nameCursorStep(IntPredicate pressed, InputConfig keys) {
+        if (pressed.test(keys.upKey())) return -0x10;
+        if (pressed.test(keys.downKey())) return 0x10;
+        if (pressed.test(keys.leftKey())) return -1;
+        if (pressed.test(keys.rightKey())) return 1;
+        return 0;
     }
 
     private void refreshSnapshot() {
@@ -326,6 +404,9 @@ public final class FileMenuController {
             for (int slot = 0; slot < 3; slot++) {
                 if ((saveFilesMask & (1 << slot)) != 0) {
                     drawSaveSlotName(tilemap, SAVE_NAME_OFFSETS[slot], savedNames[slot]);
+                    if (mode == Mode.SELECT && slotStats[slot] != null) {
+                        drawSaveSlotStats(tilemap, slot, slotStats[slot]);
+                    }
                 }
             }
         }
@@ -355,10 +436,10 @@ public final class FileMenuController {
         if (mode == Mode.CREATE) {
             int oamX = nameCursorXPositions[selectedCharacter] + 0x04;
             int oamY = nameCursorYPositions[selectedCharacter] + 0x0B;
-            sprites.add(spriteFromOam(0xE0, oamX, oamY, false));
+            sprites.add(sprite8x16FromOam(0xE0, oamX, oamY, false));
             if ((frameCounter & 0x10) != 0) {
                 int positionX = namePositionXPositions[namePosition] + 0x0C;
-                sprites.add(spriteFromOam(0xE0, positionX, 0x18 + 0x0B, false));
+                sprites.add(sprite8x16FromOam(0xE0, positionX, 0x18 + 0x0B, false));
             }
             return List.copyOf(sprites);
         }
@@ -387,12 +468,31 @@ public final class FileMenuController {
     private void addCursorPair(List<IntroSprite> sprites, int slot, int firstX, int secondX) {
         int y = selectionCursorYPositions[slot];
         boolean flipped = (frameCounter & 0x08) == 0;
-        sprites.add(spriteFromOam(flipped ? 0x02 : 0x00, firstX, y, flipped));
-        sprites.add(spriteFromOam(flipped ? 0x00 : 0x02, secondX, y, flipped));
+        sprites.add(sprite8x16FromOam(flipped ? 0x02 : 0x00, firstX, y, flipped));
+        sprites.add(sprite8x16FromOam(flipped ? 0x00 : 0x02, secondX, y, flipped));
     }
 
     private static IntroSprite spriteFromOam(int tile, int oamX, int oamY, boolean flipX) {
         return new IntroSprite(tile, oamX - 8, oamY - 8, 0, flipX, false);
+    }
+
+    private static IntroSprite sprite8x16FromOam(int tile, int oamX, int oamY, boolean flipX) {
+        return new IntroSprite(tile, oamX - 8, oamY - 16, 0, flipX, false, 16);
+    }
+
+    private static void drawSaveSlotStats(int[] tilemap, int slot, SlotStats stats) {
+        int heartOffset = FIRST_SAVE_HEART_OFFSET + slot * SAVE_SLOT_ROW_STRIDE;
+        int hearts = Math.clamp(stats.maxHearts(), 0, HEARTS_PER_ROW * 2);
+        for (int heart = 0; heart < hearts; heart++) {
+            writeTile(tilemap, heartOffset + (heart / HEARTS_PER_ROW) * 32 + heart % HEARTS_PER_ROW,
+                SAVE_HEART_TILE);
+        }
+
+        int deathOffset = FIRST_SAVE_DEATH_COUNT_OFFSET + slot * SAVE_SLOT_ROW_STRIDE;
+        int deaths = Math.clamp(stats.deathCount(), 0, 999);
+        writeTile(tilemap, deathOffset, SAVE_DIGIT_ZERO_TILE + deaths / 100);
+        writeTile(tilemap, deathOffset + 1, SAVE_DIGIT_ZERO_TILE + (deaths / 10) % 10);
+        writeTile(tilemap, deathOffset + 2, SAVE_DIGIT_ZERO_TILE + deaths % 10);
     }
 
     private void drawSaveSlotName(int[] tilemap, int targetOffset, int[] name) {

@@ -247,7 +247,7 @@ final class EnemyCombatEventConsumerTest {
     }
 
     @Test
-    void ignoresUnknownChannelsIdsAndNoSoundEvents() {
+    void ignoresUnknownIdsAndNoSoundEventsButPlaysLinkHurt() {
         RecordingSoundSink sounds = new RecordingSoundSink();
         List<EntityCombatEvent> events = List.of(
             new EntityCombatEvent(0, 0x0B, 0, true),
@@ -258,7 +258,7 @@ final class EnemyCombatEventConsumerTest {
 
         EnemyCombatEventConsumer.consume(events, sounds);
 
-        assertEquals(List.of(), sounds.events);
+        assertEquals(List.of(GameplaySoundEvent.LINK_HURT), sounds.events);
     }
 
     private static final class RecordingSoundSink implements GameplaySoundSink {

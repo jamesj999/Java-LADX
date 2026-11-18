@@ -127,20 +127,19 @@ final class MainTest {
     }
 
     @Test
-    void entityAnimationContinuesDuringInventoryMovementButNotWhileFullyOpen() {
-        assertTrue(Main.shouldTickRoomEntities(false, false, false, false));
-        assertTrue(Main.shouldTickRoomEntities(false, false, true, true));
-        assertFalse(Main.shouldTickRoomEntities(false, false, true, false));
-        assertFalse(Main.shouldTickRoomEntities(true, false, false, false));
-        assertFalse(Main.shouldTickRoomEntities(false, true, false, false));
+    void entityAnimationPausesWhileTheDxInventoryOwnsGameplay() {
+        assertTrue(Main.shouldTickRoomEntities(false, false, false));
+        assertFalse(Main.shouldTickRoomEntities(false, false, true));
+        assertFalse(Main.shouldTickRoomEntities(true, false, false));
+        assertFalse(Main.shouldTickRoomEntities(false, true, false));
     }
 
     @Test
     void gameplayFrameDecrementsDialogCooldownWhenEntityAnimationIsSkipped() {
         DialogController dialog = closedDialogWithCooldown();
-        assertFalse(Main.shouldTickRoomEntities(false, false, true, false));
-        assertFalse(Main.shouldTickRoomEntities(true, false, false, false));
-        assertFalse(Main.shouldTickRoomEntities(false, true, false, false));
+        assertFalse(Main.shouldTickRoomEntities(false, false, true));
+        assertFalse(Main.shouldTickRoomEntities(true, false, false));
+        assertFalse(Main.shouldTickRoomEntities(false, true, false));
 
         Main.completeGameplayFrame(dialog);
 

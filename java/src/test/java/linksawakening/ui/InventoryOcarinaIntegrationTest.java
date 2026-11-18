@@ -74,7 +74,7 @@ final class InventoryOcarinaIntegrationTest {
 
         assertFalse(menu.isOcarinaMenuVisible());
         assertFalse(menu.isFullyOpen());
-        for (int frame = 0; frame < 15; frame++) {
+        for (int frame = 0; frame < 51; frame++) {
             menu.tick();
         }
         assertTrue(menu.isFullyClosed());
@@ -89,7 +89,7 @@ final class InventoryOcarinaIntegrationTest {
 
     private static void openInventory(InventoryMenu menu) {
         menu.requestToggle();
-        for (int frame = 0; frame < 16; frame++) {
+        for (int frame = 0; frame < 53; frame++) {
             menu.tick();
         }
         assertTrue(menu.isFullyOpen());

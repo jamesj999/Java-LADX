@@ -44,10 +44,16 @@ public final class EntitySpriteDefinition {
     /** One handler-generated OAM entry with offsets relative to hActiveEntityPosX/Y. */
     public record DynamicSprite(int yOffset, int xOffset, OamAttribute oam,
                                 TileSource tileSource,
-                                boolean appliesEntityFlipAttribute) {
+                                boolean appliesEntityFlipAttribute,
+                                int entityFlipAttributeXor) {
         public enum TileSource {
             ENTITY_SHEETS,
             GPU
+        }
+
+        public DynamicSprite(int yOffset, int xOffset, OamAttribute oam,
+                             TileSource tileSource, boolean appliesEntityFlipAttribute) {
+            this(yOffset, xOffset, oam, tileSource, appliesEntityFlipAttribute, 0);
         }
 
         public DynamicSprite {

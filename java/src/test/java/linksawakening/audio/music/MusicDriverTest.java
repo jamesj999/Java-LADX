@@ -5,6 +5,7 @@ import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -413,6 +414,52 @@ final class MusicDriverTest {
         driver.tick60Hz();
 
         assertEquals(0, apu.readRegister(GameBoyApu.NR12));
+    }
+
+    @Test
+    void suppressedSquareKeepsScoreTimeAndLeavesOtherChannelsPlaying() {
+        byte[] rom = syntheticRomWithChannels(
+                new byte[] {(byte) 0x9D, (byte) 0xF0, 0, (byte) 0x80,
+                        (byte) 0xA0, 0x02, 0x01, 0x04, 0x00},
+                new byte[] {(byte) 0xA0, 0x02, 0x00});
+        GameBoyApu apu = new GameBoyApu(48_000);
+        MusicDriver driver = new MusicDriver(rom, apu);
+        MusicTrack track = new MusicTrack(1, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000));
+        apu.writeRegister(GameBoyApu.NR52, 0x80);
+        apu.writeRegister(GameBoyApu.NR51, 0x5A);
+        apu.writeRegister(GameBoyApu.NR12, 0x98);
+        apu.writeRegister(GameBoyApu.NR13, 0x77);
+
+        driver.startShared(track, 1);
+        driver.tick60Hz(1);
+        assertEquals(0x2C, apu.readRegister(GameBoyApu.NR23));
+        driver.tick60Hz(1);
+        assertEquals(0x98, apu.readRegister(GameBoyApu.NR12));
+        assertEquals(0x77, apu.readRegister(GameBoyApu.NR13));
+
+        driver.tick60Hz(0);
+        assertEquals(0xF0, apu.readRegister(GameBoyApu.NR12));
+        assertEquals(0x9C, apu.readRegister(GameBoyApu.NR13));
+
+        driver.stopShared(1);
+        assertEquals(0xF0, apu.readRegister(GameBoyApu.NR12));
+        assertEquals(0x5A, apu.readRegister(GameBoyApu.NR51));
+        assertFalse(driver.isPlaying());
+    }
+
+    @Test
+    void noiseOwnershipCancelsMusicFfFollowUp() {
+        byte[] rom = syntheticRomWithChannel4(new byte[] {(byte) 0xA5, (byte) 0xFF, 0x00});
+        GameBoyApu apu = new GameBoyApu(48_000);
+        MusicDriver driver = new MusicDriver(rom, apu);
+        driver.start(new MusicTrack(1, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
+
+        driver.tick60Hz();
+        apu.writeRegister(GameBoyApu.NR42, 0xF1);
+        driver.tick60Hz(8);
+        driver.tick60Hz(0);
+
+        assertEquals(0xF1, apu.readRegister(GameBoyApu.NR42));
     }
 
     private static byte[] syntheticRomWithOneChannel(byte[] definition) {

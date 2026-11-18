@@ -11,6 +11,26 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class DialogControllerTest {
 
     @Test
+    void resourcesResumeAtTheEndOfDialogOrWhileWaitingForAChoice() {
+        DialogController dialog = new DialogController(16);
+        dialog.openPreformatted("One\nTwo\nThree");
+        assertFalse(dialog.allowsResourceUpdates());
+        dialog.advance();
+        assertTrue(dialog.isWaitingForPageAdvance());
+        assertFalse(dialog.allowsResourceUpdates());
+        dialog.advance();
+        dialog.advance();
+        assertTrue(dialog.allowsResourceUpdates());
+
+        dialog.openPreformatted("Go?<ask>");
+        dialog.advance();
+        assertFalse(dialog.allowsResourceUpdates());
+        dialog.advance();
+        assertTrue(dialog.isChoicePrompt());
+        assertTrue(dialog.allowsResourceUpdates());
+    }
+
+    @Test
     void revealsOneVisibleCharacterEveryTwoTicks() {
         DialogController dialog = new DialogController(16);
 
@@ -58,11 +78,11 @@ final class DialogControllerTest {
 
         dialog.tick();
         dialog.tick();
-        assertEquals(List.of(), dialog.consumeSoundEvents());
+        assertEquals(List.of(DialogController.SoundEvent.TEXT_PRINT), dialog.consumeSoundEvents());
     }
 
     @Test
-    void textPrintCadenceIgnoresSpacesWhenCountingVisibleCharacters() {
+    void textPrintSkipsSpacesButCountsTheirRomCharacterIndices() {
         DialogController dialog = new DialogController(16);
 
         dialog.open("AB CD");
@@ -81,6 +101,10 @@ final class DialogControllerTest {
 
         revealNextCharacter(dialog);
         assertEquals("AB C", dialog.visibleText());
+        assertEquals(List.of(), dialog.consumeSoundEvents());
+
+        revealNextCharacter(dialog);
+        assertEquals("AB CD", dialog.visibleText());
         assertEquals(List.of(DialogController.SoundEvent.TEXT_PRINT), dialog.consumeSoundEvents());
     }
 
@@ -187,7 +211,7 @@ final class DialogControllerTest {
         dialog.openForLinkY("Hi", 0x47);
 
         assertEquals(DialogController.BoxPosition.BOTTOM, dialog.boxPosition());
-        assertEquals(96, dialog.boxY());
+        assertEquals(80, dialog.boxY());
     }
 
     @Test

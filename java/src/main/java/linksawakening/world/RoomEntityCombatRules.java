@@ -461,6 +461,7 @@ public final class RoomEntityCombatRules {
     }
 
     private static int hitboxHeight(int type) {
+        if (type == ENTITY_GRANDPA_ULRIRA) return 0x0A;
         if ((type & 0xFF) == ENTITY_WITCH) {
             return 0x0E;
         }
@@ -500,6 +501,7 @@ public final class RoomEntityCombatRules {
     }
 
     private static int hitboxY(int type) {
+        if (type == ENTITY_GRANDPA_ULRIRA) return 0x08;
         if ((type & 0xFF) == ENTITY_WITCH) {
             return 0x0C;
         }

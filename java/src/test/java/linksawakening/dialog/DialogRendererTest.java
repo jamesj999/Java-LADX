@@ -38,7 +38,7 @@ final class DialogRendererTest {
         assertRgb(buffer, BOX_X + BOX_WIDTH, 8, SENTINEL);
         assertRgb(buffer, BOX_X, 8 - 1, SENTINEL);
         assertRgb(buffer, BOX_X, 8 + BOX_HEIGHT, SENTINEL);
-        assertRgb(buffer, BOX_X, 96, SENTINEL);
+        assertRgb(buffer, BOX_X, 80, SENTINEL);
     }
 
     @Test
@@ -50,12 +50,12 @@ final class DialogRendererTest {
 
         DialogRenderer.render(buffer, dialog);
 
-        assertRgb(buffer, BOX_X, 96, BLACK);
-        assertRgb(buffer, BOX_X + BOX_WIDTH - 1, 96 + BOX_HEIGHT - 1, BLACK);
-        assertRgb(buffer, BOX_X - 1, 96, SENTINEL);
-        assertRgb(buffer, BOX_X + BOX_WIDTH, 96, SENTINEL);
-        assertRgb(buffer, BOX_X, 96 - 1, SENTINEL);
-        assertRgb(buffer, BOX_X, 96 + BOX_HEIGHT, SENTINEL);
+        assertRgb(buffer, BOX_X, 80, BLACK);
+        assertRgb(buffer, BOX_X + BOX_WIDTH - 1, 80 + BOX_HEIGHT - 1, BLACK);
+        assertRgb(buffer, BOX_X - 1, 80, SENTINEL);
+        assertRgb(buffer, BOX_X + BOX_WIDTH, 80, SENTINEL);
+        assertRgb(buffer, BOX_X, 80 - 1, SENTINEL);
+        assertRgb(buffer, BOX_X, 80 + BOX_HEIGHT, SENTINEL);
         assertRgb(buffer, BOX_X, 8, SENTINEL);
     }
 
@@ -69,6 +69,20 @@ final class DialogRendererTest {
         DialogRenderer.render(buffer, dialog);
 
         assertRenderedGlyph(buffer, 'A', TEXT_X, 8 + TEXT_Y_OFFSET);
+    }
+
+    @Test
+    void gameplayPaletteColorsTheBoxAndGlyph() throws IOException {
+        byte[] buffer = sentinelBuffer();
+        DialogController dialog = new DialogController(16);
+        dialog.open("A");
+        dialog.advance();
+        int[] palette = { 0xFFFF8B, 0, 0, 0x181818 };
+
+        DialogRenderer.render(buffer, dialog, palette);
+
+        assertRgb(buffer, BOX_X, 80, palette[3]);
+        assertRenderedGlyph(buffer, 'A', TEXT_X, 80 + TEXT_Y_OFFSET, palette[0], palette[3]);
     }
 
     @Test
@@ -98,7 +112,40 @@ final class DialogRendererTest {
         assertRgb(buffer, TEXT_X, 8 + TEXT_Y_OFFSET + TEXT_ROW_STRIDE, BLACK);
     }
 
+    @Test
+    void drawsBlinkingRomCursorAtBothChoicesAndBoxPositions() {
+        for (DialogController.BoxPosition position : DialogController.BoxPosition.values()) {
+            DialogController dialog = new DialogController(16);
+            dialog.openPreformatted("Choose\n    Okay No Way<ask>", position);
+            dialog.advance();
+            dialog.advance();
+            byte[] buffer = sentinelBuffer();
+            int y = position == DialogController.BoxPosition.TOP ? 32 : 104;
+
+            DialogRenderer.render(buffer, dialog);
+            assertRgb(buffer, 42, y + 2, BLACK);
+
+            for (int frame = 0; frame < 16; frame++) {
+                dialog.tick();
+            }
+            DialogRenderer.render(buffer, dialog);
+            // Tile $3E uses OBJ palette 0 color 2 at row 2, column 2.
+            assertRgb(buffer, 42, y + 2, 0x10AC41);
+            assertRgb(buffer, 82, y + 2, BLACK);
+
+            dialog.toggleChoiceSelection();
+            DialogRenderer.render(buffer, dialog);
+            assertRgb(buffer, 42, y + 2, BLACK);
+            assertRgb(buffer, 82, y + 2, 0x10AC41);
+        }
+    }
+
     private static void assertRenderedGlyph(byte[] buffer, char codepoint, int x, int y) throws IOException {
+        assertRenderedGlyph(buffer, codepoint, x, y, WHITE, BLACK);
+    }
+
+    private static void assertRenderedGlyph(byte[] buffer, char codepoint, int x, int y,
+                                            int textColor, int boxColor) throws IOException {
         byte[] tile = fontTileFor(codepoint);
         for (int row = 0; row < 8; row++) {
             int low = Byte.toUnsignedInt(tile[row * 2]);
@@ -106,7 +153,7 @@ final class DialogRendererTest {
             for (int col = 0; col < 8; col++) {
                 int bit = 7 - col;
                 int color = ((high >> bit) & 1) << 1 | ((low >> bit) & 1);
-                assertRgb(buffer, x + col, y + row, color == 0 ? WHITE : BLACK);
+                assertRgb(buffer, x + col, y + row, color == 0 ? textColor : boxColor);
             }
         }
     }

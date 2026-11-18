@@ -70,40 +70,13 @@ public final class RoomPaletteLoader {
 
     public int[][] loadIndoor(int mapId, int roomId, int[][] fallbackPalettes,
                               int tarinFlag, int shieldLevel) {
-        if (mapId == MAP_COLOR_DUNGEON) {
-            return loadPaletteBlock(RomBank.romOffset(
-                COLOR_DUNGEON_PALETTE_BANK, COLOR_DUNGEON_PALETTE_ADDR));
-        }
-        if (mapId < INDOOR_PALETTE_MAPS_BASE_MAP) {
-            return fallbackPalettes;
-        }
-        if (mapId == 0x10 && roomId == 0xA3
-            && usesMarinHouseSpecialPalette(tarinFlag, shieldLevel)) {
-            return loadPaletteBlock(RomBank.romOffset(INTERIOR_PALETTES_BANK,
-                marinHousePaletteAddress(tarinFlag)));
-        }
+        return loadIndoor(mapId, roomId, fallbackPalettes, false, tarinFlag, shieldLevel);
+    }
 
-        int mapsEntryOffset = RomBank.romOffset(INDOOR_PALETTE_MAPS_BANK,
-            INDOOR_PALETTE_MAPS_ADDR + (mapId - INDOOR_PALETTE_MAPS_BASE_MAP) * 2);
-        int mapPtrLo = Byte.toUnsignedInt(romData[mapsEntryOffset]);
-        int mapPtrHi = Byte.toUnsignedInt(romData[mapsEntryOffset + 1]);
-        int mapPtr = (mapPtrHi << 8) | mapPtrLo;
-        if (mapPtr == 0) {
-            return fallbackPalettes;
-        }
-
-        int palIdxOffset = RomBank.romOffset(INDOOR_PALETTE_MAPS_BANK, mapPtr + roomId);
-        int palIdx = Byte.toUnsignedInt(romData[palIdxOffset]);
-
-        int interiorPtrOffset = RomBank.romOffset(INTERIOR_PALETTES_BANK, INTERIOR_PALETTES_ADDR + palIdx * 2);
-        int interiorPtrLo = Byte.toUnsignedInt(romData[interiorPtrOffset]);
-        int interiorPtrHi = Byte.toUnsignedInt(romData[interiorPtrOffset + 1]);
-        int interiorPtr = (interiorPtrHi << 8) | interiorPtrLo;
-        if (interiorPtr == 0) {
-            return fallbackPalettes;
-        }
-
-        return loadPaletteBlock(RomBank.romOffset(INTERIOR_PALETTES_BANK, interiorPtr));
+    public int[][] loadIndoor(int mapId, int roomId, int[][] fallbackPalettes,
+                              boolean sideScrolling, int tarinFlag, int shieldLevel) {
+        int offset = indoorPaletteOffset(mapId, roomId, sideScrolling, tarinFlag, shieldLevel);
+        return offset < 0 ? fallbackPalettes : loadPaletteBlock(offset);
     }
 
     public static boolean isIndoorMapB(int mapId) {
@@ -150,6 +123,18 @@ public final class RoomPaletteLoader {
                 marinHousePaletteAddress(tarinFlag));
         }
         if (mapId >= 0 && mapId <= LAST_DUNGEON_PALETTE_MAP) {
+            // Direct dungeon entry (21:5185) selects a full palette block by room.
+            int overrides = RomBank.romOffset(0x21, 0x523A);
+            for (int entry = 0; entry < 0x2D; entry++) {
+                int record = overrides + entry * 4;
+                if (Byte.toUnsignedInt(romData[record]) == mapId
+                    && Byte.toUnsignedInt(romData[record + 1]) == roomId
+                    && romData[record + 2] == 4) {
+                    int index = romData[record + 3] & 0x3F;
+                    int pointer = readPointer(RomBank.romOffset(0x21, 0x51F6 + index * 2));
+                    return RomBank.romOffset(0x21, pointer);
+                }
+            }
             if (sideScrolling && mapId == MAP_TURTLE_ROCK
                 && usesTurtleRockSideScrollPalette(roomId)) {
                 return RomBank.romOffset(INDOOR_PALETTE_MAPS_BANK,

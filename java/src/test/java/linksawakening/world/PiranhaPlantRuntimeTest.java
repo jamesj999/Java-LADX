@@ -94,7 +94,7 @@ final class PiranhaPlantRuntimeTest {
         RoomEntityRuntime transitionRuntime = RoomEntityRuntime.from(snapshot(new RoomEntity(
             0, 0, ENTITY_PIRANHA_PLANT, 0x40, 0x40, EntityStatus.ACTIVE,
             definition, 0)), true, () -> 0, catalog, new RomEnemyCombatTables(rom));
-        transitionRuntime.setTransitionSequenceCounterForTest(0x03);
+        transitionRuntime.setTransitionSequenceCounter(0x03);
         transitionRuntime.tick(0, 0x20, 0x40, () -> 0);
         assertEquals(0, transitionRuntime.transitionCountdown(0));
         assertEquals(0x40, transitionRuntime.snapshot().slots().get(0).y());

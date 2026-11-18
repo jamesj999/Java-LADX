@@ -38,21 +38,12 @@ public final class ManboWarpResolver {
             }
             int source = RomBank.romOffset(MANBO_WARP_TABLE_BANK,
                 MANBO_WARP_TABLE_ADDRESS + tableIndex * MANBO_WARP_RECORD_SIZE);
-            return new Warp(
-                readByte(source),
-                readByte(source + 1),
-                readByte(source + 2),
-                readByte(source + 3),
-                readByte(source + 4),
-                -1);
+            if (source + MANBO_WARP_RECORD_SIZE > romData.length) {
+                throw new IllegalArgumentException("Manbo warp table exceeds ROM bounds");
+            }
+            return Warp.readRomRecord(romData, source);
         }
         return new Warp(Warp.CATEGORY_OVERWORLD, 0x00, 0x45, 0x38, 0x60, 0x53);
     }
 
-    private int readByte(int offset) {
-        if (offset < 0 || offset >= romData.length) {
-            throw new IllegalArgumentException("Manbo warp table exceeds ROM bounds");
-        }
-        return Byte.toUnsignedInt(romData[offset]);
-    }
 }

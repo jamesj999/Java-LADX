@@ -7,6 +7,10 @@ import java.util.Arrays;
 import java.util.Objects;
 
 final class RomSoundEffectEngine {
+    private static final int SOUND_SYSTEM_INIT = 0x4000;
+    private static final int PLAY_SFX = 0x4006;
+    private static final int LATCH_SFX_REQUESTS = 0x7FCC;
+
     private static final int PLAY_ACTIVE_JINGLE = 0x4204;
     private static final int PLAY_ACTIVE_WAVE = 0x53ED;
     private static final int PLAY_ACTIVE_NOISE = 0x64EC;
@@ -14,6 +18,14 @@ final class RomSoundEffectEngine {
     private static final int W_ACTIVE_JINGLE = 0xD360;
     private static final int W_ACTIVE_WAVE = 0xD370;
     private static final int W_ACTIVE_NOISE = 0xD378;
+    // The music driver uses bit 7 of each channel's loop counter to gate
+    // APU writes. Its waveform loader also checks the continuing wave ID.
+    private static final int W_MUSIC_CHANNEL_1_FLAGS = 0xD31F;
+    private static final int W_MUSIC_CHANNEL_2_FLAGS = 0xD32F;
+    private static final int W_MUSIC_CHANNEL_3_FLAGS = 0xD33F;
+    private static final int W_MUSIC_CHANNEL_4_FLAGS = 0xD34F;
+    private static final int W_CONTINUING_WAVE = 0xD371;
+    private static final int MUSIC_CHANNEL_LOCK = 0x80;
     private static final int AUDIO_STATE_START = 0xD300;
     private static final int AUDIO_STATE_END = 0xD3FF;
     private static final int MAX_INSTRUCTIONS_PER_TICK = 20_000;
@@ -23,12 +35,73 @@ final class RomSoundEffectEngine {
     private final int[] memory = new int[0x10000];
     private final RomSoundEffectTables tables;
 
+    private boolean silencedMusic;
     private SoundEffectNamespace activeNamespace;
 
     RomSoundEffectEngine(byte[] romData, GameBoyApu apu) {
         this.romData = Objects.requireNonNull(romData, "romData");
         this.apu = Objects.requireNonNull(apu, "apu");
         tables = new RomSoundEffectTables(romData);
+    }
+
+    void initializeLive() {
+        if ((apu.readRegister(GameBoyApu.NR52) & 0x80) == 0) {
+            new Cpu(SOUND_SYSTEM_INIT).run();
+        }
+    }
+
+    // Both music banks release SFX channels before loading the new score.
+    // Run just that prologue against the same WRAM used by the effect handlers.
+    void changeMusicTrack(int bank, boolean stopping) {
+        if (bank != 0x1B && bank != 0x1E) throw new IllegalArgumentException("Unknown music bank " + bank);
+        if (stopping) {
+            new Cpu(bank, bank == 0x1B ? 0x410F : 0x4137).run();
+        } else {
+            new Cpu(bank, bank == 0x1B ? 0x433C : 0x43C0).runUntil(bank == 0x1B ? 0x4361 : 0x43E5);
+        }
+    }
+
+    void request(SoundEffectNamespace namespace, int id) {
+        if (id < 0 || id > tables.effectCount(namespace)) {
+            throw new IllegalArgumentException("Invalid " + namespace + " SFX id: " + id);
+        }
+        int address = switch (namespace) {
+            case JINGLE -> 0xFFF2;
+            case WAVE -> 0xFFF3;
+            case NOISE -> 0xFFF4;
+        };
+        write8(address, id);
+    }
+
+    boolean silencedMusic() {
+        return silencedMusic;
+    }
+
+    int advanceLiveFrame() {
+        silencedMusic = false;
+        // Enter the request-copy portion of the fade routine, then run the
+        // shared dispatcher so handlers can suppress later requests in place.
+        new Cpu(LATCH_SFX_REQUESTS).run();
+        new Cpu(PLAY_SFX).run();
+        // A continuing effect can request a score for this same audio step.
+        int track = read8(0xD368); // wMusicTrackToPlay
+        write8(0xD368, 0);
+        return track;
+    }
+
+    int musicSuppressionMask() {
+        int mask = channelLockBit(W_MUSIC_CHANNEL_1_FLAGS, 0)
+                | channelLockBit(W_MUSIC_CHANNEL_2_FLAGS, 1)
+                | channelLockBit(W_MUSIC_CHANNEL_3_FLAGS, 2)
+                | channelLockBit(W_MUSIC_CHANNEL_4_FLAGS, 3);
+        if (read8(W_CONTINUING_WAVE) != 0) {
+            mask |= 0x04;
+        }
+        return mask;
+    }
+
+    private int channelLockBit(int address, int channelIndex) {
+        return (read8(address) & MUSIC_CHANNEL_LOCK) >>> (7 - channelIndex);
     }
 
     void start(SoundEffect effect) {
@@ -119,14 +192,6 @@ final class RomSoundEffectEngine {
 
     private int read8(int address) {
         address &= 0xFFFF;
-        if (address >= 0x4000 && address <= 0x7FFF) {
-            int offset = RomBank.romOffset(RomSoundEffectTables.SFX_BANK, address);
-            if (offset < 0 || offset >= romData.length) {
-                throw new IllegalStateException("SFX ROM read outside bank 0x1F at 0x"
-                        + hex16(address));
-            }
-            return Byte.toUnsignedInt(romData[offset]);
-        }
         if (address >= 0xFF10 && address <= 0xFF26) {
             return apu.readRegister(address & 0xFF);
         }
@@ -140,6 +205,7 @@ final class RomSoundEffectEngine {
         address &= 0xFFFF;
         int unsigned = value & 0xFF;
         memory[address] = unsigned;
+        if (address == 0xD369 && unsigned == 0) silencedMusic = true; // wActiveMusicIndex
         if (address >= 0xFF10 && address <= 0xFF26) {
             apu.writeRegister(address & 0xFF, unsigned);
         } else if (address >= 0xFF30 && address <= 0xFF3F) {
@@ -164,6 +230,7 @@ final class RomSoundEffectEngine {
     }
 
     private final class Cpu {
+        private final int bank;
         private final int[] stack = new int[512];
         private int pc;
         private int stackSize;
@@ -181,11 +248,32 @@ final class RomSoundEffectEngine {
         private boolean stopped;
 
         Cpu(int entryAddress) {
+            this(RomSoundEffectTables.SFX_BANK, entryAddress);
+        }
+
+        Cpu(int bank, int entryAddress) {
+            this.bank = bank;
             pc = entryAddress & 0xFFFF;
         }
 
+        private int read8(int address) {
+            if (address >= 0x4000 && address <= 0x7FFF) {
+                int offset = RomBank.romOffset(bank, address);
+                if (offset >= romData.length) {
+                    throw new IllegalStateException("Audio ROM read outside bank " + hex8(bank) + " at " + hex16(address));
+                }
+                return Byte.toUnsignedInt(romData[offset]);
+            }
+            return RomSoundEffectEngine.this.read8(address);
+        }
+
         void run() {
+            runUntil(-1);
+        }
+
+        void runUntil(int endAddress) {
             for (int instructions = 0; !stopped && instructions < MAX_INSTRUCTIONS_PER_TICK; instructions++) {
+                if (pc == endAddress) return;
                 step();
             }
             if (!stopped) {
@@ -634,7 +722,7 @@ final class RomSoundEffectEngine {
         private IllegalStateException unsupported(int opcode, int opcodeAddress) {
             String rendered = opcode > 0xFF ? "CB " + hex8(opcode) : hex8(opcode);
             return new IllegalStateException("Unsupported SFX opcode " + rendered
-                    + " at 1F:" + hex16(opcodeAddress));
+                    + " at " + hex8(bank) + ":" + hex16(opcodeAddress));
         }
     }
 }

@@ -1,5 +1,6 @@
 package linksawakening.audio.openal;
 
+import linksawakening.audio.sfx.SoundEffectNamespace;
 import linksawakening.gameplay.PcmSoundOutput;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL;
@@ -12,12 +13,17 @@ import org.lwjgl.system.MemoryUtil;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.EnumMap;
 
 public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
 
     private static final int MAX_BUFFERS = 8;
 
     private final DialogPcmBufferQueue bufferQueue = new DialogPcmBufferQueue(MAX_BUFFERS);
+    private final EnumMap<SoundEffectNamespace, Integer> gameplaySources =
+            new EnumMap<>(SoundEffectNamespace.class);
+    private final EnumMap<SoundEffectNamespace, Integer> gameplayBuffers =
+            new EnumMap<>(SoundEffectNamespace.class);
 
     private boolean available;
     private boolean closed;
@@ -46,6 +52,31 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
     @Override
     public void playReplacing(short[] stereoPcm, int sampleRate) {
         play(stereoPcm, sampleRate, true);
+    }
+
+    @Override
+    public void playReplacing(SoundEffectNamespace namespace, short[] stereoPcm, int sampleRate) {
+        if (!isAvailable() || stereoPcm == null || stereoPcm.length == 0 || sampleRate <= 0) {
+            return;
+        }
+        try {
+            if (!ALC10.alcMakeContextCurrent(context)) {
+                throw new IllegalStateException("could not make sound effects OpenAL context current");
+            }
+            int gameplaySource = gameplaySources.get(namespace);
+            int gameplayBuffer = gameplayBuffers.get(namespace);
+            AL10.alSourceStop(gameplaySource);
+            AL10.alSourcei(gameplaySource, AL10.AL_BUFFER, 0);
+            ShortBuffer pcmBuffer = BufferUtils.createShortBuffer(stereoPcm.length);
+            pcmBuffer.put(stereoPcm).flip();
+            AL10.alBufferData(gameplayBuffer, AL10.AL_FORMAT_STEREO16, pcmBuffer, sampleRate);
+            AL10.alSourcei(gameplaySource, AL10.AL_BUFFER, gameplayBuffer);
+            AL10.alSourcePlay(gameplaySource);
+            checkAlError("play " + namespace + " sound effect");
+        } catch (RuntimeException | LinkageError e) {
+            available = false;
+            statusMessage = "OpenAL sound effects unavailable: " + conciseMessage(e);
+        }
     }
 
     private void play(short[] stereoPcm, int sampleRate, boolean replaceQueuedPlayback) {
@@ -115,6 +146,13 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
             checkAlError("create dialog source");
             AL10.alSourcef(source, AL10.AL_GAIN, 1.0f);
             checkAlError("configure dialog source");
+            // PlaySfx (bank 1F:401E) ticks each ROM sound-effect slot independently.
+            for (SoundEffectNamespace namespace : SoundEffectNamespace.values()) {
+                gameplaySources.put(namespace, AL10.alGenSources());
+                checkAlError("create " + namespace + " source");
+                gameplayBuffers.put(namespace, AL10.alGenBuffers());
+                checkAlError("create " + namespace + " buffer");
+            }
             available = true;
             statusMessage = "OpenAL dialog output ready";
         } catch (RuntimeException | LinkageError e) {
@@ -156,6 +194,16 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
         try {
             if (context != MemoryUtil.NULL) {
                 ALC10.alcMakeContextCurrent(context);
+            }
+            for (int gameplaySource : gameplaySources.values()) {
+                if (gameplaySource != 0) {
+                    AL10.alDeleteSources(gameplaySource);
+                }
+            }
+            for (int gameplayBuffer : gameplayBuffers.values()) {
+                if (gameplayBuffer != 0) {
+                    AL10.alDeleteBuffers(gameplayBuffer);
+                }
             }
             if (source != 0) {
                 clearQueuedBuffers();

@@ -1,6 +1,8 @@
 package linksawakening.audio.apu;
 
 final class SquareChannel {
+    private static final int FRAME_SEQUENCER_HZ = 512;
+    private static final int MAX_LENGTH = 64;
     private static final double SWEEP_CLOCK_HZ = 128.0;
     private static final double ENVELOPE_CLOCK_HZ = 64.0;
     private static final int[][] DUTY_PATTERNS = {
@@ -16,6 +18,9 @@ final class SquareChannel {
     private int envelopeRegister;
     private int frequencyLow;
     private int frequencyHigh;
+    private int lengthCounter;
+    private long lengthClockAccumulator;
+    private boolean nextStepClocksLength;
     private boolean active;
     private int volume;
     private double phase;
@@ -36,6 +41,9 @@ final class SquareChannel {
         envelopeRegister = 0;
         frequencyLow = 0;
         frequencyHigh = 0;
+        lengthCounter = 0;
+        lengthClockAccumulator = 0;
+        nextStepClocksLength = true;
         active = false;
         volume = 0;
         phase = 0.0;
@@ -52,12 +60,13 @@ final class SquareChannel {
 
     void writeDuty(int value) {
         dutyRegister = value & 0xFF;
+        lengthCounter = MAX_LENGTH - (value & 0x3F);
     }
 
     void writeEnvelope(int value) {
         envelopeRegister = value & 0xFF;
         volume = (envelopeRegister >>> 4) & 0x0F;
-        if ((envelopeRegister & 0xF8) == 0) {
+        if (!dacEnabled()) {
             active = false;
         }
     }
@@ -67,8 +76,16 @@ final class SquareChannel {
     }
 
     void writeFrequencyHigh(int value) {
+        boolean wasLengthEnabled = lengthEnabled();
         frequencyHigh = value & 0xFF;
+        boolean extraClock = lengthEnabled() && !nextStepClocksLength;
+        if (extraClock && !wasLengthEnabled) {
+            clockLength();
+        }
         if ((frequencyHigh & 0x80) != 0) {
+            if (lengthCounter == 0) {
+                lengthCounter = extraClock ? MAX_LENGTH - 1 : MAX_LENGTH;
+            }
             trigger();
         }
     }
@@ -78,12 +95,35 @@ final class SquareChannel {
     }
 
     void tick() {
+        // Length follows the free-running sequencer, including while the DAC is off.
+        lengthClockAccumulator += FRAME_SEQUENCER_HZ;
+        while (lengthClockAccumulator >= sampleRate) {
+            lengthClockAccumulator -= sampleRate;
+            if (nextStepClocksLength && lengthEnabled()) {
+                clockLength();
+            }
+            nextStepClocksLength = !nextStepClocksLength;
+        }
         if (!active) {
             return;
         }
 
         tickSweep();
         tickEnvelope();
+    }
+
+    private boolean lengthEnabled() {
+        return (frequencyHigh & 0x40) != 0;
+    }
+
+    private void clockLength() {
+        if (lengthCounter > 0 && --lengthCounter == 0) {
+            active = false;
+        }
+    }
+
+    private boolean dacEnabled() {
+        return (envelopeRegister & 0xF8) != 0;
     }
 
     private void tickSweep() {
@@ -159,7 +199,7 @@ final class SquareChannel {
     }
 
     private void trigger() {
-        active = (envelopeRegister & 0xF8) != 0;
+        active = dacEnabled();
         volume = (envelopeRegister >>> 4) & 0x0F;
         phase = 0.0;
         sweepShadowFrequency = frequencyRegister();

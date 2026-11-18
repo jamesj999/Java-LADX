@@ -3,8 +3,12 @@ package linksawakening.render;
 import linksawakening.cutscene.IntroFrameSnapshot;
 import linksawakening.cutscene.IntroSprite;
 import linksawakening.cutscene.TitleReveal;
+import linksawakening.dialog.DialogController;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.ui.FileMenuFrameSnapshot;
+import linksawakening.ui.FileLoadTransition;
+import linksawakening.ui.WorldMapScreen;
+import linksawakening.world.RoomPaletteFade;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,49 +19,100 @@ public final class GameFrameSceneBuilder {
     private static final int VIEWPORT_TILE_WIDTH = 20;
     private static final int VIEWPORT_TILE_HEIGHT = 18;
 
+    private byte[] transitionObjects;
+
+    public FrameScene buildWorldMap(WorldMapScreen worldMap, DialogController dialog, boolean showObjects) {
+        return FrameScene.of(List.of(
+            context -> worldMap.render(context.buffer(), dialog, showObjects)
+        ));
+    }
+
     public FrameScene build(GameFrameState state) {
+        return build(state, true);
+    }
+
+    public FrameScene build(GameFrameState state, boolean showBackgroundSceneSprites) {
         List<RenderLayer> layers = new ArrayList<>();
         if (state.screen() == RenderScreen.OVERWORLD && state.room() != null) {
-            addOverworldLayers(layers, state);
+            layers.add(new RoomRenderLayer(state.room(), state.scrollController(), state.transitionController()));
+            if (state.transitionController().isActive()) {
+                List<RenderLayer> sprites = new ArrayList<>();
+                addRoomSprites(sprites, state);
+                for (RenderLayer sprite : sprites) {
+                    if (sprite instanceof EntityRenderLayer) layers.add(sprite);
+                    else layers.add(context -> {
+                        if (transitionObjects == null || transitionObjects.length != context.buffer().length)
+                            transitionObjects = new byte[context.buffer().length];
+                        sprite.render(new RenderContext(transitionObjects, context.gpu()));
+                        RoomPaletteFade.compositeObjects(context.buffer(), transitionObjects, state.transitionController());
+                    });
+                }
+            } else {
+                addRoomSprites(layers, state);
+            }
+            addInventory(layers, state);
         } else if (state.fileMenuFrame() != null
             || (state.introFrameSnapshot() != null || state.tilemap() != null)
             && (state.introFrameSnapshot() != null || state.attrmap() != null)
             && (state.introFrameSnapshot() != null || state.bgPalettes() != null)) {
-            addBackgroundSceneLayers(layers, state);
+            addBackgroundSceneLayers(layers, state, showBackgroundSceneSprites);
         }
 
         if (state.dialogController() != null) {
-            layers.add(new DialogRenderLayer(state.dialogController()));
+            layers.add(new DialogRenderLayer(state.dialogController(),
+                state.screen() == RenderScreen.OVERWORLD ? state.room() : null, state.frameCounter()));
         }
         return FrameScene.of(layers);
     }
 
-    private static void addOverworldLayers(List<RenderLayer> layers, GameFrameState state) {
+    public FrameScene buildFileLoad(GameFrameState state, FileLoadTransition transition) {
+        List<RenderLayer> layers = new ArrayList<>();
+        List<RenderLayer> sprites = new ArrayList<>();
+        addRoomSprites(sprites, state);
         layers.add(new RoomRenderLayer(state.room(), state.scrollController(), state.transitionController()));
-        if (state.link() != null) {
-            if (state.link().isMarinWakeUpBedVisible()) {
-                if (state.room().entities() != null
-                    && state.room().entities().spriteTiles() != null
-                    && state.room().entities().spriteSelection() != null) {
-                    layers.add(new MarinWakeUpBedRenderLayer(state.link(),
-                        state.room().entities().spriteTiles(),
-                        state.room().entities().spriteSelection().objectPalettes(),
-                        state.scrollController()));
-                }
-            } else {
-                layers.add(new LinkRenderLayer(state.link(), state.scrollController()));
-                if (state.link().isTarinShieldPresentationVisible()
-                    && state.room().entities() != null
-                    && state.room().entities().spriteSelection() != null) {
-                    layers.add(new TarinShieldRenderLayer(state.link(), state.scrollController()));
-                }
-            }
+        layers.add(context -> {
+            byte[] spriteBuffer = transition.clearSpriteBuffer(context.buffer().length);
+            RenderContext objects = new RenderContext(spriteBuffer, context.gpu());
+            for (RenderLayer sprite : sprites) sprite.render(objects);
+            transition.compositeSprites(context.buffer());
+        });
+        addInventory(layers, state);
+        if (state.dialogController() != null)
+            layers.add(new DialogRenderLayer(state.dialogController(), state.room(), state.frameCounter()));
+        return FrameScene.of(layers);
+    }
+
+    private static void addRoomSprites(List<RenderLayer> layers, GameFrameState state) {
+        boolean linkInBed = state.link() != null && state.link().isMarinWakeUpBedVisible();
+        if (linkInBed && state.room().entities() != null
+            && state.room().entities().spriteTiles() != null
+            && state.room().entities().spriteSelection() != null) {
+            layers.add(new MarinWakeUpBedRenderLayer(state.link(), state.room().entities().spriteTiles(),
+                state.room().entities().spriteSelection().objectPalettes(), state.scrollController()));
         }
         if (state.room().entities() != null
             && state.room().entities().spriteSelection() != null) {
             layers.add(new EntityRenderLayer(state.room().entities(),
-                state.room().entities().spriteSelection().objectPalettes(),
+                state.transitionController().applyObjectFade(state.room().entities().spriteSelection().objectPalettes()),
                 state.scrollController(), state.frameCounter()));
+        }
+        // DrawLinkSprite uses fixed OAM at C008, ahead of the dynamic entity slots at C030.
+        if (state.link() != null && !linkInBed) {
+            layers.add(new LinkRenderLayer(state.link(), state.scrollController()));
+            if (state.link().powerUpPresentationType() != 0 && state.room().entities() != null
+                && state.room().entities().spriteSelection() != null) {
+                boolean piece = state.link().powerUpPresentationType() == 0x33;
+                int palette = piece && (state.frameCounter() & 4) == 0 ? 3 : 4;
+                int[] colors = state.room().entities().spriteSelection().objectPalettes()[palette];
+                layers.add(context -> IndexedRenderer.drawSpriteTile8x16(context.buffer(), context.gpu(),
+                    piece ? 0x04 : 0xAE, state.link().pixelX() - state.scrollController().screenShakeHorizontal(),
+                    state.link().pixelY() - state.link().romEntityZ() - (piece ? 16 : 14),
+                    false, piece, colors));
+            }
+            if (state.link().isTarinShieldPresentationVisible() && state.room().entities() != null
+                && state.room().entities().spriteSelection() != null) {
+                layers.add(new TarinShieldRenderLayer(state.link(), state.scrollController()));
+            }
         }
         if (state.transientVfxSystem() != null && state.cutLeavesEffectRenderer() != null) {
             layers.add(new TransientVfxRenderLayer(state.transientVfxSystem(),
@@ -67,12 +122,17 @@ public final class GameFrameSceneBuilder {
         if (state.droppableRupeeSystem() != null) {
             layers.add(new DroppableRupeeRenderLayer(state.droppableRupeeSystem(), state.scrollController()));
         }
+    }
+
+    private static void addInventory(List<RenderLayer> layers, GameFrameState state) {
         if (state.inventoryController() != null) {
-            layers.add(new InventoryRenderLayer(state.inventoryController()));
+            layers.add(new InventoryRenderLayer(state.inventoryController(), state.room(),
+                state.transitionController(), state.frameCounter()));
         }
     }
 
-    private static void addBackgroundSceneLayers(List<RenderLayer> layers, GameFrameState state) {
+    private static void addBackgroundSceneLayers(List<RenderLayer> layers, GameFrameState state,
+                                                 boolean showSprites) {
         FileMenuFrameSnapshot fileMenu = state.fileMenuFrame();
         IntroFrameSnapshot snapshot = state.introFrameSnapshot();
         int scrollX = fileMenu != null ? 0 : snapshot != null
@@ -108,7 +168,7 @@ public final class GameFrameSceneBuilder {
         int[][] objectPalettes = fileMenu != null
             ? fileMenu.objectPalettes()
             : snapshot != null ? snapshot.objPalettes() : state.objPalettes();
-        if (objectPalettes != null) {
+        if (objectPalettes != null && showSprites) {
             Iterable<IntroSprite> sprites = fileMenu != null
                 ? fileMenu.sprites()
                 : snapshot != null

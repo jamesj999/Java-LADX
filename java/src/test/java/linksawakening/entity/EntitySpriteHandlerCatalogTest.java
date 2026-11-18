@@ -229,17 +229,16 @@ final class EntitySpriteHandlerCatalogTest {
     }
 
     @Test
-    void mapsMusicalNoteToItsBankFiveSingleSprite() {
-        byte[] rom = syntheticRom();
-        write(rom, 0x05, 0x7EF8, 0x0E, 0x13);
+    void mapsMusicalNoteToItsBankFiveSingleSprite() throws Exception {
+        byte[] rom = loadRom();
 
         EntitySpriteDefinition note = new EntitySpriteHandlerCatalog(rom)
             .forEntityType(0xC9, EntityRoomLoader.RoomTable.OVERWORLD);
 
-        assertDefinition(note, 0x05, 0x7EF8,
+        assertDefinition(note, 0x05, 0x7EF6,
             EntitySpriteDefinition.Shape.SINGLE, 1, 0);
         assertEquals(0x0E, note.variant(0).first().tile());
-        assertEquals(0x13, note.variant(0).first().attributes());
+        assertEquals(0x03, note.variant(0).first().attributes());
         assertNull(note.variant(0).second());
     }
 

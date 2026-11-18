@@ -1,9 +1,19 @@
 package linksawakening.world;
 
 import java.util.List;
+import java.util.Map;
 
 public record RoomObjectParseResult(int[] roomObjectsArea, List<Warp> warps,
-                                    int shutterDoorMask, int staircaseLocation) {
+                                    int shutterDoorMask, int staircaseLocation, int openDoorFlags,
+                                    Map<Integer, Integer> shutterLocations) {
+
+    public RoomObjectParseResult(int[] area, List<Warp> warps, int shutterDoorMask, int staircaseLocation, int openDoorFlags) {
+        this(area, warps, shutterDoorMask, staircaseLocation, openDoorFlags, Map.of());
+    }
+
+    public RoomObjectParseResult(int[] area, List<Warp> warps, int shutterDoorMask, int staircaseLocation) {
+        this(area, warps, shutterDoorMask, staircaseLocation, 0);
+    }
 
     public RoomObjectParseResult(int[] roomObjectsArea, List<Warp> warps) {
         this(roomObjectsArea, warps, 0, -1);
@@ -17,6 +27,7 @@ public record RoomObjectParseResult(int[] roomObjectsArea, List<Warp> warps,
     public RoomObjectParseResult {
         roomObjectsArea = roomObjectsArea.clone();
         warps = List.copyOf(warps);
+        shutterLocations = Map.copyOf(shutterLocations);
         shutterDoorMask &= 0x0F;
         if (staircaseLocation < -1 || staircaseLocation > 0xFF) {
             throw new IllegalArgumentException(

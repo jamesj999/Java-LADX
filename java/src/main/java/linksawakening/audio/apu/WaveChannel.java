@@ -1,12 +1,17 @@
 package linksawakening.audio.apu;
 
 final class WaveChannel {
+    private static final int MAX_LENGTH = 256;
+    private static final int LENGTH_CLOCK_HZ = 256;
+
     private final int sampleRate;
     private final int[] waveRam = new int[16];
     private int dacRegister;
     private int outputLevelRegister;
     private int frequencyLow;
     private int frequencyHigh;
+    private int lengthCounter;
+    private long lengthClockAccumulator;
     private boolean active;
     private double position;
 
@@ -23,6 +28,8 @@ final class WaveChannel {
         outputLevelRegister = 0;
         frequencyLow = 0;
         frequencyHigh = 0;
+        lengthCounter = 0;
+        lengthClockAccumulator = 0;
         active = false;
         position = 0.0;
     }
@@ -32,6 +39,10 @@ final class WaveChannel {
         if ((dacRegister & 0x80) == 0) {
             active = false;
         }
+    }
+
+    void writeLength(int value) {
+        lengthCounter = MAX_LENGTH - value;
     }
 
     void writeOutputLevel(int value) {
@@ -68,6 +79,16 @@ final class WaveChannel {
     }
 
     void tick() {
+        lengthClockAccumulator += LENGTH_CLOCK_HZ;
+        while (lengthClockAccumulator >= sampleRate) {
+            lengthClockAccumulator -= sampleRate;
+            if ((frequencyHigh & 0x40) != 0 && lengthCounter > 0) {
+                lengthCounter--;
+                if (lengthCounter == 0) {
+                    active = false;
+                }
+            }
+        }
     }
 
     double render() {
@@ -87,6 +108,9 @@ final class WaveChannel {
 
     private void trigger() {
         active = (dacRegister & 0x80) != 0;
+        if (lengthCounter == 0) {
+            lengthCounter = MAX_LENGTH;
+        }
         position = 0.0;
     }
 

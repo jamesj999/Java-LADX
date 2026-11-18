@@ -1,13 +1,18 @@
 package linksawakening.ui;
 
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.rom.RomBank;
+import linksawakening.save.SaveRamImage;
 import linksawakening.scene.BackgroundScene;
 import linksawakening.scene.BackgroundSceneCatalog;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,6 +36,24 @@ final class FileMenuControllerTest {
         GLFW_KEY_A, GLFW_KEY_B);
 
     @Test
+    void fileSelectionAndNameInputEmitRomJingles() {
+        List<GameplaySoundEvent> sounds = new ArrayList<>();
+        FileMenuController controller = newController(0, new int[3][5], sounds::add);
+
+        press(controller, GLFW_KEY_RIGHT);
+        press(controller, GLFW_KEY_DOWN);
+        press(controller, GLFW_KEY_A);
+        press(controller, GLFW_KEY_RIGHT);
+        press(controller, GLFW_KEY_A);
+        press(controller, GLFW_KEY_B);
+        assertEquals(FileMenuAction.Type.REGISTER_FILE, press(controller, GLFW_KEY_ENTER).type());
+
+        assertEquals(List.of(GameplaySoundEvent.MENU_MOVE, GameplaySoundEvent.MENU_VALIDATE,
+            GameplaySoundEvent.MENU_MOVE, GameplaySoundEvent.MENU_VALIDATE,
+            GameplaySoundEvent.MENU_VALIDATE, GameplaySoundEvent.MENU_VALIDATE), sounds);
+    }
+
+    @Test
     void emptySlotAEntersCreationAndWritesTheSelectedSlotAndBlankName() {
         FileMenuController controller = newController(0, new int[3][5]);
 
@@ -43,6 +66,24 @@ final class FileMenuControllerTest {
             Arrays.copyOfRange(controller.snapshot().tilemap(), 0x4A, 0x4F));
         assertEquals(1, controller.snapshot().sprites().size());
         assertEquals(0xE0, controller.snapshot().sprites().get(0).tileIndex());
+        assertEquals(0x20 + 0x0B - 0x10, controller.snapshot().sprites().get(0).y());
+        assertEquals(16, controller.snapshot().sprites().get(0).height());
+    }
+
+    @Test
+    void quickTapActivatesSelectedSlotOnce() {
+        FileMenuController controller = newController(0, new int[3][5]);
+        InputState input = new InputState();
+        input.onKeyEvent(GLFW_KEY_A, GLFW_PRESS);
+        input.onKeyEvent(GLFW_KEY_A, GLFW_RELEASE);
+
+        controller.tick(input, INPUT);
+        assertTrue(controller.snapshot().creation());
+        assertFalse(input.isDown(GLFW_KEY_A));
+
+        input.tickEdges();
+        assertFalse(input.wasPressed(GLFW_KEY_A));
+        assertFalse(input.wasReleased(GLFW_KEY_A));
     }
 
     @Test
@@ -127,7 +168,7 @@ final class FileMenuControllerTest {
         press(controller, GLFW_KEY_A);
         assertEquals(FileMenuController.Mode.COPY_TARGET, controller.mode());
         press(controller, GLFW_KEY_DOWN);
-        assertEquals(0x53 - 8, controller.snapshot().sprites().get(1).y());
+        assertEquals(0x53 - 16, controller.snapshot().sprites().get(1).y());
         press(controller, GLFW_KEY_A);
         assertEquals(FileMenuController.Mode.COPY_CONFIRM, controller.mode());
         press(controller, GLFW_KEY_RIGHT);
@@ -225,6 +266,32 @@ final class FileMenuControllerTest {
     }
 
     @Test
+    void holdingDirectionInNameEntryRepeatsAfterTwentyFourFramesThenEveryThree() {
+        FileMenuController controller = newController(0, new int[3][5]);
+        press(controller, GLFW_KEY_A);
+        InputState input = new InputState();
+        input.onKeyEvent(GLFW_KEY_RIGHT, GLFW_PRESS);
+        controller.tick(input, INPUT);
+        input.tickEdges();
+        for (int frame = 0; frame < 23; frame++) {
+            controller.tick(input, INPUT);
+        }
+        assertEquals(1, controller.snapshot().selectedCharacter());
+        controller.tick(input, INPUT);
+        assertEquals(2, controller.snapshot().selectedCharacter());
+        for (int frame = 0; frame < 3; frame++) {
+            controller.tick(input, INPUT);
+        }
+        assertEquals(3, controller.snapshot().selectedCharacter());
+        input.onKeyEvent(GLFW_KEY_RIGHT, GLFW_RELEASE);
+        controller.tick(input, INPUT);
+        input.onKeyEvent(GLFW_KEY_RIGHT, GLFW_PRESS);
+        input.onKeyEvent(GLFW_KEY_DOWN, GLFW_PRESS);
+        controller.tick(input, INPUT);
+        assertEquals(0x13, controller.snapshot().selectedCharacter());
+    }
+
+    @Test
     void creationAAddsCharactersBBackspacesAndStartCommitsFiveBytes() {
         FileMenuController controller = newController(0, new int[3][5]);
         press(controller, GLFW_KEY_A);
@@ -239,9 +306,36 @@ final class FileMenuControllerTest {
         assertEquals(3, controller.snapshot().namePosition());
         FileMenuAction action = press(controller, GLFW_KEY_ENTER);
 
-        assertEquals(FileMenuAction.Type.START_NEW_GAME, action.type());
+        assertEquals(FileMenuAction.Type.REGISTER_FILE, action.type());
         assertEquals(0, action.selectedSlot());
         assertArrayEquals(new int[] { 1, 1, 1, 1, 1 }, action.nameBytes());
+        assertEquals(FileMenuController.Mode.SELECT, controller.mode());
+
+        SaveRamImage save = SaveRamImage.empty();
+        save.createNewGame(action.selectedSlot(), action.nameBytes());
+        FileMenuController reloaded = newController(save.saveFilesMask(), save.savedNames());
+        assertEquals(FileMenuAction.Type.LOAD_GAME, press(reloaded, GLFW_KEY_A).type());
+    }
+
+    @Test
+    void submittingAnUneditedNameKeepsTheSlotEmptyEvenWhenInsertIsPressed() {
+        FileMenuController controller = newController(0, new int[3][5]);
+        press(controller, GLFW_KEY_A);
+        InputState input = new InputState();
+        input.onKeyEvent(GLFW_KEY_A, GLFW_PRESS);
+        input.onKeyEvent(GLFW_KEY_ENTER, GLFW_PRESS);
+
+        FileMenuAction action = controller.tick(input, INPUT);
+        assertEquals(FileMenuAction.Type.REGISTER_FILE, action.type());
+        assertArrayEquals(new int[5], action.nameBytes());
+        assertEquals(FileMenuController.Mode.SELECT, controller.mode());
+
+        SaveRamImage save = SaveRamImage.empty();
+        save.createNewGame(action.selectedSlot(), action.nameBytes());
+        assertEquals(0, save.saveFilesMask());
+        FileMenuController reloaded = newController(save.saveFilesMask(), save.savedNames());
+        assertEquals(FileMenuAction.Type.NONE, press(reloaded, GLFW_KEY_A).type());
+        assertEquals(FileMenuController.Mode.CREATE, reloaded.mode());
     }
 
     @Test
@@ -257,7 +351,7 @@ final class FileMenuControllerTest {
         assertEquals(0xA0, tilemap[0xC5]);
         assertEquals(0xA1, tilemap[0xC6]);
         assertEquals(0x7E, tilemap[0xC7]);
-        assertEquals(0x3B - 8, controller.snapshot().sprites().get(0).y());
+        assertEquals(0x3B - 16, controller.snapshot().sprites().get(0).y());
         assertEquals(0x10, controller.snapshot().sprites().get(0).x());
         assertEquals(0x02, controller.snapshot().sprites().get(0).tileIndex());
         assertTrue(controller.snapshot().sprites().get(0).flipX());
@@ -279,13 +373,41 @@ final class FileMenuControllerTest {
         assertNotSame(name, first.nameBytes());
     }
 
+    @Test
+    void occupiedSlotsShowMaxHeartsAndThreeDeathDigits() {
+        FileMenuController controller = new FileMenuController(
+            new FileMenuRomData(syntheticRom()),
+            id -> new BackgroundScene(backgroundMap(), new int[32 * 32],
+                new int[][] {{0, 0, 0, 0}}, new int[][] {{0, 0, 0, 0}}),
+            0b101, new int[3][5], new FileMenuController.SlotStats[] {
+                new FileMenuController.SlotStats(4, 8, 123),
+                new FileMenuController.SlotStats(0, 3, 999),
+                new FileMenuController.SlotStats(0, 2, 5)
+            }, GameplaySoundSink.none());
+
+        int[] map = controller.snapshot().tilemap();
+        assertEquals(0xAE, map[0xD1]);
+        assertEquals(0xAE, map[0xEB]);
+        assertEquals(0, map[0xEC]);
+        assertArrayEquals(new int[] {0xB1, 0xB2, 0xB3}, Arrays.copyOfRange(map, 0xE7, 0xEA));
+        assertEquals(0, map[0x12B]);
+        assertEquals(0, map[0x147]);
+        assertEquals(0xAE, map[0x18C]);
+        assertArrayEquals(new int[] {0xB0, 0xB0, 0xB5}, Arrays.copyOfRange(map, 0x1A7, 0x1AA));
+    }
+
     private static FileMenuController newController(int saveMask, int[][] names) {
+        return newController(saveMask, names, GameplaySoundSink.none());
+    }
+
+    private static FileMenuController newController(int saveMask, int[][] names, GameplaySoundSink soundSink) {
         return new FileMenuController(
             new FileMenuRomData(syntheticRom()),
             sceneId -> new BackgroundScene(backgroundMap(), new int[32 * 32],
                 new int[][] { { 0, 0, 0, 0 } }, new int[][] { { 0, 0, 0, 0 } }),
             saveMask,
-            names);
+            names,
+            soundSink);
     }
 
     private static void enterCopySourceSelection(FileMenuController controller) {

@@ -39,6 +39,15 @@ public final class AreaMusicResolver {
     }
 
     public int resolve(RoomMusicContext context) {
+        return trackWithPowerUp(areaTrack(context), context.activePowerUp());
+    }
+
+    int trackWithPowerUp(int trackId, int activePowerUp) {
+        return activePowerUp != 0 && !overridesPowerUpTrack(trackId)
+            ? MusicTrackIds.MUSIC_ACTIVE_POWER_UP : trackId;
+    }
+
+    int areaTrack(RoomMusicContext context) {
         Objects.requireNonNull(context, "context");
         if (context.swordLevel() == 0) {
             return MusicTrackIds.MUSIC_OVERWORLD_SWORDLESS;
@@ -57,9 +66,6 @@ public final class AreaMusicResolver {
             }
         }
 
-        if (context.activePowerUp() != 0 && !overridesPowerUpTrack(trackId)) {
-            return MusicTrackIds.MUSIC_ACTIVE_POWER_UP;
-        }
         return trackId;
     }
 

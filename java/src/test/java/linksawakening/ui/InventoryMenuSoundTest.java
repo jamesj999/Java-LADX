@@ -17,13 +17,32 @@ final class InventoryMenuSoundTest {
         RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
         InventoryMenu menu = new InventoryMenu(loadTilemap(), new PlayerState(), soundSink);
 
-        menu.requestToggle();
         openMenu(menu);
         menu.requestToggle();
 
         assertEquals(List.of(
                 GameplaySoundEvent.INVENTORY_OPEN,
                 GameplaySoundEvent.INVENTORY_CLOSE), soundSink.events);
+    }
+
+    @Test
+    void dxInventoryChangesGainAndWindowDuringTheFade() throws Exception {
+        InventoryMenu menu = new InventoryMenu(loadTilemap(), new PlayerState(), event -> { });
+        menu.requestToggle();
+        for (int frame = 0; frame <= 52; frame++) {
+            menu.tick();
+            assertEquals(frame >= 25, menu.audioAttenuated());
+            assertEquals(frame >= 36 ? 0 : 128, menu.windowY());
+            assertEquals(frame == 52, menu.isFullyOpen());
+        }
+
+        menu.requestToggle();
+        for (int frame = 0; frame <= 51; frame++) {
+            menu.tick();
+            assertEquals(frame < 19, menu.audioAttenuated());
+            assertEquals(frame < 17 ? 0 : 128, menu.windowY());
+            assertEquals(frame == 51, menu.isFullyClosed());
+        }
     }
 
     @Test
@@ -59,7 +78,7 @@ final class InventoryMenuSoundTest {
 
     private static void openMenu(InventoryMenu menu) {
         menu.requestToggle();
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < 53; i++) {
             menu.tick();
         }
     }

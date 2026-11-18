@@ -1,5 +1,7 @@
 package linksawakening.state;
 
+import linksawakening.gameplay.GameplaySoundEvent;
+
 import linksawakening.save.SaveSlotState;
 import linksawakening.world.ChestContentsTable;
 import linksawakening.world.FloatingItemMotion;
@@ -68,9 +70,9 @@ public final class PlayerState {
     private boolean hasToadstool;
     private int maxMagicPowder;
     private int heartPieces;
+    private int photoCount;
     private int seashells;
     private boolean hasFlippers;
-    private boolean hasMedicine;
     private int tradeSequenceItem;
     private int medicineCount;
     private int tailKeyCount;
@@ -81,6 +83,11 @@ public final class PlayerState {
     private int activePowerUp;
     private int tunicType = TUNIC_GREEN;
     private boolean runningWithPegasusBoots;
+    // ThresholdLowHealthTable, bank 02:$6308, indexed by maximum heart containers.
+    private static final int[] LOW_HEALTH_THRESHOLDS = {
+        0, 0x22, 0xC9, 5, 5, 5, 9, 9, 9, 17, 17, 17, 25, 25, 25
+    };
+    private int lowHealthSoundCountdown;
     private int addHealthBuffer;
     private int subtractHealthBuffer;
     private int addRupeeBuffer;
@@ -126,9 +133,9 @@ public final class PlayerState {
         hasToadstool = false;
         this.maxMagicPowder = clamp(maxMagicPowder, 0, 99);
         heartPieces = 0;
+        photoCount = 0;
         seashells = 0;
         hasFlippers = false;
-        hasMedicine = false;
         tradeSequenceItem = 0;
         medicineCount = 0;
         tailKeyCount = 0;
@@ -141,6 +148,7 @@ public final class PlayerState {
         runningWithPegasusBoots = false;
         addHealthBuffer = 0;
         subtractHealthBuffer = 0;
+        lowHealthSoundCountdown = 0;
         addRupeeBuffer = 0;
         powerUpHits = 0;
         Arrays.fill(chestItemCounts, 0);
@@ -175,6 +183,10 @@ public final class PlayerState {
         setHealth(health - Math.max(0, amount));
     }
 
+    public void queueDamage(int amount) {
+        subtractHealthBuffer = (subtractHealthBuffer + amount) & 0xFF;
+    }
+
     /**
      * Applies the generic enemy collision damage path from bank3.asm. The
      * nominal damage is buffered; UpdateHealth consumes that buffer on odd
@@ -190,7 +202,7 @@ public final class PlayerState {
                 : effectiveDamage >> 1;
         }
 
-        subtractHealthBuffer = (subtractHealthBuffer + effectiveDamage) & 0xFF;
+        queueDamage(effectiveDamage);
         invincibilityCounter = 0x50;
         if (activePowerUp != ACTIVE_POWER_UP_NONE) {
             powerUpHits = (powerUpHits + 1) & 0xFF;
@@ -215,6 +227,11 @@ public final class PlayerState {
         }
     }
 
+    public void clearDamageForDungeonWarp() {
+        subtractHealthBuffer = 0;
+        invincibilityCounter = 0;
+    }
+
     /** Amount of health still waiting in the ROM's wAddHealthBuffer. */
     public int addHealthBuffer() {
         return addHealthBuffer;
@@ -234,12 +251,28 @@ public final class PlayerState {
      * Advances the resource counters with the same frame parity as bank2's
      * UpdateRupeesCount and UpdateHealth routines.
      */
-    public void tickResourceBuffers(int frameCounter) {
-        if ((frameCounter & 0x01) == 0) {
+    public GameplaySoundEvent tickResourceBuffers(int frameCounter) {
+        GameplaySoundEvent sound = null;
+        if ((frameCounter & 1) == 0 && addRupeeBuffer != 0) {
             tickRupeeBuffer();
-        } else {
-            tickHealthBuffer();
+            sound = GameplaySoundEvent.RUPEE_COUNT;
         }
+        if (health < LOW_HEALTH_THRESHOLDS[maxHearts]) {
+            if (lowHealthSoundCountdown == 0) {
+                lowHealthSoundCountdown = 0x30;
+                sound = GameplaySoundEvent.LOW_HEARTS;
+            } else {
+                lowHealthSoundCountdown--;
+            }
+        }
+        if ((frameCounter & 1) != 0) {
+            boolean refilling = addHealthBuffer > 0 && health < maxHearts * HP_PER_HEART;
+            tickHealthBuffer();
+            if (refilling && (health & 7) == 6) {
+                sound = GameplaySoundEvent.HEART_REFILL;
+            }
+        }
+        return sound;
     }
 
     /** Applies the immediate state portion of a bank3 pickable handler. */
@@ -367,10 +400,7 @@ public final class PlayerState {
                 bombCount = incrementUpTo(bombCount, maxBombs);
             }
             case ChestContentsTable.CHEST_SWORD -> giveInventoryItem(INVENTORY_SWORD);
-            case ChestContentsTable.CHEST_MEDICINE -> {
-                hasMedicine = true;
-                medicineCount = incrementByte(medicineCount);
-            }
+            case ChestContentsTable.CHEST_MEDICINE -> medicineCount = 1;
             case ChestContentsTable.CHEST_TAIL_KEY -> tailKeyCount = incrementByte(tailKeyCount);
             case ChestContentsTable.CHEST_ANGLER_KEY ->
                 anglerKeyCount = incrementByte(anglerKeyCount);
@@ -428,11 +458,11 @@ public final class PlayerState {
     }
 
     public boolean hasMedicine() {
-        return hasMedicine;
+        return medicineCount != 0;
     }
 
     public void setHasMedicine(boolean value) {
-        hasMedicine = value;
+        medicineCount = value ? Math.max(1, medicineCount) : 0;
     }
 
     public boolean hasFlippers() {
@@ -577,6 +607,10 @@ public final class PlayerState {
         magicPowderCount = Math.min(magicPowderCount, maxMagicPowder);
     }
 
+    public int photoCount() {
+        return photoCount;
+    }
+
     public int heartPieces() {
         return heartPieces;
     }
@@ -677,9 +711,9 @@ public final class PlayerState {
         setHealth(saved.health());
         setRupees(saved.rupees());
         setHeartPieces(saved.heartPieces());
+        photoCount = saved.photoCount();
         setSeashells(saved.seashells());
         setHasFlippers(saved.hasFlippers() != 0);
-        setHasMedicine(saved.hasMedicine() != 0);
         setTradeSequenceItem(saved.tradeSequenceItem());
         setMedicineCount(saved.medicineCount());
         setTailKeyCount(saved.tailKeyCount());
@@ -709,6 +743,7 @@ public final class PlayerState {
         runningWithPegasusBoots = false;
         addHealthBuffer = 0;
         subtractHealthBuffer = 0;
+        lowHealthSoundCountdown = 0;
         addRupeeBuffer = 0;
         powerUpHits = 0;
         Arrays.fill(chestItemCounts, 0);
@@ -750,18 +785,25 @@ public final class PlayerState {
         if (health > 0) {
             health--;
         }
+        if (health == 0 && medicineCount != 0) {
+            medicineCount--;
+            health = HP_PER_HEART;
+            addHealthBuffer = (addHealthBuffer + 16 * HP_PER_HEART) & 0xFF;
+            invincibilityCounter = 0xA0;
+        }
     }
 
     private void tickRupeeBuffer() {
         if (addRupeeBuffer == 0) {
             return;
         }
-        if (rupees >= MAX_RUPEES) {
+        int increment = Math.min(9, (addRupeeBuffer >>> 5) + 1);
+        addRupeeBuffer -= increment;
+        rupees += increment;
+        if (rupees > MAX_RUPEES) {
+            rupees = MAX_RUPEES;
             addRupeeBuffer = 0;
-            return;
         }
-        rupees++;
-        addRupeeBuffer--;
     }
 
     private void giveInventoryItem(int inventoryId) {

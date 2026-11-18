@@ -75,6 +75,7 @@ public final class GameBoyApu {
             case NR23 -> channel2.writeFrequencyLow(unsignedValue);
             case NR24 -> channel2.writeFrequencyHigh(unsignedValue);
             case NR30 -> channel3.writeDac(unsignedValue);
+            case NR31 -> channel3.writeLength(unsignedValue);
             case NR32 -> channel3.writeOutputLevel(unsignedValue);
             case NR33 -> channel3.writeFrequencyLow(unsignedValue);
             case NR34 -> channel3.writeFrequencyHigh(unsignedValue);
@@ -193,11 +194,11 @@ public final class GameBoyApu {
     }
 
     private double rightVolume() {
-        return (registers[NR50] & 0x07) / 7.0;
+        return ((registers[NR50] & 0x07) + 1) / 8.0;
     }
 
     private double leftVolume() {
-        return ((registers[NR50] >>> 4) & 0x07) / 7.0;
+        return (((registers[NR50] >>> 4) & 0x07) + 1) / 8.0;
     }
 
     private static short toPcm(double sample, double volume) {

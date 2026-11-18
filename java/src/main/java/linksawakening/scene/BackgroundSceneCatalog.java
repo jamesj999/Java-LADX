@@ -19,18 +19,23 @@ public final class BackgroundSceneCatalog {
         new BackgroundSceneSpec(0x08, 0x6D80, 0x24, 0x5D69, 0x21, 0x7536);
     public static final BackgroundSceneSpec INTRO_BEACH =
         new BackgroundSceneSpec(0x08, 0x6F8B, 0x24, 0x7BA7, 0x21, 0x7DEE);
+    // TILESET_FILL_TILEMAP and TILESET_SAVE_MENU select this same palette block.
+    private static final int FILE_MENU_PALETTES_ADDR = 0x75B6;
+
     public static final BackgroundSceneSpec FILE_SELECTION =
-        new BackgroundSceneSpec(0x20, 0x6336, 0x24, 0x5F80, 0x21, 0x7536);
+        new BackgroundSceneSpec(0x08, 0x6336, 0x24, 0x5F80, 0x21, FILE_MENU_PALETTES_ADDR);
     public static final BackgroundSceneSpec FILE_SELECTION_COMMANDS =
-        new BackgroundSceneSpec(0x20, 0x6328, 0x24, 0x5F74, 0x21, 0x7536);
+        new BackgroundSceneSpec(0x08, 0x6328, 0x24, 0x5F74, 0x21, FILE_MENU_PALETTES_ADDR);
     public static final BackgroundSceneSpec FILE_CREATION =
-        new BackgroundSceneSpec(0x20, 0x644D, 0x24, 0x6045, 0x21, 0x7536);
+        new BackgroundSceneSpec(0x08, 0x644D, 0x24, 0x6045, 0x21, FILE_MENU_PALETTES_ADDR);
     public static final BackgroundSceneSpec FILE_ERASE =
-        new BackgroundSceneSpec(0x20, 0x6589, 0x24, 0x6115, 0x21, 0x7536);
+        new BackgroundSceneSpec(0x08, 0x6589, 0x24, 0x6115, 0x21, FILE_MENU_PALETTES_ADDR);
     public static final BackgroundSceneSpec FILE_COPY =
-        new BackgroundSceneSpec(0x20, 0x6660, 0x24, 0x617D, 0x21, 0x7536);
+        new BackgroundSceneSpec(0x08, 0x6660, 0x24, 0x617D, 0x21, FILE_MENU_PALETTES_ADDR);
     public static final BackgroundSceneSpec FILE_SAVE =
-        new BackgroundSceneSpec(0x20, 0x6A6D, 0x24, 0x6262, 0x21, 0x7536);
+        new BackgroundSceneSpec(0x08, 0x6A6D, 0x24, 0x6262, 0x21, FILE_MENU_PALETTES_ADDR);
+    public static final BackgroundSceneSpec GAME_OVER =
+        new BackgroundSceneSpec(0x08, 0x698F, 0x24, 0x61E5, 0x21, FILE_MENU_PALETTES_ADDR);
     private BackgroundSceneCatalog() {
     }
 

@@ -9,6 +9,7 @@ import linksawakening.gpu.EntitySpriteTileSnapshot;
 import linksawakening.world.EntityStatus;
 import linksawakening.world.EntityRoomLoader;
 import linksawakening.world.HookshotChainOam;
+import linksawakening.world.MoldormMotion;
 import linksawakening.world.PincerBodyOam;
 import linksawakening.world.RoomEntity;
 import linksawakening.world.RoomEntitySnapshot;
@@ -24,6 +25,58 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 final class EntityRenderLayerTest {
+
+    @Test
+    void moldormTailBlinkTogglesTheActiveObjectPalette() throws Exception {
+        GPU gpu = new GPU();
+        int[][] palettes = new int[8][4];
+        palettes[0][1] = 0x112233;
+        palettes[4][1] = 0x445566;
+        writeSolidTile(gpu, 0x70, 1);
+        writeSolidTile(gpu, 0x74, 1);
+        EntitySpriteDefinition definition = new EntitySpriteHandlerCatalog(loadRom())
+            .forMoldormState(0, 0x60, 0x50,
+                List.of(new MoldormMotion.TailPosition(0x10, 0x50),
+                    new MoldormMotion.TailPosition(0x20, 0x50),
+                    new MoldormMotion.TailPosition(0x30, 0x50),
+                    new MoldormMotion.TailPosition(0x40, 0x50)), 0, 4);
+        EntitySpriteTileSnapshot tiles = gpu.snapshotEntityTiles();
+
+        for (int flash : new int[] {0, 0x10}) {
+            RoomEntity entity = new RoomEntity(0, 0, EntitySpriteHandlerCatalog.ENTITY_MOLDORM,
+                0x60, 0x50, EntityStatus.ACTIVE, definition, 0, flash);
+            byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+            new EntityRenderLayer(snapshot(null, tiles, entity), palettes, new ScrollController())
+                .render(new RenderContext(buffer, gpu));
+
+            assertEquals(palettes[flash == 0 ? 0 : 4][1], pixelColor(buffer, 8, 0x40));
+            assertEquals(palettes[flash == 0 ? 4 : 0][1], pixelColor(buffer, 0x38, 0x40));
+        }
+    }
+
+    @Test
+    void singleSpriteOutsideRoomTileRangeUsesTheSharedGpuTiles() {
+        GPU gpu = new GPU();
+        int topColor = 0x123456;
+        int bottomColor = 0x654321;
+        int[][] palettes = {{0, topColor, bottomColor, 0}};
+        writeSolidTile(gpu, 0x84, 1);
+        writeSolidTile(gpu, 0x85, 2);
+        EntitySpriteDefinition definition = new EntitySpriteDefinition(
+            1, 0, 0, EntitySpriteDefinition.Shape.SINGLE, 0,
+            List.of(new EntitySpriteDefinition.Variant(
+                new EntitySpriteDefinition.OamAttribute(0x84, 0), null)));
+        RoomEntity entity = new RoomEntity(0, 0, 1, 0x40, 0x50,
+            EntityStatus.ACTIVE, definition, 0);
+        RoomEntitySnapshot snapshot = snapshot(null, gpu.snapshotEntityTiles(), entity);
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+
+        new EntityRenderLayer(snapshot, palettes, new ScrollController())
+            .render(new RenderContext(buffer, gpu));
+
+        assertEquals(topColor, pixelColor(buffer, 0x3C, 0x40));
+        assertEquals(bottomColor, pixelColor(buffer, 0x3C, 0x48));
+    }
 
     @Test
     void rendersVisibleHookshotChainOamFromTheLiveLinkTileLoad() {
@@ -155,7 +208,7 @@ final class EntityRenderLayerTest {
         int crawlingBodyColor = 0x112233;
         int bushOverlayColor = 0x445566;
         int[][] palettes = new int[8][4];
-        palettes[4][1] = crawlingBodyColor;
+        palettes[6][1] = crawlingBodyColor; // Outdoor variant 0 uses GBC OBJ palette 6.
         palettes[2][1] = bushOverlayColor;
         for (int tile : new int[] {0xF0, 0xF2, 0xF4, 0xF6, 0x7C, 0x7E}) {
             writeSolidTile(gpu, tile, 1);

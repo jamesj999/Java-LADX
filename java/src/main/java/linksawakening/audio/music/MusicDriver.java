@@ -88,6 +88,10 @@ public final class MusicDriver {
     private boolean playing;
     private int trackBank;
     private int speedTablePointer;
+    private boolean sharedChip;
+    private int suppressionMask;
+    private int interruptedChannels;
+    private int waveformPointer;
     private final int[] softwareEnvelope = new int[CHANNEL_COUNT];
     private final int[] articulationTick = new int[CHANNEL_COUNT];
     private final int[] noteTicks = new int[CHANNEL_COUNT];
@@ -105,14 +109,26 @@ public final class MusicDriver {
 
     public void start(MusicTrack track) {
         Objects.requireNonNull(track, "track");
-        resetChannelState();
-        trackBank = track.bank();
-
+        sharedChip = false;
         apu.reset();
         apu.writeRegister(GameBoyApu.NR52, 0x80);
         apu.writeRegister(GameBoyApu.NR50, 0x77);
         apu.writeRegister(GameBoyApu.NR51, 0xFF);
 
+        loadTrack(track);
+    }
+
+    /** Starts music on a caller-configured APU, preserving channels owned by SFX. */
+    public void startShared(MusicTrack track, int mask) {
+        Objects.requireNonNull(track, "track");
+        stopShared(mask);
+        loadTrack(track);
+    }
+
+    private void loadTrack(MusicTrack track) {
+        playing = false;
+        resetChannelState();
+        trackBank = track.bank();
         int headerOffset = track.romOffset();
         requireReadable(headerOffset, HEADER_SIZE, trackBank, track.headerAddress());
         musicTranspose = (byte) Byte.toUnsignedInt(romData[headerOffset]);
@@ -129,18 +145,48 @@ public final class MusicDriver {
         playing = hasActiveChannel();
     }
 
-    public void stop() {
+    /** The sound-effect handler already reset the chip and may have started a new effect on it. */
+    public void clearScore() {
         playing = false;
         resetChannelState();
+    }
+
+    public void stop() {
+        clearScore();
         apu.reset();
     }
 
+    /** Stops music and silences only channels available to music. */
+    public void stopShared(int mask) {
+        sharedChip = true;
+        suppressionMask = mask;
+        for (MusicChannelState state : channels) {
+            silenceChannel(state);
+        }
+        playing = false;
+        resetChannelState();
+    }
+
     public void tick60Hz() {
+        tick60Hz(0);
+    }
+
+    /** Advances the score with channel register writes suppressed by bits 0 through 3. */
+    public void tick60Hz(int mask) {
+        suppressionMask = mask;
         if (!playing) {
             return;
         }
 
-        tickNoiseFfSequence();
+        // A stolen note can no longer be articulated using the current APU registers.
+        interruptedChannels |= mask;
+        if (isSuppressed(4)) {
+            // The FF follow-up belongs to the initial noise trigger.
+            noiseFfPhase = 0;
+            noiseFfCountdown = 0;
+        } else {
+            tickNoiseFfSequence();
+        }
 
         for (MusicChannelState state : channels) {
             if (!state.active) {
@@ -154,6 +200,9 @@ public final class MusicDriver {
                 }
             }
             parseUntilTimeConsumed(state);
+            if (sharedChip && !state.active) {
+                silenceChannel(state);
+            }
         }
 
         playing = hasActiveChannel();
@@ -218,8 +267,15 @@ public final class MusicDriver {
         }
     }
 
+    private boolean isSuppressed(int channel) {
+        return (suppressionMask & (1 << (channel - 1))) != 0;
+    }
+
     private void silenceChannel(MusicChannelState state) {
         state.playingRest = true;
+        if (isSuppressed(state.channel)) {
+            return;
+        }
         if (state.channel == 1) {
             apu.writeRegister(GameBoyApu.NR12, 0);
         } else if (state.channel == 2) {
@@ -281,19 +337,22 @@ public final class MusicDriver {
         state.programCounter += 3;
 
         if (state.channel == 3) {
-            int waveformPointer = first | (second << 8);
-            for (int i = 0; i < WAVE_RAM_BYTES; i++) {
-                apu.writeWaveRam(i, readByte(trackBank, waveformPointer + i));
-            }
+            waveformPointer = first | (second << 8);
             state.waveOutputLevel = third;
-            apu.writeRegister(GameBoyApu.NR30, 0x80);
-            apu.writeRegister(GameBoyApu.NR32, third);
+            if (!isSuppressed(3)) {
+                copyWaveform();
+                apu.writeRegister(GameBoyApu.NR30, 0x80);
+                apu.writeRegister(GameBoyApu.NR32, third);
+            }
             return;
         }
 
         state.envelope = first;
         softwareEnvelope[state.channel - 1] = second;
         state.dutyLength = third;
+        if (isSuppressed(state.channel)) {
+            return;
+        }
         if (state.channel == 1) {
             apu.writeRegister(GameBoyApu.NR11, state.dutyLength);
             apu.writeRegister(GameBoyApu.NR12, state.envelope);
@@ -303,13 +362,33 @@ public final class MusicDriver {
         }
     }
 
+    private void copyWaveform() {
+        for (int i = 0; i < WAVE_RAM_BYTES; i++) {
+            apu.writeWaveRam(i, readByte(trackBank, waveformPointer + i));
+        }
+    }
+
     private void writePitchedNote(MusicChannelState state, int noteCode) {
         state.playingRest = false;
         int frequency = frequencyRegister(noteCode);
         int low = frequency & 0xFF;
         int high = ((frequency >>> 8) & 0x07) | TRIGGER;
 
+        int channelBit = 1 << (state.channel - 1);
+        boolean interrupted = (interruptedChannels & channelBit) != 0;
+        if (state.channel == 3 && channel3VolumeEffectMode != 0) {
+            channel3VolumeEffectMode = 1;
+            channel3VolumeEffectCounter = 0;
+        }
+        if (isSuppressed(state.channel)) {
+            return;
+        }
+        interruptedChannels &= ~channelBit;
+
         if (state.channel == 1) {
+            if (sharedChip || interrupted) {
+                apu.writeRegister(GameBoyApu.NR10, 0);
+            }
             apu.writeRegister(GameBoyApu.NR11, state.dutyLength);
             apu.writeRegister(GameBoyApu.NR12, state.envelope);
             apu.writeRegister(GameBoyApu.NR13, low);
@@ -320,9 +399,8 @@ public final class MusicDriver {
             apu.writeRegister(GameBoyApu.NR23, low);
             apu.writeRegister(GameBoyApu.NR24, high);
         } else if (state.channel == 3) {
-            if (channel3VolumeEffectMode != 0) {
-                channel3VolumeEffectMode = 1;
-                channel3VolumeEffectCounter = 0;
+            if (interrupted && waveformPointer != 0) {
+                copyWaveform();
             }
             apu.writeRegister(GameBoyApu.NR30, 0x80);
             apu.writeRegister(GameBoyApu.NR32, state.waveOutputLevel);
@@ -335,6 +413,9 @@ public final class MusicDriver {
 
     private void writeNoiseNote(MusicChannelState state, int noteCode) {
         state.playingRest = false;
+        if (isSuppressed(4)) {
+            return;
+        }
         if (noteCode == 0xFF) {
             writeNoiseRegisters(NOISE_FF_START_REGISTERS);
             noiseFfPhase = 1;
@@ -385,6 +466,9 @@ public final class MusicDriver {
         int[] envelopeTable = softwareEnvelopeTable();
         int envelope = envelopeTable[Math.min(envelopeIndex, envelopeTable.length - 1)];
         articulationApplied[index] = true;
+        if ((interruptedChannels & (1 << index)) != 0) {
+            return;
+        }
         if (state.channel == 1) {
             apu.writeRegister(GameBoyApu.NR12, envelope);
             apu.writeRegister(GameBoyApu.NR14, apu.readRegister(GameBoyApu.NR14) | TRIGGER);
@@ -400,14 +484,17 @@ public final class MusicDriver {
         }
 
         channel3VolumeEffectCounter++;
+        if (channel3VolumeEffectCounter == 13) {
+            channel3VolumeEffectMode = 2;
+        }
+        if ((interruptedChannels & (1 << 2)) != 0) {
+            return;
+        }
         if (channel3VolumeEffectCounter == 3) {
             apu.writeRegister(GameBoyApu.NR32, 0x40);
         } else if (channel3VolumeEffectCounter == 5 || channel3VolumeEffectCounter == 10) {
             apu.writeRegister(GameBoyApu.NR32, 0x60);
-        } else if (channel3VolumeEffectCounter == 7) {
-            apu.writeRegister(GameBoyApu.NR32, 0x00);
-        } else if (channel3VolumeEffectCounter == 13) {
-            channel3VolumeEffectMode = 2;
+        } else if (channel3VolumeEffectCounter == 7 || channel3VolumeEffectCounter == 13) {
             apu.writeRegister(GameBoyApu.NR32, 0x00);
         }
     }
@@ -484,6 +571,9 @@ public final class MusicDriver {
             articulationApplied[i] = false;
         }
         musicTranspose = 0;
+        suppressionMask = 0;
+        interruptedChannels = 0;
+        waveformPointer = 0;
         noiseFfPhase = 0;
         noiseFfCountdown = 0;
         channel3VolumeEffectMode = 0;

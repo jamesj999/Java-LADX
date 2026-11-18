@@ -3,6 +3,7 @@ package linksawakening.entity;
 import linksawakening.equipment.EquippedItem;
 import linksawakening.equipment.ItemRegistry;
 import linksawakening.equipment.RocsFeather;
+import linksawakening.equipment.Sword;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.Framebuffer;
@@ -177,6 +178,11 @@ public final class Link implements RocsFeather.JumpTarget {
     private int walkTickCounter;
     private int walkFrame;
     private boolean movingThisFrame;
+    private boolean sideView;
+    private boolean onSideLadder;
+    private boolean sideFloorContact;
+    private int sideSpeedX;
+    private int sideSpeedY;
     private int groundMotionCounter;
     private int collisionIgnoreFramesRemaining;
     private int romCollisionType;
@@ -195,6 +201,8 @@ public final class Link implements RocsFeather.JumpTarget {
     private int motionState = LINK_MOTION_DEFAULT;
     private boolean romInteractiveMotionBlocked;
     private int romAnimationStateOverride = -1;
+    private int powerUpPresentationType;
+    private int powerUpPresentationCountdown;
     private boolean tarinShieldPresentation;
     private int[] tarinShieldPalette;
     private int romLinkPushing;
@@ -227,6 +235,10 @@ public final class Link implements RocsFeather.JumpTarget {
     private int jumpAnimationFrame;
     private int pitSlippingCounter;
     private int fallingFrameCounter;
+    private boolean inWarpHoleRoom;
+    private int teleportFrames;
+    private boolean landingFromWarp;
+    private static final int[] TELEPORT_DIRECTIONS = {0, 3, 1, 2};
     private int pitSlipTargetTopLeftX;
     private int pitSlipTargetTopLeftY;
     private int pitSlipPhysicsFlag;
@@ -297,6 +309,18 @@ public final class Link implements RocsFeather.JumpTarget {
     public void setRoomEntryPixelPosition(int pixelX, int pixelY) {
         setPixelPosition(pixelX, pixelY);
         markRoomEntryPosition();
+    }
+
+    /** Category-two warps initialize hLinkPhysicsModifier to ladder mode. */
+    public void enterWarpView(boolean sideScrolling) {
+        if (sideView || sideScrolling) {
+            airborne = false;
+            zSubPixels = zVelocity = 0;
+            sideSpeedX = sideSpeedY = 0;
+            sideFloorContact = false;
+            onSideLadder = sideScrolling;
+        }
+        sideView = sideScrolling;
     }
 
     public void markRoomEntryPosition() {
@@ -422,7 +446,12 @@ public final class Link implements RocsFeather.JumpTarget {
         return romLinkPushing != 0;
     }
 
-    /** Applies the ROM's next-frame hLinkInteractiveMotionBlocked=$02 write. */
+    /** Room mechanisms inhibit movement while preserving Link's current pose. */
+    public void blockNextMovementFrame() {
+        romInteractiveMotionBlocked = true;
+    }
+
+    /** Entity interaction lock with the ROM's $6A pose. */
     public void blockNextRomMotionFrame() {
         romInteractiveMotionBlocked = true;
         romAnimationStateOverride = 0x6A;
@@ -435,6 +464,32 @@ public final class Link implements RocsFeather.JumpTarget {
         direction = DIRECTION_DOWN;
         romAttackStepAnimationCountdown = 0;
         movingThisFrame = false;
+    }
+
+    public void clearActivePowerUp() {
+        if (playerState != null) playerState.setActivePowerUp(PlayerState.ACTIVE_POWER_UP_NONE);
+    }
+
+    public void beginPowerUpPresentation(int type) {
+        powerUpPresentationType = type;
+        powerUpPresentationCountdown = 0x30;
+        romAnimationStateOverride = 0x6B;
+        romAttackStepAnimationCountdown = 0;
+        movingThisFrame = false;
+    }
+
+    public int tickPowerUpPresentation(boolean dialogActive) {
+        if (powerUpPresentationCountdown > 0 && !dialogActive) {
+            if (--powerUpPresentationCountdown == 0) {
+                powerUpPresentationType = 0;
+                romAnimationStateOverride = -1;
+            }
+        }
+        return powerUpPresentationCountdown;
+    }
+
+    public int powerUpPresentationType() {
+        return powerUpPresentationType;
     }
 
     /** Applies TarinShield2Handler's shield-specific got-item presentation. */
@@ -838,6 +893,13 @@ public final class Link implements RocsFeather.JumpTarget {
         zVelocity = 0x20;
         jumpAnimationCounter = 0;
         jumpAnimationFrame = 0;
+        if (sideView) {
+            sideSpeedY = (buildJoypadMask() & 3) == 0 ? -0x16 : -0x18;
+            subY += sideSpeedY;
+            zVelocity = 0;
+            sideFloorContact = false;
+            onSideLadder = false;
+        }
         soundSink.play(GameplaySoundEvent.ROC_FEATHER_JUMP);
     }
 
@@ -860,6 +922,10 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     public void update() {
+        update(false);
+    }
+
+    public void update(boolean sideScrolling) {
         frameCounter = (frameCounter + 1) & 0xFF;
         if (pegasusBootsCollisionCountdown > 0) {
             pegasusBootsCollisionCountdown--;
@@ -895,6 +961,24 @@ public final class Link implements RocsFeather.JumpTarget {
             return;
         }
 
+        if (teleportFrames > 0) {
+            teleportFrames++;
+            if (teleportFrames == 65) soundSink.play(GameplaySoundEvent.OVERWORLD_WARP_HOLE);
+            if (teleportFrames >= 67) {
+                spinDuringTeleport();
+                zSubPixels = Math.min(0x78, (teleportFrames - 66) * 4) << SUB_PIXEL_SHIFT;
+            }
+            return;
+        }
+        if (landingFromWarp) {
+            spinDuringTeleport();
+            tickJump();
+            if (!airborne) {
+                landingFromWarp = false;
+                soundSink.play(GameplaySoundEvent.FOOTSTEP);
+            }
+            return;
+        }
         if (fallingIntoPit) {
             tickPitFall();
             return;
@@ -902,7 +986,9 @@ public final class Link implements RocsFeather.JumpTarget {
 
         if (overworldLedgeFallActive) {
             lastRomSpeedY = 0xFF;
-            subY--;
+            // A southward room scroll can place the ongoing fall at the new
+            // room's top edge. Keep its landing drift inside that room.
+            subY = Math.max(0, subY - 1);
             tickJump();
             return;
         }
@@ -913,6 +999,12 @@ public final class Link implements RocsFeather.JumpTarget {
         }
 
         int mask = buildJoypadMask();
+        if (sideView != sideScrolling) enterWarpView(sideScrolling);
+        if (sideScrolling && collision.objectPhysicsFlagAtPoint(pixelX() + 8, pixelY() + 11)
+            != PhysicsFlags.WATER_SIDESCROLL) {
+            updateDrySideView(mask);
+            return;
+        }
         int newDirection = JOYPAD_TO_DIRECTION[mask];
         if (newDirection != -1 && !marinBedJumpMotionLocked
             && !directionalLedgeJumpMotionLocked
@@ -965,8 +1057,10 @@ public final class Link implements RocsFeather.JumpTarget {
             speedY = forcedSpeedY;
             forcedSpeedPending = false;
         } else {
-            speedX = (byte) romTables.linkSpeedX(mask);
-            speedY = (byte) romTables.linkSpeedY(mask);
+            boolean poweredWalk = !sideScrolling && !airborne && playerState != null
+                && playerState.activePowerUp() == PlayerState.ACTIVE_POWER_UP_PIECE_OF_POWER;
+            speedX = romTables.linkSpeedX(mask, poweredWalk);
+            speedY = romTables.linkSpeedY(mask, poweredWalk);
         }
         lastRomSpeedX = speedX & 0xFF;
         lastRomSpeedY = speedY & 0xFF;
@@ -1000,9 +1094,91 @@ public final class Link implements RocsFeather.JumpTarget {
                 walkFrame ^= 1;
             }
         } else {
-            walkTickCounter = 0;
+            // Ground motion leaves wConsecutiveStepsCount at 7 on release (02:445F).
+            walkTickCounter = motionState == LINK_MOTION_DEFAULT && !airborne ? WALK_FRAME_TICKS - 1 : 0;
             walkFrame = 0;
         }
+    }
+
+    private void updateDrySideView(int mask) {
+        int horizontal = (inputState.isDown(inputConfig.rightKey()) ? 1 : 0)
+            - (inputState.isDown(inputConfig.leftKey()) ? 1 : 0);
+        int vertical = (inputState.isDown(inputConfig.downKey()) ? 1 : 0)
+            - (inputState.isDown(inputConfig.upKey()) ? 1 : 0);
+        boolean climbing = onSideLadder;
+        boolean forced = forcedSpeedPending;
+        if (forcedSpeedPending) {
+            sideSpeedX = (byte) forcedSpeedX;
+            sideSpeedY = (byte) forcedSpeedY;
+            forcedSpeedPending = false;
+            climbing = false;
+        }
+        if (collisionIgnoreFramesRemaining > 0) {
+            collisionIgnoreFramesRemaining--;
+            subX += sideSpeedX;
+            subY += sideSpeedY;
+            sideSpeedY = (byte) (sideSpeedY + 3);
+            lastRomSpeedX = sideSpeedX & 255;
+            lastRomSpeedY = sideSpeedY & 255;
+            return;
+        }
+        if (climbing) {
+            direction = DIRECTION_UP;
+            sideSpeedX = horizontal * 8;
+            sideSpeedY = vertical * 16;
+            airborne = false;
+        } else if (!forced) {
+            if (sideFloorContact && airborne) soundSink.play(GameplaySoundEvent.FOOTSTEP);
+            if (!airborne && !sideFloorContact) jumpAnimationCounter = jumpAnimationFrame = 0;
+            airborne = !sideFloorContact;
+            if (sideFloorContact) sideSpeedX = horizontal * 16;
+            else if (horizontal != 0) sideSpeedX = approachSignedSpeed(sideSpeedX, horizontal * 16);
+            if (sideSpeedX != 0) direction = sideSpeedX > 0 ? DIRECTION_RIGHT : DIRECTION_LEFT;
+        }
+
+        int previousX = subX;
+        int previousY = subY;
+        if (!itemsBlockMotion() || airborne) {
+            subX += sideSpeedX;
+            subY += sideSpeedY;
+        }
+        int centerX = pixelX() + 8;
+        onSideLadder = collision.objectPhysicsFlagAtPoint(centerX, pixelY() + 11)
+            == PhysicsFlags.LADDER_SIDESCROLL && (climbing || vertical != 0);
+        int footY = pixelY() + 16;
+        sideFloorContact = false;
+        if (sideSpeedY >= 0) {
+            int object = collision.objectIdAtPoint(centerX, footY);
+            boolean ladderTop = (object == 0x62 || object == 0x64 || object == 0x66)
+                && (footY & 15) < 3 && (mask & JOY_DOWN) == 0;
+            sideFloorContact = sideViewSolid(centerX, footY) || ladderTop;
+            if (sideFloorContact) {
+                subY = (((footY & ~15) - 16) << SUB_PIXEL_SHIFT) | (subY & 15);
+                sideSpeedY = 0;
+                onSideLadder = false;
+            }
+        } else if (sideViewSolid(centerX, pixelY() + 4)) {
+            subY = previousY;
+        }
+        if (sideSpeedX != 0 && sideViewSolid(pixelX() + (sideSpeedX > 0 ? 11 : 5), pixelY() + 8)) {
+            subX = previousX;
+        }
+        if (!climbing && sideSpeedY < 0x40) {
+            boolean featherHeld = playerState != null && inputState.isDown(
+                playerState.itemB() == PlayerState.INVENTORY_ROCS_FEATHER ? inputConfig.bKey() : inputConfig.aKey());
+            sideSpeedY = Math.min(0x40, sideSpeedY + (sideSpeedY < -1 && featherHeld ? 1 : 2));
+        }
+        lastRomSpeedX = sideSpeedX & 255;
+        lastRomSpeedY = sideSpeedY & 255;
+        movingThisFrame = climbing ? (mask & 15) != 0 : horizontal != 0;
+        if (airborne) tickJumpAnimation();
+        else if (movingThisFrame) tickAnimation();
+        else if (!climbing) walkFrame = walkTickCounter = 0;
+    }
+
+    private boolean sideViewSolid(int x, int y) {
+        int flag = collision.objectPhysicsFlagAtPoint(x, y);
+        return flag == PhysicsFlags.SOLID || flag == PhysicsFlags.CAT_HOOKSHOTABLE;
     }
 
     /** Mirrors CheckItemsToUse's two Pegasus-Boots slot branches and UsePegasusBoots. */
@@ -1552,7 +1728,7 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     private void startPitFall() {
-        // Current top-view fall/recovery support is only for ordinary $50 pits.
+        // The four overworld teleporters also start with the ordinary pit animation.
         groundStatus = GROUND_STATUS_PIT;
         fallingIntoPit = true;
         airborne = false;
@@ -1566,6 +1742,42 @@ public final class Link implements RocsFeather.JumpTarget {
         soundSink.play(GameplaySoundEvent.PIT_FALL);
     }
 
+    public void setWarpHoleRoom(boolean value) { inWarpHoleRoom = value; }
+
+    public boolean warpHoleReady() { return teleportFrames >= 96; }
+
+    public boolean warpHoleControlsLink() {
+        return (inWarpHoleRoom && fallingIntoPit) || teleportFrames != 0 || landingFromWarp;
+    }
+
+    public void beginDungeonPortal() {
+        if (itemInSlotA() instanceof Sword sword) sword.cancelAttack();
+        else if (itemInSlotB() instanceof Sword sword) sword.cancelAttack();
+        collisionIgnoreFramesRemaining = 0;
+        soundSink.play(GameplaySoundEvent.DUNGEON_WARP);
+    }
+
+    public void spinOnDungeonPortal(int x, int y, int frame) {
+        setPixelPosition(x - 8, y - 16);
+        if (playerState != null) playerState.clearDamageForDungeonWarp();
+        direction = javaDirectionForRomDirection(TELEPORT_DIRECTIONS[(frame >> 3) & 3]);
+        romAnimationStateOverride = ANIMATION_STATE[direction][walkFrame];
+    }
+
+    public void startWarpHoleLanding() {
+        teleportFrames = 0;
+        motionState = LINK_MOTION_DEFAULT;
+        landingFromWarp = true;
+        airborne = true;
+        zVelocity = 0;
+        zSubPixels = 0x78 << SUB_PIXEL_SHIFT;
+    }
+
+    private void spinDuringTeleport() {
+        direction = javaDirectionForRomDirection(TELEPORT_DIRECTIONS[(frameCounter >> 2) & 3]);
+        romAnimationStateOverride = ANIMATION_STATE[direction][landingFromWarp ? 1 : 0];
+    }
+
     private void tickPitFall() {
         fallingFrameCounter++;
         if (fallingFrameCounter < FALL_DURATION_FRAMES) {
@@ -1577,8 +1789,13 @@ public final class Link implements RocsFeather.JumpTarget {
         hasPitSlipTarget = false;
         pitSlippingCounter = 0;
         fallingFrameCounter = 0;
+        if (inWarpHoleRoom) {
+            teleportFrames = 1;
+            motionState = 0x09;
+            return;
+        }
         if (playerState != null) {
-            playerState.damage(PIT_DAMAGE);
+            playerState.queueDamage(PIT_DAMAGE);
             playerState.setInvincibilityCounter(PIT_RECOVERY_INVINCIBILITY_FRAMES);
         }
         if (hasRoomEntryPosition) {
@@ -1628,10 +1845,13 @@ public final class Link implements RocsFeather.JumpTarget {
     }
 
     public void render(byte[] displayBuffer, int offsetX, int offsetY) {
-        if (likeLikeCaptured) {
-            return;
-        }
-        int animationState = resolveAnimationState();
+        if (likeLikeCaptured || (fallingIntoPit && fallingFrameCounter >= 64)
+            || (teleportFrames > 0 && teleportFrames < 67)) return;
+        renderBody(displayBuffer, offsetX, offsetY, resolveAnimationState());
+        renderEquippedItems(displayBuffer, offsetX, offsetY);
+    }
+
+    public void renderBody(byte[] displayBuffer, int offsetX, int offsetY, int animationState) {
         spriteSheet.resolveTiles(animationState, composedTiles);
 
         boolean leftFlipX = spriteSheet.leftHalfFlipX(animationState);
@@ -1640,8 +1860,16 @@ public final class Link implements RocsFeather.JumpTarget {
         boolean rightFlipY = spriteSheet.rightHalfFlipY(animationState);
 
         int originX = pixelX() + offsetX;
-        int renderY = pixelY() - zPixels();
-        int originY = renderY + offsetY;
+        int groundOffset = 0;
+        if (!isAirborne() && collision != null) {
+            // GetObjectUnderLink samples four pixels above the ROM Y coordinate.
+            groundOffset = switch (collision.objectPhysicsFlagAtPoint(romEntityX(), romEntityY() - 4)) {
+                case PhysicsFlags.RAISED -> -3;
+                case PhysicsFlags.LOWERED -> 2;
+                default -> 0;
+            };
+        }
+        int originY = pixelY() - zPixels() + groundOffset + offsetY;
         int[] palette = playerState != null
             && (playerState.invincibilityCounter() & 0x04) != 0
             // DrawLinkSprite's GBC path selects object palette 4 from bit 2
@@ -1667,11 +1895,6 @@ public final class Link implements RocsFeather.JumpTarget {
         drawTile(displayBuffer, rightBottom, originX + 8, originY + 8, rightFlipX, rightFlipY,
             palette);
 
-        // Let equipped items paint their own sprites on top (e.g. the sword
-        // blade during a swing). Matches the disassembly's ordering where
-        // DrawLinkSprite writes Link's body to wLinkOAMBuffer slots 1-2 and
-        // ApplyLinkMotionState/func_020_4AB3 writes the sword into slots 4-5.
-        renderEquippedItems(displayBuffer, offsetX, offsetY);
     }
 
     private void renderEquippedItems(byte[] displayBuffer, int offsetX, int offsetY) {

@@ -345,6 +345,12 @@ public final class Sword implements EquippedItem {
         }
     }
 
+    public void cancelAttack() {
+        resetSpinAttack();
+        state = STATE_NONE;
+        timer = 0;
+    }
+
     /**
      * Computes the enemy collision rectangle populated by UpdateSwordAnimation
      * in bank2.asm. The rectangle is independent from the visual blade OAM

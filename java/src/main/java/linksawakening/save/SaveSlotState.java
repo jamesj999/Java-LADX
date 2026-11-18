@@ -1,5 +1,7 @@
 package linksawakening.save;
 
+import linksawakening.world.FollowingNpcState;
+
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -18,7 +20,6 @@ public record SaveSlotState(
     int hasFlippers,
     int hasMedicine,
     int tradeSequenceItem,
-    int medicineCount,
     int tailKeyCount,
     int anglerKeyCount,
     int faceKeyCount,
@@ -45,6 +46,10 @@ public record SaveSlotState(
     int spawnIndoorRoom,
     byte[] rawSlot
 ) {
+
+    public int medicineCount() {
+        return hasMedicine;
+    }
 
     public SaveSlotState {
         SaveRamLayout.checkSlot(slot);
@@ -106,6 +111,36 @@ public record SaveSlotState(
         return roomStatus(SaveRamLayout.mainOffset()
             + SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_OFFSET,
             SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_SIZE);
+    }
+
+    /** Three decimal digits stored little-endian in packed BCD. */
+    public int deathCount() {
+        int offset = SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET;
+        int tensAndUnits = Byte.toUnsignedInt(rawSlot[offset]);
+        return (rawSlot[offset + 1] & 0x0F) * 100 + (tensAndUnits >>> 4) * 10
+            + (tensAndUnits & 0x0F);
+    }
+
+    public int worldMapRoom() {
+        return rawSlot[SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_WORLD_MAP_ROOM_OFFSET] & 255;
+    }
+
+    public int photoCount() {
+        int offset = SaveRamLayout.dx3Offset();
+        return Integer.bitCount(rawSlot[offset + 1] & 255)
+            + Integer.bitCount(rawSlot[offset + 2] & 15);
+    }
+
+    public int richardSpokenFlag() {
+        return rawSlot[SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_RICHARD_SPOKEN_OFFSET] & 255;
+    }
+
+    public FollowingNpcState followingNpcState() {
+        int main = SaveRamLayout.mainOffset();
+        int ghost = rawSlot[main + SaveRamLayout.MAIN_GHOST_FOLLOWING_OFFSET] & 255;
+        return new FollowingNpcState(rawSlot[main + SaveRamLayout.MAIN_ROOSTER_FOLLOWING_OFFSET] != 0,
+            ghost <= 2 ? ghost : 0, rawSlot[main + SaveRamLayout.MAIN_MARIN_FOLLOWING_OFFSET] != 0, bowWowState() == 1,
+            dungeonProgressFlags()[3] & 255, powerBraceletLevel, rawSlot[main + 0x310] != 0);
     }
 
     public int bowWowState() {

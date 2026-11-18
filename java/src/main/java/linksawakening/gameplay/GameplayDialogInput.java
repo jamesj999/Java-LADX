@@ -18,8 +18,19 @@ public final class GameplayDialogInput {
         if (action != GLFW_PRESS || !blocksGameplay(dialogController)) {
             return false;
         }
+        if (dialogController.isChoicePrompt()) {
+            if (key == GLFW_KEY_ENTER || (inputConfig != null && key == inputConfig.aKey())) {
+                dialogController.pressAdvanceButton();
+                return true;
+            }
+            if (inputConfig != null && (key == inputConfig.leftKey() || key == inputConfig.rightKey())) {
+                dialogController.toggleChoiceSelection();
+                return true;
+            }
+            return inputConfig != null && key == inputConfig.bKey();
+        }
         if (isAdvanceKey(key, inputConfig)) {
-            dialogController.advance();
+            dialogController.pressAdvanceButton();
             return true;
         }
         return false;

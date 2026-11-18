@@ -21,10 +21,13 @@ public final class EntitySpriteTileSnapshot {
     }
 
     public Tile tile(int tileIndex) {
-        int offset = tileIndex - BASE_TILE_INDEX;
-        if (offset < 0 || offset >= TILE_COUNT) {
+        if (!containsTile(tileIndex)) {
             return null;
         }
-        return tiles[offset].copy();
+        return tiles[tileIndex - BASE_TILE_INDEX].copy();
+    }
+
+    public boolean containsTile(int tileIndex) {
+        return tileIndex >= BASE_TILE_INDEX && tileIndex < BASE_TILE_INDEX + TILE_COUNT;
     }
 }

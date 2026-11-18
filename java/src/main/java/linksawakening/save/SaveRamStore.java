@@ -1,5 +1,7 @@
 package linksawakening.save;
 
+import linksawakening.world.FollowingNpcState;
+
 import linksawakening.state.PlayerState;
 
 import java.io.IOException;
@@ -35,6 +37,11 @@ public final class SaveRamStore {
 
     public static SaveRamStore inMemory() {
         return new SaveRamStore(null, SaveRamImage.empty());
+    }
+
+    /** Copies current save data into an independent store with no backing file. */
+    public SaveRamStore transientCopy() {
+        return new SaveRamStore(null, image());
     }
 
     public static Path defaultPath() {
@@ -93,8 +100,20 @@ public final class SaveRamStore {
         image.writeDungeonProgressFlags(slot, dungeonProgressFlags);
     }
 
+    public void writeWorldMapRoom(int slot, int room) {
+        image.writeWorldMapRoom(slot, room);
+    }
+
+    public void writeDeathCount(int slot, int deathCount) {
+        image.writeDeathCount(slot, deathCount);
+    }
+
     public void writeBowWowState(int slot, int state) {
         image.writeBowWowState(slot, state);
+    }
+
+    public void writeQuestFlags(int slot, int richardSpokenFlag, FollowingNpcState state) {
+        image.writeQuestFlags(slot, richardSpokenFlag, state);
     }
 
     public void writeTarinFlag(int slot, int flag) {

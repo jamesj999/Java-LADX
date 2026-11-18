@@ -1,9 +1,14 @@
 package linksawakening.ui;
 
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.scene.BackgroundScene;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -30,7 +35,8 @@ final class FileSaveControllerTest {
         assertEquals(1, controller.snapshot().sprites().size());
         assertEquals(0xBE, controller.snapshot().sprites().get(0).tileIndex());
         assertEquals(0x1C, controller.snapshot().sprites().get(0).x());
-        assertEquals(0x40, controller.snapshot().sprites().get(0).y());
+        assertEquals(0x38, controller.snapshot().sprites().get(0).y());
+        assertEquals(16, controller.snapshot().sprites().get(0).height());
     }
 
     @Test
@@ -47,21 +53,28 @@ final class FileSaveControllerTest {
 
     @Test
     void actionButtonsReturnTheSelectedRomCommand() {
-        FileSaveController controller = newController();
+        List<GameplaySoundEvent> sounds = new ArrayList<>();
+        FileSaveController controller = newController(sounds::add);
 
         assertEquals(FileSaveAction.Type.RETURN_TO_GAME,
             press(controller, GLFW_KEY_A).type());
         press(controller, GLFW_KEY_DOWN);
         assertEquals(FileSaveAction.Type.SAVE_AND_QUIT,
             press(controller, GLFW_KEY_B).type());
+        assertEquals(List.of(GameplaySoundEvent.MENU_VALIDATE, GameplaySoundEvent.MENU_MOVE,
+            GameplaySoundEvent.MENU_VALIDATE), sounds);
         assertFalse(controller.snapshot().creation());
         assertTrue(controller.snapshot().nameBytes().length == 5);
     }
 
     private static FileSaveController newController() {
+        return newController(GameplaySoundSink.none());
+    }
+
+    private static FileSaveController newController(GameplaySoundSink soundSink) {
         return new FileSaveController(sceneId -> new BackgroundScene(
             new int[32 * 32], new int[32 * 32],
-            new int[][] {{0, 0, 0, 0}}, new int[][] {{0, 0, 0, 0}}));
+            new int[][] {{0, 0, 0, 0}}, new int[][] {{0, 0, 0, 0}}), soundSink);
     }
 
     private static FileSaveAction press(FileSaveController controller, int key) {

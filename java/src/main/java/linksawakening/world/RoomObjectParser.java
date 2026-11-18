@@ -5,6 +5,8 @@ import linksawakening.rom.RomBank;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class RoomObjectParser {
     private static final int ROOM_TEMPLATE_BANK = 0x14;
@@ -101,7 +103,10 @@ public final class RoomObjectParser {
 
     private final byte[] romData;
     private int[] roomObjectsArea;
+    private static final int[] DOOR_STATUS_BITS = { 4, 8, 2, 1 };
+    private int openDoorFlags;
     private int shutterDoorMask;
+    private final Map<Integer, Integer> shutterLocations = new HashMap<>();
     private int staircaseLocation = -1;
     private final List<Warp> warps = new ArrayList<>();
     private final List<Integer> doorPositions = new ArrayList<>();
@@ -178,78 +183,7 @@ public final class RoomObjectParser {
         applyIndoorBombableWallStatus();
         assignDoorPositionsToWarps();
         return new RoomObjectParseResult(
-            roomObjectsArea, warps, shutterDoorMask, staircaseLocation);
-    }
-
-    /** Applies one source indoor-door macro to an already decoded room buffer. */
-    void applyIndoorDoorMacro(int[] targetRoomObjectsArea, int type, int location) {
-        if (targetRoomObjectsArea == null || targetRoomObjectsArea.length < 0x100
-            || type < INDOOR_DOOR_MACRO_BASE || type > INDOOR_DOOR_MACRO_LAST) {
-            throw new IllegalArgumentException("Invalid indoor door macro target");
-        }
-        roomObjectsArea = targetRoomObjectsArea;
-        applyMacroTable(location, INDOOR_DOOR_MACRO_BANK,
-            INDOOR_DOOR_MACRO_TABLES[type - INDOOR_DOOR_MACRO_BASE][0],
-            INDOOR_DOOR_MACRO_BANK,
-            INDOOR_DOOR_MACRO_TABLES[type - INDOOR_DOOR_MACRO_BASE][1]);
-    }
-
-    /** Applies the final closed-shutter object pair written by {@code func_002_5C04}. */
-    void applyIndoorShutterClosedState(int[] targetRoomObjectsArea, int shutterMask) {
-        if (targetRoomObjectsArea == null || targetRoomObjectsArea.length < 0x100) {
-            throw new IllegalArgumentException("Invalid indoor shutter target");
-        }
-        int offsetsOffset = RomBank.romOffset(0x02, 0x5BF4);
-        int idsOffset = RomBank.romOffset(0x02, 0x5BFC);
-        for (int direction = 0; direction < 4; direction++) {
-            if ((shutterMask & (1 << direction)) == 0) {
-                continue;
-            }
-            int location = indoorShutterLocation(targetRoomObjectsArea, direction);
-            if (location < 0) {
-                continue;
-            }
-            int baseIndex = RoomConstants.ROOM_OBJECTS_BASE
-                + (location & 0xF0) + (location & 0x0F);
-            for (int half = 0; half < 2; half++) {
-                int tableIndex = direction + half * 4;
-                int targetIndex = baseIndex + (romData[offsetsOffset + tableIndex] & 0xFF);
-                targetRoomObjectsArea[targetIndex] = romData[idsOffset + tableIndex] & 0xFF;
-            }
-        }
-    }
-
-    /** Finds a shutter's source macro location from either its open or closed object pair. */
-    int indoorShutterLocation(int[] targetRoomObjectsArea, int direction) {
-        if (targetRoomObjectsArea == null || targetRoomObjectsArea.length < 0x100
-            || direction < 0 || direction >= 4) {
-            throw new IllegalArgumentException("Invalid indoor shutter lookup");
-        }
-        int[] openIdsAddresses = {0x36B0, 0x36E8, 0x36FC, 0x3710};
-        int openIdsOffset = RomBank.romOffset(0x00, openIdsAddresses[direction]);
-        int closedIdsOffset = RomBank.romOffset(0x02, 0x5BFC);
-        int openFirst = romData[openIdsOffset] & 0xFF;
-        int openSecond = romData[openIdsOffset + 1] & 0xFF;
-        int closedFirst = romData[closedIdsOffset + direction] & 0xFF;
-        int closedSecond = romData[closedIdsOffset + direction + 4] & 0xFF;
-        int pairOffset = direction < 2 ? 1 : RoomConstants.ROOM_OBJECT_ROW_STRIDE;
-        for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
-            for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
-                int index = RoomConstants.ROOM_OBJECTS_BASE
-                    + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column;
-                int secondIndex = index + pairOffset;
-                if (secondIndex >= targetRoomObjectsArea.length) {
-                    continue;
-                }
-                int first = targetRoomObjectsArea[index] & 0xFF;
-                int second = targetRoomObjectsArea[secondIndex] & 0xFF;
-                if ((first == openFirst && second == openSecond)
-                    || (first == closedFirst && second == closedSecond)) {
-                    return (row << 4) | column;
-                }
-            }
-        }
-        return -1;
+            roomObjectsArea, warps, shutterDoorMask, staircaseLocation, openDoorFlags, shutterLocations);
     }
 
     private void applyIndoorBombableBlockStatus(int mapId) {
@@ -329,6 +263,8 @@ public final class RoomObjectParser {
         warps.clear();
         doorPositions.clear();
         shutterDoorMask = 0;
+        shutterLocations.clear();
+        openDoorFlags = 0;
         staircaseLocation = -1;
         fillRoomMapWithObject(floorObject);
     }
@@ -400,13 +336,7 @@ public final class RoomObjectParser {
         // ConfigureRoomObjects selects the matching open-door macro when the
         // directional status bit was synchronized by the adjacent room.
         if (idx < 4) {
-            int statusBit = switch (idx) {
-                case 0 -> 0x04;
-                case 1 -> 0x08;
-                case 2 -> 0x02;
-                case 3 -> 0x01;
-                default -> 0;
-            };
+            int statusBit = DOOR_STATUS_BITS[idx];
             if ((roomStatusFlags & statusBit) != 0) {
                 idx += 8;
             }
@@ -418,6 +348,13 @@ public final class RoomObjectParser {
         if (idx >= 4 && idx <= 7) {
             // wC18A/wC18B use top, bottom, left, right in bits 0..3.
             shutterDoorMask |= 1 << (idx - 4);
+            shutterLocations.put(idx - 4, location);
+        }
+        // Closed shutters call the same status updater as open doors during loading.
+        if (idx >= 4 && idx < 12) {
+            openDoorFlags |= DOOR_STATUS_BITS[idx % 4];
+        } else if (idx == 16 || idx == 17) {
+            openDoorFlags |= idx == 16 ? 8 : 1;
         }
         int[] table = INDOOR_DOOR_MACRO_TABLES[idx];
         applyMacroTable(location, INDOOR_DOOR_MACRO_BANK, table[0],

@@ -1,6 +1,7 @@
 package linksawakening.world;
 
 import linksawakening.entity.Link;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
 
 public final class RoomTransitionCoordinator {
     private final RoomSession roomSession;
@@ -8,6 +9,9 @@ public final class RoomTransitionCoordinator {
     private final TransitionController transitionController;
     private final ScrollController scrollController;
 
+    private ActiveRoom portalRoom;
+    private boolean portalArmed;
+    private int portalCountdown;
     private int suppressedWarpTile = -1;
 
     public RoomTransitionCoordinator(RoomSession roomSession,
@@ -32,6 +36,16 @@ public final class RoomTransitionCoordinator {
         }
         ActiveRoom room = roomSession.activeRoom();
 
+        if (link.warpHoleReady()) {
+            Warp target = roomSession.nextVisitedWarpHole();
+            link.setPixelPosition(target.javaPixelX(), target.javaPixelY());
+            transitionController.startFadeOut(() -> {
+                applyWarp(target, link);
+                link.startWarpHoleLanding();
+            });
+            return;
+        }
+        if (link.warpHoleControlsLink()) return;
         if (room.mapCategory() != Warp.CATEGORY_OVERWORLD) {
             RoomBoundaryDecision boundary = boundaryController.decide(
                 roomSession.boundaryState(link.pixelX(), link.pixelY()));
@@ -41,13 +55,13 @@ public final class RoomTransitionCoordinator {
                     + " map=" + String.format("%02X", target.destMap())
                     + " room=" + String.format("%02X", target.destRoom())
                     + " at (" + target.destX() + "," + target.destY() + ")");
-                transitionController.startFadeOut(() -> applyWarp(target, link));
+                startDoorWarp(target, link, true);
                 return;
             }
             if (boundary.type() == RoomBoundaryDecision.Type.SIDE_SCROLL_VERTICAL_WARP
                 && room.hasWarps()) {
                 Warp target = room.firstWarp();
-                transitionController.startFadeOut(() -> applyWarp(target, link));
+                startDoorWarp(target, link, true);
                 return;
             }
             if (boundary.type() == RoomBoundaryDecision.Type.INDOOR_SCROLL) {
@@ -68,7 +82,7 @@ public final class RoomTransitionCoordinator {
             link.romEntityX(), link.romEntityY(), link.romEntityZ(),
             link.isCarryingLiftedObject());
         if (staircaseWarp != null) {
-            transitionController.startFadeOut(() -> applyWarp(staircaseWarp, link));
+            startDoorWarp(staircaseWarp, link, fadesMusicOnStairs(room));
             return;
         }
 
@@ -80,14 +94,14 @@ public final class RoomTransitionCoordinator {
             return;
         }
         for (Warp warp : room.warps()) {
-            if (warp.tileLocation() == linkTile) {
+            if (warp.tileLocation() == linkTile && roomSession.canEnterWarpTile(link, linkTile)) {
                 final Warp target = warp;
                 System.out.println("Warp trigger: tile=" + String.format("%02X", linkTile)
                     + " → cat=" + target.category()
                     + " map=" + String.format("%02X", target.destMap())
                     + " room=" + String.format("%02X", target.destRoom())
                     + " at (" + target.destX() + "," + target.destY() + ")");
-                transitionController.startFadeOut(() -> applyWarp(target, link));
+                startDoorWarp(target, link, fadesMusicOnStairs(room));
                 return;
             }
         }
@@ -117,6 +131,47 @@ public final class RoomTransitionCoordinator {
         }
     }
 
+    public boolean dungeonPortalControlsLink() {
+        return portalCountdown > 0;
+    }
+
+    public void tickDungeonPortal(Link link, int frame) {
+        ActiveRoom room = roomSession.activeRoom();
+        if (room != portalRoom) {
+            portalRoom = room;
+            portalArmed = false;
+            portalCountdown = 0;
+        }
+        if (room == null || room.entities() == null || transitionController.isActive()) return;
+        Warp target = roomSession.dungeonPortalDestination();
+        if (target == null) return;
+        for (RoomEntity entity : room.entities().loadedEntities()) {
+            if (entity.type() != EntitySpriteHandlerCatalog.ENTITY_WARP) continue;
+            int dx = link.romEntityX() - entity.x();
+            int dy = link.romEntityY() - entity.y();
+            if (portalCountdown > 0) {
+                if (--portalCountdown > 0) {
+                    link.spinOnDungeonPortal(entity.x(), entity.y(), frame);
+                } else {
+                    portalArmed = false;
+                    transitionController.startFadeOut(() -> applyWarp(target, link));
+                }
+            } else if (!portalArmed) {
+                portalArmed = dx < -4 || dx >= 4 || dy < -4 || dy >= 4;
+            } else if (link.romEntityZ() == 0 && dx >= -3 && dx < 3 && dy >= -3 && dy < 3) {
+                link.beginDungeonPortal();
+                portalCountdown = 0x50;
+            }
+            return;
+        }
+    }
+
+    public void handleRichardPassage(Link link) {
+        if (transitionController.isActive()) return;
+        Warp target = roomSession.takeRichardPassage();
+        if (target != null) transitionController.startFadeOut(() -> applyWarp(target, link));
+    }
+
     /** Starts a pending Ocarina Mambo transition after entity playback ends. */
     public boolean handlePendingManboTransition(Link link) {
         if (link == null || !roomSession.hasActiveRoom() || transitionController.isActive()) {
@@ -126,7 +181,7 @@ public final class RoomTransitionCoordinator {
         if (target == null) {
             return false;
         }
-        transitionController.startManboIn(() -> applyWarp(target, link));
+        transitionController.startManboIn(target.category() != Warp.CATEGORY_OVERWORLD, () -> applyWarp(target, link));
         return true;
     }
 
@@ -143,8 +198,22 @@ public final class RoomTransitionCoordinator {
         return true;
     }
 
+    private static boolean fadesMusicOnStairs(ActiveRoom room) {
+        // ApplyMapFadeOutTransitionWithSound checks wWarp0MapCategory before wIsIndoor.
+        return room.mapCategory() == Warp.CATEGORY_OVERWORLD || room.firstWarp().category() != Warp.CATEGORY_INDOOR;
+    }
+
+    private void startDoorWarp(Warp target, Link link, boolean fadeMusic) {
+        roomSession.playDoorSound();
+        transitionController.startDoorFade(fadeMusic, () -> applyWarp(target, link));
+    }
+
     private void applyWarp(Warp warp, Link link) {
+        // hFreeWarpDataAddress holds the source wIsIndoor at $18B0.
+        boolean fromOverworld = roomSession.activeRoom().mapCategory() == Warp.CATEGORY_OVERWORLD;
+        if (fromOverworld != (warp.category() == Warp.CATEGORY_OVERWORLD)) link.clearActivePowerUp();
         roomSession.loadWarpDestination(warp);
+        link.enterWarpView(warp.category() == Warp.CATEGORY_SIDESCROLL);
         int landingX = warp.javaPixelX();
         int landingY = warp.javaPixelY();
         link.setRoomEntryPixelPosition(landingX, landingY);

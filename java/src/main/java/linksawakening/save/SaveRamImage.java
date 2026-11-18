@@ -1,5 +1,7 @@
 package linksawakening.save;
 
+import linksawakening.world.FollowingNpcState;
+
 import linksawakening.state.PlayerState;
 
 import java.util.Arrays;
@@ -189,12 +191,35 @@ public final class SaveRamImage {
             SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_SIZE);
     }
 
+    public void writeWorldMapRoom(int slot, int room) {
+        requireByte(room, "World map room");
+        int main = SaveRamLayout.slotOffset(slot) + SaveRamLayout.mainOffset();
+        bytes[main + SaveRamLayout.MAIN_WORLD_MAP_ROOM_OFFSET] = (byte) room;
+    }
+
+    /** Writes the three decimal death-count digits, preserving the other bits. */
+    public void writeDeathCount(int slot, int deathCount) {
+        int offset = SaveRamLayout.slotOffset(slot) + SaveRamLayout.mainOffset()
+            + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET;
+        int count = Math.max(0, Math.min(999, deathCount));
+        bytes[offset] = encodeBcd(count % 100);
+        bytes[offset + 1] = (byte) ((bytes[offset + 1] & 0xF0) | (count / 100));
+    }
+
     /** Writes wIsBowWowFollowingLink at DB56. */
     public void writeBowWowState(int slot, int state) {
         SaveRamLayout.checkSlot(slot);
         requireByte(state, "BowWow state");
         int main = SaveRamLayout.slotOffset(slot) + SaveRamLayout.mainOffset();
         bytes[main + SaveRamLayout.MAIN_BOW_WOW_STATE_OFFSET] = (byte) state;
+    }
+
+    public void writeQuestFlags(int slot, int richardSpokenFlag, FollowingNpcState state) {
+        int main = SaveRamLayout.slotOffset(slot) + SaveRamLayout.mainOffset();
+        bytes[main + SaveRamLayout.MAIN_RICHARD_SPOKEN_OFFSET] = (byte) richardSpokenFlag;
+        bytes[main + SaveRamLayout.MAIN_MARIN_FOLLOWING_OFFSET] = (byte) (state.marinFollowing() ? 1 : 0);
+        bytes[main + SaveRamLayout.MAIN_GHOST_FOLLOWING_OFFSET] = (byte) state.ghostFollowingState();
+        bytes[main + SaveRamLayout.MAIN_ROOSTER_FOLLOWING_OFFSET] = (byte) (state.roosterFollowing() ? 1 : 0);
     }
 
     /** Writes wTarinFlag at DB48. */
@@ -247,12 +272,10 @@ public final class SaveRamImage {
         bytes[main + SaveRamLayout.MAIN_FLIPPERS_OFFSET]
             = (byte) (playerState.hasFlippers() ? 1 : 0);
         bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET]
-            = (byte) (playerState.hasMedicine() ? 1 : 0);
+            = (byte) playerState.medicineCount();
         bytes[main + SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET]
             = (byte) playerState.tradeSequenceItem();
-        bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET] = (byte) playerState.seashells();
-        bytes[main + SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET]
-            = (byte) playerState.medicineCount();
+        bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET] = encodeBcd(playerState.seashells());
         bytes[main + SaveRamLayout.MAIN_TAIL_KEY_OFFSET] = (byte) playerState.tailKeyCount();
         bytes[main + SaveRamLayout.MAIN_ANGLER_KEY_OFFSET]
             = (byte) playerState.anglerKeyCount();
@@ -263,21 +286,21 @@ public final class SaveRamImage {
         bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET]
             = (byte) playerState.powerBraceletLevel();
         bytes[main + SaveRamLayout.MAIN_SHIELD_OFFSET] = (byte) playerState.shieldLevel();
-        bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET] = (byte) playerState.arrowCount();
+        bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET] = encodeBcd(playerState.arrowCount());
         bytes[main + SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET]
-            = (byte) playerState.magicPowderCount();
+            = encodeBcd(playerState.magicPowderCount());
         bytes[main + SaveRamLayout.MAIN_HAS_TOADSTOOL_OFFSET]
             = (byte) (playerState.hasToadstool() ? 1 : 0);
-        bytes[main + SaveRamLayout.MAIN_BOMBS_OFFSET] = (byte) playerState.bombCount();
+        bytes[main + SaveRamLayout.MAIN_BOMBS_OFFSET] = encodeBcd(playerState.bombCount());
         bytes[main + SaveRamLayout.MAIN_SWORD_OFFSET] = (byte) playerState.swordLevel();
         bytes[main + SaveRamLayout.MAIN_HEALTH_OFFSET] = (byte) savedHealth(playerState);
         bytes[main + SaveRamLayout.MAIN_MAX_HEARTS_OFFSET] = (byte) playerState.maxHearts();
         bytes[main + SaveRamLayout.MAIN_HEART_PIECES_OFFSET] = (byte) playerState.heartPieces();
         writeRupees(main, playerState.rupees());
         bytes[main + SaveRamLayout.MAIN_MAX_MAGIC_POWDER_OFFSET]
-            = (byte) playerState.maxMagicPowder();
-        bytes[main + SaveRamLayout.MAIN_MAX_BOMBS_OFFSET] = (byte) playerState.maxBombs();
-        bytes[main + SaveRamLayout.MAIN_MAX_ARROWS_OFFSET] = (byte) playerState.maxArrows();
+            = encodeBcd(playerState.maxMagicPowder());
+        bytes[main + SaveRamLayout.MAIN_MAX_BOMBS_OFFSET] = encodeBcd(playerState.maxBombs());
+        bytes[main + SaveRamLayout.MAIN_MAX_ARROWS_OFFSET] = encodeBcd(playerState.maxArrows());
         writeOcarinaState(slot, playerState.ocarinaSongFlags(), playerState.selectedSongIndex());
         bytes[slotOffset + SaveRamLayout.dx3Offset() + SaveRamLayout.DX3_TUNIC_OFFSET]
             = (byte) playerState.tunicType();
@@ -296,6 +319,15 @@ public final class SaveRamImage {
             subscreen[index] = unsigned(bytes[main + SaveRamLayout.MAIN_SUBSCREEN_OFFSET + index]);
         }
         byte[] rawSlot = Arrays.copyOfRange(bytes, slotOffset, slotOffset + SaveRamLayout.SLOT_SIZE);
+        // Previous Java saves used binary for all six ammunition fields.
+        boolean legacyBinaryAmmo = false;
+        for (int offset : AMMO_FIELDS) {
+            int value = unsigned(bytes[main + offset]);
+            if ((value & 15) > 9 || (value >>> 4) > 9) {
+                legacyBinaryAmmo = true;
+                break;
+            }
+        }
         return new SaveSlotState(
             slot,
             nameBytes,
@@ -307,11 +339,10 @@ public final class SaveRamImage {
             unsigned(bytes[main + SaveRamLayout.MAIN_ITEM_A_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_ITEM_B_OFFSET]),
             subscreen,
-            unsigned(bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET]),
+            readPackedCount(main, SaveRamLayout.MAIN_SEASHELLS_OFFSET, legacyBinaryAmmo),
             unsigned(bytes[main + SaveRamLayout.MAIN_FLIPPERS_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_TAIL_KEY_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_ANGLER_KEY_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_FACE_KEY_OFFSET]),
@@ -320,12 +351,12 @@ public final class SaveRamImage {
             unsigned(bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_SHIELD_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_SWORD_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_MAX_ARROWS_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_BOMBS_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_MAX_BOMBS_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_MAX_MAGIC_POWDER_OFFSET]),
+            readPackedCount(main, SaveRamLayout.MAIN_ARROWS_OFFSET, legacyBinaryAmmo),
+            readPackedCount(main, SaveRamLayout.MAIN_MAX_ARROWS_OFFSET, legacyBinaryAmmo),
+            readPackedCount(main, SaveRamLayout.MAIN_BOMBS_OFFSET, legacyBinaryAmmo),
+            readPackedCount(main, SaveRamLayout.MAIN_MAX_BOMBS_OFFSET, legacyBinaryAmmo),
+            readPackedCount(main, SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET, legacyBinaryAmmo),
+            readPackedCount(main, SaveRamLayout.MAIN_MAX_MAGIC_POWDER_OFFSET, legacyBinaryAmmo),
             unsigned(bytes[main + SaveRamLayout.MAIN_OCARINA_SONG_FLAGS_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_SELECTED_SONG_INDEX_OFFSET]),
             unsigned(bytes[main + SaveRamLayout.MAIN_HAS_TOADSTOOL_OFFSET]),
@@ -359,6 +390,21 @@ public final class SaveRamImage {
             }
         }
         return false;
+    }
+
+    private static final int[] AMMO_FIELDS = {
+        SaveRamLayout.MAIN_ARROWS_OFFSET, SaveRamLayout.MAIN_BOMBS_OFFSET,
+        SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET, SaveRamLayout.MAIN_MAX_ARROWS_OFFSET,
+        SaveRamLayout.MAIN_MAX_BOMBS_OFFSET, SaveRamLayout.MAIN_MAX_MAGIC_POWDER_OFFSET
+    };
+
+    private int readPackedCount(int main, int offset, boolean binary) {
+        int value = unsigned(bytes[main + offset]);
+        return binary || (value & 15) > 9 ? value : (value >>> 4) * 10 + (value & 15);
+    }
+
+    private static byte encodeBcd(int value) {
+        return (byte) ((value / 10 << 4) | (value % 10));
     }
 
     private static int decodeRupees(byte high, byte low) {

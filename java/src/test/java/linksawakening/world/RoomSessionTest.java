@@ -5,6 +5,7 @@ import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.entity.Link;
 import linksawakening.gameplay.BeachSwordRewardConsumer;
 import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.SignpostDialogRef;
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
 import linksawakening.physics.PhysicsFlags;
@@ -32,6 +33,70 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class RoomSessionTest {
 
     @Test
+    void telephoneRemembersFirstCallAndCyclesLeafHintsOnlyDuringTheLeafQuest() {
+        RoomSession room = newSession();
+        PlayerState player = new PlayerState();
+        room.restoreQuestFlags(2, FollowingNpcState.none(), 0x58, 0x68);
+        room.loadIndoor(0x10, 0x99);
+        room.tickEntities(1, 0x58, 0x68);
+        assertNull(room.useTelephone(0x58, 0x68, 3, player));
+        assertEquals(new SignpostDialogRef(1, 0x41), room.useTelephone(0x58, 0x68, 2, player));
+        assertEquals(0x20, room.indoorBRoomStatusSnapshot()[0xA9] & 0x20);
+        assertEquals(new SignpostDialogRef(1, 0x46), room.useTelephone(0x58, 0x68, 2, player));
+
+        room.restoreDungeonProgressFlags(new byte[]{2, 2, 0, 0, 0, 0, 0, 0});
+        player.setTradeSequenceItem(5);
+        for (int lowId : new int[]{0x29, 0x2A, 0x28}) {
+            assertEquals(new SignpostDialogRef(2, lowId), room.useTelephone(0x58, 0x68, 2, player));
+        }
+        room.loadIndoor(0x10, 0xA9);
+        room.tickEntities(2, 0x28, 0x40);
+        assertEquals(new SignpostDialogRef(1, 0xFD), room.useTelephone(0x28, 0x40, 2, player));
+    }
+
+    @Test
+    void collectedBossHeartPreventsTheBossAndRewardFromReturning() {
+        RoomSession original = newSession();
+        original.loadIndoor(0, 0x06);
+        int bossType = EntitySpriteHandlerCatalog.ENTITY_MOLDORM;
+        assertTrue(original.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == bossType));
+        original.markHeartContainerCollected();
+
+        RoomSession reopened = newSession();
+        reopened.restoreRoomStatuses(original.overworldRoomStatusSnapshot(),
+            original.indoorARoomStatusSnapshot(), original.indoorBRoomStatusSnapshot(),
+            original.colorDungeonRoomStatusSnapshot());
+        reopened.loadIndoor(0, 0x06);
+
+        assertFalse(reopened.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == bossType));
+        for (int frame = 0; frame < 40; frame++) reopened.tickEntities(frame, 0x50, 0x60);
+        assertEquals(2, reopened.activeRoom().shutterDoorMask());
+        assertEquals(0x43, reopened.activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x04]);
+        assertEquals(0x37, reopened.activeRoom().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x74]);
+    }
+
+    @Test
+    void saveCheckpointFollowsWarpsAndSurvivesScrollingAndSideViewRooms() {
+        RoomSession session = newSession();
+        session.loadIndoor(0x10, 0xA3);
+        session.loadWarpDestination(new Warp(0, 0, 0xA3, 0x48, 0x52, -1));
+        var outside = session.spawnLocation();
+        assertEquals(0xA3, outside.room());
+        session.startAdjacentOverworldScroll(new ScrollController(), ScrollController.LEFT, 0, 56);
+        assertEquals(0xA2, session.currentRoomId());
+        assertEquals(outside, session.spawnLocation());
+
+        session.loadWarpDestination(new Warp(1, 0, 0x0D, 0x28, 0x40, -1));
+        var tailCaveEntrance = new RoomSession.SpawnLocation(1, 0, 0x17, 0x50, 0x7C, 0x3B);
+        assertEquals(tailCaveEntrance, session.spawnLocation());
+        session.loadWarpDestination(new Warp(2, 0, 0x1C, 0x28, 0x40, -1));
+        session.loadWarpDestination(new Warp(1, 0, 0x0D, 0x38, 0x50, -1));
+        assertEquals(tailCaveEntrance, session.spawnLocation());
+    }
+
+    @Test
     void newGameWorldInitializationRestoresTheBeachOpeningEntities() {
         RoomSession session = newSession();
         byte[] completedOverworld = new byte[0x100];
@@ -45,7 +110,9 @@ final class RoomSessionTest {
             .anyMatch(entity -> entity.type() == 0x31 || entity.type() == 0x41));
 
         session.initializeNewGameWorldState();
+        assertEquals(0xA3, session.worldMapRoom());
         session.loadInitialOverworld(0xF2);
+        assertEquals(0xF2, session.worldMapRoom());
 
         assertEquals(new EnemyDropResolver.CounterState(0, 0),
             session.enemyDropCountersForTest());
@@ -492,7 +559,7 @@ final class RoomSessionTest {
     @Test
     void notifiesListenerAfterRoomLoads() {
         List<Integer> loadedRoomIds = new ArrayList<>();
-        RoomSession session = newSession(room -> loadedRoomIds.add(room.roomId()));
+        RoomSession session = newSession((room, adjacentScroll) -> loadedRoomIds.add(room.roomId()));
         ScrollController scrollController = new ScrollController();
 
         session.loadInitialOverworld(0x92);
@@ -846,6 +913,7 @@ final class RoomSessionTest {
         int destinationIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x33;
         int initialDestination = session.activeRoom().roomObjectsArea()[destinationIndex];
         assertEquals(0x22, session.activeRoomEventForTest());
+        for (int tick = 0; tick < 9; tick++) session.tickEntities(tick, 0x15, 0x28);
         assertNotEquals(0, session.activeRoom().shutterDoorMask());
 
         for (int tick = 0; tick < 64; tick++) {
@@ -874,16 +942,17 @@ final class RoomSessionTest {
             session.activeRoom().roomObjectsArea()[destinationIndex]);
         assertNotEquals(0, session.activeRoom().shutterDoorMask());
 
-        session.tickEntities(32, 0x15, 0x28);
+        for (int frame = 32; frame <= 40; frame++) session.tickEntities(frame, 0x15, 0x28);
 
         assertEquals(0xA6, session.activeRoom().roomObjectsArea()[destinationIndex]);
         assertEquals(0, session.activeRoom().shutterDoorMask());
         assertEquals(0, session.activeRoomEventForTest());
         assertEquals(0, session.indoorRoomStatusForTest(0x00, 0x04) & 0x10);
-        assertEquals(List.of(GameplaySoundEvent.PUZZLE_SOLVED,
+        assertEquals(List.of(GameplaySoundEvent.DOOR_CLOSED, GameplaySoundEvent.PUZZLE_SOLVED,
             GameplaySoundEvent.DOOR_UNLOCKED), sounds);
 
         session.loadIndoor(0x00, 0x04);
+        for (int tick = 0; tick < 9; tick++) session.tickEntities(tick, 0x15, 0x28);
         assertNotEquals(0, session.activeRoom().shutterDoorMask());
         assertEquals(0x22, session.activeRoomEventForTest());
     }
@@ -974,6 +1043,7 @@ final class RoomSessionTest {
     void rollingBonesRoomOpensItsRomShuttersAndPersistsTheMinibossFlag() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x11);
+        for (int frame = 0; frame < 18; frame++) session.tickEntities(frame, 0x50, 0x50);
         assertEquals(0x05, session.activeRoom().shutterDoorMask());
         assertEquals(0xC1, session.activeRoomEventForTest());
 
@@ -984,7 +1054,7 @@ final class RoomSessionTest {
         session.replaceEntityRuntimeForTest(
             RoomEntityRuntime.from(new RoomEntitySnapshot(emptySlots), true));
 
-        session.tickEntities(0, 0x50, 0x50);
+        for (int frame = 18; frame < 37; frame++) session.tickEntities(frame, 0x50, 0x50);
 
         assertEquals(0, session.activeRoom().shutterDoorMask());
         assertEquals(0, session.activeRoomEventForTest());
@@ -1025,6 +1095,7 @@ final class RoomSessionTest {
     void moldormRoomKillAllEventOpensBothBossRoomShutters() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x06);
+        for (int frame = 0; frame < 18; frame++) session.tickEntities(frame, 0x50, 0x50);
         assertEquals(0x03, session.activeRoom().shutterDoorMask());
         assertEquals(0x21, session.activeRoomEventForTest());
 
@@ -1035,10 +1106,51 @@ final class RoomSessionTest {
         session.replaceEntityRuntimeForTest(
             RoomEntityRuntime.from(new RoomEntitySnapshot(emptySlots), true));
 
-        session.tickEntities(0, 0x50, 0x50);
+        for (int frame = 18; frame < 37; frame++) session.tickEntities(frame, 0x50, 0x50);
 
         assertEquals(0, session.activeRoom().shutterDoorMask());
         assertEquals(0, session.activeRoomEventForTest());
+    }
+
+    @Test
+    void dungeonPortalConnectsBothRoomsInEachRomPairWhenMinibossIsDefeated() {
+        // DungeonWarps at 19:4201, with room IDs from constants/rooms.asm.
+        int[][] portalRooms = {
+            {0x17, 0x11}, {0x36, 0x28}, {0x45, 0x52}, {0x7A, 0x64},
+            {0x93, 0xA1}, {0xC5, 0xD4}, {0x28, 0x0E}, {0x3F, 0x5D}
+        };
+        RoomSession session = newSession();
+        for (int map = 0; map < portalRooms.length; map++) {
+            byte[] instrumentFlags = new byte[8];
+            instrumentFlags[map] = 0x01;
+            session.restoreDungeonProgressFlags(instrumentFlags);
+
+            for (int end = 0; end < 2; end++) {
+                int sourceRoom = portalRooms[map][end];
+                int destinationRoom = portalRooms[map][1 - end];
+                session.loadIndoor(map, sourceRoom);
+
+                Warp warp = session.dungeonPortalDestination();
+                assertNotNull(warp, "Dungeon " + map + ", source room " + sourceRoom);
+                assertEquals(Warp.CATEGORY_INDOOR, warp.category());
+                assertEquals(map, warp.destMap());
+                assertEquals(destinationRoom, warp.destRoom());
+                assertEquals(0x50, warp.destX());
+                assertEquals(destinationRoom == 0x64 ? 0x28 : 0x48, warp.destY());
+            }
+        }
+    }
+
+    @Test
+    void dungeonPortalRequiresMinibossFlagAndMembershipInTheRoomPair() {
+        RoomSession session = newSession();
+        session.restoreDungeonProgressFlags(new byte[]{0x02, 0x01, 0, 0, 0, 0, 0, 0});
+        session.loadIndoor(0x00, 0x17);
+        assertNull(session.dungeonPortalDestination());
+
+        session.restoreDungeonProgressFlags(new byte[]{0x01, 0, 0, 0, 0, 0, 0, 0});
+        session.loadIndoor(0x00, 0x0D);
+        assertNull(session.dungeonPortalDestination());
     }
 
     @Test
@@ -1747,7 +1859,7 @@ final class RoomSessionTest {
             assertEquals(0x09, session.activeRoom().roomObjectsArea()[areaIndex]);
             assertEquals(0x09, session.activeRoom().renderValues()[areaIndex]);
         }
-        assertEquals(0x04, session.overworldRoomStatusForTest(0x97));
+        assertEquals(0x84, session.overworldRoomStatusForTest(0x97));
 
         session.loadOverworld(0x97);
         for (int location : skullLocations) {
@@ -1766,7 +1878,7 @@ final class RoomSessionTest {
         boolean destroyed = false;
         for (int frame = 0; frame <= 140; frame++) {
             session.tickEntities(frame, 0, 0);
-            if (session.overworldRoomStatusForTest(0x97) == 0x04) {
+            if (session.overworldRoomStatusForTest(0x97) == 0x84) {
                 destroyed = true;
                 break;
             }
@@ -1817,7 +1929,7 @@ final class RoomSessionTest {
 
         assertEquals(0xE1, session.activeRoom().roomObjectsArea()[areaIndex]);
         assertEquals(0xE1, session.activeRoom().renderValues()[areaIndex]);
-        assertEquals(0x04, session.overworldRoomStatusForTest(0x13));
+        assertEquals(0x84, session.overworldRoomStatusForTest(0x13));
         assertEquals(location, session.activeRoom().firstWarp().tileLocation());
 
         int tileIndex = 0x0A;
@@ -1849,6 +1961,9 @@ final class RoomSessionTest {
     void bombExplosionReplacesAnIndoorWallAndPersistsTheTwoDoorStatuses() {
         RoomSession session = newSession();
         session.loadIndoor(0x06, 0x18);
+        int entryStatus = session.indoorRoomStatusForTest(0x06, 0x18);
+        assertEquals(0, entryStatus & 0x04);
+        assertEquals(0x80, entryStatus & 0x80);
 
         int location = 0x02;
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
@@ -1861,7 +1976,7 @@ final class RoomSessionTest {
         }
 
         assertEquals(0x3D, session.activeRoom().roomObjectsArea()[areaIndex]);
-        assertEquals(0x04, session.indoorRoomStatusForTest(0x06, 0x18));
+        assertEquals(entryStatus | 0x04, session.indoorRoomStatusForTest(0x06, 0x18));
         assertEquals(0x08, session.indoorRoomStatusForTest(0x06, 0x14));
         List<EntityCombatEvent> events = session.consumeEntityEvents();
         assertEquals(1, events.size());
@@ -1888,6 +2003,9 @@ final class RoomSessionTest {
     void bombExplosionUsesTheRomHorizontalIndoorPassageTiles() {
         RoomSession session = newSession();
         session.loadIndoor(0x00, 0x0D);
+        int entryStatus = session.indoorRoomStatusForTest(0x00, 0x0D);
+        assertEquals(0, entryStatus & 0x02);
+        assertEquals(0x80, entryStatus & 0x80);
 
         int location = 0x30;
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
@@ -1900,7 +2018,7 @@ final class RoomSessionTest {
         }
 
         assertEquals(0x3E, session.activeRoom().roomObjectsArea()[areaIndex]);
-        assertEquals(0x02, session.indoorRoomStatusForTest(0x00, 0x0D));
+        assertEquals(entryStatus | 0x02, session.indoorRoomStatusForTest(0x00, 0x0D));
         assertEquals(0x01, session.indoorRoomStatusForTest(0x00, 0x0C));
 
         int tileIndex = 3 * 2 * RoomConstants.ROOM_TILE_WIDTH;
@@ -1915,6 +2033,9 @@ final class RoomSessionTest {
     void bombExplosionBreaksAnIndoorBombableBlockAndPersistsTheFloor() {
         RoomSession session = newSession();
         session.loadIndoor(0x0A, 0x45);
+        int entryStatus = session.indoorRoomStatusForTest(0x0A, 0x45);
+        assertEquals(0, entryStatus & 0x40);
+        assertEquals(0x80, entryStatus & 0x80);
 
         int location = 0x22;
         int areaIndex = RoomConstants.ROOM_OBJECTS_BASE
@@ -1927,7 +2048,7 @@ final class RoomSessionTest {
         }
 
         assertEquals(0x0D, session.activeRoom().roomObjectsArea()[areaIndex]);
-        assertEquals(0x40, session.indoorRoomStatusForTest(0x0A, 0x45));
+        assertEquals(entryStatus | 0x40, session.indoorRoomStatusForTest(0x0A, 0x45));
 
         int tileIndex = 4 * RoomConstants.ROOM_TILE_WIDTH + 4;
         int[] tileIds = session.activeRoom().tileIds();
@@ -2756,6 +2877,24 @@ final class RoomSessionTest {
     }
 
     @Test
+    void houseEntryUsesSavedSwordAndTarinFlagBeforeFirstEntityTick() {
+        RoomSession session = newSession();
+
+        session.setChestPlayerLevels(1, 1, 0);
+        session.loadIndoor(0x10, 0xA3);
+        assertEquals(List.of(0x2D, 0x2D), session.activeRoom().entities().loadedEntities()
+            .stream().map(RoomEntity::type).toList());
+        session.tickEntities(0);
+        assertEquals(List.of(0x2D, 0x2D), session.activeRoom().entities().loadedEntities()
+            .stream().map(RoomEntity::type).toList());
+
+        session.setTarinFlag(1);
+        session.loadIndoor(0x10, 0xA3);
+        assertTrue(session.activeRoom().entities().loadedEntities().stream()
+            .anyMatch(entity -> entity.type() == 0x3F));
+    }
+
+    @Test
     void houseMarinUnloadsOnceLinkOwnsTheSword() {
         RoomSession session = newSession();
         session.loadIndoor(0x10, 0xA3);
@@ -2880,7 +3019,7 @@ final class RoomSessionTest {
     }
 
     private static RoomSession newSession() {
-        return newSession(room -> {
+        return newSession((room, adjacentScroll) -> {
         });
     }
 
@@ -2900,7 +3039,7 @@ final class RoomSessionTest {
     }
 
     private static RoomSession newSession(TransientVfxSystem transientVfxSystem) {
-        return newSession(transientVfxSystem, room -> {
+        return newSession(transientVfxSystem, (room, adjacentScroll) -> {
         });
     }
 

@@ -15,13 +15,14 @@ public final class EnemyProjectileEventConsumer {
     private EnemyProjectileEventConsumer() {
     }
 
-    public static void consume(List<EntityProjectileEvent> events,
+    public static boolean consume(List<EntityProjectileEvent> events,
                                PlayerState playerState,
                                GameplaySoundSink soundSink) {
         Objects.requireNonNull(events, "events");
         Objects.requireNonNull(playerState, "playerState");
         Objects.requireNonNull(soundSink, "soundSink");
 
+        boolean tookDamage = false;
         for (EntityProjectileEvent event : events) {
             if (event == null) {
                 continue;
@@ -56,7 +57,9 @@ public final class EnemyProjectileEventConsumer {
                 playerState.setRunningWithPegasusBoots(false);
             }
             playerState.applyRomEnemyDamage(event.linkDamage());
+            tookDamage = true;
         }
+        return tookDamage;
     }
 
     private static void playShieldSound(EntityProjectileEvent event,

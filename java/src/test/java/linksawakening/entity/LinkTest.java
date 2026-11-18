@@ -312,6 +312,34 @@ final class LinkTest {
     }
 
     @Test
+    void fallingAcrossSouthRoomEdgeDoesNotMoveBackAboveTheNewRoom() throws IOException {
+        RomTables romTables = RomTables.loadFromRom(loadRom());
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        InputState inputState = new InputState();
+        int[] roomObjects = emptyRoomObjectsArea();
+        roomObjects[ROOM_OBJECTS_BASE + 7 * ROOM_OBJECT_ROW_STRIDE + 4] = 0x43;
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setRoom(roomObjects);
+        Link link = new Link(inputState, inputConfig, romTables, collision, null,
+            new PlayerState(), new ItemRegistry());
+        link.setPixelPosition(64, 96);
+        inputState.onKeyEvent(inputConfig.downKey(), GLFW_PRESS);
+
+        for (int frame = 0; frame < 30 && !link.isAirborne(); frame++) {
+            link.update();
+        }
+        assertTrue(link.isAirborne());
+        assertTrue(link.pixelY() > 112);
+
+        inputState.onKeyEvent(inputConfig.downKey(), GLFW_RELEASE);
+        collision.setRoom(emptyRoomObjectsArea());
+        link.setRoomEntryPixelPosition(link.pixelX(), 0);
+        link.update();
+
+        assertEquals(0, link.pixelY());
+    }
+
+    @Test
     void startingPitFallPlaysLinkFallWaveEffectOnce() throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.loadFromRom(rom);
@@ -1263,8 +1291,10 @@ final class LinkTest {
         assertFalse(link.isFallingIntoPit());
         assertEquals(0x10, link.pixelX());
         assertEquals(0x20, link.pixelY());
-        assertEquals(PlayerState.HP_PER_HEART / 2, playerState.health());
         assertEquals(0x40, playerState.invincibilityCounter());
+        assertEquals(4, playerState.subtractHealthBuffer());
+        for (int frame = 0; frame < 8; frame++) playerState.tickResourceBuffers(frame);
+        assertEquals(PlayerState.HP_PER_HEART / 2, playerState.health());
     }
 
     @Test
@@ -1291,8 +1321,10 @@ final class LinkTest {
         assertFalse(link.isFallingIntoPit());
         assertEquals(0x10, link.pixelX());
         assertEquals(0x20, link.pixelY());
-        assertEquals(PlayerState.HP_PER_HEART / 2, playerState.health());
         assertEquals(0x40, playerState.invincibilityCounter());
+        assertEquals(4, playerState.subtractHealthBuffer());
+        for (int frame = 0; frame < 8; frame++) playerState.tickResourceBuffers(frame);
+        assertEquals(PlayerState.HP_PER_HEART / 2, playerState.health());
     }
 
     @Test

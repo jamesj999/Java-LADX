@@ -44,8 +44,17 @@ public final class Warp {
         this.tileLocation = tileLocation;
     }
 
+    static Warp readRomRecord(byte[] rom, int offset) {
+        return new Warp(rom[offset] & 255, rom[offset + 1] & 255, rom[offset + 2] & 255,
+            rom[offset + 3] & 255, rom[offset + 4] & 255, -1);
+    }
+
     public Warp withTileLocation(int newTileLocation) {
         return new Warp(category, destMap, destRoom, destX, destY, newTileLocation);
+    }
+
+    public static boolean isWarpHoleRoom(int overworldRoom) {
+        return overworldRoom == 0x01 || overworldRoom == 0x95 || overworldRoom == 0x2C || overworldRoom == 0xEC;
     }
 
     public int category() { return category; }

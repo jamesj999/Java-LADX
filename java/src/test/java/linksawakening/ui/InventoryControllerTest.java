@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_B;
@@ -17,6 +18,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 final class InventoryControllerTest {
 
@@ -31,7 +33,7 @@ final class InventoryControllerTest {
 
         input.onKeyEvent(GLFW_KEY_ENTER, GLFW_PRESS);
         controller.dispatchToggleInput();
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < 53; i++) {
             controller.tick();
         }
 
@@ -43,6 +45,43 @@ final class InventoryControllerTest {
         controller.dispatchMenuInput();
 
         assertEquals(2, menu.cursorSlot());
+    }
+
+    @Test
+    void holdingSelectSlidesStatusInAndReleaseReturnsToInventory() throws Exception {
+        InputState input = new InputState();
+        InputConfig config = new InputConfig(GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN,
+            GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_A, GLFW_KEY_B);
+        InventoryMenu menu = new InventoryMenu(InventoryTilemapLoader.loadFromRom(loadRom()), new PlayerState());
+        InventoryController controller = new InventoryController(input, config, menu);
+        menu.requestToggle();
+        for (int i = 0; i < 53; i++) {
+            controller.tick();
+        }
+
+        input.onKeyEvent(config.selectKey(), GLFW_PRESS);
+        controller.dispatchMenuInput();
+        input.tickEdges();
+        controller.tick();
+        assertEquals(140, menu.statusPanelY());
+
+        for (int i = 0; i < 8; i++) {
+            controller.tick();
+        }
+        assertEquals(120, menu.statusPanelY());
+        input.onKeyEvent(config.downKey(), GLFW_PRESS);
+        controller.dispatchMenuInput();
+        assertEquals(0, menu.cursorSlot());
+
+        input.onKeyEvent(config.selectKey(), GLFW_RELEASE);
+        controller.tick();
+        assertEquals(120, menu.statusPanelY());
+        for (int i = 0; i < 6; i++) {
+            controller.tick();
+        }
+        assertEquals(144, menu.statusPanelY());
+        assertFalse(menu.isStatusPanelActive());
+        assertTrue(menu.isFullyOpen());
     }
 
     private static byte[] loadRom() throws Exception {

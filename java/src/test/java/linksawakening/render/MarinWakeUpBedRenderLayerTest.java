@@ -25,9 +25,14 @@ final class MarinWakeUpBedRenderLayerTest {
         fill(tiles[0x4B - 0x40], 2);
         fill(tiles[0x4E - 0x40], 1);
         fill(tiles[0x4F - 0x40], 1);
+        // Leave one transparent pixel in each foreground half to expose the mattress.
+        tiles[0x48 - 0x40].setPixel(0, 1, 0);
+        tiles[0x4A - 0x40].setPixel(7, 1, 0);
+        tiles[0x4E - 0x40].setPixel(0, 1, 3);
         int[][] palettes = new int[8][4];
         palettes[0][2] = 0x00CC1122;
         palettes[6][1] = 0x0033AA44;
+        palettes[6][3] = 0x006688CC;
         Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
             null, null, null, new PlayerState(), new ItemRegistry());
         link.showMarinWakeUpBed(3);
@@ -38,7 +43,9 @@ final class MarinWakeUpBedRenderLayerTest {
             new ScrollController()).render(new RenderContext(buffer, new GPU()));
 
         assertEquals(0x00CC1122, pixel(buffer, 0x30, 0x24));
-        assertEquals(0x0033AA44, pixel(buffer, 0x30, 0x34));
+        assertEquals(0x006688CC, pixel(buffer, 0x30, 0x25));
+        assertEquals(0x006688CC, pixel(buffer, 0x3F, 0x25));
+        assertEquals(0, pixel(buffer, 0x30, 0x34));
         assertEquals(0, pixel(buffer, 0x30, 0x3C));
     }
 

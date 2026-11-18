@@ -19,6 +19,10 @@ public final class OverworldTilesetTable {
 
     public int tilesetIdForRoom(int roomId) {
         int room = roomId & 0xFF;
+        // SelectRoomTilesets borrows the next block for the room east of the Egg.
+        if (room == 0x07) {
+            room++;
+        }
         // The table is 8x8 over 2x2 room blocks: index = (roomY / 2) * 8 + (roomX / 2).
         // This mirrors SelectRoomTilesets at bank0.asm:$0D60-$0D6E.
         int index = ((room >> 2) & 0xF8) | ((room >> 1) & 0x07);

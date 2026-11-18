@@ -37,6 +37,30 @@ final class IndexedRendererTest {
     }
 
     @Test
+    void backgroundWrapsNegativePixelScrollOnRectangularTilemaps() {
+        GPU gpu = new GPU();
+        byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+        int[][] palettes = { { 0, 0x112233, 0x445566, 0x778899 } };
+        int[] tilemap = {
+            0x80, 0x81, 0x82,
+            0x81, 0x81, 0x80
+        };
+        int[] attrmap = new int[tilemap.length];
+        writeSolidTile(gpu, 0x80, 1);
+        writeSolidTile(gpu, 0x81, 2);
+        writeSolidTile(gpu, 0x82, 3);
+
+        IndexedRenderer.renderBackground(buffer, gpu, tilemap, attrmap, palettes,
+            3, 2, 3, 2, -1, -1);
+
+        assertEquals(0x112233, pixelColor(buffer, 0, 0));
+        assertEquals(0x445566, pixelColor(buffer, 1, 0));
+        assertEquals(0x778899, pixelColor(buffer, 0, 1));
+        assertEquals(0x112233, pixelColor(buffer, 1, 1));
+        assertEquals(0x445566, pixelColor(buffer, 9, 1));
+    }
+
+    @Test
     void backgroundLineScrollCanUseDifferentScrollForDifferentScreenRows() {
         GPU gpu = new GPU();
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];

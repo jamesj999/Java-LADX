@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class GameBoyApuTest {
@@ -36,6 +37,53 @@ final class GameBoyApuTest {
     }
 
     @Test
+    void swordPokingAttackStopsBeforeItsFollowUpPulse() {
+        GameBoyApu apu = new GameBoyApu(32_768);
+        apu.writeRegister(GameBoyApu.NR52, 0x80);
+        apu.writeRegister(GameBoyApu.NR51, 0x11);
+        // Sword Poking jingle $07, first pulse at 1F:4471.
+        apu.writeRegister(GameBoyApu.NR10, 0x00);
+        apu.writeRegister(GameBoyApu.NR11, 0x3D);
+        apu.writeRegister(GameBoyApu.NR12, 0xF0);
+        apu.writeRegister(GameBoyApu.NR13, 0xD8);
+        apu.writeRegister(GameBoyApu.NR14, 0xC7);
+
+        int thirdLengthTick = 64 + 2 * 128;
+        assertTrue(hasNonZeroSample(apu.render(thirdLengthTick - 1)));
+        assertTrue(apu.isChannelActive(1));
+        assertFalse(hasNonZeroSample(apu.render(128)));
+        assertEquals(0x80, apu.readRegister(GameBoyApu.NR52));
+    }
+
+    @Test
+    void channel2RetriggerPreservesRemainingLengthAndReloadsOnlyAtZero() {
+        GameBoyApu apu = new GameBoyApu(32_768);
+        apu.writeRegister(GameBoyApu.NR52, 0x80);
+        apu.writeRegister(GameBoyApu.NR21, 0xBE);
+        apu.writeRegister(GameBoyApu.NR22, 0xF0);
+        apu.writeRegister(GameBoyApu.NR24, 0xC7);
+        apu.render(64);
+
+        // A DAC-off trigger stays silent and preserves the remaining step.
+        apu.writeRegister(GameBoyApu.NR22, 0x07);
+        apu.writeRegister(GameBoyApu.NR24, 0xC7);
+        assertFalse(apu.isChannelActive(2));
+        apu.writeRegister(GameBoyApu.NR22, 0x08);
+        assertFalse(apu.isChannelActive(2));
+        apu.writeRegister(GameBoyApu.NR24, 0xC7);
+        assertTrue(apu.isChannelActive(2));
+        apu.render(128);
+        assertFalse(apu.isChannelActive(2));
+
+        // The next sequencer step skips length, so a zero reload starts at 63.
+        apu.writeRegister(GameBoyApu.NR24, 0xC7);
+        apu.render(63 * 128 - 1);
+        assertTrue(apu.isChannelActive(2));
+        apu.render(1);
+        assertFalse(apu.isChannelActive(2));
+    }
+
+    @Test
     void waveChannelUsesWaveRamAndOutputLevel() {
         GameBoyApu apu = new GameBoyApu(48_000);
         apu.writeRegister(GameBoyApu.NR52, 0x80);
@@ -53,6 +101,26 @@ final class GameBoyApuTest {
 
         assertEquals(1024, pcm.length);
         assertTrue(hasNonZeroSample(pcm));
+    }
+
+    @Test
+    void balladWaveNoteStopsWhenItsHardwareLengthExpires() {
+        GameBoyApu apu = new GameBoyApu(32_768);
+        apu.writeRegister(GameBoyApu.NR52, 0x80);
+        apu.writeRegister(GameBoyApu.NR50, 0x77);
+        apu.writeRegister(GameBoyApu.NR51, 0x44);
+        // Ocarina Ballad first note at 1F:5790.
+        apu.writeRegister(GameBoyApu.NR30, 0x80);
+        apu.writeRegister(GameBoyApu.NR31, 0xE6);
+        apu.writeRegister(GameBoyApu.NR32, 0x20);
+        apu.writeRegister(GameBoyApu.NR33, 0x8A);
+        apu.writeRegister(GameBoyApu.NR34, 0xC7);
+
+        int noteFrames = (256 - 0xE6) * (apu.sampleRate() / 256);
+        assertTrue(hasNonZeroSample(apu.render(noteFrames - 1)));
+        assertTrue(apu.isChannelActive(3));
+        assertFalse(hasNonZeroSample(apu.render(128)));
+        assertFalse(apu.isChannelActive(3));
     }
 
     @Test
@@ -94,6 +162,22 @@ final class GameBoyApuTest {
         short[] pcm = apu.render(32);
 
         assertTrue(hasSignChangeInLeftChannel(pcm));
+    }
+
+    @Test
+    void swordSwingAttackUsesTheRomNoiseDividerRate() {
+        GameBoyApu apu = new GameBoyApu(48_000);
+        apu.writeRegister(GameBoyApu.NR52, 0x80);
+        apu.writeRegister(GameBoyApu.NR50, 0x77);
+        apu.writeRegister(GameBoyApu.NR51, 0x88);
+        // Sword Swing A attack at 1F:6564.
+        apu.writeRegister(GameBoyApu.NR42, 0x40);
+        apu.writeRegister(GameBoyApu.NR43, 0x21);
+        apu.writeRegister(GameBoyApu.NR44, 0x80);
+
+        // For the first 15 shifts at 65,536 Hz, the trigger seed is still reaching the output.
+        assertFalse(hasSignChangeInLeftChannel(apu.render(10)));
+        assertTrue(hasSignChangeInLeftChannel(apu.render(5)));
     }
 
     @Test
@@ -226,6 +310,28 @@ final class GameBoyApuTest {
         short mixedLeft = twoChannels.render(1)[0];
 
         assertEquals(singleLeft * 2, mixedLeft);
+    }
+
+    @Test
+    void nr50ScalesEachSideIndependentlyWithLevelZeroStillAudible() {
+        GameBoyApu apu = new GameBoyApu(48_000);
+        apu.writeRegister(GameBoyApu.NR52, 0x80);
+        apu.writeRegister(GameBoyApu.NR51, 0x11);
+        triggerChannel1(apu);
+
+        apu.writeRegister(GameBoyApu.NR50, 0x77);
+        short full = apu.render(1)[0];
+        assertTrue(full != 0);
+
+        apu.writeRegister(GameBoyApu.NR50, 0x03);
+        short[] leftMinimum = apu.render(1);
+        assertEquals(full / 8, leftMinimum[0]);
+        assertEquals(full / 2, leftMinimum[1]);
+
+        apu.writeRegister(GameBoyApu.NR50, 0x30);
+        short[] rightMinimum = apu.render(1);
+        assertEquals(full / 2, rightMinimum[0]);
+        assertEquals(full / 8, rightMinimum[1]);
     }
 
     @Test

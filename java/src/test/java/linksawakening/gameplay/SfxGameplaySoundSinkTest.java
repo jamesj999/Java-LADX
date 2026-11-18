@@ -5,6 +5,7 @@ import linksawakening.audio.sfx.SoundEffect;
 import linksawakening.audio.sfx.SoundEffectCatalog;
 import linksawakening.audio.sfx.SoundEffectNamespace;
 import linksawakening.audio.sfx.SoundEffectPlayer;
+import linksawakening.world.EntityCombatEvent;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -69,7 +70,56 @@ final class SfxGameplaySoundSinkTest {
     }
 
     @Test
-    void sinkReplacesCurrentOneShotWhenPlayingGameplaySound() {
+    void shutterCloseAndOpenUseTheirDistinctNoiseEffects() {
+        byte[] rom = loadRom();
+        GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(SoundEffectCatalog.fromRom(rom));
+        assertMapped(map, GameplaySoundEvent.DOOR_CLOSED,
+            SoundEffectNamespace.NOISE, 0x10, "NOISE_SFX_DOOR_CLOSED");
+        assertMapped(map, GameplaySoundEvent.DOOR_UNLOCKED,
+            SoundEffectNamespace.NOISE, 0x04, "NOISE_SFX_DOOR_UNLOCKED");
+
+        RecordingPcmSoundOutput output = new RecordingPcmSoundOutput();
+        SfxGameplaySoundSink sink = new SfxGameplaySoundSink(rom, output);
+        sink.play(GameplaySoundEvent.DOOR_CLOSED);
+        sink.play(GameplaySoundEvent.DOOR_UNLOCKED);
+
+        assertEquals(List.of(SoundEffectNamespace.NOISE, SoundEffectNamespace.NOISE),
+            output.replacementNamespaces);
+        assertTrue(output.replacementBuffers.stream().allMatch(SfxGameplaySoundSinkTest::hasNonZeroSample));
+    }
+
+    @Test
+    void routesEncounterNoiseRequestsToAudiblePcm() {
+        RecordingPcmSoundOutput output = new RecordingPcmSoundOutput();
+        SfxGameplaySoundSink sink = new SfxGameplaySoundSink(loadRom(), output);
+
+        EnemyCombatEventConsumer.consume(List.of(
+            new EntityCombatEvent(0, 0x59, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x1B),
+            new EntityCombatEvent(0, 0x59, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x1A)),
+            sink);
+
+        assertEquals(List.of(SoundEffectNamespace.NOISE, SoundEffectNamespace.NOISE),
+            output.replacementNamespaces);
+        assertTrue(output.replacementBuffers.stream().allMatch(SfxGameplaySoundSinkTest::hasNonZeroSample));
+    }
+
+    @Test
+    void routesNativeEntityCuesWithoutGameplayAliasesAndIgnoresUnassignedIds() {
+        RecordingPcmSoundOutput output = new RecordingPcmSoundOutput();
+        var sink = new SfxGameplaySoundSink(loadRom(), output);
+        var teleportAndLift = new EntityCombatEvent(0, 0x57, 0, false, 0, -1,
+            EntityCombatEvent.SoundChannel.JINGLE, 0x3C, EntityCombatEvent.SoundChannel.WAVE, 0x02);
+        var invalid = new EntityCombatEvent(1, 0, 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x7F);
+
+        EnemyCombatEventConsumer.consume(List.of(teleportAndLift, invalid), sink);
+
+        assertEquals(List.of(SoundEffectNamespace.JINGLE, SoundEffectNamespace.WAVE),
+            output.replacementNamespaces);
+        assertTrue(output.replacementBuffers.stream().allMatch(SfxGameplaySoundSinkTest::hasNonZeroSample));
+    }
+
+    @Test
+    void sinkRoutesReplacementsByRomSoundSlot() {
         GameBoyApu apu = new GameBoyApu(44_100);
         RecordingPcmSoundOutput output = new RecordingPcmSoundOutput();
         SfxGameplaySoundSink sink = new SfxGameplaySoundSink(
@@ -79,9 +129,13 @@ final class SfxGameplaySoundSinkTest {
                 output);
 
         sink.play(GameplaySoundEvent.ROC_FEATHER_JUMP);
+        sink.play(GameplaySoundEvent.SWORD_SWING_A);
+        sink.play(GameplaySoundEvent.LINK_HURT);
 
         assertEquals(0, output.queuedPlays);
-        assertEquals(1, output.replacementBuffers.size());
+        assertEquals(List.of(SoundEffectNamespace.JINGLE, SoundEffectNamespace.NOISE,
+                SoundEffectNamespace.WAVE), output.replacementNamespaces);
+        assertEquals(3, output.replacementBuffers.size());
         assertEquals(44_100, output.replacementSampleRates.getFirst());
         assertTrue(hasNonZeroSample(output.replacementBuffers.getFirst()));
         assertEquals(0x00, apu.readRegister(GameBoyApu.NR52));
@@ -124,6 +178,7 @@ final class SfxGameplaySoundSinkTest {
     private static final class RecordingPcmSoundOutput implements PcmSoundOutput {
         private final List<short[]> replacementBuffers = new ArrayList<>();
         private final List<Integer> replacementSampleRates = new ArrayList<>();
+        private final List<SoundEffectNamespace> replacementNamespaces = new ArrayList<>();
         private int queuedPlays;
 
         @Override
@@ -132,7 +187,8 @@ final class SfxGameplaySoundSinkTest {
         }
 
         @Override
-        public void playReplacing(short[] stereoPcm, int sampleRate) {
+        public void playReplacing(SoundEffectNamespace namespace, short[] stereoPcm, int sampleRate) {
+            replacementNamespaces.add(namespace);
             replacementBuffers.add(stereoPcm);
             replacementSampleRates.add(sampleRate);
         }

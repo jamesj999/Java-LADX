@@ -2,17 +2,22 @@ package linksawakening.render;
 
 import linksawakening.gpu.Framebuffer;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
+import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
+import static org.lwjgl.glfw.GLFW.glfwSetFramebufferSizeCallback;
 import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
 
 public final class OpenGlFramePresenter {
@@ -32,7 +37,12 @@ public final class OpenGlFramePresenter {
 
     public static OpenGlFramePresenter initialize(long window) {
         GL.createCapabilities();
-        GL11.glViewport(0, 0, Framebuffer.WIDTH * Framebuffer.SCALE, Framebuffer.HEIGHT * Framebuffer.SCALE);
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer width = stack.mallocInt(1);
+            IntBuffer height = stack.mallocInt(1);
+            glfwGetFramebufferSize(window, width, height);
+            GL11.glViewport(0, 0, width.get(0), height.get(0));
+        }
 
         Shader shader = new Shader();
 
@@ -67,6 +77,8 @@ public final class OpenGlFramePresenter {
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 
+        glfwSetFramebufferSizeCallback(window, (handle, width, height) ->
+            GL11.glViewport(0, 0, width, height));
         return new OpenGlFramePresenter(window, vao, vbo, shader, texture);
     }
 
@@ -89,6 +101,10 @@ public final class OpenGlFramePresenter {
     }
 
     public void cleanup() {
+        GLFWFramebufferSizeCallback sizeCallback = glfwSetFramebufferSizeCallback(window, null);
+        if (sizeCallback != null) {
+            sizeCallback.free();
+        }
         GL30.glDeleteVertexArrays(vao);
         GL15.glDeleteBuffers(vbo);
         shader.cleanup();

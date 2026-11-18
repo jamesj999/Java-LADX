@@ -28,7 +28,7 @@ public record RoomMusicContext(int roomId,
             category == Warp.CATEGORY_SIDESCROLL,
             playerState.swordLevel(),
             false,
-            0
+            playerState.activePowerUp()
         );
     }
 

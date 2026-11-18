@@ -58,8 +58,10 @@ public final class MarinWakeUpMotion {
         if (!marinInitialized) {
             marinInitialized = true;
             initializedNow = true;
-            marinX = (sourceX - 8) & 0xFF;
-            marinY = (sourceY - 8) & 0xFF;
+            // With the shield, the entity skips its initial state and stays at its room coordinates.
+            int offset = state == State.COMPLETE ? 0 : 8;
+            marinX = (sourceX - offset) & 0xFF;
+            marinY = (sourceY - offset) & 0xFF;
         }
         if (initializedNow) {
             return new MarinPresentation(marinX, marinY, marinDirection,

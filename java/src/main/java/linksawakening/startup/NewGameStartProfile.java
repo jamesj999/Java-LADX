@@ -48,6 +48,12 @@ public record NewGameStartProfile(
             fromBcd(maxMagicPowder));
     }
 
+    public void applyStartingCapacities(PlayerState playerState) {
+        playerState.setMaxArrows(fromBcd(maxArrows));
+        playerState.setMaxBombs(fromBcd(maxBombs));
+        playerState.setMaxMagicPowder(fromBcd(maxMagicPowder));
+    }
+
     private static int fromBcd(int value) {
         return (value >>> 4) * 10 + (value & 0x0F);
     }

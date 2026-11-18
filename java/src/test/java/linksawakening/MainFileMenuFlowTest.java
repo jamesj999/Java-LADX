@@ -33,29 +33,36 @@ final class MainFileMenuFlowTest {
     }
 
     @Test
-    void fileSaveChordRequiresAllFourSourceButtonsWithSelectPressedLast() {
+    void anyChordMemberCanCompleteTheFileSaveShortcut() {
         InputConfig inputConfig = new InputConfig(
             GLFW_KEY_ENTER, 1, 2, 3, 4, 5, 6, GLFW_KEY_TAB);
         InputState inputState = new InputState();
         inputState.onKeyEvent(5, GLFW_PRESS);
         inputState.onKeyEvent(6, GLFW_PRESS);
         inputState.onKeyEvent(GLFW_KEY_ENTER, GLFW_PRESS);
+        assertFalse(Main.shouldEnterFileSave(inputConfig, inputState, GLFW_KEY_ENTER, GLFW_PRESS));
         inputState.onKeyEvent(GLFW_KEY_TAB, GLFW_PRESS);
 
         assertTrue(Main.shouldEnterFileSave(inputConfig, inputState, GLFW_KEY_TAB, GLFW_PRESS));
+        assertTrue(Main.shouldEnterFileSave(inputConfig, inputState, GLFW_KEY_ENTER, GLFW_PRESS));
+        assertTrue(Main.shouldEnterFileSave(inputConfig, inputState, 5, GLFW_PRESS));
+        assertTrue(Main.shouldEnterFileSave(inputConfig, inputState, 6, GLFW_PRESS));
+        assertFalse(Main.shouldEnterFileSave(inputConfig, inputState, 7, GLFW_PRESS));
+        assertFalse(Main.shouldEnterFileSave(inputConfig, inputState, GLFW_KEY_TAB, GLFW_RELEASE));
         inputState.onKeyEvent(6, GLFW_RELEASE);
         assertFalse(Main.shouldEnterFileSave(inputConfig, inputState, GLFW_KEY_TAB, GLFW_PRESS));
     }
 
     @Test
-    void committingAnEmptyFileUsesTheDedicatedNewGameBootstrap() throws Exception {
+    void selectingANewlyRegisteredFileUsesTheDedicatedNewGameBootstrap() throws Exception {
         String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
-        String branchStart = "if (action.type() == FileMenuAction.Type.START_NEW_GAME)";
+        String branchStart = "if (action.type() == FileMenuAction.Type.LOAD_GAME)";
         int start = source.indexOf(branchStart);
-        int end = source.indexOf("} else if (action.type() == FileMenuAction.Type.LOAD_GAME)", start);
+        int end = source.indexOf("} else if (action.type() == FileMenuAction.Type.ERASE_SLOT)", start);
 
         String branch = source.substring(start, end);
-        assertTrue(branch.contains("startNewGame();"));
+        assertTrue(branch.contains("fileLoad = new FileLoadTransition(saved);"));
+        assertTrue(source.contains("if (saved.spawnPositionX() == 0) startNewGame(saved);"));
         assertFalse(branch.contains("startConfiguredGameplay();"));
     }
 
@@ -110,7 +117,7 @@ final class MainFileMenuFlowTest {
     void newGameRunsMarinsWakeSequenceWithRomBackedDialog() throws Exception {
         String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
 
-        assertTrue(source.contains("newGameWakeUpMotion = new MarinWakeUpMotion();"));
+        assertTrue(source.contains("new MarinWakeUpMotion()"));
         assertTrue(source.contains("tickNewGameWakeUp()"));
         assertTrue(source.contains("dialogTextLoader.load(new SignpostDialogRef(0,"));
         assertTrue(source.contains("tryOpenMarinFollowUpDialog(key)"));
@@ -119,7 +126,7 @@ final class MainFileMenuFlowTest {
     @Test
     void wakeSequenceConsumesOverworldKeysBeforeSaveAndInventoryActions() throws Exception {
         String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
-        int wakeGate = source.indexOf("if (marinWakeUpBlocksKeyInput())");
+        int wakeGate = source.indexOf("if (marinWakeUpBlocksKeyInput()");
         int saveChord = source.indexOf("if (shouldEnterFileSave", wakeGate);
         int inventoryToggle = source.indexOf("inventoryController.dispatchToggleInput()", wakeGate);
 
@@ -157,14 +164,14 @@ final class MainFileMenuFlowTest {
         assertTrue(tarinBody.contains("key != inputConfig.aKey()"));
         assertFalse(tarinBody.contains("GameplayDialogInput.isActionButtonKey"));
         assertTrue(savedBody.contains("restoreNewGameHouseRuntimeIfNeeded(saved)"));
-        assertTrue(savedBody.contains("newGameWakeUpMotion = MarinWakeUpMotion.postWake()"));
+        assertTrue(savedBody.contains("MarinWakeUpMotion.postWake()"));
     }
 
     @Test
     void fileMenuStartupUsesThePersistentSaveImageForMaskAndNames() throws Exception {
         String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
         int start = source.indexOf("fileMenuController = new FileMenuController(");
-        int end = source.indexOf("playDirectMusic(fileSelectionMusicTrack());", start);
+        int end = source.indexOf("private static void persistFileMenuMutation", start);
         String constructor = source.substring(start, end);
 
         assertTrue(constructor.contains("saveRamStore.saveFilesMask()"));
@@ -173,14 +180,16 @@ final class MainFileMenuFlowTest {
     }
 
     @Test
-    void newGamePersistsTheSelectedSlotBeforeEnteringGameplay() throws Exception {
+    void registeringAFilePersistsTheSelectedSlotAndReturnsToSelection() throws Exception {
         String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
-        int start = source.indexOf("if (action.type() == FileMenuAction.Type.START_NEW_GAME)");
+        int start = source.indexOf("if (action.type() == FileMenuAction.Type.REGISTER_FILE)");
         int end = source.indexOf("} else if (action.type() == FileMenuAction.Type.LOAD_GAME)", start);
         String branch = source.substring(start, end);
 
         assertTrue(branch.contains("saveRamStore.createNewGame(action.selectedSlot(), action.nameBytes());"));
         assertTrue(branch.contains("saveRamStore.flush();"));
+        assertTrue(branch.contains("refreshFileSelection();"));
+        assertFalse(branch.contains("startNewGame(saved);"));
     }
 
     @Test
@@ -198,11 +207,11 @@ final class MainFileMenuFlowTest {
         String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
 
         assertTrue(source.contains("saveCurrentPlayerState();"));
-        assertTrue(source.contains("saveRamStore.writePlayerState(currentSaveSlot, playerState);"));
-        assertTrue(source.contains("saveCurrentSpawnLocation();"));
-        assertTrue(source.contains("saveRamStore.writeSpawnLocation("));
-        assertTrue(source.contains("saveRamStore.writeRoomStatuses(currentSaveSlot,"));
-        assertTrue(source.contains("saveRamStore.writeDungeonItemFlags(currentSaveSlot,"));
+        assertTrue(source.contains("target.writePlayerState(slot, playerState);"));
+        assertTrue(source.contains("saveCurrentSpawnLocation(target, slot);"));
+        assertTrue(source.contains("target.writeSpawnLocation("));
+        assertTrue(source.contains("target.writeRoomStatuses(slot,"));
+        assertTrue(source.contains("target.writeDungeonItemFlags(slot,"));
     }
 
     @Test
@@ -212,25 +221,24 @@ final class MainFileMenuFlowTest {
         int end = source.indexOf("inputState.tickEdges();", start);
         String branch = source.substring(start, end);
 
-        assertTrue(branch.contains("startSavedGame"));
+        assertTrue(branch.contains("new FileLoadTransition(saved)"));
+        assertTrue(source.contains("else startSavedGame(saved);"));
         assertTrue(source.contains("roomSession.restoreRoomStatuses(saved.overworldRoomStatus(),"));
         assertTrue(source.contains("roomSession.setTarinFlag(saved.tarinFlag());"));
         assertTrue(source.contains(
-            "saveRamStore.writeTarinFlag(currentSaveSlot, roomSession.tarinFlag());"));
+            "target.writeTarinFlag(slot, roomSession.tarinFlag());"));
         assertTrue(source.contains("roomSession.restoreDungeonItemFlags(saved.dungeonItemFlags(),"));
         assertTrue(source.contains("link.setRoomEntryRomPosition(saved.spawnPositionX(),"));
         int tarinRestore = source.indexOf("roomSession.setTarinFlag(saved.tarinFlag());");
         int playerLevels = source.indexOf(
             "roomSession.setChestPlayerLevels(playerState.shieldLevel(),", tarinRestore);
-        int indoorLoad = source.indexOf(
-            "roomSession.loadIndoorFromSavedPosition(", tarinRestore);
+        int savedLoad = source.indexOf("private static void startSavedGame");
+        int restore = source.indexOf("restoreSavedState(saved);", savedLoad);
         assertTrue(source.contains("saved.spawnIndoorRoom()"));
-        int overworldLoad = source.indexOf(
-            "roomSession.loadInitialOverworld(saved.spawnMapRoom())", tarinRestore);
-        assertTrue(tarinRestore < indoorLoad);
-        assertTrue(tarinRestore < overworldLoad);
         assertTrue(playerLevels > tarinRestore);
-        assertTrue(playerLevels < indoorLoad);
+        assertTrue(restore > savedLoad);
+        assertTrue(source.indexOf("roomSession.loadIndoorFromSavedPosition(", savedLoad) > restore);
+        assertTrue(source.indexOf("roomSession.loadInitialOverworld(saved.spawnMapRoom())", savedLoad) > restore);
         assertFalse(branch.contains("UnsupportedOperationException"));
     }
 }

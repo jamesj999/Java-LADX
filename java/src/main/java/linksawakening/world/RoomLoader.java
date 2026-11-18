@@ -146,12 +146,13 @@ public final class RoomLoader {
             null,
             tilemap.tileIds(),
             tilemap.tileAttrs(),
-            paletteLoader.loadIndoor(mapId, roomId, fallbackPalettes, tarinFlag, shieldLevel),
+            paletteLoader.loadIndoor(mapId, roomId, fallbackPalettes,
+                mapCategory == Warp.CATEGORY_SIDESCROLL, tarinFlag, shieldLevel),
             parsed.warps(),
             hasSouthEntrance(objects),
             parsed.shutterDoorMask(),
             parsed.staircaseLocation(),
-            entities
+            entities, parsed.openDoorFlags(), parsed.shutterLocations()
         );
     }
 

@@ -1,6 +1,8 @@
 package linksawakening.ui;
 
 import linksawakening.cutscene.IntroSprite;
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.scene.BackgroundScene;
@@ -24,12 +26,18 @@ public final class FileSaveController {
     private static final int[] SAVE_OPTION_OAM_Y = {0x48, 0x58};
 
     private final Function<String, BackgroundScene> sceneProvider;
+    private final GameplaySoundSink soundSink;
     private BackgroundScene scene;
     private int selectedOption;
     private FileMenuFrameSnapshot snapshot;
 
     public FileSaveController(Function<String, BackgroundScene> sceneProvider) {
+        this(sceneProvider, GameplaySoundSink.none());
+    }
+
+    public FileSaveController(Function<String, BackgroundScene> sceneProvider, GameplaySoundSink soundSink) {
         this.sceneProvider = Objects.requireNonNull(sceneProvider, "sceneProvider");
+        this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
         refreshSnapshot();
     }
 
@@ -44,12 +52,14 @@ public final class FileSaveController {
         if (inputState.wasPressed(inputConfig.upKey())
             || inputState.wasPressed(inputConfig.downKey())) {
             selectedOption = (selectedOption + 1) % OPTION_COUNT;
+            soundSink.play(GameplaySoundEvent.MENU_MOVE);
         }
 
         FileSaveAction action = FileSaveAction.none();
         if (inputState.wasPressed(inputConfig.aKey())
             || inputState.wasPressed(inputConfig.bKey())
             || inputState.wasPressed(inputConfig.menuOpenKey())) {
+            soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
             action = new FileSaveAction(selectedOption == 0
                 ? FileSaveAction.Type.RETURN_TO_GAME
                 : FileSaveAction.Type.SAVE_AND_QUIT);
@@ -78,6 +88,6 @@ public final class FileSaveController {
             scene.palettes(),
             scene.objectPalettes(),
             List.of(new IntroSprite(SAVE_ARROW_TILE,
-                SAVE_ARROW_OAM_X - 8, oamY - 8, 0, false, false)));
+                SAVE_ARROW_OAM_X - 8, oamY - 16, 0, false, false, 16)));
     }
 }

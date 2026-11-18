@@ -66,8 +66,11 @@ final class MoldormRuntimeTest {
         assertEquals(new EntitySpriteDefinition.OamAttribute(0x70, 0x00), firstTail.oam());
         EntitySpriteDefinition.DynamicSprite lastTail = definition.dynamicVariant(0).get(14);
         assertEquals(0x76, lastTail.oam().tile());
-        assertEquals(0x10, lastTail.oam().attributes());
-        assertEquals(0x30, definition.dynamicVariant(0).get(15).oam().attributes());
+        assertEquals(0x00, lastTail.oam().attributes());
+        assertEquals(0x10, lastTail.entityFlipAttributeXor());
+        EntitySpriteDefinition.DynamicSprite mirroredTail = definition.dynamicVariant(0).get(15);
+        assertEquals(0x20, mirroredTail.oam().attributes());
+        assertEquals(0x10, mirroredTail.entityFlipAttributeXor());
     }
 
     @Test

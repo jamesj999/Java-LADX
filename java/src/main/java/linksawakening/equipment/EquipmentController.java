@@ -59,10 +59,16 @@ public final class EquipmentController {
         if (item == null) {
             return;
         }
-        if (inputState.wasPressed(glfwKey)) {
+        boolean pressed = inputState.wasPressed(glfwKey);
+        boolean released = inputState.wasReleased(glfwKey);
+        boolean releaseFirst = released && inputState.isDown(glfwKey);
+        if (releaseFirst) {
+            item.onRelease();
+        }
+        if (pressed) {
             item.onPress();
         }
-        if (inputState.wasReleased(glfwKey)) {
+        if (released && !releaseFirst) {
             item.onRelease();
         }
     }

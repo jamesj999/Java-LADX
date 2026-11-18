@@ -130,7 +130,11 @@ public final class EntitySpriteHandlerCatalog {
     private static final int ENTITY_FLOATING_ITEM_2 = 0xE5;
     private static final int ENTITY_MARIN = 0x3E;
     private static final int ENTITY_TARIN = 0x3F;
-    private static final int ENTITY_GRANDPA_ULRIRA = 0x77;
+    public static final int ENTITY_WARP = 0x61;
+    public static final int ENTITY_RICHARD_FROG = 0x96;
+    public static final int ENTITY_RICHARD = 0x95;
+    public static final int ENTITY_TELEPHONE = 0x80;
+    public static final int ENTITY_GRANDPA_ULRIRA = 0x77;
     private static final int ENTITY_MARIN_AT_THE_SHORE = 0xC1;
     private static final int ENTITY_MARIN_AT_TAL_TAL_HEIGHTS = 0xC2;
     private static final int ENTITY_COLOR_SHELL_RED = 0xE9;
@@ -230,7 +234,7 @@ public final class EntitySpriteHandlerCatalog {
             return decodeRectangle(entityType, 0x18, 0x7ABA, 8, 3, 0);
         }
         if (entityType == ENTITY_MUSICAL_NOTE) {
-            return decodeSingle(entityType, 0x05, 0x7EF8, 1, 0);
+            return decodeSingle(entityType, 0x05, 0x7EF6, 1, 0);
         }
         if (entityType == ENTITY_SWORD_BEAM) {
             return decodeRectangle(entityType, 0x19, 0x44FC, 4, 2, 0);
@@ -503,6 +507,11 @@ public final class EntitySpriteHandlerCatalog {
         }
         if (entityType == ENTITY_FISH) {
             return decodeFish(entityType);
+        }
+        if (entityType == ENTITY_RICHARD_FROG) return decodePair(entityType, 0x19, 0x5BA0, 8, 0);
+        if (entityType == ENTITY_RICHARD) return decodePair(entityType, 0x06, 0x4000, 8, 0);
+        if (entityType == ENTITY_TELEPHONE) {
+            return decodePair(entityType, 0x06, 0x6A78, 1, 0);
         }
         if (entityType == ENTITY_GRANDPA_ULRIRA) {
             return decodeRectangle(entityType, 0x06, 0x5C51, 2, 4, 0);
@@ -812,6 +821,49 @@ public final class EntitySpriteHandlerCatalog {
     /** The bank-$03 fire pair rendered over entities in {@code BURNING} status. */
     public EntitySpriteDefinition forBurningEntity() {
         return decodePair(0x00, 0x03, 0x4C44, 2, 0);
+    }
+
+    /** Indoor WarpEntityHandler draws the center pair before its four orbiting sprites. */
+    public EntitySpriteDefinition forDungeonPortal() {
+        var variants = new ArrayList<List<EntitySpriteDefinition.DynamicSprite>>(8);
+        var tiles = EntitySpriteDefinition.DynamicSprite.TileSource.GPU;
+        var satellite = new EntitySpriteDefinition.OamAttribute(readByte(0x19, 0x43A5), readByte(0x19, 0x43A6));
+        for (int phase = 0; phase < 8; phase++) {
+            var sprites = new ArrayList<EntitySpriteDefinition.DynamicSprite>(6);
+            int pair = 0x4393 + (phase & 1) * 4;
+            for (int half = 0; half < 2; half++) {
+                int data = pair + 2 * half;
+                var oam = new EntitySpriteDefinition.OamAttribute(readByte(0x19, data), readByte(0x19, data + 1));
+                sprites.add(new EntitySpriteDefinition.DynamicSprite(0, half * 8, oam, tiles, false));
+            }
+            for (int i = 0; i < 8; i += 2) {
+                int angle = (phase + i) & 7;
+                int x = 4 + signedByte(readByte(0x19, 0x439D + angle));
+                int y = signedByte(readByte(0x19, 0x439B + angle));
+                sprites.add(new EntitySpriteDefinition.DynamicSprite(y, x, satellite, tiles, false));
+            }
+            variants.add(sprites);
+        }
+        return EntitySpriteDefinition.dynamic(ENTITY_WARP, 0x19, 0x4393, 0, variants);
+    }
+
+    /** Four centered sprites orbit each outdoor warp using the bank 19 offset tables. */
+    public EntitySpriteDefinition forOverworldWarpHole() {
+        List<List<EntitySpriteDefinition.DynamicSprite>> variants = new ArrayList<>(16);
+        for (int phase = 0; phase < 16; phase++) {
+            var sprites = new ArrayList<EntitySpriteDefinition.DynamicSprite>(4);
+            int attributes = (phase & 1) == 0 ? readByte(0x19, 0x4405) : 4;
+            var oam = new EntitySpriteDefinition.OamAttribute(readByte(0x19, 0x4404), attributes);
+            for (int i = 0; i < 8; i += 2) {
+                int angle = ((phase >> 1) + i) & 7;
+                int x = signedByte(readByte(0x19, 0x43FC + angle)) + 4;
+                int y = signedByte(readByte(0x19, 0x43FA + angle)) + 4;
+                sprites.add(new EntitySpriteDefinition.DynamicSprite(y, x, oam,
+                    EntitySpriteDefinition.DynamicSprite.TileSource.GPU, false));
+            }
+            variants.add(sprites);
+        }
+        return EntitySpriteDefinition.dynamic(ENTITY_WARP, 0x19, 0x4404, 0, variants);
     }
 
     /** EntityFallHandler's three single frames followed by Unknown020's pair. */
@@ -1311,20 +1363,13 @@ public final class EntitySpriteHandlerCatalog {
             EntitySpriteDefinition.Variant pair, int yOffset, int xOffset,
             int paletteXor) {
         destination.add(new EntitySpriteDefinition.DynamicSprite(
-            signedByte(yOffset), signedByte(xOffset), xorAttributes(pair.first(), paletteXor),
-            EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
+            signedByte(yOffset), signedByte(xOffset), pair.first(),
+            EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true, paletteXor));
         if (pair.second() != null) {
             destination.add(new EntitySpriteDefinition.DynamicSprite(
-                signedByte(yOffset), signedByte(xOffset + 0x08),
-                xorAttributes(pair.second(), paletteXor),
-                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true));
+                signedByte(yOffset), signedByte(xOffset + 0x08), pair.second(),
+                EntitySpriteDefinition.DynamicSprite.TileSource.ENTITY_SHEETS, true, paletteXor));
         }
-    }
-
-    private static EntitySpriteDefinition.OamAttribute xorAttributes(
-            EntitySpriteDefinition.OamAttribute oam, int attributes) {
-        return new EntitySpriteDefinition.OamAttribute(
-            oam.tile(), oam.attributes() ^ attributes);
     }
 
     private static boolean isColorShellType(int entityType) {

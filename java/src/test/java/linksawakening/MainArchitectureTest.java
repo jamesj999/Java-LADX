@@ -103,7 +103,7 @@ final class MainArchitectureTest {
         String source = Files.readString(Path.of("src/main/java/linksawakening/Main.java"));
 
         int capture = source.indexOf("link.captureRomFinalPosition();");
-        int update = source.indexOf("link.update();");
+        int update = source.indexOf("link.update(");
         assertTrue(capture >= 0, "Link final position must be captured for entity pushes");
         assertTrue(update >= 0, "Main must run Link motion");
         assertTrue(capture < update,

@@ -95,6 +95,24 @@ final class GameplayMusicControllerTest {
         assertEquals(MusicTrackIds.MUSIC_NONE, controller.currentTrackId());
     }
 
+    @Test
+    void scrollKeepsPickupLoopUntilAreaMusicTakesPrecedence() {
+        RecordingMusicTrackPlayer player = new RecordingMusicTrackPlayer();
+        byte[] rom = loadRom();
+        GameplayMusicController controller = new GameplayMusicController(
+            AreaMusicResolver.fromRom(rom), MusicCatalog.fromRom(rom), player);
+        controller.selectAfterTransition(RoomMusicContext.overworld(0x91, 1));
+        controller.playDirect(MusicTrackIds.MUSIC_OBTAIN_POWERUP);
+        controller.selectAfterTransition(new RoomMusicContext(0x81, 0, false, false, 1, false, 2), true);
+        controller.selectAfterTransition(new RoomMusicContext(0x40, 0, false, false, 1, false, 2), true);
+        controller.selectAfterTransition(new RoomMusicContext(0x92, 0, false, false, 1, false, 2), true);
+        controller.selectAfterTransition(new RoomMusicContext(0x40, 0, false, false, 1, false, 2), true);
+        controller.finishPowerUp();
+        assertEquals(List.of(MusicTrackIds.MUSIC_MABE_VILLAGE, MusicTrackIds.MUSIC_OBTAIN_POWERUP,
+            MusicTrackIds.MUSIC_MABE_VILLAGE, MusicTrackIds.MUSIC_ACTIVE_POWER_UP,
+            MusicTrackIds.MUSIC_MYSTERIOUS_FOREST), player.playedTrackIds);
+    }
+
     private static byte[] loadRom() {
         try (var stream = GameplayMusicControllerTest.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
             if (stream == null) {

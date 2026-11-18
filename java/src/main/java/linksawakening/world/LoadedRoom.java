@@ -1,6 +1,7 @@
 package linksawakening.world;
 
 import java.util.List;
+import java.util.Map;
 
 public record LoadedRoom(int roomId,
                          int mapCategory,
@@ -16,7 +17,27 @@ public record LoadedRoom(int roomId,
                          boolean indoorHasSouthEntrance,
                          int shutterDoorMask,
                          int staircaseLocation,
-                         RoomEntitySnapshot entities) {
+                         RoomEntitySnapshot entities, int openDoorFlags, Map<Integer, Integer> shutterLocations) {
+
+    public LoadedRoom(int roomId, int mapCategory, int mapId, int animatedTilesGroup,
+                      int[] roomObjectsArea, int[] gbcOverlay, int[] renderValues,
+                      int[] tileIds, int[] tileAttrs, int[][] palettes, List<Warp> warps,
+                      boolean indoorHasSouthEntrance, int shutterDoorMask, int staircaseLocation,
+                      RoomEntitySnapshot entities, int openDoorFlags) {
+        this(roomId, mapCategory, mapId, animatedTilesGroup, roomObjectsArea, gbcOverlay,
+            renderValues, tileIds, tileAttrs, palettes, warps, indoorHasSouthEntrance,
+            shutterDoorMask, staircaseLocation, entities, openDoorFlags, Map.of());
+    }
+
+    public LoadedRoom(int roomId, int mapCategory, int mapId, int animatedTilesGroup,
+                      int[] roomObjectsArea, int[] gbcOverlay, int[] renderValues,
+                      int[] tileIds, int[] tileAttrs, int[][] palettes, List<Warp> warps,
+                      boolean indoorHasSouthEntrance, int shutterDoorMask, int staircaseLocation,
+                      RoomEntitySnapshot entities) {
+        this(roomId, mapCategory, mapId, animatedTilesGroup, roomObjectsArea, gbcOverlay,
+            renderValues, tileIds, tileAttrs, palettes, warps, indoorHasSouthEntrance,
+            shutterDoorMask, staircaseLocation, entities, 0);
+    }
 
     public LoadedRoom(int roomId, int mapCategory, int mapId, int animatedTilesGroup,
                       int[] roomObjectsArea, int[] gbcOverlay, int[] renderValues,
@@ -62,6 +83,7 @@ public record LoadedRoom(int roomId,
         tileAttrs = tileAttrs.clone();
         palettes = clonePalettes(palettes);
         warps = List.copyOf(warps);
+        shutterLocations = Map.copyOf(shutterLocations);
         shutterDoorMask &= 0x0F;
         if (staircaseLocation < -1 || staircaseLocation > 0xFF) {
             throw new IllegalArgumentException(

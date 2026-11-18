@@ -2,7 +2,8 @@ package linksawakening.audio.apu;
 
 final class NoiseChannel {
     private static final double GAME_BOY_CLOCK_HZ = 4_194_304.0;
-    private static final int[] DIVIDING_RATIOS = { 4, 8, 16, 24, 32, 40, 48, 56 };
+    // NR43 divisor codes are in units of 16 dots, with code 0 selecting a half divisor.
+    private static final int[] DIVIDING_RATIOS = { 8, 16, 32, 48, 64, 80, 96, 112 };
     private static final double LENGTH_CLOCK_HZ = 256.0;
     private static final double ENVELOPE_CLOCK_HZ = 64.0;
 

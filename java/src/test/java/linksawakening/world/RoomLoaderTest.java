@@ -12,6 +12,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class RoomLoaderTest {
 
     @Test
+    void moldormArenaUsesTailCaveFloorAttributes() {
+        LoadedRoom room = new RoomLoader(loadRom()).loadIndoor(0, 6, null);
+        // CGB BG map bank 1 at $9906, sampled during Moldorm's opening dialog.
+        assertEquals(0x07, room.tileAttrs()[8 * RoomConstants.ROOM_TILE_WIDTH + 6]);
+    }
+
+    @Test
     void loadedRoomKeepsThePreStaircaseConstructorSignature() {
         LoadedRoom room = new LoadedRoom(
             0, Warp.CATEGORY_INDOOR, 0, 0,
@@ -122,8 +129,9 @@ final class RoomLoaderTest {
     void ordinaryDungeonRoomAppendsItsTwoRomObjectPalettes() {
         byte[] rom = loadRom();
 
-        int[][] palettes = new RoomLoader(rom).loadIndoor(0x00, 0x25, null)
-            .entities().spriteSelection().objectPalettes();
+        LoadedRoom room = new RoomLoader(rom).loadIndoor(0x00, 0x25, null);
+        assertArrayEquals(readPalette(rom, 0x21, 0x5FE0), room.palettes()[0]);
+        int[][] palettes = room.entities().spriteSelection().objectPalettes();
 
         assertEquals(8, palettes.length);
         assertArrayEquals(readPalette(rom, 0x21, 0x6020), palettes[6]);
@@ -134,9 +142,9 @@ final class RoomLoaderTest {
     void sideScrollingDungeonRoomUsesDungeonPaletteBObjectRows() {
         byte[] rom = loadRom();
 
-        int[][] palettes = new RoomLoader(rom).loadIndoor(
-            0x00, 0x00, null, Warp.CATEGORY_SIDESCROLL)
-            .entities().spriteSelection().objectPalettes();
+        LoadedRoom room = new RoomLoader(rom).loadIndoor(0x00, 0x00, null, Warp.CATEGORY_SIDESCROLL);
+        assertArrayEquals(readPalette(rom, 0x21, 0x6030), room.palettes()[0]);
+        int[][] palettes = room.entities().spriteSelection().objectPalettes();
 
         assertArrayEquals(readPalette(rom, 0x21, 0x6070), palettes[6]);
         assertArrayEquals(readPalette(rom, 0x21, 0x6078), palettes[7]);

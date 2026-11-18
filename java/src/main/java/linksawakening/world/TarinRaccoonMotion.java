@@ -310,7 +310,7 @@ final class TarinRaccoonMotion {
             == (input.linkDirection() ^ 0x01);
     }
 
-    private static int directionToLink(RoomEntity entity, int linkX, int linkY) {
+    static int directionToLink(RoomEntity entity, int linkX, int linkY) {
         int distanceX = signedByte(linkX - entity.x());
         int distanceY = signedByte(linkY - entity.y());
         if (Math.abs(distanceY) >= Math.abs(distanceX)) {

@@ -2,6 +2,7 @@ package linksawakening.gameplay;
 
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.sfx.SoundEffect;
+import linksawakening.audio.sfx.SoundEffectNamespace;
 import linksawakening.audio.sfx.SoundEffectPcmRenderer;
 import linksawakening.audio.sfx.SoundEffectPlayer;
 
@@ -48,14 +49,18 @@ public final class SfxGameplaySoundSink implements GameplaySoundSink {
 
     @Override
     public void play(GameplaySoundEvent event) {
-        SoundEffect effect = soundEffects.resolve(event).orElse(null);
-        if (effect == null) {
-            return;
-        }
+        soundEffects.resolve(event).ifPresent(this::playEffect);
+    }
 
+    @Override
+    public void playRomSound(SoundEffectNamespace namespace, int id) {
+        if (id > 0 && id <= 0xFF) player.catalog().find(namespace, id).ifPresent(this::playEffect);
+    }
+
+    private void playEffect(SoundEffect effect) {
         short[] pcm = SoundEffectPcmRenderer.renderOneShot(apu, player, effect);
         if (pcm.length > 0) {
-            output.playReplacing(pcm, apu.sampleRate());
+            output.playReplacing(effect.namespace(), pcm, apu.sampleRate());
         }
     }
 }

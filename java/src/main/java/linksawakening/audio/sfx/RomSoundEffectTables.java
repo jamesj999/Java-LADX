@@ -35,6 +35,10 @@ public final class RomSoundEffectTables {
         };
     }
 
+    int effectCount(SoundEffectNamespace namespace) {
+        return (tableBase(namespace, false) - tableBase(namespace, true)) / 2;
+    }
+
     public int handlerAddress(SoundEffectNamespace namespace, int id, boolean begin) {
         Objects.requireNonNull(namespace, "namespace");
         if (id <= 0 || id > 0xFF) {

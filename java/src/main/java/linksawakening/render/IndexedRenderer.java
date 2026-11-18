@@ -77,14 +77,14 @@ public final class IndexedRenderer {
                                         int scrollX, int scrollY) {
         int fineX = Math.floorMod(scrollX, 8);
         int fineY = Math.floorMod(scrollY, 8);
-        int baseTileX = Math.floorMod(scrollX / 8, mapWidth);
-        int baseTileY = Math.floorMod(scrollY / 8, mapHeight);
+        int baseTileX = Math.floorDiv(scrollX, 8);
+        int baseTileY = Math.floorDiv(scrollY, 8);
         int tilesWide = viewportWidth + (fineX == 0 ? 0 : 1);
         int tilesHigh = viewportHeight + (fineY == 0 ? 0 : 1);
         for (int y = 0; y < tilesHigh; y++) {
+            int mapY = Math.floorMod(baseTileY + y, mapHeight);
             for (int x = 0; x < tilesWide; x++) {
-                int mapX = (baseTileX + x) & (mapWidth - 1);
-                int mapY = (baseTileY + y) & (mapHeight - 1);
+                int mapX = Math.floorMod(baseTileX + x, mapWidth);
                 int mapIndex = mapY * mapWidth + mapX;
                 renderTile(buffer, gpu, tilemap[mapIndex], attrmap[mapIndex], palettes,
                     x * 8 - fineX, y * 8 - fineY, false);

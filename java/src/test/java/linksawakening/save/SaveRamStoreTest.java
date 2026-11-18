@@ -70,6 +70,35 @@ final class SaveRamStoreTest {
     }
 
     @Test
+    void deathCountRoundTripsAsPackedDecimalAfterExplicitFlush(@TempDir Path tempDir)
+        throws Exception {
+        Path savePath = tempDir.resolve("azle.sav");
+        SaveRamStore store = SaveRamStore.open(savePath);
+        store.createNewGame(0, new int[] {1, 2, 3, 4, 5});
+        store.flush();
+
+        store.writeDeathCount(0, 109);
+        assertEquals(109, store.readSlot(0).deathCount());
+        assertEquals(0, SaveRamStore.open(savePath).readSlot(0).deathCount());
+
+        store.flush();
+        assertEquals(109, SaveRamStore.open(savePath).readSlot(0).deathCount());
+        int offset = SaveRamLayout.slotOffset(0) + SaveRamLayout.mainOffset()
+            + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET;
+        byte[] bytes = Files.readAllBytes(savePath);
+        assertEquals(0x09, bytes[offset]);
+        assertEquals(0x01, bytes[offset + 1]);
+
+        SaveRamStore transientStore = store.transientCopy();
+        assertEquals(109, transientStore.readSlot(0).deathCount());
+        transientStore.writeDeathCount(0, 110);
+        transientStore.flush();
+        assertEquals(110, transientStore.readSlot(0).deathCount());
+        assertEquals(109, store.readSlot(0).deathCount());
+        assertEquals(109, SaveRamStore.open(savePath).readSlot(0).deathCount());
+    }
+
+    @Test
     void missingHostFileStartsWithAnInitializedEmptyImageAndFlushesExactBytes(@TempDir Path tempDir)
         throws Exception {
         Path savePath = tempDir.resolve("nested").resolve("azle.sav");

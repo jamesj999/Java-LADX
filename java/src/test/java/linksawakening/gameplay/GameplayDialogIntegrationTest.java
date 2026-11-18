@@ -29,6 +29,39 @@ final class GameplayDialogIntegrationTest {
     private static final int OBJECT_SIGNPOST = 0xD4;
 
     @Test
+    void richardsRomOfferTogglesOnEitherDirectionAndRetainsConfirmedChoice() throws Exception {
+        byte[] rom = loadRom();
+        InputConfig keys = new InputConfig(GLFW_KEY_ENTER, 1, 2, 3, 4, GLFW_KEY_Z, GLFW_KEY_X);
+        DialogController dialog = new DialogController(16);
+        dialog.openPreformatted(DialogTextLoader.loadFromRom(rom).load(new SignpostDialogRef(1, 0x3A)));
+        for (int press = 0; press < 30 && !dialog.isChoicePrompt(); press++) {
+            dialog.advance();
+        }
+
+        assertTrue(dialog.isChoicePrompt());
+        assertEquals("I fled...       \n    Okay No Way", dialog.visibleText());
+        assertEquals(0, dialog.selectedChoiceIndex());
+        dialog.consumeSoundEvents();
+        assertTrue(GameplayDialogInput.handleOverworldKeyPress(keys.bKey(), GLFW_PRESS, keys, dialog));
+        assertTrue(dialog.isChoicePrompt());
+
+        assertTrue(GameplayDialogInput.handleOverworldKeyPress(keys.leftKey(), GLFW_PRESS, keys, dialog));
+        assertEquals(1, dialog.selectedChoiceIndex());
+        assertTrue(GameplayDialogInput.handleOverworldKeyPress(keys.rightKey(), GLFW_PRESS, keys, dialog));
+        assertEquals(0, dialog.selectedChoiceIndex());
+        assertTrue(GameplayDialogInput.handleOverworldKeyPress(keys.rightKey(), GLFW_PRESS, keys, dialog));
+        assertEquals(List.of(DialogController.SoundEvent.MOVE_SELECTION,
+            DialogController.SoundEvent.MOVE_SELECTION, DialogController.SoundEvent.MOVE_SELECTION),
+            dialog.consumeSoundEvents());
+
+        assertTrue(GameplayDialogInput.handleOverworldKeyPress(keys.aKey(), GLFW_PRESS, keys, dialog));
+        assertFalse(dialog.isActive());
+        assertEquals(1, dialog.selectedChoiceIndex());
+        dialog.open("Next");
+        assertEquals(0, dialog.selectedChoiceIndex());
+    }
+
+    @Test
     void activeOverworldDialogConsumesAdvanceKeysBeforeOtherGameplayInput() {
         InputConfig inputConfig = new InputConfig(GLFW_KEY_ENTER, 1, 2, 3, 4, GLFW_KEY_Z, GLFW_KEY_X);
 
@@ -263,7 +296,14 @@ final class GameplayDialogIntegrationTest {
 
         assertTrue(consumed);
         assertTrue(dialog.isActive());
+        assertEquals("", dialog.visibleText());
+
+        for (int frame = 0; frame < 10; frame++) {
+            dialog.tick();
+        }
         assertEquals("HELLO", dialog.visibleText());
+        assertTrue(GameplayDialogInput.handleOverworldKeyPress(key, GLFW_PRESS, inputConfig, dialog));
+        assertFalse(dialog.isActive());
     }
 
     private static int[] emptyRoomObjectsArea() {

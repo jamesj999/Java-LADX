@@ -22,14 +22,12 @@ import linksawakening.equipment.Shield;
 import linksawakening.equipment.Sword;
 import linksawakening.equipment.SwordPalette;
 import linksawakening.equipment.SwordSpriteSheet;
-import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.music.AreaMusicResolver;
 import linksawakening.audio.music.GameplayMusicController;
 import linksawakening.audio.music.MusicCatalog;
-import linksawakening.audio.music.MusicDriver;
 import linksawakening.audio.music.MusicTrackIds;
 import linksawakening.audio.music.RoomMusicContext;
-import linksawakening.audio.openal.OpenAlMusicPlayer;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.audio.openal.OpenAlPcmSoundOutput;
 import linksawakening.gameplay.BeachSwordRewardConsumer;
 import linksawakening.gameplay.DialogTextLoader;
@@ -44,8 +42,7 @@ import linksawakening.gameplay.LinkDialogPosition;
 import linksawakening.gameplay.OverworldDialogBlockers;
 import linksawakening.gameplay.OverworldDialogInteraction;
 import linksawakening.gameplay.PcmSoundOutput;
-import linksawakening.gameplay.SfxDialogSoundSink;
-import linksawakening.gameplay.SfxGameplaySoundSink;
+import linksawakening.gameplay.FrameSoundSink;
 import linksawakening.gameplay.SignpostDialogRef;
 import linksawakening.gameplay.SignpostDialogTable;
 import linksawakening.gpu.GPU;
@@ -70,6 +67,7 @@ import linksawakening.startup.NewGameStartProfile;
 import linksawakening.startup.MarinWakeUpMotion;
 import linksawakening.startup.StartupCoordinator;
 import linksawakening.startup.TarinShieldMotion;
+import linksawakening.audio.sfx.SoundEffectNamespace;
 import linksawakening.ui.InventoryMenu;
 import linksawakening.ui.InventoryController;
 import linksawakening.ui.InventoryTilemapLoader;
@@ -78,6 +76,10 @@ import linksawakening.ui.FileMenuController;
 import linksawakening.ui.FileMenuRomData;
 import linksawakening.ui.FileSaveAction;
 import linksawakening.ui.FileSaveController;
+import linksawakening.ui.GameOverSequence;
+import linksawakening.ui.WorldMapScreen;
+import linksawakening.ui.MenuTransition;
+import linksawakening.ui.FileLoadTransition;
 import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSpriteSheet;
 import linksawakening.vfx.TransientVfxSystem;
@@ -134,6 +136,13 @@ public class Main {
     static final int SCREEN_CUTSCENE = 2;
     static final int SCREEN_FILE_MENU = 3;
     static final int SCREEN_FILE_SAVE = 4;
+    static final int SCREEN_WORLD_MAP = 5;
+    static final int SCREEN_GAME_OVER = 6;
+    private static GameOverSequence gameOver;
+    private static FileLoadTransition fileLoad;
+    private static int currentDeathCount;
+    private static final int WORLD_MAP_CURSOR_INITIAL_DELAY = 24;
+    private static final int WORLD_MAP_CURSOR_REPEAT_INTERVAL = 3;
 
     // Room pixel dimensions
     private static final int ROOM_PIXEL_WIDTH = ROOM_TILE_WIDTH * 8;   // 160
@@ -161,14 +170,20 @@ public class Main {
     private static DialogTextLoader dialogTextLoader;
     private static OverworldDialogInteraction overworldDialogInteraction;
     private static boolean overworldDialogInputConsumedThisFrame;
+    private static int pendingGameplayMenuKey = GLFW_KEY_UNKNOWN;
     private static DialogSoundSink dialogSoundSink;
-    private static PcmSoundOutput dialogSoundOutput;
+    private static PcmSoundOutput audioOutput;
+    private static FrameSoundSink frameSoundSink;
     private static GameplaySoundSink gameplaySoundSink = GameplaySoundSink.none();
-    private static OpenAlMusicPlayer musicPlayer;
     private static GameplayMusicController gameplayMusicController;
     private static CutsceneManager cutsceneManager;
     private static FileMenuController fileMenuController;
     private static FileSaveController fileSaveController;
+    private static WorldMapScreen worldMapScreen;
+    private static MenuTransition menuTransition;
+    private static int introInputDelay;
+    private static GPU saveMenuTiles;
+    private static int worldMapCursorHeldFrames;
     private static SaveRamStore saveRamStore;
     private static int currentSaveSlot = -1;
     private static RomTables romTables;
@@ -213,7 +228,13 @@ public class Main {
 
         while (!glfwWindowShouldClose(window) && running) {
             glfwPollEvents();
+            // Give the full batch of key events a chance to complete the
+            // save chord before Start or Select opens a standalone menu.
+            dispatchPendingGameplayMenu();
             update();
+            int doorVolume = transitionController.doorVolume();
+            if (doorVolume >= 0) frameSoundSink.setMasterVolume(doorVolume);
+            frameSoundSink.finishFrame(gameplayMusicController, !transitionController.isHoldingManboFrame());
             composeFrameBuffer();
             framePresenter.present(indexedDisplayBuffer);
 
@@ -256,10 +277,12 @@ public class Main {
         inputConfig = currentAppConfig().inputConfig();
         inputState = new InputState();
         playerState = new PlayerState();
-        initMusicSystem();
-        dialogSoundOutput = new OpenAlPcmSoundOutput();
-        dialogSoundSink = new SfxDialogSoundSink(dialogSoundOutput);
-        gameplaySoundSink = new SfxGameplaySoundSink(romData, dialogSoundOutput);
+        audioOutput = new OpenAlPcmSoundOutput();
+        frameSoundSink = new FrameSoundSink(romData, audioOutput);
+        gameplayMusicController = new GameplayMusicController(
+            AreaMusicResolver.fromRom(romData), MusicCatalog.fromRom(romData), frameSoundSink);
+        dialogSoundSink = frameSoundSink;
+        gameplaySoundSink = frameSoundSink;
         InventoryTilemapLoader tilemapLoader = InventoryTilemapLoader.loadFromRom(romData);
         inventoryMenu = new InventoryMenu(tilemapLoader, playerState, gameplaySoundSink, romData);
         inventoryController = new InventoryController(inputState, inputConfig, inventoryMenu);
@@ -273,18 +296,24 @@ public class Main {
         overworldCollision = new OverworldCollision(romTables);
         overworldBushInteraction = new OverworldBushInteraction(romData, romTables);
         linkSpriteSheet = LinkSpriteSheet.loadFromRom(romData);
-        SwordSpriteSheet swordSpriteSheet = SwordSpriteSheet.loadFromRom(romData);
-        SwordPalette swordPalette = SwordPalette.loadFromRom(romData);
         TransientVfxSpriteSheet transientVfxSpriteSheet = TransientVfxSpriteSheet.loadFromRom(romData);
         transientVfxSystem = new TransientVfxSystem(16);
         droppableRupeeSystem = new DroppableRupeeSystem(16,
             () -> ThreadLocalRandom.current().nextInt(0x100));
         cutLeavesEffectRenderer = new CutLeavesEffectRenderer(transientVfxSpriteSheet);
-        itemRegistry = new ItemRegistry();
         roomSession = new RoomSession(romData, gpu, new RoomLoader(romData),
             new OverworldTilesetTable(romData), overworldCollision, transientVfxSystem, droppableRupeeSystem,
-            Main::selectMusicForLoadedRoom);
+            (room, adjacent) -> transitionController.whenRoomReady(() -> selectMusicForLoadedRoom(room, adjacent)));
         roomSession.setColorShellSoundSink(gameplaySoundSink);
+        initializeLinkAndEquipment();
+        roomTransitionCoordinator = new RoomTransitionCoordinator(
+            roomSession, new RoomBoundaryController(), transitionController, scrollController);
+    }
+
+    private static void initializeLinkAndEquipment() {
+        itemRegistry = new ItemRegistry();
+        SwordSpriteSheet swordSpriteSheet = SwordSpriteSheet.loadFromRom(romData);
+        SwordPalette swordPalette = SwordPalette.loadFromRom(romData);
         LinkTunicPalette linkTunicPalette = LinkTunicPalette.loadFromRom(romData);
         link = new Link(inputState, inputConfig, romTables, overworldCollision,
                         linkSpriteSheet, playerState, itemRegistry, gameplaySoundSink,
@@ -525,20 +554,6 @@ public class Main {
                 }
             }, link::canUseItems));
         equipmentController = new EquipmentController(inputState, inputConfig, playerState, itemRegistry);
-        roomTransitionCoordinator = new RoomTransitionCoordinator(
-            roomSession, new RoomBoundaryController(), transitionController, scrollController);
-    }
-
-    private static void initMusicSystem() {
-        GameBoyApu musicApu = new GameBoyApu(48_000);
-        MusicCatalog musicCatalog = MusicCatalog.fromRom(romData);
-        musicPlayer = new OpenAlMusicPlayer(new MusicDriver(romData, musicApu), musicApu);
-        // ROM background tracks contain their own loop commands. Host-level
-        // restarting would also loop finite fanfares such as $1B forever,
-        // preventing wActiveMusicIndex-gated acquisition handlers advancing.
-        musicPlayer.setLoopEnabled(false);
-        gameplayMusicController = new GameplayMusicController(
-            AreaMusicResolver.fromRom(romData), musicCatalog, musicPlayer);
     }
 
     private static void loadGraphicsData() {
@@ -568,6 +583,8 @@ public class Main {
             running = false;
         }
 
+        if (fileLoadBlocksControl()) return;
+
         if (currentScreen == SCREEN_TITLE) {
             if (shouldEnterFileSelection(currentScreen, key, action)) {
                 startFileSelection();
@@ -576,6 +593,7 @@ public class Main {
         }
 
         if (currentScreen == SCREEN_CUTSCENE) {
+            if (introInputDelay > 0) return;
             if (skipIntroCutsceneIfRequested(key, action, cutsceneManager)) {
                 currentScreen = SCREEN_TITLE;
                 playDirectMusic(directTitleScreenMusicTrack());
@@ -583,7 +601,7 @@ public class Main {
             }
             if (action == GLFW_PRESS && dialogController != null
                 && (key == inputConfig.aKey() || key == inputConfig.bKey() || key == GLFW_KEY_ENTER)) {
-                dialogController.advance();
+                dialogController.pressAdvanceButton();
             }
             return;
         }
@@ -596,15 +614,24 @@ public class Main {
             return;
         }
 
+        if (currentScreen == SCREEN_WORLD_MAP && menuTransition.transitionFinished()
+            && shouldEnterFileSave(inputConfig, inputState, key, action) && canPresentFileSave()) {
+            startFileSave();
+            return;
+        }
+
         if (currentScreen != SCREEN_OVERWORLD || action != GLFW_PRESS) {
             return;
         }
 
-        if (roomSession != null && roomSession.tailCaveKeyholeSequenceActive()) {
+        if ((roomTransitionCoordinator != null && roomTransitionCoordinator.dungeonPortalControlsLink())
+            || (link != null && link.warpHoleControlsLink()) || (roomSession != null && roomSession.tailCaveKeyholeSequenceActive())) {
             return;
         }
 
-        if (marinWakeUpBlocksKeyInput()) {
+        if (transitionController.isInputBlocked()) return;
+
+        if (marinWakeUpBlocksKeyInput() || (link != null && link.powerUpPresentationType() != 0)) {
             if (GameplayDialogInput.handleOverworldKeyPress(
                 key, action, inputConfig, dialogController)) {
                 overworldDialogInputConsumedThisFrame = true;
@@ -618,10 +645,16 @@ public class Main {
             return;
         }
 
+        if (key == inputConfig.selectKey() && canPresentWorldMap()) {
+            pendingGameplayMenuKey = key;
+            return;
+        }
+
         if (GameplayDialogInput.handleOverworldKeyPress(key, action, inputConfig, dialogController)) {
             overworldDialogInputConsumedThisFrame = true;
             return;
         }
+        if (key == inputConfig.aKey() && tryOpenResidentDialog()) return;
         if (tryOpenTarinShieldDialog(key)) {
             return;
         }
@@ -635,12 +668,44 @@ public class Main {
             return;
         }
 
-        inventoryController.dispatchToggleInput();
+        if (key == inputConfig.menuOpenKey()) {
+            pendingGameplayMenuKey = key;
+        }
 
         // Debug: F1 dumps Link's surrounding cells with object IDs and
         // physics flags, to diagnose walk-through-wall/tree reports.
         if (shouldRunDebugDump(currentAppConfig(), key, action)) {
             dumpLinkSurroundings();
+        }
+    }
+
+    private static void dispatchPendingGameplayMenu() {
+        int key = pendingGameplayMenuKey;
+        pendingGameplayMenuKey = GLFW_KEY_UNKNOWN;
+        if (currentScreen != SCREEN_OVERWORLD || key == GLFW_KEY_UNKNOWN) {
+            return;
+        }
+        if (key == inputConfig.selectKey() && canPresentWorldMap()) {
+            startWorldMap();
+        } else if (key == inputConfig.menuOpenKey()
+            && !(inputState.isDown(inputConfig.aKey()) && inputState.isDown(inputConfig.bKey()))) {
+            if (inventoryMenu.isFullyClosed() && roomSession != null) {
+                ActiveRoom room = roomSession.activeRoom();
+                boolean showInstruments = room != null && (room.mapCategory() == Warp.CATEGORY_OVERWORLD
+                    || (room.mapId() >= 0x08 && room.mapId() != 0xFF));
+                if (room != null && !showInstruments) {
+                    inventoryMenu.setDungeonMinimap(room.mapId(), room.mapCategory() == Warp.CATEGORY_SIDESCROLL,
+                        roomSession.indoorRoomPositionForSave(), roomSession.dungeonMinimapStatuses(),
+                        roomSession.currentDungeonItemFlagsSnapshot(),
+                        (roomSession.dungeonProgressFlagsSnapshot()[6] & 4) != 0);
+                } else {
+                    inventoryMenu.setInstrumentProgress(showInstruments
+                        ? roomSession.dungeonProgressFlagsSnapshot() : null,
+                        room != null && room.mapCategory() != Warp.CATEGORY_OVERWORLD && room.mapId() < 0x0A
+                            ? roomSession.currentDungeonItemFlagsSnapshot() : null);
+                }
+            }
+            inventoryController.dispatchToggleInput();
         }
     }
 
@@ -657,11 +722,10 @@ public class Main {
 
     static boolean shouldTickRoomEntities(boolean scrollActive,
                                           boolean transitionInputBlocked,
-                                          boolean inventoryBlocksInput,
-                                          boolean inventoryTransitioning) {
+                                          boolean inventoryBlocksInput) {
         return !scrollActive
             && !transitionInputBlocked
-            && (!inventoryBlocksInput || inventoryTransitioning);
+            && !inventoryBlocksInput;
     }
 
     static void completeGameplayFrame(DialogController dialog) {
@@ -707,11 +771,24 @@ public class Main {
     private static void update() {
         frameCounter = (frameCounter + 1) & 0xFF;
 
-        if (musicPlayer != null) {
-            musicPlayer.update();
+        if (fileLoad != null) {
+            fileLoad.tick();
+            if (fileLoad.stopFileMusic()) playDirectMusic(MusicTrackIds.MUSIC_NONE);
+            if (fileLoad.startWorld()) {
+                SaveSlotState saved = fileLoad.slot();
+                if (saved.spawnPositionX() == 0) startNewGame(saved);
+                else startSavedGame(saved);
+            }
+            if (fileLoad.beforeWorld() || fileLoad.startWorld()) {
+                inputState.tickEdges();
+                return;
+            }
+            roomSession.setEntityTransitionSequence(fileLoad.sequenceCounter());
+            if (fileLoad.finished()) fileLoad = null;
         }
 
         if (currentScreen == SCREEN_CUTSCENE) {
+            if (introInputDelay > 0) introInputDelay--;
             if (dialogController != null) {
                 dialogController.tick();
                 routeDialogSounds();
@@ -732,23 +809,21 @@ public class Main {
                 throw new IllegalStateException("File menu controller is not initialized");
             }
             FileMenuAction action = fileMenuController.tick(inputState, inputConfig);
-            if (action.type() == FileMenuAction.Type.START_NEW_GAME) {
+            if (action.type() == FileMenuAction.Type.REGISTER_FILE) {
                 try {
                     saveRamStore.createNewGame(action.selectedSlot(), action.nameBytes());
                     saveRamStore.flush();
                 } catch (IOException exception) {
                     throw new IllegalStateException("Failed to persist new save file", exception);
                 }
-                currentSaveSlot = action.selectedSlot();
-                startNewGame();
+                refreshFileSelection();
+                if (FileMenuRomData.matchesSpecialFileName(action.nameBytes())) {
+                    playDirectMusic(MusicTrackIds.MUSIC_FILE_SELECT_ZELDA);
+                }
             } else if (action.type() == FileMenuAction.Type.LOAD_GAME) {
                 SaveSlotState saved = saveRamStore.readSlot(action.selectedSlot());
                 currentSaveSlot = action.selectedSlot();
-                if (saved.spawnPositionX() == 0) {
-                    startNewGame();
-                } else {
-                    startSavedGame(saved);
-                }
+                fileLoad = new FileLoadTransition(saved);
             } else if (action.type() == FileMenuAction.Type.ERASE_SLOT) {
                 persistFileMenuMutation(() -> saveRamStore.eraseSlot(action.selectedSlot()));
             } else if (action.type() == FileMenuAction.Type.COPY_SLOT) {
@@ -760,20 +835,43 @@ public class Main {
             return;
         }
 
+        if (currentScreen == SCREEN_GAME_OVER) {
+            GameOverSequence.Choice choice = gameOver.tick(inputState, inputConfig, gameplaySoundSink);
+            if (gameOver.countDeath()) currentDeathCount = Math.min(999, currentDeathCount + 1);
+            if (gameOver.musicStarts()) playDirectMusic(MusicTrackIds.MUSIC_GAME_OVER);
+            if (choice != GameOverSequence.Choice.NONE) finishGameOver(choice);
+            inputState.tickEdges();
+            return;
+        }
+
+        if ((currentScreen == SCREEN_FILE_SAVE || currentScreen == SCREEN_WORLD_MAP)
+            && !menuTransition.transitionFinished()) {
+            tickMenuTransition();
+            inputState.tickEdges();
+            return;
+        }
+
         if (currentScreen == SCREEN_FILE_SAVE) {
             if (fileSaveController == null) {
                 throw new IllegalStateException("File save controller is not initialized");
             }
             FileSaveAction action = fileSaveController.tick(inputState, inputConfig);
             if (action.type() == FileSaveAction.Type.RETURN_TO_GAME) {
-                fileSaveController = null;
-                currentScreen = SCREEN_OVERWORLD;
+                menuTransition.close();
             } else if (action.type() == FileSaveAction.Type.SAVE_AND_QUIT) {
                 saveCurrentPlayerState();
-                startFileSelection();
+                setMenuAudioAttenuated(false);
+                startIntroCutscene();
+                introInputDelay = 0x18;
             }
             inputState.tickEdges();
             overworldDialogInputConsumedThisFrame = false;
+            return;
+        }
+
+        if (currentScreen == SCREEN_WORLD_MAP) {
+            tickWorldMap();
+            inputState.tickEdges();
             return;
         }
 
@@ -786,6 +884,12 @@ public class Main {
         // matching the disassembly's gating on wLinkMotionState ==
         // LINK_MOTION_MAP_FADE_OUT (bank0.asm:888-899).
         transitionController.tick();
+        if (transitionController.stopDoorMusic()) playDirectMusic(MusicTrackIds.MUSIC_NONE);
+        if (transitionController.isManboTransition() || transitionController.state() == TransitionController.State.ROOM_LOAD) {
+            inputState.tickEdges();
+            overworldDialogInputConsumedThisFrame = false;
+            return;
+        }
 
         if (currentScreen == SCREEN_OVERWORLD) {
             scrollController.tickScreenShake();
@@ -794,25 +898,25 @@ public class Main {
                 routeDialogSounds();
             }
             updateNewGameMarinPresentation();
-            if (tickNewGameWakeUp()) {
-                completeGameplayFrame(dialogController);
-                inputState.tickEdges();
-                overworldDialogInputConsumedThisFrame = false;
-                return;
-            }
-            if (tickNewGameTarinShield()) {
-                completeGameplayFrame(dialogController);
-                inputState.tickEdges();
-                overworldDialogInputConsumedThisFrame = false;
-                return;
-            }
+            boolean scriptedPose = tickNewGameWakeUp() || tickNewGameTarinShield() || tickPowerUpPresentation();
+            if (!scriptedPose && inputState.isDown(inputConfig.aKey())) tryOpenResidentDialog();
             OverworldDialogBlockers blockers = currentOverworldDialogBlockers();
             boolean dialogBlocksGameplay = blockers.pausesGameplay();
 
+            // UpdateRupeesCount and UpdateHealth share the $60E0 gameplay entry.
+            if (playerState != null && link != null && link.romMotionState() < 2
+                && !fileLoadBlocksControl() && !transitionController.isInputBlocked()
+                && !scrollController.isActive() && !inventoryController.shouldBlockOverworldInput()
+                && (dialogController == null || dialogController.allowsResourceUpdates())) {
+                GameplaySoundEvent resourceSound = playerState.tickResourceBuffers(frameCounter);
+                if (resourceSound != null) gameplaySoundSink.play(resourceSound);
+            }
+
             if (!dialogBlocksGameplay) {
+                boolean wasAttenuated = inventoryMenu.audioAttenuated();
                 inventoryController.tick();
-                if (playerState != null) {
-                    playerState.tickResourceBuffers(frameCounter);
+                if (inventoryMenu.audioAttenuated() != wasAttenuated) {
+                    setMenuAudioAttenuated(inventoryMenu.audioAttenuated());
                 }
                 if (transientVfxSystem != null) {
                     transientVfxSystem.tick();
@@ -826,11 +930,22 @@ public class Main {
                 inventoryController.dispatchMenuInput();
             }
 
-            boolean linkActive = !scrollController.isActive()
+            boolean linkActive = !roomTransitionCoordinator.dungeonPortalControlsLink()
+                && !scriptedPose && !fileLoadBlocksControl() && !scrollController.isActive()
                 && !transitionController.isInputBlocked()
                 && !inventoryController.shouldBlockOverworldInput()
                 && !dialogBlocksGameplay
                 && (roomSession == null || !roomSession.gotItemPresentationActive());
+            if (linkActive && playerState.health() == 0) {
+                gameOver = new GameOverSequence(romData, backgroundSceneLoader.load(BackgroundSceneCatalog.GAME_OVER));
+                ensureSaveMenuTiles();
+                playerState.setInvincibilityCounter(0);
+                playDirectMusic(MusicTrackIds.MUSIC_NONE);
+                gameplaySoundSink.play(GameplaySoundEvent.LINK_DIES);
+                currentScreen = SCREEN_GAME_OVER;
+                inputState.tickEdges();
+                return;
+            }
             if (linkActive && link != null) {
                 // AnimateEntities runs after Link motion and its normal NPC
                 // handlers restore hLinkFinalPosition when they push Link.
@@ -859,12 +974,14 @@ public class Main {
                         }
                     }
                 }
-                if (!keyholeSequenceActive && !link.isCarryingLiftedObject()) {
+                link.setWarpHoleRoom(roomSession != null && roomSession.isOverworldWarpHoleRoom());
+                if (!keyholeSequenceActive && !link.isCarryingLiftedObject() && !link.warpHoleControlsLink()) {
                     equipmentController.dispatchButtonEdges();
                     equipmentController.tickEquippedItems(frameCounter);
                 }
                 link.tickRomLinkPushing();
-                link.update();
+                link.update(roomSession != null && roomSession.hasActiveRoom()
+                    && roomSession.activeRoom().mapCategory() == Warp.CATEGORY_SIDESCROLL);
                 if (roomSession != null && playerState != null) {
                     roomSession.tryUnlockTailCaveKeyhole(
                         link.pixelX(), link.pixelY(), link.direction(),
@@ -896,7 +1013,7 @@ public class Main {
                     roomSession.setToadstoolPlayerState(
                         playerState.hasToadstool(), playerState.magicPowderCount());
                     EntityPickupEvent pickup = roomSession.collectEntityIfNeeded(
-                        frameCounter, link.pixelX(), link.pixelY(), link.isAirborne(), true,
+                        frameCounter, link.romEntityX(), link.romEntityY(), link.isAirborne(), true,
                         link.direction(), link.romEntityZ());
                     if (pickup != null) {
                         if (pickup.type() == 0x36) {
@@ -907,6 +1024,9 @@ public class Main {
                                 pickup.type(), pickup.sourceVariant());
                         } else {
                             playerState.applyEntityPickup(pickup.type());
+                            if (pickup.type() == 0x33 || pickup.type() == 0x34) {
+                                beginPowerUpPresentation(pickup.type());
+                            }
                         }
                     }
                 }
@@ -930,9 +1050,10 @@ public class Main {
                     roomSession.tailCaveKeyholeSequenceActive(), rumbleHorizontal);
             }
 
+            boolean poweredBeforeCombat = playerState != null && playerState.activePowerUp() != 0;
             Sword.CollisionBox swordBoxForEntityTick = Sword.CollisionBox.inactive();
-            if (link != null && roomSession != null
-                && !scrollController.isActive()
+            if (!scriptedPose && !fileLoadBlocksControl() && link != null && roomSession != null
+                && !roomTransitionCoordinator.dungeonPortalControlsLink() && !scrollController.isActive()
                 && !transitionController.isInputBlocked()
                 && !inventoryController.shouldBlockOverworldInput()
                 && !dialogBlocksGameplay) {
@@ -949,7 +1070,8 @@ public class Main {
                     playerState.runningWithPegasusBoots());
                 var combatEvents = roomSession.resolveEntityCombat(
                     frameCounter, link.romEntityX(), link.romEntityY(),
-                    link.isAirborne(), link.zVelocity(), true,
+                    link.isAirborne(), roomSession.mapCategory() == Warp.CATEGORY_SIDESCROLL
+                        ? link.romSpeedY() : link.zVelocity(), true,
                     swordBoxForEntityTick.active(), swordBoxForEntityTick.x(),
                     swordBoxForEntityTick.width(), swordBoxForEntityTick.y(),
                     swordBoxForEntityTick.height(), attackContext);
@@ -957,6 +1079,7 @@ public class Main {
                 for (EntityCombatEvent event : combatEvents) {
                     if (event.linkDamage() > 0 && playerState.invincibilityCounter() == 0) {
                         playerState.applyRomEnemyDamage(event.linkDamage());
+                        roomSession.resetGuardianAcornCounter();
                         if (event.linkCollisionResponse().active()) {
                             EntityCombatEvent.LinkCollisionResponse response =
                                 event.linkCollisionResponse();
@@ -990,16 +1113,16 @@ public class Main {
                 && shouldTickRoomEntities(
                     scrollController.isActive(),
                     transitionController.isInputBlocked(),
-                    inventoryController.shouldBlockOverworldInput(),
-                    inventoryMenu != null && inventoryMenu.isTransitioning())) {
+                    inventoryController.shouldBlockOverworldInput())) {
                 roomSession.setEntityDialogActive(
                     dialogController != null && dialogController.isActive());
+                roomSession.setDialogChoice(dialogController == null ? 0 : dialogController.selectedChoiceIndex());
                 roomSession.setEntityTalkState(
                     inventoryMenu != null && inventoryMenu.isTransitioning(),
                     dialogController == null ? 0 : dialogController.dialogCooldown(),
                     inventoryMenu == null ? 0x80 : inventoryMenu.windowY());
                 roomSession.setEntityMusicActive(
-                    musicPlayer != null && musicPlayer.isMusicPlaying());
+                    frameSoundSink != null && frameSoundSink.isMusicPlaying());
                 roomSession.setEntityActionButtonsHeld(
                     inputState != null && inputConfig != null
                         && inputState.isDown(inputConfig.aKey()),
@@ -1044,7 +1167,7 @@ public class Main {
                     link == null ? 0x10 : link.romEntityY(),
                     link == null ? 0x00 : link.romEntityZ(),
                     link != null && link.isAirborne(),
-                    link == null ? 0x02 : link.romMotionState(),
+                    fileLoadBlocksControl() ? 0x04 : link == null ? 0x02 : link.romMotionState(),
                     link == null ? 0x00 : link.direction(),
                     link == null ? 0x00 : link.romCollisionType(),
                     link != null && link.isUsingShield(),
@@ -1079,7 +1202,7 @@ public class Main {
                     }
                 }
                 if (roomSession.consumeWorldLinkMotionBlockRequest() && link != null) {
-                    link.blockNextRomMotionFrame();
+                    link.blockNextMovementFrame();
                 }
                 for (var request : roomSession.consumeLinkFacingRequests()) {
                     if (link != null) {
@@ -1112,8 +1235,9 @@ public class Main {
                 for (var request : roomSession.consumeScreenShakeRequests()) {
                     scrollController.startScreenShake(request.countdown(), request.phase());
                 }
-                EnemyProjectileEventConsumer.consume(projectileEvents, playerState,
-                    gameplaySoundSink);
+                if (EnemyProjectileEventConsumer.consume(projectileEvents, playerState, gameplaySoundSink)) {
+                    roomSession.resetGuardianAcornCounter();
+                }
                 EnemyCombatEventConsumer.consume(roomSession.consumeEntityEvents(),
                     gameplaySoundSink, transientVfxSystem);
                 for (var reward : roomSession.consumeChestRewardEvents()) {
@@ -1174,6 +1298,10 @@ public class Main {
                         link.releaseLikeLikeCapture();
                     }
                 }
+                if (!dialogBlocksGameplay && !inventoryController.shouldBlockOverworldInput() && link != null) {
+                    roomTransitionCoordinator.tickDungeonPortal(link, frameCounter);
+                }
+                roomTransitionCoordinator.handleRichardPassage(link);
                 openEntityDialogRequests();
                 if (roomTransitionCoordinator.handlePendingManboTransition(link)) {
                     gameplaySoundSink.play(linksawakening.gameplay.GameplaySoundEvent.MANBO_WARP);
@@ -1205,6 +1333,9 @@ public class Main {
                     }
                 }
                 synchronizeLinkLiftedPresentation();
+            }
+            if (poweredBeforeCombat && playerState.activePowerUp() == 0 && gameplayMusicController != null) {
+                gameplayMusicController.finishPowerUp();
             }
             completeGameplayFrame(dialogController);
 
@@ -1284,13 +1415,27 @@ public class Main {
         };
     }
 
-    private static void selectMusicForLoadedRoom(ActiveRoom room) {
+    private static void selectMusicForLoadedRoom(ActiveRoom room, boolean adjacentScroll) {
         if (gameplayMusicController == null || playerState == null || room == null) {
             return;
         }
-        gameplayMusicController.selectAfterTransition(RoomMusicContext.from(room, playerState));
+        int residentTrack = -1;
+        if (playerState.swordLevel() != 0 && room.entities() != null) {
+            for (var entity : room.entities().loadedEntities()) {
+                if (entity.type() == EntitySpriteHandlerCatalog.ENTITY_TELEPHONE) residentTrack = MusicTrackIds.MUSIC_ULRIRA;
+                if (entity.type() == EntitySpriteHandlerCatalog.ENTITY_RICHARD) residentTrack = MusicTrackIds.MUSIC_RICHARD_HOUSE;
+            }
+        }
+        if (transitionController.continuesMusicOnArrival()) {
+            gameplayMusicController.continueMusicAfterNextWarp();
+        } else if (residentTrack >= 0) {
+            gameplayMusicController.playResidentTrack(residentTrack);
+        }
+        if (residentTrack < 0 || transitionController.continuesMusicOnArrival()) {
+            gameplayMusicController.selectAfterTransition(RoomMusicContext.from(room, playerState), adjacentScroll);
+        }
         if (roomSession != null) {
-            roomSession.setEntityDefaultMusicTrack(gameplayMusicController.currentTrackId());
+            roomSession.setEntityDefaultMusicTrack(gameplayMusicController.areaTrackId());
         }
     }
 
@@ -1380,6 +1525,22 @@ public class Main {
             dialogController);
     }
 
+    private static boolean tryOpenResidentDialog() {
+        if (roomSession == null || link == null || dialogController == null || fileLoadBlocksControl()
+            || link.isAirborne() || dialogController.dialogCooldown() != 0
+            || inventoryMenu.windowY() != 0x80 || currentOverworldDialogBlockers().blocksOpening()) return false;
+        int x = link.romEntityX();
+        int y = link.romEntityY();
+        int direction = romDirectionForLink(link.direction());
+        SignpostDialogRef dialog = roomSession.talkToUlrira(x, y, direction);
+        if (dialog == null) dialog = roomSession.talkToRichard(x, y, direction, playerState);
+        if (dialog == null) dialog = roomSession.useTelephone(x, y, direction, playerState);
+        if (dialog == null) return false;
+        dialogController.openPreformattedForLinkY(dialogTextLoader.load(dialog),
+            LinkDialogPosition.dialogYFromTopLeft(link.pixelY()));
+        return true;
+    }
+
     private static boolean tryOpenChest(int key) {
         if (!GameplayDialogInput.isActionButtonKey(key, inputConfig)
             || roomSession == null
@@ -1413,10 +1574,10 @@ public class Main {
         if (newGameWakeUpMotion == null || newGameWakeUpMotion.complete()) {
             return false;
         }
-        boolean directionPressed = inputState.isDown(inputConfig.upKey())
+        boolean directionPressed = !fileLoadBlocksControl() && (inputState.isDown(inputConfig.upKey())
             || inputState.isDown(inputConfig.downKey())
             || inputState.isDown(inputConfig.leftKey())
-            || inputState.isDown(inputConfig.rightKey());
+            || inputState.isDown(inputConfig.rightKey()));
         MarinWakeUpMotion.Update update = newGameWakeUpMotion.tick(frameCounter,
             dialogController != null && dialogController.isActive(), directionPressed);
         if (update.linkMotionBlocked()) {
@@ -1516,6 +1677,35 @@ public class Main {
         return false;
     }
 
+    private static void beginPowerUpPresentation(int type) {
+        playDirectMusic(MusicTrackIds.MUSIC_OBTAIN_POWERUP);
+        link.beginPowerUpPresentation(type);
+        Sword sword = equipmentController.activeSword();
+        if (sword != null) sword.resetSpinAttack();
+        gameplaySoundSink.playRomSound(SoundEffectNamespace.WAVE, 0x01);
+        for (int variant = 3; variant >= 0; variant--) {
+            int x = link.romEntityX() + ((variant & 1) == 0 ? -28 : 20);
+            int y = link.romEntityY() + (variant < 2 ? -44 : 4);
+            transientVfxSystem.spawn(TransientVfxType.MOVING_SPARKLE,
+                x & 255, y & 255, variant);
+        }
+    }
+
+    private static boolean tickPowerUpPresentation() {
+        if (link == null || link.powerUpPresentationType() == 0) return false;
+        boolean dialogActive = dialogController.isActive();
+        int countdown = link.tickPowerUpPresentation(dialogActive);
+        if (!dialogActive && countdown == 0x2E) {
+            gameplaySoundSink.playRomSound(SoundEffectNamespace.JINGLE, 0x17);
+        }
+        if (!dialogActive && countdown == 2) {
+            int dialog = link.powerUpPresentationType() == 0x33 ? 0x08 : 0xEC;
+            dialogController.openPreformattedForLinkY(dialogTextLoader.load(new SignpostDialogRef(0, dialog)),
+                LinkDialogPosition.dialogYFromTopLeft(link.pixelY()));
+        }
+        return countdown != 0;
+    }
+
     private static boolean tickNewGameTarinShield() {
         if (newGameTarinShieldMotion == null || roomSession == null
             || !roomSession.hasActiveRoom() || link == null || playerState == null
@@ -1593,6 +1783,7 @@ public class Main {
         fileMenuController = null;
         fileSaveController = null;
         currentSaveSlot = -1;
+        currentDeathCount = 0;
         newGameWakeUpMotion = null;
         newGameTarinShieldMotion = null;
         currentScreen = SCREEN_OVERWORLD;
@@ -1604,22 +1795,29 @@ public class Main {
     }
 
     private static void startNewGame() {
+        startNewGame(null);
+    }
+
+    private static void startNewGame(SaveSlotState saved) {
         fileMenuController = null;
         fileSaveController = null;
         currentScreen = SCREEN_OVERWORLD;
 
         NewGameStartProfile profile = NewGameStartProfile.romDefaults();
+        currentDeathCount = 0;
         profile.initializePlayerState(playerState);
         roomSession.initializeNewGameWorldState();
-        roomSession.setBirdKeyOwned(playerState.birdKeyCount() != 0);
-        roomSession.setTailKeyOwned(playerState.tailKeyCount() != 0);
-        roomSession.setBowWowState(0);
+        if (saved != null) {
+            restoreSavedState(saved);
+            // LoadSavedFile.initNewGame overwrites the capacities and map anchor after loading SRAM.
+            profile.applyStartingCapacities(playerState);
+            roomSession.restoreWorldMapRoom(profile.roomId());
+        }
         link.setDirection(Link.DIRECTION_DOWN);
         gpu.loadBaseTiles(romData);
         roomSession.loadIndoor(profile.mapId(), profile.roomId());
         link.setRoomEntryRomPosition(profile.entryX(), profile.entryY());
-        newGameWakeUpMotion = new MarinWakeUpMotion();
-        newGameTarinShieldMotion = new TarinShieldMotion();
+        initializeHouseCharacters();
         playDirectMusic(newGameHouseMusicTrack());
         updateNewGameMarinPresentation();
     }
@@ -1630,18 +1828,7 @@ public class Main {
         currentScreen = SCREEN_OVERWORLD;
         newGameWakeUpMotion = null;
         newGameTarinShieldMotion = null;
-        playerState.applySavedGame(saved);
-        roomSession.setBirdKeyOwned(playerState.birdKeyCount() != 0);
-        roomSession.setTailKeyOwned(playerState.tailKeyCount() != 0);
-        roomSession.restoreRoomStatuses(saved.overworldRoomStatus(), saved.indoorARoomStatus(),
-            saved.indoorBRoomStatus(), saved.colorDungeonRoomStatus());
-        roomSession.restoreDungeonItemFlags(saved.dungeonItemFlags(),
-            saved.colorDungeonItemFlags());
-        roomSession.restoreDungeonProgressFlags(saved.dungeonProgressFlags());
-        roomSession.setBowWowState(saved.bowWowState());
-        roomSession.setTarinFlag(saved.tarinFlag());
-        roomSession.setChestPlayerLevels(playerState.shieldLevel(), playerState.swordLevel(),
-            playerState.powerBraceletLevel());
+        restoreSavedState(saved);
         if (saved.spawnIsIndoor() != 0) {
             gpu.loadBaseTiles(romData);
             roomSession.loadIndoorFromSavedPosition(
@@ -1655,17 +1842,43 @@ public class Main {
         restoreNewGameHouseRuntimeIfNeeded(saved);
     }
 
+    private static void restoreSavedState(SaveSlotState saved) {
+        currentDeathCount = saved.deathCount();
+        playerState.applySavedGame(saved);
+        roomSession.setBirdKeyOwned(playerState.birdKeyCount() != 0);
+        roomSession.setTailKeyOwned(playerState.tailKeyCount() != 0);
+        roomSession.restoreSpawnLocation(new RoomSession.SpawnLocation(saved.spawnIsIndoor(),
+            saved.spawnMapId(), saved.spawnMapRoom(), saved.spawnPositionX(), saved.spawnPositionY(),
+            saved.spawnIndoorRoom()));
+        roomSession.restoreWorldMapRoom(saved.worldMapRoom());
+        roomSession.restoreRoomStatuses(saved.overworldRoomStatus(), saved.indoorARoomStatus(),
+            saved.indoorBRoomStatus(), saved.colorDungeonRoomStatus());
+        roomSession.restoreDungeonItemFlags(saved.dungeonItemFlags(),
+            saved.colorDungeonItemFlags());
+        roomSession.restoreDungeonProgressFlags(saved.dungeonProgressFlags());
+        roomSession.restoreQuestFlags(saved.richardSpokenFlag(), saved.followingNpcState(),
+            saved.spawnPositionX(), saved.spawnPositionY());
+        roomSession.setBowWowState(saved.bowWowState());
+        roomSession.setTarinFlag(saved.tarinFlag());
+        roomSession.setChestPlayerLevels(playerState.shieldLevel(), playerState.swordLevel(),
+            playerState.powerBraceletLevel());
+    }
+
     private static void restoreNewGameHouseRuntimeIfNeeded(SaveSlotState saved) {
         if (saved.spawnIsIndoor() != 0 && saved.spawnMapId() == 0x10
             && saved.spawnMapRoom() == 0xA3) {
-            if (playerState.swordLevel() == 0) {
-                newGameWakeUpMotion = MarinWakeUpMotion.postWake();
-                updateNewGameMarinPresentation();
-            }
-            if (playerState.shieldLevel() == 0) {
-                newGameTarinShieldMotion = new TarinShieldMotion();
-            }
+            initializeHouseCharacters();
+            updateNewGameMarinPresentation();
         }
+    }
+
+    private static void initializeHouseCharacters() {
+        newGameWakeUpMotion = null;
+        if (playerState.swordLevel() == 0) {
+            newGameWakeUpMotion = playerState.shieldLevel() == 0
+                ? new MarinWakeUpMotion() : MarinWakeUpMotion.postWake();
+        }
+        newGameTarinShieldMotion = playerState.shieldLevel() == 0 ? new TarinShieldMotion() : null;
     }
 
     private static void startIntroCutscene() {
@@ -1693,15 +1906,25 @@ public class Main {
     }
 
     private static void startFileSelection() {
+        refreshFileSelection();
+        playDirectMusic(fileSelectionMusicTrack());
+    }
+
+    private static void refreshFileSelection() {
         currentScreen = SCREEN_FILE_MENU;
         fileSaveController = null;
         gpu.loadMenuTiles(romData);
+        FileMenuController.SlotStats[] slotStats = new FileMenuController.SlotStats[3];
+        for (int slot = 0; slot < slotStats.length; slot++) {
+            SaveSlotState saved = saveRamStore.readSlot(slot);
+            slotStats[slot] = new FileMenuController.SlotStats(
+                saved.health(), saved.maxHearts(), saved.deathCount());
+        }
         fileMenuController = new FileMenuController(
             new FileMenuRomData(romData),
             Main::loadFileMenuBackgroundScene,
             saveRamStore.saveFilesMask(),
-            saveRamStore.savedNames());
-        playDirectMusic(fileSelectionMusicTrack());
+            saveRamStore.savedNames(), slotStats, gameplaySoundSink);
         // The Enter event that leaves the title must not also activate the
         // first empty file. Its edge belongs to the title screen.
         inputState.tickEdges();
@@ -1714,37 +1937,60 @@ public class Main {
         } catch (IOException exception) {
             throw new IllegalStateException("Failed to persist file-menu mutation", exception);
         }
-        startFileSelection();
+        refreshFileSelection();
     }
 
     private static void startFileSave() {
+        menuTransition = currentScreen == SCREEN_WORLD_MAP
+            ? menuTransition.enterAnotherMenu(indexedDisplayBuffer, 10)
+            : new MenuTransition(indexedDisplayBuffer, 10);
         currentScreen = SCREEN_FILE_SAVE;
         fileMenuController = null;
-        gpu.loadSaveMenuTiles(romData);
-        fileSaveController = new FileSaveController(Main::loadFileMenuBackgroundScene);
+        ensureSaveMenuTiles();
+        fileSaveController = new FileSaveController(Main::loadFileMenuBackgroundScene, gameplaySoundSink);
         inputState.tickEdges();
+    }
+
+    private static void ensureSaveMenuTiles() {
+        if (saveMenuTiles == null) {
+            saveMenuTiles = new GPU();
+            saveMenuTiles.loadSaveMenuTiles(romData);
+        }
+    }
+
+    private static void finishGameOver(GameOverSequence.Choice choice) {
+        gameOver = null;
+        if (choice != GameOverSequence.Choice.CONTINUE) saveCurrentPlayerState();
+        if (choice == GameOverSequence.Choice.SAVE_AND_QUIT) {
+            initializeLinkAndEquipment();
+            startIntroCutscene();
+            introInputDelay = 0x18;
+            return;
+        }
+        int slot = Math.max(0, currentSaveSlot);
+        SaveRamStore source = saveRamStore;
+        if (choice == GameOverSequence.Choice.CONTINUE || currentSaveSlot < 0) {
+            source = currentSaveSlot < 0 ? SaveRamStore.inMemory() : saveRamStore.transientCopy();
+            writeCurrentPlayerState(source, slot);
+            if (currentSaveSlot < 0 && roomSession.spawnLocation() == null) {
+                var room = roomSession.activeRoom();
+                source.writeSpawnLocation(slot, room.mapCategory(), room.mapId(), room.roomId(),
+                    link.roomEntryRomPositionX(), link.roomEntryRomPositionY(), roomSession.indoorRoomPositionForSave());
+            }
+        }
+        SaveSlotState saved = source.readSlot(slot);
+        initializeLinkAndEquipment();
+        roomSession.initializeNewGameWorldState();
+        if (saved.spawnPositionX() == 0) startNewGame(saved);
+        else startSavedGame(saved);
+        playerState.setInvincibilityCounter(0x80);
     }
 
     private static void saveCurrentPlayerState() {
         if (currentSaveSlot < 0 || playerState == null || saveRamStore == null) {
             return;
         }
-        saveRamStore.writePlayerState(currentSaveSlot, playerState);
-        saveCurrentSpawnLocation();
-        if (roomSession != null) {
-            saveRamStore.writeRoomStatuses(currentSaveSlot,
-                roomSession.overworldRoomStatusSnapshot(),
-                roomSession.indoorARoomStatusSnapshot(),
-                roomSession.indoorBRoomStatusSnapshot(),
-                roomSession.colorDungeonRoomStatusSnapshot());
-            saveRamStore.writeDungeonItemFlags(currentSaveSlot,
-                roomSession.dungeonItemFlagsSnapshot(),
-                roomSession.colorDungeonItemFlagsSnapshot());
-            saveRamStore.writeDungeonProgressFlags(currentSaveSlot,
-                roomSession.dungeonProgressFlagsSnapshot());
-            saveRamStore.writeBowWowState(currentSaveSlot, roomSession.bowWowState());
-            saveRamStore.writeTarinFlag(currentSaveSlot, roomSession.tarinFlag());
-        }
+        writeCurrentPlayerState(saveRamStore, currentSaveSlot);
         try {
             saveRamStore.flush();
         } catch (IOException exception) {
@@ -1752,28 +1998,35 @@ public class Main {
         }
     }
 
-    /** Mirrors the source's wSpawnLocationData fields copied by SaveGameToFile. */
-    private static void saveCurrentSpawnLocation() {
-        if (roomSession == null || !roomSession.hasActiveRoom() || link == null) {
-            return;
+    private static void writeCurrentPlayerState(SaveRamStore target, int slot) {
+        target.writePlayerState(slot, playerState);
+        target.writeDeathCount(slot, currentDeathCount);
+        saveCurrentSpawnLocation(target, slot);
+        if (roomSession != null) {
+            target.writeWorldMapRoom(slot, roomSession.worldMapRoom());
+            target.writeRoomStatuses(slot,
+                roomSession.overworldRoomStatusSnapshot(),
+                roomSession.indoorARoomStatusSnapshot(),
+                roomSession.indoorBRoomStatusSnapshot(),
+                roomSession.colorDungeonRoomStatusSnapshot());
+            target.writeDungeonItemFlags(slot,
+                roomSession.dungeonItemFlagsSnapshot(),
+                roomSession.colorDungeonItemFlagsSnapshot());
+            target.writeDungeonProgressFlags(slot,
+                roomSession.dungeonProgressFlagsSnapshot());
+            target.writeBowWowState(slot, roomSession.bowWowState());
+            target.writeQuestFlags(slot, roomSession.richardSpokenFlag(), roomSession.followingNpcState());
+            target.writeTarinFlag(slot, roomSession.tarinFlag());
         }
+    }
 
-        ActiveRoom room = roomSession.activeRoom();
-        boolean isIndoor = room.mapCategory() != Warp.CATEGORY_OVERWORLD;
-        int indoorRoom = roomSession.indoorRoomPositionForSave();
-        if (indoorRoom < 0) {
-            // Small houses/caves have no map-layout table. The source leaves
-            // wIndoorRoom at its previous value in that case.
-            indoorRoom = saveRamStore.readSlot(currentSaveSlot).spawnIndoorRoom();
+    /** Mirrors the source's wSpawnLocationData fields copied by SaveGameToFile. */
+    private static void saveCurrentSpawnLocation(SaveRamStore target, int slot) {
+        RoomSession.SpawnLocation checkpoint = roomSession == null ? null : roomSession.spawnLocation();
+        if (checkpoint != null) {
+            target.writeSpawnLocation(slot, checkpoint.category(), checkpoint.map(),
+                checkpoint.room(), checkpoint.x(), checkpoint.y(), checkpoint.indoorPosition());
         }
-        saveRamStore.writeSpawnLocation(
-            currentSaveSlot,
-            isIndoor ? 1 : 0,
-            isIndoor ? room.mapId() : 0,
-            room.roomId(),
-            link.roomEntryRomPositionX(),
-            link.roomEntryRomPositionY(),
-            indoorRoom);
     }
 
     private static BackgroundScene loadFileMenuBackgroundScene(String sceneId) {
@@ -1830,20 +2083,114 @@ public class Main {
     static boolean shouldEnterFileSave(InputConfig inputConfig, InputState inputState,
                                        int key, int action) {
         if (inputConfig == null || inputState == null || action != GLFW_PRESS
-            || key != inputConfig.selectKey()) {
+            || (key != inputConfig.selectKey() && key != inputConfig.menuOpenKey()
+                && key != inputConfig.aKey() && key != inputConfig.bKey())) {
             return false;
         }
         return inputState.isDown(inputConfig.aKey())
             && inputState.isDown(inputConfig.bKey())
             && inputState.isDown(inputConfig.menuOpenKey())
-            && inputState.isDown(inputConfig.selectKey());
+            && inputState.isDown(inputConfig.selectKey())
+            && !inputState.isDown(inputConfig.upKey()) && !inputState.isDown(inputConfig.downKey())
+            && !inputState.isDown(inputConfig.leftKey()) && !inputState.isDown(inputConfig.rightKey());
     }
 
     private static boolean canPresentFileSave() {
-        return !scrollController.isActive()
+        // Marin sets wC167 during the opening. Tarin clears it when he gives Link the shield.
+        boolean awaitingShield = newGameWakeUpMotion != null && playerState.shieldLevel() == 0
+            && roomSession.hasActiveRoom() && roomSession.activeRoom().mapCategory() != Warp.CATEGORY_OVERWORLD
+            && roomSession.activeRoom().mapId() == 0x10 && roomSession.activeRoom().roomId() == 0xA3;
+        return !awaitingShield && !scrollController.isActive()
             && !transitionController.isInputBlocked()
             && (inventoryController == null || !inventoryController.shouldBlockOverworldInput())
             && (dialogController == null || !GameplayDialogInput.blocksGameplay(dialogController));
+    }
+
+    private static boolean canPresentWorldMap() {
+        return roomSession != null && roomSession.hasActiveRoom()
+            && !roomSession.gotItemPresentationActive() && canPresentFileSave()
+            && !inputState.isDown(inputConfig.aKey()) && !inputState.isDown(inputConfig.bKey())
+            && !inputState.isDown(inputConfig.menuOpenKey());
+    }
+
+    private static void startWorldMap() {
+        if (worldMapScreen == null) {
+            worldMapScreen = new WorldMapScreen(romData);
+        }
+        menuTransition = new MenuTransition(indexedDisplayBuffer, 9);
+        worldMapScreen.open(roomSession.worldMapRoom(), roomSession.overworldRoomStatusSnapshot());
+        worldMapCursorHeldFrames = 0;
+        currentScreen = SCREEN_WORLD_MAP;
+        inputState.tickEdges();
+    }
+
+    private static void setMenuAudioAttenuated(boolean attenuated) {
+        if (frameSoundSink != null) frameSoundSink.setMenuAttenuated(attenuated);
+    }
+
+    private static void tickMenuTransition() {
+        menuTransition.tick();
+        if (menuTransition.swappedScreens()) {
+            setMenuAudioAttenuated(!menuTransition.returningToRoom());
+        }
+        if (menuTransition.transitionFinished()) {
+            if (menuTransition.returningToRoom()) {
+                currentScreen = SCREEN_OVERWORLD;
+                fileSaveController = null;
+            } else if (currentScreen == SCREEN_WORLD_MAP) {
+                gameplaySoundSink.play(GameplaySoundEvent.MENU_VALIDATE);
+            }
+        }
+    }
+
+    private static void tickWorldMap() {
+        worldMapScreen.tick();
+        boolean actionA = inputState.wasPressed(inputConfig.aKey());
+        boolean actionB = inputState.wasPressed(inputConfig.bKey());
+        if (dialogController.isActive()) {
+            if (actionA || actionB) {
+                dialogController.pressAdvanceButton();
+            }
+            dialogController.tick();
+            routeDialogSounds();
+            return;
+        }
+        if (actionB || inputState.wasPressed(inputConfig.selectKey())) {
+            menuTransition.close();
+            return;
+        }
+        if (actionA) {
+            int dialogIndex = worldMapScreen.locationDialogIndex();
+            if (dialogIndex >= 0) {
+                SignpostDialogRef ref = new SignpostDialogRef(worldMapScreen.locationDialogTable(), dialogIndex);
+                DialogController.BoxPosition position = worldMapScreen.cursorRoom() < 0x70
+                    ? DialogController.BoxPosition.BOTTOM : DialogController.BoxPosition.TOP;
+                dialogController.openPreformatted(dialogTextLoader.load(ref), position);
+            }
+            return;
+        }
+        if (!worldMapScreen.isCursorMovementReady()) {
+            return;
+        }
+        boolean directionHeld = inputState.isDown(inputConfig.rightKey()) || inputState.isDown(inputConfig.leftKey())
+            || inputState.isDown(inputConfig.downKey()) || inputState.isDown(inputConfig.upKey());
+        worldMapCursorHeldFrames = directionHeld ? worldMapCursorHeldFrames + 1 : 0;
+        boolean repeat = worldMapCursorHeldFrames == WORLD_MAP_CURSOR_INITIAL_DELAY;
+        if (repeat) {
+            worldMapCursorHeldFrames -= WORLD_MAP_CURSOR_REPEAT_INTERVAL;
+        }
+        int dx = worldMapDirection(inputConfig.rightKey(), inputConfig.leftKey(), repeat);
+        int dy = worldMapDirection(inputConfig.downKey(), inputConfig.upKey(), repeat);
+        if (dx != 0 || dy != 0) {
+            gameplaySoundSink.play(worldMapScreen.moveCursor(dx, dy)
+                ? GameplaySoundEvent.MENU_MOVE : GameplaySoundEvent.ENEMY_BUMP);
+        }
+    }
+
+    private static int worldMapDirection(int positiveKey, int negativeKey, boolean repeat) {
+        boolean positive = repeat ? inputState.isDown(positiveKey) : inputState.wasPressed(positiveKey);
+        boolean negative = repeat ? inputState.isDown(negativeKey) : inputState.wasPressed(negativeKey);
+        return (positive ? 1 : 0) - (negative ? 1 : 0);
     }
 
     private static void applyBackgroundScene(BackgroundScene scene) {
@@ -1910,8 +2257,48 @@ public class Main {
         framePresenter = OpenGlFramePresenter.initialize(window);
     }
 
+    private static boolean fileLoadBlocksControl() {
+        return fileLoad != null && fileLoad.blocksControl();
+    }
+
     private static void composeFrameBuffer() {
-        frameSceneBuilder.build(currentGameFrameState()).drawTo(indexedDisplayBuffer, gpu);
+        if (fileLoad != null && fileLoad.beforeWorld()) {
+            if (!fileLoad.showSelection()) java.util.Arrays.fill(indexedDisplayBuffer, (byte) 0xFF);
+            return;
+        }
+        if (currentScreen == SCREEN_GAME_OVER) {
+            if (gameOver.passingOut()) {
+                frameSceneBuilder.build(currentGameFrameState().withScreen(RenderScreen.OVERWORLD).withLink(null))
+                    .drawTo(indexedDisplayBuffer, gpu);
+                gameOver.fadeRoom(indexedDisplayBuffer);
+                link.renderBody(indexedDisplayBuffer, 0, 0, gameOver.animationState());
+            } else if (gameOver.menuVisible()) {
+                frameSceneBuilder.build(currentGameFrameState().withScreen(RenderScreen.FILE_SAVE)
+                    .withFileMenuFrame(gameOver.snapshot()), gameOver.cursorVisible()).drawTo(indexedDisplayBuffer, saveMenuTiles);
+            } else {
+                java.util.Arrays.fill(indexedDisplayBuffer, (byte) 0xFF);
+            }
+            return;
+        }
+        if (currentScreen == SCREEN_WORLD_MAP) {
+            menuTransition.render(indexedDisplayBuffer, () ->
+                frameSceneBuilder.buildWorldMap(worldMapScreen, dialogController,
+                    menuTransition.transitionFinished() || menuTransition.returningToRoom())
+                    .drawTo(indexedDisplayBuffer, gpu));
+            return;
+        }
+        if (currentScreen == SCREEN_FILE_SAVE) {
+            menuTransition.render(indexedDisplayBuffer, () ->
+                frameSceneBuilder.build(currentGameFrameState(), menuTransition.transitionFinished())
+                    .drawTo(indexedDisplayBuffer, saveMenuTiles));
+            return;
+        }
+        if (fileLoad != null) {
+            frameSceneBuilder.buildFileLoad(currentGameFrameState(), fileLoad).drawTo(indexedDisplayBuffer, gpu);
+            fileLoad.fadeRoom(indexedDisplayBuffer);
+        } else {
+            frameSceneBuilder.build(currentGameFrameState()).drawTo(indexedDisplayBuffer, gpu);
+        }
     }
 
     private static GameFrameState currentGameFrameState() {
@@ -1947,6 +2334,8 @@ public class Main {
                 return RenderScreen.FILE_MENU;
             case SCREEN_FILE_SAVE:
                 return RenderScreen.FILE_SAVE;
+            case SCREEN_WORLD_MAP:
+                return RenderScreen.WORLD_MAP;
             case SCREEN_TITLE:
             default:
                 return RenderScreen.TITLE;
@@ -1957,11 +2346,8 @@ public class Main {
         if (framePresenter != null) {
             framePresenter.cleanup();
         }
-        if (dialogSoundOutput != null) {
-            dialogSoundOutput.close();
-        }
-        if (musicPlayer != null) {
-            musicPlayer.close();
+        if (audioOutput != null) {
+            audioOutput.close();
         }
         glfwDestroyWindow(window);
         glfwTerminate();

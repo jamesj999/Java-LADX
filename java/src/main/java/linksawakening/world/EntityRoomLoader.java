@@ -3,6 +3,7 @@ package linksawakening.world;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.entity.EntitySpriteHandlerCatalog;
 import linksawakening.rom.RomBank;
+import linksawakening.rom.RomTables;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -124,8 +125,11 @@ public final class EntityRoomLoader {
                 int x = (location & 0x0F) * 0x10 + 0x08;
                 int y = (location & 0xF0) + 0x10;
                 int[] initializedPosition = applyInitialPositionTransform(table, roomId, type, x, y);
-                EntitySpriteDefinition spriteDefinition = spriteHandlers
-                    .forEntityType(type, table, mapId);
+                EntitySpriteDefinition spriteDefinition = type == EntitySpriteHandlerCatalog.ENTITY_WARP
+                    && table == RoomTable.OVERWORLD && Warp.isWarpHoleRoom(roomId)
+                    ? spriteHandlers.forOverworldWarpHole() : spriteHandlers.forEntityType(type, table, mapId);
+                if (type == EntitySpriteHandlerCatalog.ENTITY_WARP && table != RoomTable.OVERWORLD
+                    && mapId >= 0 && mapId < 8) spriteDefinition = spriteHandlers.forDungeonPortal();
                 int spriteVariant = initialSpriteVariant(table, roomId, type, spriteDefinition,
                     initializedPosition[0], initializedPosition[1]);
                 int initialZ = type == ENTITY_GHINI
@@ -145,15 +149,20 @@ public final class EntityRoomLoader {
         return new RoomEntitySnapshot(slots);
     }
 
-    private static boolean shouldUnloadAtInit(RoomTable table, int roomId, int type,
+    private boolean shouldUnloadAtInit(RoomTable table, int roomId, int type,
                                                byte[] roomStatusTable, boolean hasBirdKey) {
         if (type == ENTITY_KEY_DROP_POINT) {
             return shouldUnloadKeyAtInit(table, roomId, roomStatusTable, hasBirdKey);
         }
-        if (table != RoomTable.OVERWORLD || roomStatusTable == null) {
+        if (roomStatusTable == null) {
             return false;
         }
         int roomStatus = roomStatusAt(roomStatusTable, roomId);
+        if (table != RoomTable.OVERWORLD) {
+            // EntityInitHandler (03:48B5) checks both event bits before boss initialization.
+            if ((roomStatus & 0x30) != 0 && RomTables.isBossEntity(romData, type)) return true;
+            return type == EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES_BAR && (roomStatus & 0x20) != 0;
+        }
         if (type == ENTITY_SWORD_SHIELD_PICKUP) {
             return (roomStatus & 0x10) != 0;
         }
@@ -204,7 +213,8 @@ public final class EntityRoomLoader {
         if (type == 0x39) {
             x += 8;
         }
-        if (type == 0x43 || type == 0x7C) {
+        if (type == 0x43 || type == 0x7C
+            || (table != RoomTable.OVERWORLD && type == EntitySpriteHandlerCatalog.ENTITY_WARP)) {
             x += 8;
             y += 8;
         }

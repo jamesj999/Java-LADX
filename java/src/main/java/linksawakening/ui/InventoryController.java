@@ -23,11 +23,17 @@ public final class InventoryController {
     }
 
     public void tick() {
-        menu.tick();
+        menu.tick(inputState.isDown(inputConfig.selectKey()));
     }
 
     public void dispatchMenuInput() {
         if (!menu.isFullyOpen()) {
+            return;
+        }
+        if (inputState.wasPressed(inputConfig.selectKey())) {
+            menu.requestStatusPanel();
+        }
+        if (menu.isStatusPanelActive()) {
             return;
         }
         if (inputState.wasPressed(inputConfig.leftKey())) {
@@ -54,7 +60,15 @@ public final class InventoryController {
         return menu.shouldBlockOverworldInput();
     }
 
+    public void render(byte[] displayBuffer, GPU gpu, int[][] gameplayPalettes, boolean swordFlashVisible) {
+        menu.render(displayBuffer, gpu, gameplayPalettes, swordFlashVisible);
+    }
+
     public void render(byte[] displayBuffer, GPU gpu) {
-        menu.render(displayBuffer, gpu);
+        render(displayBuffer, gpu, null);
+    }
+
+    public void render(byte[] displayBuffer, GPU gpu, int[][] gameplayPalettes) {
+        menu.render(displayBuffer, gpu, gameplayPalettes);
     }
 }

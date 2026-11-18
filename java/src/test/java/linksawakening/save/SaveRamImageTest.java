@@ -8,6 +8,7 @@ import java.util.Arrays;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class SaveRamImageTest {
 
@@ -153,9 +154,11 @@ final class SaveRamImageTest {
         before[main + SaveRamLayout.MAIN_SPAWN_INDOOR_ROOM_OFFSET + 1] = (byte) 0xB2;
         image = SaveRamImage.fromBytes(before);
 
+        image.writeWorldMapRoom(1, 0xA3);
         image.writeSpawnLocation(1, 1, 0x06, 0x18, 0x52, 0x63, 0x27);
 
         SaveSlotState state = image.readSlot(1);
+        assertEquals(0xA3, state.worldMapRoom());
         assertEquals(1, state.spawnIsIndoor());
         assertEquals(0x06, state.spawnMapId());
         assertEquals(0x18, state.spawnMapRoom());
@@ -185,6 +188,7 @@ final class SaveRamImageTest {
         int slotStart = SaveRamLayout.slotOffset(1);
         int main = slotStart + SaveRamLayout.mainOffset();
         byte[] before = image.bytes();
+        before[main + 0x310] = 3; // Legacy follower byte
         before[main + SaveRamLayout.MAIN_SPAWN_X_OFFSET] = (byte) 0xA5;
         before[main + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET] = (byte) 0xB6;
         before[slotStart + SaveRamLayout.dx3Offset() + 1] = (byte) 0xC7;
@@ -197,7 +201,6 @@ final class SaveRamImageTest {
         player.setSubscreenItems(new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
         player.setSeashells(37);
         player.setHasFlippers(true);
-        player.setHasMedicine(true);
         player.setTradeSequenceItem(0x0E);
         player.setMedicineCount(2);
         player.setTailKeyCount(1);
@@ -219,20 +222,29 @@ final class SaveRamImageTest {
         player.setHeartPieces(2);
         player.setRupees(509);
         player.setPowerBraceletLevel(2);
-        player.setHasMedicine(true);
         player.setOcarinaSongFlags(0x07);
         player.setSelectedSongIndex(2);
         player.setTunicType(PlayerState.TUNIC_BLUE);
 
         image.writePlayerState(1, player);
 
-        SaveSlotState state = image.readSlot(1);
+        byte[] savedBytes = image.bytes();
+        assertEquals(2, unsigned(savedBytes[main + 0x30D]));
+        assertEquals(3, unsigned(savedBytes[main + 0x310]));
+        SaveSlotState state = SaveRamImage.fromBytes(savedBytes).readSlot(1);
+        PlayerState loaded = new PlayerState();
+        loaded.applySavedGame(state);
+        assertEquals(2, loaded.medicineCount());
+        assertTrue(loaded.hasMedicine());
+
         assertEquals(PlayerState.INVENTORY_BOW, state.itemA());
         assertEquals(PlayerState.INVENTORY_HOOKSHOT, state.itemB());
         assertArrayEquals(new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, state.subscreen());
         assertEquals(37, state.seashells());
+        assertEquals(0x37, image.bytes()[SaveRamLayout.slotOffset(1) + SaveRamLayout.mainOffset()
+            + SaveRamLayout.MAIN_SEASHELLS_OFFSET] & 0xFF);
         assertEquals(1, state.hasFlippers());
-        assertEquals(1, state.hasMedicine());
+        assertEquals(2, state.hasMedicine());
         assertEquals(0x0E, state.tradeSequenceItem());
         assertEquals(2, state.medicineCount());
         assertEquals(1, state.tailKeyCount());
@@ -335,11 +347,10 @@ final class SaveRamImageTest {
         for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
             put(bytes, main, SaveRamLayout.MAIN_SUBSCREEN_OFFSET + slot, 0x20 + slot);
         }
-        put(bytes, main, SaveRamLayout.MAIN_SEASHELLS_OFFSET, 17);
+        put(bytes, main, SaveRamLayout.MAIN_SEASHELLS_OFFSET, 0x17);
         put(bytes, main, SaveRamLayout.MAIN_FLIPPERS_OFFSET, 1);
-        put(bytes, main, SaveRamLayout.MAIN_MEDICINE_OFFSET, 1);
         put(bytes, main, SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET, 0x0E);
-        put(bytes, main, SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET, 2);
+        put(bytes, main, 0x310, 3); // Legacy follower byte
         put(bytes, main, SaveRamLayout.MAIN_TAIL_KEY_OFFSET, 1);
         put(bytes, main, SaveRamLayout.MAIN_ANGLER_KEY_OFFSET, 2);
         put(bytes, main, SaveRamLayout.MAIN_FACE_KEY_OFFSET, 3);
@@ -348,7 +359,7 @@ final class SaveRamImageTest {
         put(bytes, main, SaveRamLayout.MAIN_SHIELD_OFFSET, 2);
         put(bytes, main, SaveRamLayout.MAIN_ARROWS_OFFSET, 7);
         put(bytes, main, SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET, 9);
-        put(bytes, main, SaveRamLayout.MAIN_BOMBS_OFFSET, 11);
+        put(bytes, main, SaveRamLayout.MAIN_BOMBS_OFFSET, 0x11);
         put(bytes, main, SaveRamLayout.MAIN_SWORD_OFFSET, 2);
         put(bytes, main, SaveRamLayout.MAIN_HEALTH_OFFSET, 31);
         put(bytes, main, SaveRamLayout.MAIN_MAX_HEARTS_OFFSET, 5);
@@ -356,7 +367,7 @@ final class SaveRamImageTest {
         put(bytes, main, SaveRamLayout.MAIN_RUPEE_HIGH_OFFSET, 0x05);
         put(bytes, main, SaveRamLayout.MAIN_RUPEE_LOW_OFFSET, 0x09);
         put(bytes, main, SaveRamLayout.MAIN_POWER_BRACELET_OFFSET, 2);
-        put(bytes, main, SaveRamLayout.MAIN_MEDICINE_OFFSET, 1);
+        put(bytes, main, 0x30D, 2);
         put(bytes, main, SaveRamLayout.MAIN_SPAWN_INDOOR_OFFSET, 1);
         put(bytes, main, SaveRamLayout.MAIN_SPAWN_MAP_ID_OFFSET, 0x10);
         put(bytes, main, SaveRamLayout.MAIN_SPAWN_MAP_ROOM_OFFSET, 0xA3);
@@ -380,7 +391,7 @@ final class SaveRamImageTest {
         assertEquals(0x20, state.subscreen()[0]);
         assertEquals(17, state.seashells());
         assertEquals(1, state.hasFlippers());
-        assertEquals(1, state.hasMedicine());
+        assertEquals(2, state.hasMedicine());
         assertEquals(0x0E, state.tradeSequenceItem());
         assertEquals(2, state.medicineCount());
         assertEquals(1, state.tailKeyCount());
@@ -404,13 +415,19 @@ final class SaveRamImageTest {
         assertEquals(0x52, state.spawnPositionX());
         assertEquals(0x63, state.spawnPositionY());
         assertEquals(0xA3, state.spawnIndoorRoom());
-        assertEquals(0x20, state.maxMagicPowder());
-        assertEquals(0x30, state.maxBombs());
-        assertEquals(0x30, state.maxArrows());
+        assertEquals(20, state.maxMagicPowder());
+        assertEquals(30, state.maxBombs());
+        assertEquals(30, state.maxArrows());
         assertEquals(0x05, state.ocarinaSongFlags());
         assertEquals(0x02, state.selectedSongIndex());
         assertEquals(2, state.tunicType());
         assertEquals((byte) 0xA5, state.rawSlot()[0x12]);
+    }
+
+    @Test
+    void medicineCountOffsetAliasesTheMedicineDoseByte() {
+        assertEquals(0x30D, SaveRamLayout.MAIN_MEDICINE_OFFSET);
+        assertEquals(SaveRamLayout.MAIN_MEDICINE_OFFSET, SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET);
     }
 
     @Test

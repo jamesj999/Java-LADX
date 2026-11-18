@@ -31,17 +31,17 @@ final class BackgroundSceneLoaderTest {
 
     @Test
     void fileMenuSceneSpecsPointAtDisassemblyBackgrounds() {
-        assertEquals(new BackgroundSceneSpec(0x20, 0x6336, 0x24, 0x5F80, 0x21, 0x7536),
+        assertEquals(new BackgroundSceneSpec(0x08, 0x6336, 0x24, 0x5F80, 0x21, 0x75B6),
             BackgroundSceneCatalog.forFileMenuScene("selection"));
-        assertEquals(new BackgroundSceneSpec(0x20, 0x6328, 0x24, 0x5F74, 0x21, 0x7536),
+        assertEquals(new BackgroundSceneSpec(0x08, 0x6328, 0x24, 0x5F74, 0x21, 0x75B6),
             BackgroundSceneCatalog.forFileMenuScene("selection_commands"));
-        assertEquals(new BackgroundSceneSpec(0x20, 0x644D, 0x24, 0x6045, 0x21, 0x7536),
+        assertEquals(new BackgroundSceneSpec(0x08, 0x644D, 0x24, 0x6045, 0x21, 0x75B6),
             BackgroundSceneCatalog.forFileMenuScene("creation"));
-        assertEquals(new BackgroundSceneSpec(0x20, 0x6589, 0x24, 0x6115, 0x21, 0x7536),
+        assertEquals(new BackgroundSceneSpec(0x08, 0x6589, 0x24, 0x6115, 0x21, 0x75B6),
             BackgroundSceneCatalog.forFileMenuScene("erase"));
-        assertEquals(new BackgroundSceneSpec(0x20, 0x6660, 0x24, 0x617D, 0x21, 0x7536),
+        assertEquals(new BackgroundSceneSpec(0x08, 0x6660, 0x24, 0x617D, 0x21, 0x75B6),
             BackgroundSceneCatalog.forFileMenuScene("copy"));
-        assertEquals(new BackgroundSceneSpec(0x20, 0x6A6D, 0x24, 0x6262, 0x21, 0x7536),
+        assertEquals(new BackgroundSceneSpec(0x08, 0x6A6D, 0x24, 0x6262, 0x21, 0x75B6),
             BackgroundSceneCatalog.forFileMenuScene("save"));
     }
 
@@ -92,6 +92,16 @@ final class BackgroundSceneLoaderTest {
             assertEquals(8, scene.palettes().length);
             assertEquals(8, scene.objectPalettes().length);
         }
+
+        assertEquals(0x9F, selection.tilemap()[32]);
+        assertEquals(0x80, selection.tilemap()[33]);
+        assertEquals(0x04, commands.tilemap()[0x1E6]);
+        assertEquals(0x8F, creation.tilemap()[0x10]);
+        assertEquals(0x90, save.tilemap()[0x82]);
+        assertEquals(0xAE, save.tilemap()[0]);
+        assertEquals(0xAF, save.tilemap()[1]);
+        assertEquals(0xAF, save.tilemap()[32]);
+        assertEquals(0x06, save.attrmap()[0]);
     }
 
     private static byte[] loadRom() {

@@ -6,19 +6,27 @@ repositories {
     mavenCentral()
 }
 
+def osName = System.getProperty('os.name').toLowerCase(Locale.ROOT)
+def arch = System.getProperty('os.arch').toLowerCase(Locale.ROOT)
+def isMac = osName.contains('mac')
+def platformName = isMac ? 'macos' : osName.startsWith('windows') ? 'windows' : 'linux'
+def classifier = "natives-${platformName}"
+if (arch in ['aarch64', 'arm64']) {
+    classifier += '-arm64'
+} else if (arch.startsWith('arm')) {
+    classifier += '-arm32'
+} else if (platformName == 'windows' && arch in ['x86', 'i386']) {
+    classifier += '-x86'
+}
+
 dependencies {
-    implementation "org.lwjgl:lwjgl:3.3.4"
-    implementation "org.lwjgl:lwjgl-glfw:3.3.4"
-    implementation "org.lwjgl:lwjgl-openal:3.3.4"
-    implementation "org.lwjgl:lwjgl-opengl:3.3.4"
+    ['lwjgl', 'lwjgl-glfw', 'lwjgl-openal', 'lwjgl-opengl'].each { module ->
+        implementation "org.lwjgl:${module}:3.3.4"
+        runtimeOnly "org.lwjgl:${module}:3.3.4:${classifier}"
+    }
     testImplementation platform("org.junit:junit-bom:5.10.2")
     testImplementation "org.junit.jupiter:junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
-    
-    runtimeOnly "org.lwjgl:lwjgl:3.3.4:natives-macos-arm64"
-    runtimeOnly "org.lwjgl:lwjgl-glfw:3.3.4:natives-macos-arm64"
-    runtimeOnly "org.lwjgl:lwjgl-openal:3.3.4:natives-macos-arm64"
-    runtimeOnly "org.lwjgl:lwjgl-opengl:3.3.4:natives-macos-arm64"
 }
 
 application {
@@ -30,8 +38,8 @@ java {
     targetCompatibility = JavaVersion.VERSION_21
 }
 
-run {
-    jvmArgs '-XstartOnFirstThread'
+if (isMac) {
+    application.applicationDefaultJvmArgs = ['-XstartOnFirstThread']
 }
 
 tasks.register('runAudioBrowser', JavaExec) {

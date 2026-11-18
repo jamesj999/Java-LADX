@@ -562,7 +562,7 @@ final class TarinRaccoonRuntimeTest {
         assertTrue(runtime.consumePendingLinkMotionBlockRequests().isEmpty());
 
         runtime.setDialogActive(false);
-        runtime.setTransitionSequenceCounterForTest(3);
+        runtime.setTransitionSequenceCounter(3);
         tick(runtime, 8, 0x50, 0x40);
 
         assertEquals(4, runtime.slowTransitionCountdownForTest(0));

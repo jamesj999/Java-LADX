@@ -1,5 +1,6 @@
 package linksawakening.state;
 
+import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.save.SaveRamLayout;
 import linksawakening.save.SaveRamImage;
 import linksawakening.save.SaveSlotState;
@@ -9,8 +10,48 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 final class PlayerStateTest {
+    @Test
+    void lowHeartsWarningRepeatsAfterFortyNineLowHealthUpdates() {
+        PlayerState player = new PlayerState();
+        player.setMaxHearts(6);
+        player.setHealth(8);
+        assertEquals(GameplaySoundEvent.LOW_HEARTS, player.tickResourceBuffers(0));
+        for (int frame = 1; frame < 49; frame++) {
+            assertNull(player.tickResourceBuffers(frame));
+        }
+        player.setHealth(9);
+        assertNull(player.tickResourceBuffers(49));
+        player.setHealth(8);
+        assertEquals(GameplaySoundEvent.LOW_HEARTS, player.tickResourceBuffers(50));
+    }
+
+    @Test
+    void fatalDamageConsumesOneMedicineDoseAndRefillsHealthOnFollowingOddFrames() {
+        PlayerState player = new PlayerState();
+        player.setHealth(1);
+        player.setMedicineCount(2);
+        assertEquals(2, player.medicineCount());
+        assertTrue(player.hasMedicine());
+        player.applyRomEnemyDamage(4);
+        player.tickResourceBuffers(1);
+        assertEquals(1, player.medicineCount());
+        assertTrue(player.hasMedicine());
+        assertEquals(8, player.health());
+        assertEquals(0x80, player.addHealthBuffer());
+        assertEquals(0xA0, player.invincibilityCounter());
+        for (int frame = 2; frame < 13; frame++) player.tickResourceBuffers(frame);
+        assertEquals(GameplaySoundEvent.HEART_REFILL, player.tickResourceBuffers(13));
+        assertEquals(14, player.health());
+        assertEquals(1, player.medicineCount());
+
+        player.setMedicineCount(0);
+        assertEquals(0, player.medicineCount());
+        assertFalse(player.hasMedicine());
+    }
+
     @Test
     void toadstoolRewardSetsItsFlagAndPlacesPowderInInventoryWithoutAddingPowder() {
         PlayerState state = new PlayerState();
@@ -453,9 +494,9 @@ final class PlayerStateTest {
         bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET] = 19;
         bytes[main + SaveRamLayout.MAIN_FLIPPERS_OFFSET] = 1;
         bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET] = 2;
-        bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET] = 1;
+        bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET] = 2;
         bytes[main + SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET] = 0x0E;
-        bytes[main + SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET] = 2;
+        bytes[main + 0x310] = 3; // Legacy follower byte
         bytes[main + SaveRamLayout.MAIN_TAIL_KEY_OFFSET] = 1;
         bytes[main + SaveRamLayout.MAIN_ANGLER_KEY_OFFSET] = 2;
         bytes[main + SaveRamLayout.MAIN_FACE_KEY_OFFSET] = 3;

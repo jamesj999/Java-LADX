@@ -40,7 +40,7 @@ public final class SaveRamLayout {
     public static final int MAIN_MEDICINE_OFFSET = 0x30D;
     public static final int MAIN_TRADE_SEQUENCE_ITEM_OFFSET = 0x30E;
     public static final int MAIN_SEASHELLS_OFFSET = 0x30F;
-    public static final int MAIN_MEDICINE_COUNT_OFFSET = 0x310;
+    public static final int MAIN_MEDICINE_COUNT_OFFSET = MAIN_MEDICINE_OFFSET;
     public static final int MAIN_TAIL_KEY_OFFSET = 0x311;
     public static final int MAIN_ANGLER_KEY_OFFSET = 0x312;
     public static final int MAIN_FACE_KEY_OFFSET = 0x313;
@@ -62,6 +62,7 @@ public final class SaveRamLayout {
     public static final int MAIN_NAME_OFFSET = 0x34F;
     public static final int MAIN_DEATH_COUNT_OFFSET = 0x357;
     public static final int MAIN_HEALTH_OFFSET = 0x35A;
+    public static final int MAIN_WORLD_MAP_ROOM_OFFSET = 0x354; // wDB54
     public static final int MAIN_MAX_HEARTS_OFFSET = 0x35B;
     public static final int MAIN_HEART_PIECES_OFFSET = 0x35C;
     public static final int MAIN_RUPEE_HIGH_OFFSET = 0x35D;
@@ -74,6 +75,10 @@ public final class SaveRamLayout {
     public static final int MAIN_SPAWN_INDOOR_ROOM_OFFSET = 0x364;
     public static final int MAIN_DUNGEON_PROGRESS_FLAGS_OFFSET = 0x365;
     public static final int MAIN_DUNGEON_PROGRESS_FLAGS_SIZE = 0x08;
+    public static final int MAIN_RICHARD_SPOKEN_OFFSET = 0x355;
+    public static final int MAIN_MARIN_FOLLOWING_OFFSET = 0x373;
+    public static final int MAIN_GHOST_FOLLOWING_OFFSET = 0x379;
+    public static final int MAIN_ROOSTER_FOLLOWING_OFFSET = 0x37B;
     public static final int MAIN_BOW_WOW_STATE_OFFSET = 0x356;
     public static final int MAIN_MAX_MAGIC_POWDER_OFFSET = 0x376;
     public static final int MAIN_MAX_BOMBS_OFFSET = 0x377;

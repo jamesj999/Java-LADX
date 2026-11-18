@@ -53,12 +53,17 @@ public final class RomBank {
     }
 
     public static int[] decodeBackgroundMap(byte[] romData, int bank, int address, int filler) {
-        int offset = romOffset(bank, address);
         int[] bgMap = new int[BG_MAP_ROW_WIDTH * BG_MAP_ROW_WIDTH];
         for (int i = 0; i < bgMap.length; i++) {
             bgMap[i] = filler & 0xFF;
         }
+        applyBackgroundMap(romData, bank, address, bgMap);
+        return bgMap;
+    }
 
+    /** Applies encoded background writes over the VRAM map's existing contents. */
+    public static void applyBackgroundMap(byte[] romData, int bank, int address, int[] bgMap) {
+        int offset = romOffset(bank, address);
         while (offset < romData.length) {
             int high = Byte.toUnsignedInt(romData[offset]);
             if (high == 0) {
@@ -84,7 +89,5 @@ public final class RomBank {
 
             offset += repeat ? 1 : amount;
         }
-
-        return bgMap;
     }
 }

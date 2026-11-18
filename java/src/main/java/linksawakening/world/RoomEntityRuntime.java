@@ -270,9 +270,12 @@ public final class RoomEntityRuntime {
         | ENTITY_OPT1_NO_WALL_COLLISION | ENTITY_OPT1_EXCLUDED_FROM_KILL_ALL;
 
     private final RoomEntity[] slots;
+    private final RoomEntity[] roamingShadowOam = new RoomEntity[EntityRoomLoader.MAX_ENTITIES];
+    private final RoomEntity[] roamingDisplayOam = new RoomEntity[EntityRoomLoader.MAX_ENTITIES];
     private EntitySpriteSelection spriteSelection;
     private final EntitySpriteTileSnapshot spriteTiles;
     private final boolean indoorRoom;
+    private boolean dungeonPortalEnabled;
     private final RomTables romTables;
     private final IntSupplier defaultRandomByteSupplier;
     private final RomRandomByteSource fallbackRomRandomByteSource;
@@ -539,6 +542,11 @@ public final class RoomEntityRuntime {
     // LinkMotionMapFadeInHandler leaves wTransitionSequenceCounter at $04 once
     // the active room is ready for interaction. Entity ticks are gated during
     // the host transition, so this is the source value visible to gameplay.
+    private final RichardFrogMotion[] villaFrogs = new RichardFrogMotion[EntityRoomLoader.MAX_ENTITIES];
+    private final RichardMotion richardMotion = new RichardMotion();
+    private int dialogChoice;
+    private boolean richardPassageWarp;
+    private int tarinFlag;
     private int transitionSequenceCounter = 0x04;
     private int swordMoblinAlertingSoundCounter;
     private int bombArrowCooldown;
@@ -636,7 +644,8 @@ public final class RoomEntityRuntime {
     private final List<MagicPowderObjectRequest> magicPowderObjectRequests = new ArrayList<>();
     private final int[] musicalNoteInertia = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] musicalNoteSpeedX = new int[EntityRoomLoader.MAX_ENTITIES];
-    private final int[] musicalNoteSpeedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] musicalNoteXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] musicalNoteYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private int boomerangSfxCounter;
 
     /** The ROM-facing state needed by Link's carry animation and throw input. */
@@ -1543,6 +1552,10 @@ public final class RoomEntityRuntime {
         followingEntityYOffset = entityYOffset & 0xFF;
         int romLinkDirection = romDirectionForJavaDirection(linkDirection);
         lastRomLinkDirection = romLinkDirection;
+        // AnimateRoamingEnemy draws before moving. VBlank transfers the preceding
+        // shadow OAM list to the LCD while this tick builds the next list.
+        System.arraycopy(roamingShadowOam, 0, roamingDisplayOam, 0, slots.length);
+        Arrays.fill(roamingShadowOam, null);
         for (int index = slots.length - 1; index >= 0; index--) {
             RoomEntity entity = slots[index];
             if (!entity.loaded()) {
@@ -1901,6 +1914,7 @@ public final class RoomEntityRuntime {
                     slots[index] = entity;
                 }
                 if (swordPickupSequenceActive[entity.slot()]) {
+                    entityGroundStatus[entity.slot()] = 0;
                     advanceSwordPickup(entity, frame, linkEntityX, linkEntityY, linkZ);
                     continue;
                 }
@@ -2232,6 +2246,30 @@ public final class RoomEntityRuntime {
                 }
             }
             RoomEntity updated = entity;
+            if (status == EntityStatus.ACTIVE && entity.type() == EntitySpriteHandlerCatalog.ENTITY_RICHARD_FROG) {
+                if (wasInitializing || villaFrogs[index] == null) villaFrogs[index] = new RichardFrogMotion();
+                if (!wasInitializing && transitionSequenceCounter == 4 && !dialogActive && !inventoryAppearing) {
+                    updated = villaFrogs[index].tick(entity, randomByteSupplier, backgroundInteraction, frame);
+                }
+            }
+            if (status == EntityStatus.ACTIVE && !wasInitializing && entity.type() == EntitySpriteHandlerCatalog.ENTITY_RICHARD
+                && transitionSequenceCounter == 4 && !dialogActive && !inventoryAppearing) {
+                updated = richardMotion.advance(entity, frame, linkEntityX, linkEntityY, entityGoldenLeavesCount, dialogChoice);
+                int dialog = richardMotion.takeDialog();
+                if (dialog >= 0) {
+                    pendingDialogRequests.add(new DialogRequest(1, dialog));
+                }
+                if (richardMotion.warpRequested()) {
+                    richardPassageWarp = true;
+                    disableEntityWithoutPersistence(entity.slot());
+                    continue;
+                }
+            }
+            if (status == EntityStatus.ACTIVE && entity.type() == EntitySpriteHandlerCatalog.ENTITY_GRANDPA_ULRIRA) {
+                boolean interactive = !wasInitializing && transitionSequenceCounter == 4 && !dialogActive && !inventoryAppearing;
+                updated = withPositionAndVariant(entity, entity.x(), 0x49,
+                    interactive ? (frame >>> 5) & 1 : entity.spriteVariant());
+            }
             if (wasInitializing && entity.type() == ENTITY_CHEST_WITH_ITEM) {
                 initializeChestEntity(entity);
                 updated = withPositionAndVariant(entity, entity.x(),
@@ -2456,6 +2494,7 @@ public final class RoomEntityRuntime {
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_MOLDORM) {
                 int slot = entity.slot();
+                advanceBossIntro(entity);
                 RoomEntityBackgroundInteraction moldormBackgroundInteraction =
                     backgroundInteraction;
                 if (moldormBackgroundInteraction == null && backgroundCollision != null) {
@@ -2646,8 +2685,14 @@ public final class RoomEntityRuntime {
                     continue;
                 }
             }
+            if (status == EntityStatus.ACTIVE
+                && (entity.type() == ENTITY_OCTOROK || entity.type() == ENTITY_MOBLIN)) {
+                roamingShadowOam[index] = entity;
+            }
             if (status == EntityStatus.ACTIVE && !wasInitializing
-                && isRoamingEnemyType(entity.type())) {
+                && isRoamingEnemyType(entity.type())
+                && (creditsGameplay || transitionSequenceCounter == 0x04)
+                && !dialogActive && !inventoryAppearing) {
                 if (entity.type() == ENTITY_IRON_MASK
                     && ironMaskPrivateState2[entity.slot()] != 0) {
                     UnmaskedIronMaskMotion.Update unmaskedUpdate =
@@ -3324,16 +3369,7 @@ public final class RoomEntityRuntime {
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && entity.type() == ENTITY_ARMOS_KNIGHT) {
-                BossIntroMotion.Update bossIntro = bossIntroMotion.advance(
-                    options1(entity.slot()), entity.type(), entityMapId,
-                    transitionSequenceCounter);
-                if (bossIntro.musicTrack() >= 0) {
-                    pendingMusicTrack = bossIntro.musicTrack();
-                }
-                if (bossIntro.dialogLowId() >= 0) {
-                    pendingDialogRequests.add(new DialogRequest(
-                        bossIntro.dialogTableId(), bossIntro.dialogLowId()));
-                }
+                advanceBossIntro(entity);
                 requestArmosLinkPush(entity, linkEntityX, linkEntityY,
                     projectileLinkState.motionState());
                 ArmosKnightMotion.Update armosKnightUpdate = armosKnightMotion.advance(
@@ -3380,12 +3416,7 @@ public final class RoomEntityRuntime {
                 && entity.type() == ENTITY_ROLLING_BONES) {
                 RoomEntity bar = firstLoadedEntityOfType(ENTITY_ROLLING_BONES_BAR);
                 if (bar != null) {
-                    BossIntroMotion.Update bossIntro = bossIntroMotion.advance(
-                        options1(entity.slot()), entity.type(), entityMapId,
-                        transitionSequenceCounter);
-                    if (bossIntro.musicTrack() >= 0) {
-                        pendingMusicTrack = bossIntro.musicTrack();
-                    }
+                    advanceBossIntro(entity);
                     RollingBonesMotion.BossUpdate bossUpdate = rollingBonesMotion.advanceBoss(
                         entity, bar, enemyTransitionCountdown[entity.slot()],
                         enemyHealth[entity.slot()], backgroundCollision);
@@ -3692,6 +3723,12 @@ public final class RoomEntityRuntime {
                     pendingDialogRequests.add(new DialogRequest(0, dogUpdate.dialogLowId()));
                 }
                 preserveDogPresentation = true;
+            }
+            // TarinIndoorsHandler updates the normal standing pair before its interaction gate.
+            if (status == EntityStatus.ACTIVE && !wasInitializing && indoorRoom
+                && entity.type() == ENTITY_TARIN && !followingNpcState.marinFollowing()
+                && tarinFlag != 1 && (frame & 0x1F) == 0) {
+                updated = withVariant(updated, TarinRaccoonMotion.directionToLink(entity, linkEntityX, linkEntityY));
             }
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && !indoorRoom && entity.type() == ENTITY_TARIN
@@ -4003,6 +4040,7 @@ public final class RoomEntityRuntime {
                 EntityLinkCollisionRules.genericPolicyFor(updated.type());
             if (status == EntityStatus.ACTIVE && !wasInitializing
                 && handlerLinkCollisionEnabled
+                && (updated.type() != EntitySpriteHandlerCatalog.ENTITY_RICHARD || richardMotion.pushesLink())
                 && genericLinkPushPolicy.restoreFinalPosition()
                 && RoomEntityCombatRules.overlapsLink(updated, linkEntityX, linkEntityY)) {
                 // The shared PushLinkOutOfEntity_* helpers run after their
@@ -4164,29 +4202,29 @@ public final class RoomEntityRuntime {
      * persistence bit is ready for the room session to record.
      */
     public EntityPickupEvent collectIfNeeded(int frameCounter,
-                                             int linkPixelX,
-                                             int linkPixelY,
+                                             int linkEntityX,
+                                             int linkEntityY,
                                              boolean linkAirborne,
                                              boolean linkInteractive) {
-        return collectIfNeeded(frameCounter, linkPixelX, linkPixelY, linkAirborne,
+        return collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne,
             linkInteractive, 0, 0);
     }
 
     /** Pickup collision with Link's Java direction available for held items. */
     public EntityPickupEvent collectIfNeeded(int frameCounter,
-                                             int linkPixelX,
-                                             int linkPixelY,
+                                             int linkEntityX,
+                                             int linkEntityY,
                                              boolean linkAirborne,
                                              boolean linkInteractive,
                                              int linkDirection) {
-        return collectIfNeeded(frameCounter, linkPixelX, linkPixelY, linkAirborne,
+        return collectIfNeeded(frameCounter, linkEntityX, linkEntityY, linkAirborne,
             linkInteractive, linkDirection, 0);
     }
 
     /** Pickup collision with Link's ROM-facing Z available for floating items. */
     public EntityPickupEvent collectIfNeeded(int frameCounter,
-                                             int linkPixelX,
-                                             int linkPixelY,
+                                             int linkEntityX,
+                                             int linkEntityY,
                                              boolean linkAirborne,
                                              boolean linkInteractive,
                                              int linkDirection,
@@ -4211,6 +4249,8 @@ public final class RoomEntityRuntime {
                     && enemyTransitionCountdown[entity.slot()] != 0)
                 || (entity.type() == ENTITY_SLEEPY_TOADSTOOL
                     && toadstoolPickupSequenceActive[entity.slot()])
+                || (entity.type() == ENTITY_SWORD_SHIELD_PICKUP
+                    && swordPickupSequenceActive[entity.slot()])
                 || (isCommonDroppableType(entity.type())
                     && droppablePrivateState3[entity.slot()] != 0)
                 || (entity.type() == ENTITY_DROPPABLE_SECRET_SEASHELL
@@ -4222,8 +4262,8 @@ public final class RoomEntityRuntime {
                 || (floating && !FloatingItemMotion.linkZAllowsCollection(
                     groundInteractionSideScrolling, linkZ))
                 || !(floating
-                    ? RoomEntityPickupRules.overlapsFloatingItem(entity, linkPixelX, linkPixelY)
-                    : RoomEntityPickupRules.overlapsLink(entity, linkPixelX, linkPixelY))) {
+                    ? RoomEntityPickupRules.overlapsFloatingItem(entity, linkEntityX, linkEntityY)
+                    : RoomEntityPickupRules.overlapsLink(entity, linkEntityX, linkEntityY))) {
                 continue;
             }
 
@@ -5661,6 +5701,8 @@ public final class RoomEntityRuntime {
         if (slot < 0 || slot >= slots.length) {
             throw new IllegalArgumentException("Entity slot out of range: " + slot);
         }
+        roamingShadowOam[slot] = null;
+        roamingDisplayOam[slot] = null;
         resetEnemyDropState(slot);
         RoomEntity entity = slots[slot];
         bombFinalPresentationPending[slot] = false;
@@ -5675,7 +5717,6 @@ public final class RoomEntityRuntime {
         entityInertia[slot] = 0;
         musicalNoteInertia[slot] = 0;
         musicalNoteSpeedX[slot] = 0;
-        musicalNoteSpeedY[slot] = 0;
         entityUnknownJ[slot] = 0;
         ironMaskPrivateState2[slot] = 0;
         ironMasksMaskSourceHookshotSlot[slot] = 0;
@@ -6117,7 +6158,8 @@ public final class RoomEntityRuntime {
         slots[freeSlot] = note;
         musicalNoteInertia[freeSlot] = MUSICAL_NOTE_INITIAL_INERTIA;
         musicalNoteSpeedX[freeSlot] = phase == 0 ? 0x06 : 0x01;
-        musicalNoteSpeedY[freeSlot] = MUSICAL_NOTE_SPEED_Y;
+        musicalNoteXAccumulator[freeSlot] = 0;
+        musicalNoteYAccumulator[freeSlot] = 0;
         enemyPhysicsFlags[freeSlot] = 0;
         enemyTransitionCountdown[freeSlot] = 0;
         enemyStunnedCountdown[freeSlot] = 0;
@@ -6143,8 +6185,8 @@ public final class RoomEntityRuntime {
         if ((inertia & 0x01) == 0) {
             musicalNoteSpeedX[slot] = (musicalNoteSpeedX[slot] + speedXAdjustment) & 0xFF;
         }
-        int x = (entity.x() + signedByte(musicalNoteSpeedX[slot])) & 0xFF;
-        int y = (entity.y() + signedByte(musicalNoteSpeedY[slot])) & 0xFF;
+        int x = addFallingSpeedToPosition(entity.x(), musicalNoteSpeedX[slot], musicalNoteXAccumulator, slot);
+        int y = addFallingSpeedToPosition(entity.y(), MUSICAL_NOTE_SPEED_Y, musicalNoteYAccumulator, slot);
         return withPositionAndVariant(entity, x, y, entity.spriteVariant());
     }
 
@@ -6690,11 +6732,53 @@ public final class RoomEntityRuntime {
         return state != null && state.wallCollisionPending();
     }
 
+    void setDialogChoice(int choice) { dialogChoice = choice; }
+    RichardMotion richard() { return richardMotion; }
+
+    boolean consumeRichardWarp() {
+        boolean warp = richardPassageWarp;
+        richardPassageWarp = false;
+        return warp;
+    }
+
+    void setTarinFlag(int flag) {
+        tarinFlag = flag;
+    }
+
+    void setDungeonPortalEnabled(boolean enabled) {
+        dungeonPortalEnabled = enabled;
+    }
+
+    RoomEntitySnapshot displayEntities(RoomEntitySnapshot current) {
+        List<RoomEntity> display = null;
+        for (RoomEntity entity : current.loadedEntities()) {
+            if (indoorRoom && entity.type() == EntitySpriteHandlerCatalog.ENTITY_WARP) {
+                int variant = dungeonPortalEnabled ? 0 : -1;
+                if (entity.spriteVariant() != variant) {
+                    if (display == null) display = new ArrayList<>(current.slots());
+                    display.set(entity.slot(), withPositionAndVariant(entity, entity.x(), entity.y(), variant));
+                }
+                continue;
+            }
+            RoomEntity pose = roamingDisplayOam[entity.slot()];
+            if (pose == null || pose.type() != entity.type() || entity.status() != EntityStatus.ACTIVE
+                || (entity.x() == pose.x() && entity.y() == pose.y()
+                    && entity.spriteVariant() == pose.spriteVariant())) continue;
+            if (display == null) display = new ArrayList<>(current.slots());
+            display.set(entity.slot(), withPositionAndVariant(entity, pose.x(), pose.y(), pose.spriteVariant()));
+        }
+        return display == null ? current : current.withSlots(display);
+    }
+
     public RoomEntitySnapshot snapshot() {
+        int shallowWaterSlots = 0;
+        for (int slot = 0; slot < entityGroundStatus.length; slot++) {
+            if (entityGroundStatus[slot] == 2) shallowWaterSlots |= 1 << slot;
+        }
         return new RoomEntitySnapshot(Arrays.asList(slots), spriteSelection, spriteTiles,
             groundInteractionSideScrolling, hookshotChainOam, pincerBodyOam,
             wingedOctorokOam,
-            fallingVisualYOffset);
+            fallingVisualYOffset, shallowWaterSlots);
     }
 
     /** Applies the position and variant writes made by MarinEntityHandler_Indoor. */
@@ -7030,6 +7114,22 @@ public final class RoomEntityRuntime {
         secretSeashellPegasusCollisionY = collisionY;
     }
 
+    boolean clearAbsentHouseResidents(int swordLevel) {
+        if (!indoorRoom || entityMapId != 0x10 || entityRoomId != 0xA3 || swordLevel == 0) {
+            return false;
+        }
+        boolean changed = false;
+        for (RoomEntity entity : slots) {
+            // The indoor handlers clear Marin after the sword and Tarin until his flag is set.
+            if (entity.loaded() && (entity.type() == ENTITY_MARIN_INDOOR
+                || (entity.type() == ENTITY_TARIN && tarinFlag == 0))) {
+                disableEntityWithoutPersistence(entity.slot());
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
     /** Supplies the three player upgrade bytes read by ChestWithItemEntityHandler. */
     void setChestPlayerLevels(int shieldLevel, int swordLevel, int powerBraceletLevel) {
         validateByte(shieldLevel, "Shield level");
@@ -7121,7 +7221,7 @@ public final class RoomEntityRuntime {
         return owlPrivateCountdown1[slot];
     }
 
-    void setTransitionSequenceCounterForTest(int counter) {
+    void setTransitionSequenceCounter(int counter) {
         if (counter < 0 || counter > 0xFF) {
             throw new IllegalArgumentException(
                 "Transition sequence counter must be an unsigned byte: " + counter);
@@ -7489,7 +7589,7 @@ public final class RoomEntityRuntime {
             // permanently opening the east rescue-room path.
             pendingRoomStatusMask |= 0x20;
         }
-        if (entity.sourceLoadOrder() < 0 || (enemyDropResolver == null && !swallowedShield)) {
+        if (entity.sourceLoadOrder() < 0) {
             if (entity.type() == ENTITY_MOBLIN_KING) {
                 pendingClearedEntityMask |= persistentClearMask(entity);
             }
@@ -7501,6 +7601,8 @@ public final class RoomEntityRuntime {
         if (swallowedShield) {
             result = new EnemyDropResolver.Result(
                 ENTITY_SWORD_SHIELD_PICKUP, enemyDropCounters, 0);
+        } else if (enemyDropResolver == null) {
+            result = new EnemyDropResolver.Result(EnemyDropResolver.ENTITY_NONE, enemyDropCounters, 0);
         } else {
             EnemyDropResolver.Context context = new EnemyDropResolver.Context(
                 entity.type(), enemyDropHealthGroup(entity.type()), droppedItemBySlot[entity.slot()],
@@ -7525,6 +7627,8 @@ public final class RoomEntityRuntime {
     private void advanceRollingBonesDestruction(RoomEntity entity,
                                                  IntSupplier randomByteSupplier) {
         int slot = entity.slot();
+        slots[slot] = withFlipAttribute(entity, baseEntityFlipAttribute[slot]
+            ^ ((enemyFlashCountdown[slot] << 2) & 0x10));
         if (!rollingBonesDeathInitialized[slot]) {
             rollingBonesDeathInitialized[slot] = true;
             enemyTransitionCountdown[slot] = 0xFF;
@@ -7534,14 +7638,11 @@ public final class RoomEntityRuntime {
         int countdown = enemyTransitionCountdown[slot];
         enemyFlashCountdown[slot] = countdown;
         if (countdown == 0) {
-            int killIndex = killCount & 0xFF;
-            killOrder[killIndex] = entity.sourceLoadOrder() & 0xFF;
-            killCount = (killCount + 1) & 0xFF;
-            pendingClearedEntityMask |= persistentClearMask(entity);
+            pendingMusicTrack = defaultMusicTrack;
             if (entityMapId != 0x07) {
                 pendingRoomStatusMask |= 0x20;
             }
-            disableEntityWithoutPersistence(slot);
+            handleTerminalEnemyDeath(entity, randomByteSupplier);
             return;
         }
         if (countdown < 0x80 && (countdown & 0x07) == 0) {
@@ -7552,6 +7653,20 @@ public final class RoomEntityRuntime {
             pendingEntityEvents.add(new EntityCombatEvent(
                 slot, entity.type(), 0, false,
                 EntityCombatEvent.SoundChannel.NOISE, 0x13));
+        }
+    }
+
+    private void advanceBossIntro(RoomEntity entity) {
+        if (inventoryAppearing) return;
+        BossIntroMotion.Update bossIntro = bossIntroMotion.advance(
+            options1(entity.slot()), entity.type(), entityMapId,
+            transitionSequenceCounter);
+        if (bossIntro.musicTrack() >= 0) {
+            pendingMusicTrack = bossIntro.musicTrack();
+        }
+        if (bossIntro.dialogLowId() >= 0) {
+            pendingDialogRequests.add(new DialogRequest(
+                bossIntro.dialogTableId(), bossIntro.dialogLowId()));
         }
     }
 
@@ -11168,7 +11283,7 @@ public final class RoomEntityRuntime {
 
     private static boolean requiresHeldPickupTransition(int type) {
         return switch (type) {
-            case 0x30, 0x31, 0x33, 0x34, 0x35, 0x36, 0x3C -> true;
+            case 0x30, 0x31, 0x35, 0x36, 0x3C -> true;
             default -> false;
         };
     }
@@ -11431,6 +11546,8 @@ public final class RoomEntityRuntime {
     }
 
     private void disableEntityWithoutPersistence(int slot) {
+        roamingShadowOam[slot] = null;
+        roamingDisplayOam[slot] = null;
         resetEnemyDropState(slot);
         secretSeashellMotion.clear(slot);
         slowTransitionCountdown[slot] = 0;

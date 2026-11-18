@@ -11,6 +11,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class BeachOpeningRuntimeTest {
@@ -64,6 +65,7 @@ final class BeachOpeningRuntimeTest {
             1, sword.x(), sword.y(), false, true, 3, 0);
         assertNotNull(pickup);
         assertEquals(0, pickup.persistentClearMask());
+        assertNull(runtime.collectIfNeeded(3, sword.x(), sword.y(), false, true, 3, 0));
         runtime.tick(2, 0x58, 0x60, () -> 0);
         assertEquals(0x0F, runtime.consumePendingMusicTrack());
         assertTrue(runtime.consumePendingSwordPickupRewards().isEmpty());
