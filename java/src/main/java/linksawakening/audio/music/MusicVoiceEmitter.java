@@ -160,6 +160,7 @@ final class MusicVoiceEmitter {
     void writeNoiseNote(MusicChannelState state, int noteCode) {
         state.playingRest = false;
         if (noteCode == 0xFF) {
+            if (driver.sfxOwnsChannel.test(4)) return;
             writeNoiseRegisters(NOISE_FF_START_REGISTERS);
             noiseFfPhase = 1;
             noiseFfCountdown = NOISE_FF_START_TICKS;
@@ -231,6 +232,12 @@ final class MusicVoiceEmitter {
 
     void tickNoiseFfSequence() {
         if (noiseFfPhase == 0) {
+            return;
+        }
+        // Noise SFX takes over the shared sequence timer (1F:79E9).
+        if (driver.sfxOwnsChannel.test(4)) {
+            noiseFfPhase = 0;
+            noiseFfCountdown = 0;
             return;
         }
         noiseFfCountdown--;

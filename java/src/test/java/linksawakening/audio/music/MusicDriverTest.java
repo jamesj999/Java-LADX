@@ -296,6 +296,26 @@ final class MusicDriverTest {
     }
 
     @Test
+    void channel4NoiseFfFollowUpIsCancelledWhenSfxTakesOwnership() {
+        byte[] rom = syntheticRomWithChannel4(new byte[] {(byte) 0xA5, (byte) 0xFF, 0x00});
+        GameBoyApu apu = new GameBoyApu(48_000);
+        MusicDriver driver = new MusicDriver(Rom.of(rom), apu);
+        AtomicBoolean ownsNoise = new AtomicBoolean();
+        driver.setSoundEffectState(channel -> channel == 4 && ownsNoise.get(), () -> false);
+        driver.start(new MusicTrack(0x01, "TEST", 0x1B, 0x4077, 0x5000, RomBank.romOffset(0x1B, 0x5000)));
+
+        driver.tick60Hz();
+        assertEquals(0x80, apu.readRegister(GameBoyApu.NR42));
+        ownsNoise.set(true);
+        apu.writeRegister(GameBoyApu.NR42, 0xF1);
+        driver.tick60Hz();
+        ownsNoise.set(false);
+        driver.tick60Hz();
+
+        assertEquals(0xF1, apu.readRegister(GameBoyApu.NR42));
+    }
+
+    @Test
     void restMutesPreviouslyPlayingSquareChannel() {
         byte[] rom = syntheticRomWithOneChannel(
                 new byte[] {(byte) 0x9D, (byte) 0xF0, 0x00, (byte) 0x80, (byte) 0xA1, 0x4A, 0x01, 0x00});
