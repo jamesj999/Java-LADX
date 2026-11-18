@@ -17,5 +17,7 @@ public interface SaveActions {
 
     void finishGameOver(int option);
 
+    void createFile(int slot, int[] name);
+
     void persistFileMenuMutation(Runnable mutation);
 }

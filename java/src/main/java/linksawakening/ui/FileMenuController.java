@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import linksawakening.cutscene.IntroSprite;
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.scene.BackgroundScene;
@@ -35,6 +37,7 @@ public final class FileMenuController {
 
     private static final int DARK_BACKGROUND_TILE = 0x7E;
     private final FileNameEntry nameEntry;
+    private final GameplaySoundSink sounds;
 
     private final FileMenuFrameSnapshot.Builder snapshotBuilder = new FileMenuFrameSnapshot.Builder();
 
@@ -97,6 +100,18 @@ public final class FileMenuController {
             int[][] savedNames,
             int[] maxHearts,
             int[] deathCountsBcd) {
+        this(romData, sceneProvider, saveFilesMask, savedNames, maxHearts, deathCountsBcd, GameplaySoundSink.none());
+    }
+
+    public FileMenuController(
+            FileMenuRomData romData,
+            Function<String, BackgroundScene> sceneProvider,
+            int saveFilesMask,
+            int[][] savedNames,
+            int[] maxHearts,
+            int[] deathCountsBcd,
+            GameplaySoundSink sounds) {
+        this.sounds = Objects.requireNonNull(sounds);
         Objects.requireNonNull(romData, "romData");
         if (maxHearts.length != 3 || deathCountsBcd.length != 3) {
             throw new IllegalArgumentException("File summaries must contain three slots");
@@ -133,7 +148,7 @@ public final class FileMenuController {
         FileMenuAction action =
                 switch (mode) {
                     case SELECT -> tickSelection(inputState, inputConfig);
-                    case CREATE -> nameEntry.tick(inputState, inputConfig, selectedSlot);
+                    case CREATE -> nameEntry.tick(inputState, inputConfig, selectedSlot, sounds);
                     case ERASE_PICK -> tickErasePick(inputState, inputConfig);
                     case ERASE_CONFIRM -> tickEraseConfirm(inputState, inputConfig);
                     case COPY_SOURCE -> tickCopySource(inputState, inputConfig);
@@ -187,6 +202,8 @@ public final class FileMenuController {
     }
 
     private FileMenuAction tickSelection(InputState inputState, InputConfig inputConfig) {
+        int previousSlot = selectedSlot;
+        boolean previousArrowShift = commandRowArrowShifted;
         int maximumSlot = hasSavedFile() ? 3 : 2;
         if (inputState.wasPressed(inputConfig.upKey())) {
             selectedSlot = selectedSlot == 0 ? maximumSlot : selectedSlot - 1;
@@ -200,7 +217,11 @@ public final class FileMenuController {
             }
         }
 
-        if (inputState.wasPressed(inputConfig.aKey()) || inputState.wasPressed(inputConfig.menuOpenKey())) {
+        if (selectedSlot != previousSlot || commandRowArrowShifted != previousArrowShift) {
+            sounds.play(GameplaySoundEvent.MENU_MOVE);
+        }
+        if (activated(inputState, inputConfig)) {
+            sounds.play(GameplaySoundEvent.MENU_VALIDATE);
             if (selectedSlot < 3) {
                 int[] name = savedNames[selectedSlot];
                 if (hasStoredName(name)) {
@@ -226,6 +247,7 @@ public final class FileMenuController {
                 return returnToSelection();
             }
             if (hasStoredName(savedNames[selectedSlot])) {
+                sounds.play(GameplaySoundEvent.MENU_VALIDATE);
                 sourceSlot = selectedSlot;
                 confirmationOk = false;
                 mode = Mode.ERASE_CONFIRM;
@@ -246,6 +268,7 @@ public final class FileMenuController {
         }
         mode = Mode.SELECT;
         selectedSlot = 0;
+        if (confirmationOk) sounds.play(GameplaySoundEvent.MENU_VALIDATE);
         return confirmationOk
                 ? new FileMenuAction(FileMenuAction.Type.ERASE_SLOT, sourceSlot, new int[0])
                 : FileMenuAction.none(selectedSlot);
@@ -261,6 +284,7 @@ public final class FileMenuController {
                 return returnToSelection();
             }
             if (hasStoredName(savedNames[selectedSlot])) {
+                sounds.play(GameplaySoundEvent.MENU_VALIDATE);
                 sourceSlot = selectedSlot;
                 targetSlot = 0;
                 selectedSlot = targetSlot;
@@ -281,6 +305,7 @@ public final class FileMenuController {
             if (selectedSlot == 3) {
                 return returnToSelection();
             }
+            sounds.play(GameplaySoundEvent.MENU_VALIDATE);
             targetSlot = selectedSlot;
             confirmationOk = false;
             mode = Mode.COPY_CONFIRM;
@@ -300,6 +325,7 @@ public final class FileMenuController {
         }
         mode = Mode.SELECT;
         selectedSlot = 0;
+        if (confirmationOk) sounds.play(GameplaySoundEvent.MENU_VALIDATE);
         return confirmationOk
                 ? new FileMenuAction(FileMenuAction.Type.COPY_SLOT, sourceSlot, targetSlot, new int[0])
                 : FileMenuAction.none(selectedSlot);
@@ -308,14 +334,17 @@ public final class FileMenuController {
     private void moveFourRowCursor(InputState inputState, InputConfig inputConfig) {
         if (inputState.wasPressed(inputConfig.upKey())) {
             selectedSlot = (selectedSlot + 3) & 3;
+            sounds.play(GameplaySoundEvent.MENU_MOVE);
         } else if (inputState.wasPressed(inputConfig.downKey())) {
             selectedSlot = (selectedSlot + 1) & 3;
+            sounds.play(GameplaySoundEvent.MENU_MOVE);
         }
     }
 
     private void toggleConfirmation(InputState inputState, InputConfig inputConfig) {
         if (inputState.wasPressed(inputConfig.leftKey()) || inputState.wasPressed(inputConfig.rightKey())) {
             confirmationOk = !confirmationOk;
+            sounds.play(GameplaySoundEvent.MENU_MOVE);
         }
     }
 

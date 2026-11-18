@@ -82,7 +82,10 @@ final class EscapeSaveScreenTest {
                 assertTrue(state.inventoryMenu().isFullyClosed());
             }
             case SCROLL -> state.scrollController().tick(160);
-            case TRANSITION -> frames(game, 40);
+            case TRANSITION -> {
+                for (int i = 0; i < 80 && state.transitionController().isActive(); i++) game.headlessFrame();
+                assertFalse(state.transitionController().isActive());
+            }
             case PASS_OUT -> state.link().status().finishGameOver();
         }
         frames(game, 2);

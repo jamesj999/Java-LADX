@@ -53,7 +53,9 @@ final class PaletteLayer implements HardwareRenderLayer {
     void configure(RenderLayer layer, GameFrameState state) {
         child = (HardwareRenderLayer) layer;
         mapFade = state.overworld.hasTransitionController()
-                        && state.transitionController().isMapFade()
+                        && state.transitionController().isActive()
+                        && !(state.transitionController().isManboTransition()
+                                && (layer instanceof RoomRenderLayer || layer instanceof EntityRenderLayer))
                 ? state.transitionController()
                 : null;
         passOut = state.screen() == RenderScreen.OVERWORLD

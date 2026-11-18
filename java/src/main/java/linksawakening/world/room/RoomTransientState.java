@@ -61,7 +61,8 @@ final class RoomTransientState {
                         contents.puzzles().closedShutterMask(contents.puzzles().shutterCloseTicks(0)));
         contents.puzzles().shutterCloseDirection(contents.puzzles().shutterCloseLocation(-1));
         contents.puzzles().shutterCloseStarted(false);
-        contents.puzzles().shutterTileOverrides().clear();
+        contents.puzzles().pendingShutterOpenMask(0);
+        contents.puzzles().shutterOpening(false);
         dependencies.transientVfxSystem().clear();
         dependencies.droppableRupeeSystem().clear();
         contents.overrides().hookshotBridgeTileOverrides().clear();

@@ -19,6 +19,15 @@ public final class FrameAudioPlayer implements FrameMusicPlayer {
     private final PcmSoundOutput output;
     private final int sampleRate;
     private int remainder;
+    private final MusicCatalog catalog;
+    private MusicTrack pendingTrack;
+    private boolean trackChangePending;
+    private int musicBank = 0x1B;
+    private int warpVolume = -1;
+    private int menuVolume = 0x77;
+    private Runnable effectSilencedMusic = () -> {};
+    private java.util.function.IntConsumer effectRequestedMusic;
+
     private final short[] wholeFramePcm;
     private final short[] extraFramePcm;
 
@@ -31,15 +40,30 @@ public final class FrameAudioPlayer implements FrameMusicPlayer {
         apu = new GameBoyApu(sampleRate);
         music = new MusicDriver(rom, apu);
         effects = new SoundEffectPlayer(apu, rom);
+        catalog = MusicCatalog.fromRom(rom);
+        effectRequestedMusic = id -> play(catalog.requireTrack(id));
         music.setSoundEffectState(effects::ownsChannel, effects::takeWaveRestoreRequest);
     }
 
     @Override
     public void play(MusicTrack track) {
-        apu.reset();
-        effects.stop();
-        music.start(track);
-        music.tick60Hz();
+        pendingTrack = Objects.requireNonNull(track);
+        trackChangePending = true;
+    }
+
+    void onEffectMusicRequest(Runnable onSilence, java.util.function.IntConsumer onTrack) {
+        effectSilencedMusic = onSilence;
+        effectRequestedMusic = onTrack;
+    }
+
+    @Override
+    public void setWarpVolume(int level) {
+        warpVolume = level;
+    }
+
+    @Override
+    public void setMenuAttenuated(boolean attenuated) {
+        menuVolume = attenuated ? 0x33 : 0x77;
     }
 
     /** Observes the mixed music/SFX register writes without changing audio routing. */
@@ -48,40 +72,68 @@ public final class FrameAudioPlayer implements FrameMusicPlayer {
     }
 
     public void playSoundEffect(SoundEffect effect) {
-        effects.play(effect);
+        effects.request(effect);
+    }
+
+    public void requestSoundEffect(linksawakening.audio.sfx.SoundEffectNamespace namespace, int id) {
+        if (id > 0 && id <= 0xFF) effects.catalog().find(namespace, id).ifPresent(effects::request);
     }
 
     @Override
     public void update() {
-        music.tick60Hz();
-        effects.tick60Hz();
+        update(true);
+    }
+
+    @Override
+    public void update(boolean advanceDriver) {
+        if (advanceDriver) tickDriver();
         remainder += sampleRate;
         int frames = remainder / 60;
         remainder %= 60;
-        if (output instanceof ReusableFramePcmOutput) {
-            short[] pcm = frames == sampleRate / 60 ? wholeFramePcm : extraFramePcm;
-            apu.renderInto(pcm, 0, frames);
-            output.playFrame(pcm, sampleRate);
-        } else {
-            short[] pcm = new short[frames * 2];
-            apu.renderInto(pcm, 0, frames);
-            output.playFrame(pcm, sampleRate);
+        short[] pcm = output instanceof ReusableFramePcmOutput
+                ? (frames == sampleRate / 60 ? wholeFramePcm : extraFramePcm)
+                : new short[frames * 2];
+        apu.renderInto(pcm, 0, frames);
+        output.playFrame(pcm, sampleRate);
+    }
+
+    private void tickDriver() {
+        int requestedTrack = effects.advanceSharedFrame();
+        if (effects.silencedMusic()) {
+            music.clearScore();
+            if (!trackChangePending) effectSilencedMusic.run();
+        }
+        if (requestedTrack != 0) effectRequestedMusic.accept(requestedTrack);
+        if (trackChangePending) {
+            if (pendingTrack != null) musicBank = pendingTrack.bank();
+            effects.changeMusicTrack(musicBank, pendingTrack == null);
+            if (pendingTrack == null) music.clearScore();
+            else music.startShared(pendingTrack);
+            trackChangePending = false;
+        }
+        music.tick60Hz();
+        int volume = warpVolume < 0 ? menuVolume : warpVolume * 0x11;
+        if (apu.readRegister(GameBoyApu.NR50) != volume) {
+            apu.writeRegister(GameBoyApu.NR50, volume);
         }
     }
 
     @Override
     public boolean isMusicPlaying() {
-        return music.isPlaying();
+        return trackChangePending ? pendingTrack != null : music.isPlaying();
     }
 
     @Override
     public void stop() {
-        music.stop();
-        effects.stop();
+        pendingTrack = null;
+        trackChangePending = true;
     }
 
     @Override
     public void close() {
-        stop();
+        effects.stop();
+        music.stop();
+        pendingTrack = null;
+        trackChangePending = false;
     }
 }

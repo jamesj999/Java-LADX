@@ -11,4 +11,6 @@ public interface GameplaySoundSink {
     }
 
     void play(GameplaySoundEvent event);
+
+    default void playRomSound(linksawakening.audio.sfx.SoundEffectNamespace namespace, int id) {}
 }

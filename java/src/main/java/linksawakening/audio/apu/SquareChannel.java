@@ -29,7 +29,7 @@ final class SquareChannel {
 
     SquareChannel(int sampleRate) {
         this.sampleRate = sampleRate;
-        length = new LengthCounter(64, sampleRate);
+        length = new LengthCounter(64, sampleRate, true);
         reset();
     }
 
@@ -76,7 +76,9 @@ final class SquareChannel {
     }
 
     void writeFrequencyHigh(int value) {
+        boolean enablingLength = (frequencyHigh & 0x40) == 0 && (value & 0x40) != 0;
         frequencyHigh = value & 0xFF;
+        if (enablingLength && length.enableLength()) active = false;
         if ((frequencyHigh & 0x80) != 0) {
             trigger();
         }
@@ -170,7 +172,7 @@ final class SquareChannel {
     }
 
     private void trigger() {
-        length.trigger();
+        length.trigger((frequencyHigh & 0x40) != 0);
         sweepNegateUsed = false;
         active = (envelopeRegister & 0xF8) != 0;
         volume = (envelopeRegister >>> 4) & 0x0F;

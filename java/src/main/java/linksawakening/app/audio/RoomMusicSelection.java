@@ -11,11 +11,17 @@ import linksawakening.world.room.RoomSession;
  * owning session.
  */
 public final class RoomMusicSelection implements RoomLoadListener {
+    private final linksawakening.world.transition.TransitionController transition;
     private final MusicDirector music;
     private final PlayerState player;
     private final RoomSession rooms;
 
-    public RoomMusicSelection(MusicDirector music, PlayerState player, RoomSession rooms) {
+    public RoomMusicSelection(
+            MusicDirector music,
+            PlayerState player,
+            RoomSession rooms,
+            linksawakening.world.transition.TransitionController transition) {
+        this.transition = Objects.requireNonNull(transition);
         this.music = Objects.requireNonNull(music);
         this.player = Objects.requireNonNull(player);
         this.rooms = Objects.requireNonNull(rooms);
@@ -23,6 +29,9 @@ public final class RoomMusicSelection implements RoomLoadListener {
 
     @Override
     public void roomLoaded(ActiveRoom room) {
-        music.selectMusicForLoadedRoom(room, player, rooms);
+        transition.whenRoomReady(() -> {
+            if (transition.continuesMusicOnArrival()) music.continueMusicAfterNextWarp();
+            music.selectMusicForLoadedRoom(room, player, rooms);
+        });
     }
 }

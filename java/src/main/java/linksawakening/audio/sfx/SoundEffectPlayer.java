@@ -87,6 +87,22 @@ public final class SoundEffectPlayer implements SoundEffectPlayback {
         return isPlaying() ? currentEffect : null;
     }
 
+    public void request(SoundEffect effect) {
+        engine.request(effect);
+    }
+
+    public int advanceSharedFrame() {
+        return engine.advanceFrame();
+    }
+
+    public boolean silencedMusic() {
+        return engine.silencedMusic();
+    }
+
+    public void changeMusicTrack(int bank, boolean stopping) {
+        engine.changeMusicTrack(bank, stopping);
+    }
+
     public boolean ownsChannel(int channel) {
         return engine.ownsChannel(channel);
     }

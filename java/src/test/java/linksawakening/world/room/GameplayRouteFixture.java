@@ -396,6 +396,14 @@ final class GameplayRouteFixture {
                 session, frame++, link.position().romEntityX(), link.position().romEntityY());
     }
 
+    void awaitShuttersOpen(int mask) {
+        ActiveRoom room = session.rooms().activeRoomOrNull();
+        for (int tick = 0; tick < 40 && (room.shutterDoorMask() & mask) != 0; tick++) {
+            tickInteractiveAtLink();
+        }
+        assertEquals(0, room.shutterDoorMask() & mask, "Shutters still closed in room " + room.roomId());
+    }
+
     void tickEntitiesAtOriginFacingDown() {
         session.entities().tickEntitiesWithProjectileEvents(frame++, 0, 0, 0, 0, Direction.DOWN.javaIndex(), false);
     }

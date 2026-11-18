@@ -1,6 +1,7 @@
 package linksawakening.world.room;
 
 import java.util.List;
+import java.util.Map;
 import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.transition.Warp;
 
@@ -12,7 +13,20 @@ record LoadedRoomSpec(Identity identity, Objects objects, Graphics graphics, Exi
 
     public record Graphics(int[] tileIds, int[] tileAttrs, int[][] palettes) {}
 
-    public record Exits(List<Warp> warps, boolean indoorHasSouthEntrance, int shutterDoorMask, int staircaseLocation) {
+    public record Exits(
+            List<Warp> warps,
+            boolean indoorHasSouthEntrance,
+            int shutterDoorMask,
+            int staircaseLocation,
+            Map<Integer, Integer> shutterLocations) {
+        public Exits {
+            shutterLocations = Map.copyOf(shutterLocations);
+        }
+
+        public Exits(List<Warp> warps, boolean indoorHasSouthEntrance, int shutterDoorMask, int staircaseLocation) {
+            this(warps, indoorHasSouthEntrance, shutterDoorMask, staircaseLocation, Map.of());
+        }
+
         public Exits(List<Warp> warps, boolean indoorHasSouthEntrance, int shutterDoorMask) {
             this(warps, indoorHasSouthEntrance, shutterDoorMask, -1);
         }

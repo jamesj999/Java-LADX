@@ -1,5 +1,7 @@
 package linksawakening.ui;
 
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 
@@ -39,13 +41,15 @@ final class FileNameEntry {
         return currentName;
     }
 
-    FileMenuAction tick(InputState inputState, InputConfig inputConfig, int selectedSlot) {
+    FileMenuAction tick(InputState inputState, InputConfig inputConfig, int selectedSlot, GameplaySoundSink sounds) {
         // FileCreationInteractiveHandler $01:4AB2 checks START before editing.
         // Even an all-zero name is written, then $01:4B26 returns to selection;
         // func_5DC0 leaves that slot empty. There is no empty-name error path.
         if (inputState.wasPressed(inputConfig.menuOpenKey())) {
+            sounds.play(GameplaySoundEvent.MENU_VALIDATE);
             return new FileMenuAction(FileMenuAction.Type.CREATE_FILE, selectedSlot, currentName);
         }
+        int previousCharacter = selectedCharacter;
         if (inputState.wasPressed(inputConfig.leftKey())) {
             selectedCharacter = (selectedCharacter + NAME_ENTRY_CHARACTER_COUNT - 1) % NAME_ENTRY_CHARACTER_COUNT;
         } else if (inputState.wasPressed(inputConfig.rightKey())) {
@@ -56,9 +60,12 @@ final class FileNameEntry {
             selectedCharacter = (selectedCharacter + 0x10) % NAME_ENTRY_CHARACTER_COUNT;
         }
 
+        if (selectedCharacter != previousCharacter) sounds.play(GameplaySoundEvent.MENU_MOVE);
         if (inputState.wasPressed(inputConfig.bKey())) {
+            sounds.play(GameplaySoundEvent.MENU_VALIDATE);
             namePosition = Math.max(0, namePosition - 1);
         } else if (inputState.wasPressed(inputConfig.aKey())) {
+            sounds.play(GameplaySoundEvent.MENU_VALIDATE);
             currentName[namePosition] = nameEntryCharacterTable[selectedCharacter];
             namePosition = Math.min(NAME_LENGTH - 1, namePosition + 1);
         }

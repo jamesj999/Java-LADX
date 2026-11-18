@@ -187,7 +187,8 @@ public final class RoomLoader {
                         parsed.warps(),
                         hasSouthEntrance(objects),
                         parsed.shutterDoorMask(),
-                        parsed.staircaseLocation()),
+                        parsed.staircaseLocation(),
+                        parsed.shutterLocations()),
                 entities));
     }
 

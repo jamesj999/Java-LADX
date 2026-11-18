@@ -227,6 +227,24 @@ final class GameplayMusicControllerTest {
         assertEquals(0x04, controller.defaultTrackId());
     }
 
+    @Test
+    void scrollKeepsPowerUpPickupLoopUntilAnAreaTrackTakesPrecedence() {
+        var player = new RecordingMusicTrackPlayer();
+        var controller = controller(player);
+        controller.selectAfterTransition(RoomMusicContext.overworld(0x91, 1));
+        controller.playDirect(MusicTrackIds.MUSIC_OBTAIN_POWERUP);
+        controller.selectAfterTransition(new RoomMusicContext(0x81, 0, false, false, 1, false, 2).forScroll());
+        controller.selectAfterTransition(new RoomMusicContext(0x40, 0, false, false, 1, false, 2).forScroll());
+        assertEquals(MusicTrackIds.MUSIC_OBTAIN_POWERUP, controller.currentTrackId());
+        controller.selectAfterTransition(new RoomMusicContext(0x92, 0, false, false, 1, false, 2).forScroll());
+        assertEquals(MusicTrackIds.MUSIC_MABE_VILLAGE, controller.currentTrackId());
+        controller.selectAfterTransition(new RoomMusicContext(0x40, 0, false, false, 1, false, 2).forScroll());
+        assertEquals(
+                List.of(MusicTrackIds.MUSIC_MABE_VILLAGE, MusicTrackIds.MUSIC_OBTAIN_POWERUP,
+                        MusicTrackIds.MUSIC_MABE_VILLAGE, MusicTrackIds.MUSIC_ACTIVE_POWER_UP),
+                player.playedTrackIds);
+    }
+
     private static GameplayMusicController controller(RecordingMusicTrackPlayer player) {
         var rom = loadRom();
         return new GameplayMusicController(

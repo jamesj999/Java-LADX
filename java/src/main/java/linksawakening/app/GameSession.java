@@ -187,9 +187,15 @@ public class GameSession implements AutoCloseable {
         // The engine's frame boundary uses scanline zero for non-entity draws.
         random.beginFrame(clock.value(), 0);
 
-        context.runtime().flows().music().tick();
-
         context.state().screens().currentScreen().tick();
+
+        var screens = context.state().screens();
+        boolean attenuated = screens.currentScreen() instanceof linksawakening.app.screen.GameplayScreen
+                && context.services().ui().inventoryMenu().transition().audioAttenuated();
+        context.runtime().flows().music().setMenuAttenuated(attenuated);
+        boolean manboFrameHeld = screens.currentScreen() instanceof linksawakening.app.screen.GameplayScreen
+                && context.services().world().transitionController().isHoldingManboFrame();
+        context.runtime().flows().music().tick(!manboFrameHeld);
     }
 
     void cleanup() {

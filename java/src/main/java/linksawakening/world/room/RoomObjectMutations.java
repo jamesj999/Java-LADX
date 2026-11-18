@@ -780,9 +780,20 @@ final class RoomObjectMutations implements RoomTerrain {
         this.applyBombedBlockTileOverrides(contents);
         this.applyBombedCaveDoorTileOverrides(contents);
         this.applyRetainedTorchTiles(contents);
-        contents.puzzles()
-                .shutterTileOverrides()
-                .forEach((index, tile) -> contents.room().tileIds()[index] = tile);
+        if (contents.puzzles().shutterCloseTicks() > 0 && contents.puzzles().shutterCloseDirection() >= 0)
+            drawMovingShutter(contents);
+    }
+
+    void drawMovingShutter(RoomContents contents) {
+        var puzzle = contents.puzzles();
+        if (puzzle.shutterCloseLocation() >= 0)
+            dependencies
+                    .roomTilemapBuilder()
+                    .drawShutterFrame(
+                            contents.room(),
+                            puzzle.shutterCloseDirection(),
+                            puzzle.shutterCloseLocation(),
+                            puzzle.shutterOpening());
     }
 
     void applyHookshotBridgeUpdates(RoomContents contents, List<HookshotBridgeUpdate> updates) {

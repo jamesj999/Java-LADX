@@ -24,7 +24,7 @@ class FileNameEntryTest {
         int[] characters = new int[64];
         characters[63] = 42;
         var entry = new FileNameEntry(characters);
-        entry.tick(pressed(GLFW_KEY_LEFT, GLFW_KEY_A), INPUT, 2);
+        entry.tick(pressed(GLFW_KEY_LEFT, GLFW_KEY_A), INPUT, 2, linksawakening.gameplay.GameplaySoundSink.none());
         assertEquals(63, entry.selectedCharacter());
         assertEquals(1, entry.namePosition());
         assertArrayEquals(new int[] {42, 0, 0, 0, 0}, entry.currentName());
@@ -39,8 +39,12 @@ class FileNameEntryTest {
         int[] characters = new int[64];
         characters[0] = 7;
         var entry = new FileNameEntry(characters);
-        entry.tick(pressed(GLFW_KEY_A), INPUT, 1);
-        var result = entry.tick(pressed(GLFW_KEY_ENTER, GLFW_KEY_A, GLFW_KEY_RIGHT), INPUT, 1);
+        entry.tick(pressed(GLFW_KEY_A), INPUT, 1, linksawakening.gameplay.GameplaySoundSink.none());
+        var result = entry.tick(
+                pressed(GLFW_KEY_ENTER, GLFW_KEY_A, GLFW_KEY_RIGHT),
+                INPUT,
+                1,
+                linksawakening.gameplay.GameplaySoundSink.none());
         assertEquals(FileMenuAction.Type.CREATE_FILE, result.type());
         assertEquals(1, result.selectedSlot());
         assertEquals(0, entry.selectedCharacter());

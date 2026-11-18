@@ -118,7 +118,10 @@ public final class SessionWiring {
                 screens,
                 wired.router(),
                 new RoomMusicSelection(
-                        wired.music(), s.player().playerState(), s.world().roomSession()));
+                        wired.music(),
+                        s.player().playerState(),
+                        s.world().roomSession(),
+                        s.world().transitionController()));
         state.screens().selectScreen(screens.title());
         var teleporter = new DebugTeleporter(
                 s.world().roomSession(),
@@ -149,7 +152,8 @@ public final class SessionWiring {
                         s.world().scrollController(),
                         s.world().transitionController(),
                         s.player().link(),
-                        4),
+                        4,
+                        wired.music()),
                 wired.simulation(),
                 prepared.completion());
     }

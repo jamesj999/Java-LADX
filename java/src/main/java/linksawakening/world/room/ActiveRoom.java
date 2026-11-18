@@ -2,6 +2,7 @@ package linksawakening.world.room;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.transition.Warp;
 
@@ -19,6 +20,7 @@ public final class ActiveRoom {
     private final boolean indoorHasSouthEntrance;
     private final int staircaseLocation;
     private int shutterDoorMask;
+    private final Map<Integer, Integer> shutterLocations;
     // Standalone data-only projections may omit entities; installed RoomRuntime validates their presence.
     private RoomEntitySnapshot entities;
     // Optional cached owned presentation, populated only when a consumer asks for history.
@@ -46,6 +48,7 @@ public final class ActiveRoom {
         this.indoorHasSouthEntrance = room.indoorHasSouthEntrance();
         this.staircaseLocation = room.staircaseLocation();
         this.shutterDoorMask = room.shutterDoorMask();
+        this.shutterLocations = room.exits().shutterLocations();
         this.entities = entities;
     }
 
@@ -115,6 +118,10 @@ public final class ActiveRoom {
 
     public int shutterDoorMask() {
         return shutterDoorMask;
+    }
+
+    int shutterLocation(int direction) {
+        return shutterLocations.getOrDefault(direction, -1);
     }
 
     void openShutterDoors() {

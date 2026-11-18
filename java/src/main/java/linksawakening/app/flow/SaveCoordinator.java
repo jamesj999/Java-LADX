@@ -183,6 +183,14 @@ public final class SaveCoordinator implements SaveActions {
     }
 
     @Override
+    public void createFile(int slot, int[] name) {
+        persistFileMenuMutation(() -> saveState.saveRamStore().createNewGame(slot, name));
+        if (linksawakening.ui.FileMenuRomData.matchesSpecialFileName(name)) {
+            storyActions.music().playDirectMusic(linksawakening.audio.music.MusicTrackIds.MUSIC_FILE_SELECT_ZELDA);
+        }
+    }
+
+    @Override
     public void persistFileMenuMutation(Runnable mutation) {
         mutation.run();
         try {
@@ -197,7 +205,8 @@ public final class SaveCoordinator implements SaveActions {
     public void startFileSave() {
         enterFileSave();
         rom.gpu().loadSaveMenuTiles(rom.romData());
-        setFileSaveController(new FileSaveController(navigator::loadFileMenuBackgroundScene));
+        setFileSaveController(new FileSaveController(
+                navigator::loadFileMenuBackgroundScene, state.sounds().sink()));
         input.inputState().tickEdges();
     }
 

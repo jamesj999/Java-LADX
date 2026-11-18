@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import linksawakening.cutscene.IntroSprite;
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.scene.BackgroundScene;
@@ -24,10 +26,16 @@ public final class FileSaveController {
     private final FileMenuFrameSnapshot.Builder snapshotBuilder = new FileMenuFrameSnapshot.Builder();
 
     private final BackgroundScene scene;
+    private final GameplaySoundSink sounds;
     private int selectedOption;
     private FileMenuFrameSnapshot snapshot;
 
     public FileSaveController(Function<String, BackgroundScene> sceneProvider) {
+        this(sceneProvider, GameplaySoundSink.none());
+    }
+
+    public FileSaveController(Function<String, BackgroundScene> sceneProvider, GameplaySoundSink sounds) {
+        this.sounds = Objects.requireNonNull(sounds);
         Objects.requireNonNull(sceneProvider, "sceneProvider");
         scene = Objects.requireNonNull(
                 sceneProvider.apply(BackgroundSceneCatalog.FILE_SAVE_SCENE),
@@ -44,6 +52,7 @@ public final class FileSaveController {
         Objects.requireNonNull(inputConfig, "inputConfig");
 
         if (inputState.wasPressed(inputConfig.upKey()) || inputState.wasPressed(inputConfig.downKey())) {
+            sounds.play(GameplaySoundEvent.MENU_MOVE);
             selectedOption = (selectedOption + 1) % OPTION_COUNT;
         }
 
@@ -51,6 +60,7 @@ public final class FileSaveController {
         if (inputState.wasPressed(inputConfig.aKey())
                 || inputState.wasPressed(inputConfig.bKey())
                 || inputState.wasPressed(inputConfig.menuOpenKey())) {
+            sounds.play(GameplaySoundEvent.MENU_VALIDATE);
             action = new FileSaveAction(
                     selectedOption == 0 ? FileSaveAction.Type.RETURN_TO_GAME : FileSaveAction.Type.SAVE_AND_QUIT);
         }

@@ -36,7 +36,7 @@ final class WorldLayers {
         addDialog(state, painter);
         if (state.screen() == RenderScreen.OVERWORLD
                 && ((state.overworld.hasTransitionController()
-                                && state.transitionController().isMapFade())
+                                && state.transitionController().isActive())
                         || (state.overworld.hasLink() && state.link().status().isPassingOut())
                         || (state.overworld.hasInventoryController()
                                 && state.inventoryController().transition().blocksWorld()))) {
@@ -63,7 +63,8 @@ final class WorldLayers {
         if (visible && data.entitiesPresent) {
             entities.configure(
                     data.entities,
-                    warping ? warp.objectPalettes : data.objectPalettes,
+                    state.transitionController()
+                            .applyManboFade(warping ? warp.objectPalettes : data.objectPalettes, true),
                     state.scrollController(),
                     state.frameCounter(),
                     state.overworld.hasDialogController()

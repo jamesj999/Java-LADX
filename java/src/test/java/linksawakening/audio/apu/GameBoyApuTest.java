@@ -3,6 +3,7 @@ package linksawakening.audio.apu;
 import static linksawakening.audio.TestPcm.renderPcm;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,53 @@ final class GameBoyApuTest {
         assertEquals(1024, first.length);
         assertArrayEquals(first, second);
         assertTrue(hasNonZeroSample(first));
+    }
+
+    @Test
+    void swordPokingAttackStopsBeforeItsFollowUpPulse() {
+        GameBoyApu apu = new GameBoyApu(32_768);
+        apu.writeRegister(GameBoyApu.NR52, 0x80);
+        apu.writeRegister(GameBoyApu.NR51, 0x11);
+        // Sword Poking jingle $07, first pulse at 1F:4471.
+        apu.writeRegister(GameBoyApu.NR10, 0x00);
+        apu.writeRegister(GameBoyApu.NR11, 0x3D);
+        apu.writeRegister(GameBoyApu.NR12, 0xF0);
+        apu.writeRegister(GameBoyApu.NR13, 0xD8);
+        apu.writeRegister(GameBoyApu.NR14, 0xC7);
+
+        int thirdLengthTick = 64 + 2 * 128;
+        assertTrue(hasNonZeroSample(renderPcm(apu, thirdLengthTick - 1)));
+        assertTrue(apu.isChannelActive(1));
+        renderPcm(apu, 128);
+        assertEquals(0x80, apu.readRegister(GameBoyApu.NR52));
+    }
+
+    @Test
+    void channel2RetriggerPreservesRemainingLengthAndReloadsOnlyAtZero() {
+        GameBoyApu apu = new GameBoyApu(32_768);
+        apu.writeRegister(GameBoyApu.NR52, 0x80);
+        apu.writeRegister(GameBoyApu.NR21, 0xBE);
+        apu.writeRegister(GameBoyApu.NR22, 0xF0);
+        apu.writeRegister(GameBoyApu.NR24, 0xC7);
+        renderPcm(apu, 64);
+
+        // A DAC-off trigger stays silent and preserves the remaining step.
+        apu.writeRegister(GameBoyApu.NR22, 0x07);
+        apu.writeRegister(GameBoyApu.NR24, 0xC7);
+        assertFalse(apu.isChannelActive(2));
+        apu.writeRegister(GameBoyApu.NR22, 0x08);
+        assertFalse(apu.isChannelActive(2));
+        apu.writeRegister(GameBoyApu.NR24, 0xC7);
+        assertTrue(apu.isChannelActive(2));
+        renderPcm(apu, 128);
+        assertFalse(apu.isChannelActive(2));
+
+        // The next sequencer step skips length, so a zero reload starts at 63.
+        apu.writeRegister(GameBoyApu.NR24, 0xC7);
+        renderPcm(apu, 63 * 128 - 1);
+        assertTrue(apu.isChannelActive(2));
+        renderPcm(apu, 1);
+        assertFalse(apu.isChannelActive(2));
     }
 
     @Test

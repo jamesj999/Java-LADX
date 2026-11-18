@@ -98,7 +98,8 @@ public final class ScreenRouter {
                 savedMask,
                 savedNames,
                 new int[] {firstSlot.maxHearts(), secondSlot.maxHearts(), thirdSlot.maxHearts()},
-                new int[] {firstSlot.deathCountBcd(), secondSlot.deathCountBcd(), thirdSlot.deathCountBcd()}));
+                new int[] {firstSlot.deathCountBcd(), secondSlot.deathCountBcd(), thirdSlot.deathCountBcd()},
+                state.sounds().sink()));
         actions.music().playDirectMusic(MusicDirector.fileSelectionMusicTrack());
         // The Enter event that leaves the title must not also activate the
         // first empty file. Its edge belongs to the title screen.
