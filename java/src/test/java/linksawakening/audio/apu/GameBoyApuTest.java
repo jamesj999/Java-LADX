@@ -1,10 +1,12 @@
 package linksawakening.audio.apu;
 
-import org.junit.jupiter.api.Test;
-
+import static linksawakening.audio.TestPcm.renderPcm;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 final class GameBoyApuTest {
     @Test
@@ -18,7 +20,7 @@ final class GameBoyApuTest {
         apu.writeRegister(GameBoyApu.NR13, 0x00);
         apu.writeRegister(GameBoyApu.NR14, 0x87);
 
-        short[] first = apu.render(512);
+        short[] first = renderPcm(apu, 512);
         apu.reset();
         apu.writeRegister(GameBoyApu.NR52, 0x80);
         apu.writeRegister(GameBoyApu.NR50, 0x77);
@@ -28,11 +30,58 @@ final class GameBoyApuTest {
         apu.writeRegister(GameBoyApu.NR13, 0x00);
         apu.writeRegister(GameBoyApu.NR14, 0x87);
 
-        short[] second = apu.render(512);
+        short[] second = renderPcm(apu, 512);
 
         assertEquals(1024, first.length);
         assertArrayEquals(first, second);
         assertTrue(hasNonZeroSample(first));
+    }
+
+    @Test
+    void swordPokingAttackStopsBeforeItsFollowUpPulse() {
+        GameBoyApu apu = new GameBoyApu(32_768);
+        apu.writeRegister(GameBoyApu.NR52, 0x80);
+        apu.writeRegister(GameBoyApu.NR51, 0x11);
+        // Sword Poking jingle $07, first pulse at 1F:4471.
+        apu.writeRegister(GameBoyApu.NR10, 0x00);
+        apu.writeRegister(GameBoyApu.NR11, 0x3D);
+        apu.writeRegister(GameBoyApu.NR12, 0xF0);
+        apu.writeRegister(GameBoyApu.NR13, 0xD8);
+        apu.writeRegister(GameBoyApu.NR14, 0xC7);
+
+        int thirdLengthTick = 64 + 2 * 128;
+        assertTrue(hasNonZeroSample(renderPcm(apu, thirdLengthTick - 1)));
+        assertTrue(apu.isChannelActive(1));
+        renderPcm(apu, 128);
+        assertEquals(0x80, apu.readRegister(GameBoyApu.NR52));
+    }
+
+    @Test
+    void channel2RetriggerPreservesRemainingLengthAndReloadsOnlyAtZero() {
+        GameBoyApu apu = new GameBoyApu(32_768);
+        apu.writeRegister(GameBoyApu.NR52, 0x80);
+        apu.writeRegister(GameBoyApu.NR21, 0xBE);
+        apu.writeRegister(GameBoyApu.NR22, 0xF0);
+        apu.writeRegister(GameBoyApu.NR24, 0xC7);
+        renderPcm(apu, 64);
+
+        // A DAC-off trigger stays silent and preserves the remaining step.
+        apu.writeRegister(GameBoyApu.NR22, 0x07);
+        apu.writeRegister(GameBoyApu.NR24, 0xC7);
+        assertFalse(apu.isChannelActive(2));
+        apu.writeRegister(GameBoyApu.NR22, 0x08);
+        assertFalse(apu.isChannelActive(2));
+        apu.writeRegister(GameBoyApu.NR24, 0xC7);
+        assertTrue(apu.isChannelActive(2));
+        renderPcm(apu, 128);
+        assertFalse(apu.isChannelActive(2));
+
+        // The next sequencer step skips length, so a zero reload starts at 63.
+        apu.writeRegister(GameBoyApu.NR24, 0xC7);
+        renderPcm(apu, 63 * 128 - 1);
+        assertTrue(apu.isChannelActive(2));
+        renderPcm(apu, 1);
+        assertFalse(apu.isChannelActive(2));
     }
 
     @Test
@@ -49,7 +98,7 @@ final class GameBoyApuTest {
         apu.writeRegister(GameBoyApu.NR33, 0x00);
         apu.writeRegister(GameBoyApu.NR34, 0x87);
 
-        short[] pcm = apu.render(512);
+        short[] pcm = renderPcm(apu, 512);
 
         assertEquals(1024, pcm.length);
         assertTrue(hasNonZeroSample(pcm));
@@ -65,7 +114,7 @@ final class GameBoyApuTest {
         apu.writeRegister(GameBoyApu.NR43, 0x23);
         apu.writeRegister(GameBoyApu.NR44, 0x80);
 
-        short[] first = apu.render(512);
+        short[] first = renderPcm(apu, 512);
         apu.reset();
         apu.writeRegister(GameBoyApu.NR52, 0x80);
         apu.writeRegister(GameBoyApu.NR50, 0x77);
@@ -74,7 +123,7 @@ final class GameBoyApuTest {
         apu.writeRegister(GameBoyApu.NR43, 0x23);
         apu.writeRegister(GameBoyApu.NR44, 0x80);
 
-        short[] second = apu.render(512);
+        short[] second = renderPcm(apu, 512);
 
         assertEquals(1024, first.length);
         assertArrayEquals(first, second);
@@ -91,7 +140,7 @@ final class GameBoyApuTest {
         apu.writeRegister(GameBoyApu.NR43, 0x07);
         apu.writeRegister(GameBoyApu.NR44, 0x80);
 
-        short[] pcm = apu.render(32);
+        short[] pcm = renderPcm(apu, 32);
 
         assertTrue(hasSignChangeInLeftChannel(pcm));
     }
@@ -112,8 +161,8 @@ final class GameBoyApuTest {
         noiseApu.writeRegister(GameBoyApu.NR43, 0x10);
         noiseApu.writeRegister(GameBoyApu.NR44, 0x80);
 
-        short squareSample = squareApu.render(1)[0];
-        short noiseSample = noiseApu.render(1)[0];
+        short squareSample = renderPcm(squareApu, 1)[0];
+        short noiseSample = renderPcm(noiseApu, 1)[0];
 
         assertEquals(4096, Math.abs(squareSample));
         assertEquals(Math.abs(squareSample), Math.abs(noiseSample));
@@ -129,8 +178,8 @@ final class GameBoyApuTest {
         apu.writeRegister(GameBoyApu.NR43, 0x77);
         apu.writeRegister(GameBoyApu.NR44, 0x80);
 
-        short initial = apu.render(1)[0];
-        short[] later = apu.render(760);
+        short initial = renderPcm(apu, 1)[0];
+        short[] later = renderPcm(apu, 760);
         short afterEnvelopeTick = later[(760 - 1) * 2];
 
         assertTrue(Math.abs(afterEnvelopeTick) < Math.abs(initial));
@@ -147,7 +196,7 @@ final class GameBoyApuTest {
         apu.writeRegister(GameBoyApu.NR43, 0x10);
         apu.writeRegister(GameBoyApu.NR44, 0xC0);
 
-        apu.render(1_126);
+        renderPcm(apu, 1_126);
 
         assertTrue(!apu.isChannelActive(4));
     }
@@ -163,8 +212,8 @@ final class GameBoyApuTest {
         apu.writeRegister(GameBoyApu.NR13, 0x00);
         apu.writeRegister(GameBoyApu.NR14, 0x87);
 
-        short initial = apu.render(1)[0];
-        short[] later = apu.render(760);
+        short initial = renderPcm(apu, 1)[0];
+        short[] later = renderPcm(apu, 760);
         short afterEnvelopeTick = later[(760 - 1) * 2];
 
         assertTrue(Math.abs(afterEnvelopeTick) < Math.abs(initial));
@@ -182,15 +231,16 @@ final class GameBoyApuTest {
         apu.writeRegister(GameBoyApu.NR13, 0x00);
         apu.writeRegister(GameBoyApu.NR14, 0x83);
 
-        int earlyTransitions = countLeftChannelSignTransitions(apu.render(4096));
-        int laterTransitions = countLeftChannelSignTransitions(apu.render(4096));
+        int earlyTransitions = countLeftChannelSignTransitions(renderPcm(apu, 4096));
+        int laterTransitions = countLeftChannelSignTransitions(renderPcm(apu, 4096));
 
-        assertTrue(laterTransitions > earlyTransitions,
+        assertTrue(
+                laterTransitions > earlyTransitions,
                 "expected sweep to raise pitch, early=" + earlyTransitions + " later=" + laterTransitions);
     }
 
     @Test
-    void channel1SweepWithZeroShiftDoesNotMuteChannel() {
+    void channel1SweepWithZeroShiftKeepsChannelActiveWhenCalculationDoesNotOverflow() {
         GameBoyApu apu = new GameBoyApu(48_000);
         apu.writeRegister(GameBoyApu.NR52, 0x80);
         apu.writeRegister(GameBoyApu.NR50, 0x77);
@@ -198,10 +248,10 @@ final class GameBoyApuTest {
         apu.writeRegister(GameBoyApu.NR10, 0x70);
         apu.writeRegister(GameBoyApu.NR11, 0x80);
         apu.writeRegister(GameBoyApu.NR12, 0xF0);
-        apu.writeRegister(GameBoyApu.NR13, 0xF0);
-        apu.writeRegister(GameBoyApu.NR14, 0x87);
+        apu.writeRegister(GameBoyApu.NR13, 0x00);
+        apu.writeRegister(GameBoyApu.NR14, 0x83);
 
-        short[] pcm = apu.render(8192);
+        short[] pcm = renderPcm(apu, 8192);
 
         assertTrue(hasNonZeroSample(pcm));
         assertTrue(apu.isChannelActive(1));
@@ -222,8 +272,8 @@ final class GameBoyApuTest {
         triggerChannel1(twoChannels);
         triggerChannel2(twoChannels);
 
-        short singleLeft = oneChannel.render(1)[0];
-        short mixedLeft = twoChannels.render(1)[0];
+        short singleLeft = renderPcm(oneChannel, 1)[0];
+        short mixedLeft = renderPcm(twoChannels, 1)[0];
 
         assertEquals(singleLeft * 2, mixedLeft);
     }
@@ -239,7 +289,7 @@ final class GameBoyApuTest {
         apu.writeRegister(GameBoyApu.NR13, 0x00);
         apu.writeRegister(GameBoyApu.NR14, 0x87);
 
-        short[] pcm = apu.render(128);
+        short[] pcm = renderPcm(apu, 128);
 
         assertEquals(256, pcm.length);
         for (short sample : pcm) {

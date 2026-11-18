@@ -1,0 +1,90 @@
+package linksawakening.audio;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import linksawakening.app.host.HeadlessHost;
+import linksawakening.audio.apu.GameBoyApu;
+import linksawakening.audio.music.FrameAudioMixer;
+import linksawakening.audio.music.FrameAudioPlayer;
+import linksawakening.audio.music.MusicDriver;
+import linksawakening.audio.music.MusicTrack;
+import linksawakening.audio.music.ReusableFramePcmOutput;
+import linksawakening.audio.openal.OpenAlPcmSoundOutput;
+import linksawakening.audio.sfx.SoundEffectPlayback;
+import linksawakening.rom.Rom;
+import linksawakening.testing.AllocationProbe;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
+
+final class AudioAllocationTest {
+    private final TestReporter reporter;
+
+    AudioAllocationTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
+    @Test
+    void steadyStateAllocation() {
+        byte[] rom = syntheticRom();
+        short[] samples = new short[1600];
+        var apu = new GameBoyApu(48000);
+        var driver = new MusicDriver(Rom.of(rom), apu);
+        driver.start(new MusicTrack(1, "allocation", 0x1b, 0x4077, 0x5000, 0x1b * 0x4000 + 0x1000));
+        double bytes = AllocationProbe.bytesPerIteration(5000, 1000, () -> {
+            driver.tick60Hz();
+            apu.renderInto(samples, 0, 800);
+        });
+        reporter.publishEntry("Audio allocation bytes/tick=" + bytes);
+        assertTrue(bytes < 16, "Audio allocated " + bytes + " bytes/tick");
+    }
+
+    @Test
+    void steadyStateFrameMixerAllocation() {
+        var apu = new GameBoyApu(48001);
+        var driver = new MusicDriver(Rom.of(syntheticRom()), apu);
+        driver.start(new MusicTrack(1, "mixer allocation", 0x1b, 0x4077, 0x5000, 0x1b * 0x4000 + 0x1000));
+        var mixer = new FrameAudioMixer(driver, apu, SoundEffectPlayback.none());
+        double bytes = AllocationProbe.bytesPerIteration(5000, 1000, mixer::renderBufferPcm);
+        assertTrue(driver.isPlaying(), "measurement must keep sequencing active");
+        reporter.publishEntry("Frame mixer allocation bytes/buffer=" + bytes);
+        assertTrue(bytes < 16, "Frame mixer allocated " + bytes + " bytes/buffer");
+    }
+
+    @Test
+    void reusableFrameOutputDoesNotAllocate() {
+        var output = new HeadlessHost().createPcmOutput();
+        assertTrue(output instanceof ReusableFramePcmOutput);
+        assertTrue(ReusableFramePcmOutput.class.isAssignableFrom(OpenAlPcmSoundOutput.class));
+        try (var player = new FrameAudioPlayer(Rom.of(syntheticRom()), 48001, output)) {
+            player.play(new MusicTrack(1, "frame allocation", 0x1b, 0x4077, 0x5000, 0x1b * 0x4000 + 0x1000));
+            double bytes = AllocationProbe.bytesPerIteration(5000, 1000, player::update);
+            assertTrue(player.isMusicPlaying());
+            reporter.publishEntry("Frame audio allocation bytes/frame=" + bytes);
+            assertTrue(bytes < 16, "Frame audio allocated " + bytes + " bytes/frame");
+        }
+    }
+
+    private static byte[] syntheticRom() {
+        byte[] rom = new byte[0x80000];
+        // The synthetic score has no ROM SFX driver. Supply empty driver entry points.
+        rom[0x1F * 0x4000] = (byte) 0xC9;
+        rom[0x1F * 0x4000 + 6] = (byte) 0xC9;
+        rom[0x1F * 0x4000 + 0x3FCC] = (byte) 0xC9;
+        rom[0x1B * 0x4000 + 0x33C] = (byte) 0xC9;
+        int base = 0x1b * 0x4000 - 0x4000;
+        word(rom, base + 0x5001, 0x5100);
+        word(rom, base + 0x5003, 0x5200);
+        rom[base + 0x5100] = 1;
+        word(rom, base + 0x5200, 0x5300);
+        word(rom, base + 0x5202, 0xffff);
+        word(rom, base + 0x5204, 0x5200);
+        byte[] notes = {(byte) 0x9d, (byte) 0xf0, 0, (byte) 0x80, (byte) 0xa0, 0x4a, 0};
+        System.arraycopy(notes, 0, rom, base + 0x5300, notes.length);
+        return rom;
+    }
+
+    private static void word(byte[] data, int at, int value) {
+        data[at] = (byte) value;
+        data[at + 1] = (byte) (value >>> 8);
+    }
+}

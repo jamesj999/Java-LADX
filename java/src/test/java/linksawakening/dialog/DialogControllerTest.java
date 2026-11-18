@@ -1,14 +1,35 @@
 package linksawakening.dialog;
 
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
+import org.junit.jupiter.api.Test;
+
 final class DialogControllerTest {
+
+    @Test
+    void gameplayWaitsForBoxOpeningAndUsesSourceCharacterIndexForTextSound() {
+        DialogController dialog = DialogController.forGameplay();
+        dialog.openPreformatted("AB CD");
+        for (int frame = 0; frame < 10; frame++) {
+            dialog.advance(); // Buttons during opening must not reveal or skip text.
+            assertEquals("", dialog.visibleText());
+            dialog.tick();
+        }
+        revealNextCharacter(dialog);
+        assertEquals("A", dialog.visibleText());
+        assertEquals(List.of(DialogController.SoundEvent.TEXT_PRINT), dialog.consumeSoundEvents());
+        revealNextCharacter(dialog); // B: odd source index
+        assertEquals(List.of(), dialog.consumeSoundEvents());
+        revealNextCharacter(dialog); // space: even index but silent
+        assertEquals(List.of(), dialog.consumeSoundEvents());
+        revealNextCharacter(dialog); // C: odd index, unlike a non-space counter
+        assertEquals(List.of(), dialog.consumeSoundEvents());
+        revealNextCharacter(dialog);
+        assertEquals(List.of(DialogController.SoundEvent.TEXT_PRINT), dialog.consumeSoundEvents());
+    }
 
     @Test
     void revealsOneVisibleCharacterEveryTwoTicks() {
@@ -187,7 +208,7 @@ final class DialogControllerTest {
         dialog.openForLinkY("Hi", 0x47);
 
         assertEquals(DialogController.BoxPosition.BOTTOM, dialog.boxPosition());
-        assertEquals(96, dialog.boxY());
+        assertEquals(80, dialog.boxY());
     }
 
     @Test
@@ -335,6 +356,26 @@ final class DialogControllerTest {
 
         assertFalse(dialog.isActive());
         assertEquals(List.of(), dialog.consumeSoundEvents());
+    }
+
+    @Test
+    void choicePromptTracksTheTwoSourceSelectionIndicesAndResetsOnOpen() {
+        DialogController dialog = new DialogController(16);
+        dialog.openPreformatted("Choose?<ask>");
+        dialog.advance();
+        dialog.advance();
+
+        assertTrue(dialog.isChoicePrompt());
+        assertEquals(0, dialog.choiceSelectionIndex());
+        dialog.consumeSoundEvents();
+        dialog.moveChoiceSelection(1);
+        assertEquals(1, dialog.choiceSelectionIndex());
+        assertEquals(List.of(DialogController.SoundEvent.MOVE_SELECTION), dialog.consumeSoundEvents());
+        dialog.moveChoiceSelection(-1);
+        assertEquals(0, dialog.choiceSelectionIndex());
+
+        dialog.openPreformatted("Again?<ask>");
+        assertEquals(0, dialog.choiceSelectionIndex());
     }
 
     private static void tick(DialogController dialog, int ticks) {

@@ -1,10 +1,12 @@
 package linksawakening.gpu;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
+@linksawakening.testing.RequiresRom
 final class GPUColorDungeonTilesTest {
 
     private static final int TABLE_BANK = 0x20;
@@ -25,13 +27,12 @@ final class GPUColorDungeonTilesTest {
         }
 
         GPU gpu = new GPU();
-        gpu.loadColorDungeonEntitySheets(rom, roomId);
+        gpu.loadColorDungeonEntitySheets(Rom.of(rom), roomId);
 
         for (int slot = 0; slot < 4; slot++) {
             int destination = (0x40 + slot * 0x10) * GPU.TILE_DATA_SIZE;
             assertEquals(0x10 + slot, Byte.toUnsignedInt(gpu.readVRAM(destination)));
-            assertEquals(0xE0 + slot,
-                Byte.toUnsignedInt(gpu.readVRAM(destination + 0xFF)));
+            assertEquals(0xE0 + slot, Byte.toUnsignedInt(gpu.readVRAM(destination + 0xFF)));
         }
     }
 
@@ -46,7 +47,7 @@ final class GPUColorDungeonTilesTest {
         gpu.writeVRAM(destination, (byte) 0x5A);
         gpu.writeVRAM(destination + 0xFF, (byte) 0xA5);
 
-        gpu.loadColorDungeonEntitySheets(rom, roomId);
+        gpu.loadColorDungeonEntitySheets(Rom.of(rom), roomId);
 
         assertEquals(0x5A, Byte.toUnsignedInt(gpu.readVRAM(destination)));
         assertEquals(0xA5, Byte.toUnsignedInt(gpu.readVRAM(destination + 0xFF)));
@@ -67,7 +68,7 @@ final class GPUColorDungeonTilesTest {
         rom[RomBank.romOffset(0x2D, 0x4A00)] = 0x35;
 
         GPU gpu = new GPU();
-        gpu.loadIndoorTiles(rom, 0xFF, roomId);
+        gpu.loadIndoorTiles(Rom.of(rom), 0xFF, roomId);
 
         assertEquals(0x31, Byte.toUnsignedInt(gpu.readVRAM(0x100 * GPU.TILE_DATA_SIZE)));
         assertEquals(0x32, Byte.toUnsignedInt(gpu.readVRAM(0x110 * GPU.TILE_DATA_SIZE)));
@@ -80,19 +81,19 @@ final class GPUColorDungeonTilesTest {
         byte[] rom = loadRom();
         GPU gpu = new GPU();
 
-        gpu.loadIndoorTiles(rom, 0x10, 0xB5);
+        gpu.loadIndoorTiles(Rom.of(rom), 0x10, 0xB5);
 
         int source = RomBank.romOffset(0x35, 0x6600);
         int destination = 0x0F0 * GPU.TILE_DATA_SIZE;
         for (int index = 0; index < 0x200; index++) {
-            assertEquals(Byte.toUnsignedInt(rom[source + index]),
-                Byte.toUnsignedInt(gpu.readVRAM(destination + index)));
+            assertEquals(
+                    Byte.toUnsignedInt(rom[source + index]), Byte.toUnsignedInt(gpu.readVRAM(destination + index)));
         }
         int sharedSource = RomBank.romOffset(0x2D, 0x4000);
         for (int tile : new int[] {0x169, 0x179}) {
             int sourceOffset = sharedSource + (tile - 0x120) * GPU.TILE_DATA_SIZE;
-            assertEquals(Byte.toUnsignedInt(rom[sourceOffset]),
-                Byte.toUnsignedInt(gpu.readVRAM(tile * GPU.TILE_DATA_SIZE)));
+            assertEquals(
+                    Byte.toUnsignedInt(rom[sourceOffset]), Byte.toUnsignedInt(gpu.readVRAM(tile * GPU.TILE_DATA_SIZE)));
         }
     }
 
@@ -101,17 +102,15 @@ final class GPUColorDungeonTilesTest {
         byte[] rom = loadRom();
         GPU gpu = new GPU();
 
-        gpu.loadIndoorTiles(rom, 0xFF, 0x01);
-        gpu.loadAnimatedTilesGroup(rom, 0x07);
-        gpu.tickAnimatedTiles(rom);
+        gpu.loadIndoorTiles(Rom.of(rom), 0xFF, 0x01);
+        gpu.loadAnimatedTilesGroup(Rom.of(rom), 0x07);
+        gpu.tickAnimatedTiles(Rom.of(rom));
 
         int destination = 0x040 * GPU.TILE_DATA_SIZE;
         for (int index = 0; index < 0x40; index++) {
-            int source = index < 0x20
-                ? RomBank.romOffset(0x35, 0x4F00) + index
-                : RomBank.romOffset(0x2C, 0x47C0) + index;
-            assertEquals(Byte.toUnsignedInt(rom[source]),
-                Byte.toUnsignedInt(gpu.readVRAM(destination + index)));
+            int source =
+                    index < 0x20 ? RomBank.romOffset(0x35, 0x4F00) + index : RomBank.romOffset(0x2C, 0x47C0) + index;
+            assertEquals(Byte.toUnsignedInt(rom[source]), Byte.toUnsignedInt(gpu.readVRAM(destination + index)));
         }
     }
 
@@ -119,24 +118,43 @@ final class GPUColorDungeonTilesTest {
     void ordinaryDungeonTwoUsesItsCadenceAndGameplayBgDestination() throws Exception {
         byte[] rom = loadRom();
         GPU gpu = new GPU();
-        gpu.loadIndoorTiles(rom, 0x01, 0x00);
-        gpu.loadAnimatedTilesGroup(rom, 0x07);
+        gpu.loadIndoorTiles(Rom.of(rom), 0x01, 0x00);
+        gpu.loadAnimatedTilesGroup(Rom.of(rom), 0x07);
         gpu.writeVRAM(0x040 * GPU.TILE_DATA_SIZE, (byte) 0x5A);
         gpu.writeVRAM(0x10C * GPU.TILE_DATA_SIZE, (byte) 0xA5);
 
-        gpu.tickAnimatedTiles(rom);
-        gpu.tickAnimatedTiles(rom);
+        gpu.tickAnimatedTiles(Rom.of(rom));
+        gpu.tickAnimatedTiles(Rom.of(rom));
 
         assertEquals(0x5A, Byte.toUnsignedInt(gpu.readVRAM(0x040 * GPU.TILE_DATA_SIZE)));
         assertEquals(0xA5, Byte.toUnsignedInt(gpu.readVRAM(0x10C * GPU.TILE_DATA_SIZE)));
 
-        gpu.tickAnimatedTiles(rom);
+        gpu.tickAnimatedTiles(Rom.of(rom));
 
         int source = RomBank.romOffset(0x2C, 0x47C0);
         int destination = 0x10C * GPU.TILE_DATA_SIZE;
         for (int index = 0; index < 0x40; index++) {
-            assertEquals(Byte.toUnsignedInt(rom[source + index]),
-                Byte.toUnsignedInt(gpu.readVRAM(destination + index)));
+            assertEquals(
+                    Byte.toUnsignedInt(rom[source + index]), Byte.toUnsignedInt(gpu.readVRAM(destination + index)));
+        }
+    }
+
+    @Test
+    void sideViewLoadsTheFullAdjustedRomSheetAndHonorsMapExceptions() throws Exception {
+        byte[] rom = loadRom();
+        for (int[] sample : new int[][] {
+            {0x00, 0x19, 0x7800}, {0x06, 0x10, 0x7000},
+            {0x0A, 0x01, 0x7000}, {0x0A, 0xE9, 0x7800}
+        }) {
+            GPU gpu = new GPU();
+            gpu.loadIndoorTiles(Rom.of(rom), sample[0], sample[1], true);
+            int source = RomBank.romOffset(0x2D, sample[2]);
+            for (int i = 0; i < 0x800; i++) {
+                assertEquals(
+                        rom[source + i],
+                        gpu.readVRAM(0x1000 + i),
+                        "Side-view VRAM byte " + i + " for map " + sample[0]);
+            }
         }
     }
 
@@ -144,16 +162,14 @@ final class GPUColorDungeonTilesTest {
         return new byte[RomBank.romOffset(0x36, 0x4000)];
     }
 
-    private static void writeTableEntry(byte[] rom, int tableAddress, int roomId,
-                                        int sourceHighByte, int sourceBank) {
+    private static void writeTableEntry(byte[] rom, int tableAddress, int roomId, int sourceHighByte, int sourceBank) {
         int offset = RomBank.romOffset(TABLE_BANK, tableAddress + roomId * 2);
         rom[offset] = (byte) sourceHighByte;
         rom[offset + 1] = (byte) sourceBank;
     }
 
     private static byte[] loadRom() throws Exception {
-        try (var stream = GPUColorDungeonTilesTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

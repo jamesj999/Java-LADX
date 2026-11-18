@@ -1,0 +1,21 @@
+{
+  "checkpoint": 555,
+  "comparison": "RGB555",
+  "reward_bounds_inclusive": [
+    68,
+    4,
+    75,
+    19
+  ],
+  "reward_differing_pixels": 0,
+  "surrounding_bounds_inclusive": [
+    64,
+    0,
+    79,
+    23
+  ],
+  "surrounding_differing_pixels": 0,
+  "full_frame_differing_pixels": 166,
+  "checkpoints": 560,
+  "tests_passed": 2347
+}

@@ -1,9 +1,11 @@
 package linksawakening.save;
 
-import linksawakening.state.PlayerState;
+import static linksawakening.save.SaveSlotCodec.unsigned;
 
 import java.util.Arrays;
 import java.util.Objects;
+import linksawakening.state.FollowerFlags;
+import linksawakening.state.PlayerState;
 
 /** Mutable raw image of the source-defined SRAM save area. */
 public final class SaveRamImage {
@@ -12,8 +14,8 @@ public final class SaveRamImage {
 
     private SaveRamImage(byte[] bytes) {
         if (bytes.length != SaveRamLayout.IMAGE_SIZE) {
-            throw new IllegalArgumentException("Save image must be exactly "
-                + SaveRamLayout.IMAGE_SIZE + " bytes, got " + bytes.length);
+            throw new IllegalArgumentException(
+                    "Save image must be exactly " + SaveRamLayout.IMAGE_SIZE + " bytes, got " + bytes.length);
         }
         this.bytes = bytes.clone();
     }
@@ -70,8 +72,8 @@ public final class SaveRamImage {
         SaveRamLayout.checkSlot(slot);
         Objects.requireNonNull(nameBytes, "nameBytes");
         if (nameBytes.length != SaveRamLayout.NAME_LENGTH) {
-            throw new IllegalArgumentException("nameBytes must contain "
-                + SaveRamLayout.NAME_LENGTH + " bytes, got " + nameBytes.length);
+            throw new IllegalArgumentException(
+                    "nameBytes must contain " + SaveRamLayout.NAME_LENGTH + " bytes, got " + nameBytes.length);
         }
         for (int value : nameBytes) {
             if (value < 0 || value > 0xFF) {
@@ -88,16 +90,23 @@ public final class SaveRamImage {
         }
         bytes[main + SaveRamLayout.MAIN_HEALTH_OFFSET] = 0x18;
         bytes[main + SaveRamLayout.MAIN_MAX_HEARTS_OFFSET] = 0x03;
-        Arrays.fill(bytes, main + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET,
-            main + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET + 3, (byte) 0);
+        Arrays.fill(
+                bytes,
+                main + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET,
+                main + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET + 3,
+                (byte) 0);
     }
 
     /** Copies the complete source-defined 0x3AD-byte save slot. */
     public void copySlot(int sourceSlot, int targetSlot) {
         SaveRamLayout.checkSlot(sourceSlot);
         SaveRamLayout.checkSlot(targetSlot);
-        System.arraycopy(bytes, SaveRamLayout.slotOffset(sourceSlot), bytes,
-            SaveRamLayout.slotOffset(targetSlot), SaveRamLayout.SLOT_SIZE);
+        System.arraycopy(
+                bytes,
+                SaveRamLayout.slotOffset(sourceSlot),
+                bytes,
+                SaveRamLayout.slotOffset(targetSlot),
+                SaveRamLayout.SLOT_SIZE);
     }
 
     /** Clears the ROM slot extent, then restores this model's valid empty-slot prefix. */
@@ -119,8 +128,8 @@ public final class SaveRamImage {
         SaveRamLayout.checkSlot(slot);
         int main = SaveRamLayout.slotOffset(slot) + SaveRamLayout.mainOffset();
         bytes[main + SaveRamLayout.MAIN_OCARINA_SONG_FLAGS_OFFSET] = (byte) (songFlags & 0x07);
-        bytes[main + SaveRamLayout.MAIN_SELECTED_SONG_INDEX_OFFSET]
-            = (byte) Math.max(0, Math.min(2, selectedSongIndex));
+        bytes[main + SaveRamLayout.MAIN_SELECTED_SONG_INDEX_OFFSET] =
+                (byte) Math.max(0, Math.min(2, selectedSongIndex));
     }
 
     /**
@@ -130,63 +139,98 @@ public final class SaveRamImage {
      * beginning of the main save block. The Color Dungeon table is the DX2
      * extension and is intentionally limited to the source's 0x20 bytes.</p>
      */
-    public void writeRoomStatuses(int slot, byte[] overworldRoomStatus,
-                                  byte[] indoorARoomStatus, byte[] indoorBRoomStatus,
-                                  byte[] colorDungeonRoomStatus) {
+    public void writeRoomStatuses(
+            int slot,
+            byte[] overworldRoomStatus,
+            byte[] indoorARoomStatus,
+            byte[] indoorBRoomStatus,
+            byte[] colorDungeonRoomStatus) {
         SaveRamLayout.checkSlot(slot);
-        requireLength(overworldRoomStatus, SaveRamLayout.ROOM_STATUS_TABLE_SIZE,
-            "overworldRoomStatus");
-        requireLength(indoorARoomStatus, SaveRamLayout.ROOM_STATUS_TABLE_SIZE,
-            "indoorARoomStatus");
-        requireLength(indoorBRoomStatus, SaveRamLayout.ROOM_STATUS_TABLE_SIZE,
-            "indoorBRoomStatus");
-        requireLength(colorDungeonRoomStatus, SaveRamLayout.DX2_COLOR_DUNGEON_ROOM_STATUS_SIZE,
-            "colorDungeonRoomStatus");
+        requireLength(overworldRoomStatus, SaveRamLayout.ROOM_STATUS_TABLE_SIZE, "overworldRoomStatus");
+        requireLength(indoorARoomStatus, SaveRamLayout.ROOM_STATUS_TABLE_SIZE, "indoorARoomStatus");
+        requireLength(indoorBRoomStatus, SaveRamLayout.ROOM_STATUS_TABLE_SIZE, "indoorBRoomStatus");
+        requireLength(
+                colorDungeonRoomStatus, SaveRamLayout.DX2_COLOR_DUNGEON_ROOM_STATUS_SIZE, "colorDungeonRoomStatus");
 
         int slotOffset = SaveRamLayout.slotOffset(slot);
         int main = slotOffset + SaveRamLayout.mainOffset();
-        System.arraycopy(overworldRoomStatus, 0,
-            bytes, main + SaveRamLayout.MAIN_OVERWORLD_ROOM_STATUS_OFFSET,
-            SaveRamLayout.ROOM_STATUS_TABLE_SIZE);
-        System.arraycopy(indoorARoomStatus, 0,
-            bytes, main + SaveRamLayout.MAIN_INDOOR_A_ROOM_STATUS_OFFSET,
-            SaveRamLayout.ROOM_STATUS_TABLE_SIZE);
-        System.arraycopy(indoorBRoomStatus, 0,
-            bytes, main + SaveRamLayout.MAIN_INDOOR_B_ROOM_STATUS_OFFSET,
-            SaveRamLayout.ROOM_STATUS_TABLE_SIZE);
-        System.arraycopy(colorDungeonRoomStatus, 0,
-            bytes, slotOffset + SaveRamLayout.dx2Offset(),
-            SaveRamLayout.DX2_COLOR_DUNGEON_ROOM_STATUS_SIZE);
+        System.arraycopy(
+                overworldRoomStatus,
+                0,
+                bytes,
+                main + SaveRamLayout.MAIN_OVERWORLD_ROOM_STATUS_OFFSET,
+                SaveRamLayout.ROOM_STATUS_TABLE_SIZE);
+        System.arraycopy(
+                indoorARoomStatus,
+                0,
+                bytes,
+                main + SaveRamLayout.MAIN_INDOOR_A_ROOM_STATUS_OFFSET,
+                SaveRamLayout.ROOM_STATUS_TABLE_SIZE);
+        System.arraycopy(
+                indoorBRoomStatus,
+                0,
+                bytes,
+                main + SaveRamLayout.MAIN_INDOOR_B_ROOM_STATUS_OFFSET,
+                SaveRamLayout.ROOM_STATUS_TABLE_SIZE);
+        System.arraycopy(
+                colorDungeonRoomStatus,
+                0,
+                bytes,
+                slotOffset + SaveRamLayout.dx2Offset(),
+                SaveRamLayout.DX2_COLOR_DUNGEON_ROOM_STATUS_SIZE);
+    }
+
+    public void writeWorldMapRoom(int slot, int room) {
+        SaveRamLayout.checkSlot(slot);
+        requireByte(room, "world map room");
+        int main = SaveRamLayout.slotOffset(slot) + SaveRamLayout.mainOffset();
+        bytes[main + SaveRamLayout.MAIN_WORLD_MAP_ROOM_OFFSET] = (byte) room;
     }
 
     /** Writes the source's persistent dungeon item table and Color Dungeon extension. */
-    public void writeDungeonItemFlags(int slot, byte[] dungeonItemFlags,
-                                      byte[] colorDungeonItemFlags) {
+    public void writeDungeonItemFlags(int slot, byte[] dungeonItemFlags, byte[] colorDungeonItemFlags) {
         SaveRamLayout.checkSlot(slot);
-        requireLength(dungeonItemFlags, SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_SIZE,
-            "dungeonItemFlags");
-        requireLength(colorDungeonItemFlags, SaveRamLayout.DX1_COLOR_DUNGEON_ITEM_FLAGS_SIZE,
-            "colorDungeonItemFlags");
+        requireLength(dungeonItemFlags, SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_SIZE, "dungeonItemFlags");
+        requireLength(colorDungeonItemFlags, SaveRamLayout.DX1_COLOR_DUNGEON_ITEM_FLAGS_SIZE, "colorDungeonItemFlags");
 
         int slotOffset = SaveRamLayout.slotOffset(slot);
         int main = slotOffset + SaveRamLayout.mainOffset();
-        System.arraycopy(dungeonItemFlags, 0, bytes,
-            main + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_OFFSET,
-            SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_SIZE);
-        System.arraycopy(colorDungeonItemFlags, 0, bytes,
-            slotOffset + SaveRamLayout.dx1Offset(),
-            SaveRamLayout.DX1_COLOR_DUNGEON_ITEM_FLAGS_SIZE);
+        System.arraycopy(
+                dungeonItemFlags,
+                0,
+                bytes,
+                main + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_OFFSET,
+                SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_SIZE);
+        System.arraycopy(
+                colorDungeonItemFlags,
+                0,
+                bytes,
+                slotOffset + SaveRamLayout.dx1Offset(),
+                SaveRamLayout.DX1_COLOR_DUNGEON_ITEM_FLAGS_SIZE);
     }
 
     /** Writes wHasInstrument1..wHasInstrument8 at DB65..DB6C. */
     public void writeDungeonProgressFlags(int slot, byte[] dungeonProgressFlags) {
         SaveRamLayout.checkSlot(slot);
-        requireLength(dungeonProgressFlags, SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_SIZE,
-            "dungeonProgressFlags");
+        requireLength(dungeonProgressFlags, SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_SIZE, "dungeonProgressFlags");
         int main = SaveRamLayout.slotOffset(slot) + SaveRamLayout.mainOffset();
-        System.arraycopy(dungeonProgressFlags, 0, bytes,
-            main + SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_OFFSET,
-            SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_SIZE);
+        System.arraycopy(
+                dungeonProgressFlags,
+                0,
+                bytes,
+                main + SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_OFFSET,
+                SaveRamLayout.MAIN_DUNGEON_PROGRESS_FLAGS_SIZE);
+    }
+
+    public void writeFollowers(int slot, FollowerFlags state) {
+        SaveRamLayout.checkSlot(slot);
+        int main = SaveRamLayout.slotOffset(slot) + SaveRamLayout.mainOffset();
+        int context = main + SaveRamLayout.MAIN_FOLLOWER_CONTEXT_OFFSET;
+        if (!state.db10()) bytes[context] = 0;
+        else if (bytes[context] == 0) bytes[context] = 1;
+        bytes[main + SaveRamLayout.MAIN_MARIN_FOLLOWING_OFFSET] = (byte) (state.marinFollowing() ? 1 : 0);
+        bytes[main + SaveRamLayout.MAIN_GHOST_FOLLOWING_OFFSET] = (byte) state.ghostFollowingState();
+        bytes[main + SaveRamLayout.MAIN_ROOSTER_FOLLOWING_OFFSET] = (byte) (state.roosterFollowing() ? 1 : 0);
     }
 
     /** Writes wIsBowWowFollowingLink at DB56. */
@@ -205,9 +249,19 @@ public final class SaveRamImage {
         bytes[main + SaveRamLayout.MAIN_TARIN_FLAG_OFFSET] = (byte) flag;
     }
 
+    /** Writes wRichardSpokenFlag at DB55. */
+    public void writeRichardSpokenFlag(int slot, int flag) {
+        SaveRamLayout.checkSlot(slot);
+        if ((flag & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Richard spoken flag must be an unsigned byte");
+        }
+        int main = SaveRamLayout.slotOffset(slot) + SaveRamLayout.mainOffset();
+        bytes[main + SaveRamLayout.MAIN_RICHARD_SPOKEN_FLAG_OFFSET] = (byte) flag;
+    }
+
     /** Writes the source {@code wSpawnLocationData} fields in the main block. */
-    public void writeSpawnLocation(int slot, int isIndoor, int mapId, int mapRoom,
-                                   int positionX, int positionY, int indoorRoom) {
+    public void writeSpawnLocation(
+            int slot, int isIndoor, int mapId, int mapRoom, int positionX, int positionY, int indoorRoom) {
         SaveRamLayout.checkSlot(slot);
         requireByte(isIndoor, "isIndoor");
         requireByte(mapId, "mapId");
@@ -233,110 +287,11 @@ public final class SaveRamImage {
      * owners are implemented, so this method cannot erase unrelated progress.</p>
      */
     public void writePlayerState(int slot, PlayerState playerState) {
-        SaveRamLayout.checkSlot(slot);
-        Objects.requireNonNull(playerState, "playerState");
-        int slotOffset = SaveRamLayout.slotOffset(slot);
-        int main = slotOffset + SaveRamLayout.mainOffset();
-
-        bytes[main + SaveRamLayout.MAIN_ITEM_B_OFFSET] = (byte) playerState.itemB();
-        bytes[main + SaveRamLayout.MAIN_ITEM_A_OFFSET] = (byte) playerState.itemA();
-        for (int index = 0; index < SaveRamLayout.SUBSCREEN_SLOT_COUNT; index++) {
-            bytes[main + SaveRamLayout.MAIN_SUBSCREEN_OFFSET + index]
-                = (byte) playerState.subscreenItem(index);
-        }
-        bytes[main + SaveRamLayout.MAIN_FLIPPERS_OFFSET]
-            = (byte) (playerState.hasFlippers() ? 1 : 0);
-        bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET]
-            = (byte) (playerState.hasMedicine() ? 1 : 0);
-        bytes[main + SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET]
-            = (byte) playerState.tradeSequenceItem();
-        bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET] = (byte) playerState.seashells();
-        bytes[main + SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET]
-            = (byte) playerState.medicineCount();
-        bytes[main + SaveRamLayout.MAIN_TAIL_KEY_OFFSET] = (byte) playerState.tailKeyCount();
-        bytes[main + SaveRamLayout.MAIN_ANGLER_KEY_OFFSET]
-            = (byte) playerState.anglerKeyCount();
-        bytes[main + SaveRamLayout.MAIN_FACE_KEY_OFFSET] = (byte) playerState.faceKeyCount();
-        bytes[main + SaveRamLayout.MAIN_BIRD_KEY_OFFSET] = (byte) playerState.birdKeyCount();
-        bytes[main + SaveRamLayout.MAIN_GOLDEN_LEAVES_OFFSET]
-            = (byte) playerState.goldenLeavesCount();
-        bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET]
-            = (byte) playerState.powerBraceletLevel();
-        bytes[main + SaveRamLayout.MAIN_SHIELD_OFFSET] = (byte) playerState.shieldLevel();
-        bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET] = (byte) playerState.arrowCount();
-        bytes[main + SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET]
-            = (byte) playerState.magicPowderCount();
-        bytes[main + SaveRamLayout.MAIN_HAS_TOADSTOOL_OFFSET]
-            = (byte) (playerState.hasToadstool() ? 1 : 0);
-        bytes[main + SaveRamLayout.MAIN_BOMBS_OFFSET] = (byte) playerState.bombCount();
-        bytes[main + SaveRamLayout.MAIN_SWORD_OFFSET] = (byte) playerState.swordLevel();
-        bytes[main + SaveRamLayout.MAIN_HEALTH_OFFSET] = (byte) savedHealth(playerState);
-        bytes[main + SaveRamLayout.MAIN_MAX_HEARTS_OFFSET] = (byte) playerState.maxHearts();
-        bytes[main + SaveRamLayout.MAIN_HEART_PIECES_OFFSET] = (byte) playerState.heartPieces();
-        writeRupees(main, playerState.rupees());
-        bytes[main + SaveRamLayout.MAIN_MAX_MAGIC_POWDER_OFFSET]
-            = (byte) playerState.maxMagicPowder();
-        bytes[main + SaveRamLayout.MAIN_MAX_BOMBS_OFFSET] = (byte) playerState.maxBombs();
-        bytes[main + SaveRamLayout.MAIN_MAX_ARROWS_OFFSET] = (byte) playerState.maxArrows();
-        writeOcarinaState(slot, playerState.ocarinaSongFlags(), playerState.selectedSongIndex());
-        bytes[slotOffset + SaveRamLayout.dx3Offset() + SaveRamLayout.DX3_TUNIC_OFFSET]
-            = (byte) playerState.tunicType();
+        new SaveSlotCodec(bytes).writePlayerState(slot, playerState);
     }
 
     public SaveSlotState readSlot(int slot) {
-        SaveRamLayout.checkSlot(slot);
-        int slotOffset = SaveRamLayout.slotOffset(slot);
-        int main = slotOffset + SaveRamLayout.mainOffset();
-        int[] nameBytes = new int[SaveRamLayout.NAME_LENGTH];
-        for (int index = 0; index < nameBytes.length; index++) {
-            nameBytes[index] = unsigned(bytes[main + SaveRamLayout.MAIN_NAME_OFFSET + index]);
-        }
-        int[] subscreen = new int[SaveRamLayout.SUBSCREEN_SLOT_COUNT];
-        for (int index = 0; index < subscreen.length; index++) {
-            subscreen[index] = unsigned(bytes[main + SaveRamLayout.MAIN_SUBSCREEN_OFFSET + index]);
-        }
-        byte[] rawSlot = Arrays.copyOfRange(bytes, slotOffset, slotOffset + SaveRamLayout.SLOT_SIZE);
-        return new SaveSlotState(
-            slot,
-            nameBytes,
-            unsigned(bytes[main + SaveRamLayout.MAIN_HEALTH_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_MAX_HEARTS_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_HEART_PIECES_OFFSET]),
-            decodeRupees(bytes[main + SaveRamLayout.MAIN_RUPEE_HIGH_OFFSET],
-                bytes[main + SaveRamLayout.MAIN_RUPEE_LOW_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_ITEM_A_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_ITEM_B_OFFSET]),
-            subscreen,
-            unsigned(bytes[main + SaveRamLayout.MAIN_SEASHELLS_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_FLIPPERS_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_MEDICINE_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_TAIL_KEY_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_ANGLER_KEY_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_FACE_KEY_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_BIRD_KEY_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_GOLDEN_LEAVES_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_POWER_BRACELET_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_SHIELD_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_SWORD_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_ARROWS_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_MAX_ARROWS_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_BOMBS_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_MAX_BOMBS_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_MAX_MAGIC_POWDER_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_OCARINA_SONG_FLAGS_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_SELECTED_SONG_INDEX_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_HAS_TOADSTOOL_OFFSET]),
-            unsigned(bytes[slotOffset + SaveRamLayout.dx3Offset() + SaveRamLayout.DX3_TUNIC_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_SPAWN_INDOOR_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_SPAWN_MAP_ID_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_SPAWN_MAP_ROOM_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_SPAWN_X_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_SPAWN_Y_OFFSET]),
-            unsigned(bytes[main + SaveRamLayout.MAIN_SPAWN_INDOOR_ROOM_OFFSET]),
-            rawSlot);
+        return new SaveSlotCodec(bytes).readSlot(slot);
     }
 
     /** Mirrors InitSaveFiles for a host image with an invalid slot prefix. */
@@ -361,54 +316,13 @@ public final class SaveRamImage {
         return false;
     }
 
-    private static int decodeRupees(byte high, byte low) {
-        int hundreds = unsigned(high) & 0x0F;
-        int tens = (unsigned(low) >>> 4) & 0x0F;
-        int ones = unsigned(low) & 0x0F;
-        return Math.min(999, hundreds * 100 + tens * 10 + ones);
-    }
-
-    private void writeRupees(int main, int rupees) {
-        int value = Math.max(0, Math.min(PlayerState.MAX_RUPEES, rupees));
-        bytes[main + SaveRamLayout.MAIN_RUPEE_HIGH_OFFSET] = (byte) (value / 100);
-        bytes[main + SaveRamLayout.MAIN_RUPEE_LOW_OFFSET]
-            = (byte) ((((value / 10) % 10) << 4) | (value % 10));
-    }
-
-    private static int savedHealth(PlayerState playerState) {
-        if (playerState.health() != 0) {
-            return playerState.health();
-        }
-        int[] startingHealthByMaxHearts = {
-            3 * PlayerState.HP_PER_HEART,
-            3 * PlayerState.HP_PER_HEART,
-            3 * PlayerState.HP_PER_HEART,
-            3 * PlayerState.HP_PER_HEART,
-            3 * PlayerState.HP_PER_HEART,
-            3 * PlayerState.HP_PER_HEART,
-            5 * PlayerState.HP_PER_HEART,
-            5 * PlayerState.HP_PER_HEART,
-            5 * PlayerState.HP_PER_HEART,
-            5 * PlayerState.HP_PER_HEART,
-            7 * PlayerState.HP_PER_HEART,
-            7 * PlayerState.HP_PER_HEART,
-            7 * PlayerState.HP_PER_HEART,
-            7 * PlayerState.HP_PER_HEART,
-            10 * PlayerState.HP_PER_HEART
-        };
-        return startingHealthByMaxHearts[Math.min(
-            Math.max(playerState.maxHearts(), 0), startingHealthByMaxHearts.length - 1)];
-    }
-
-    private static int unsigned(byte value) {
-        return value & 0xFF;
-    }
+    // SRAM stores these counters as packed decimal; PlayerState uses decimal ints.
 
     private static void requireLength(byte[] values, int expectedLength, String label) {
         Objects.requireNonNull(values, label);
         if (values.length != expectedLength) {
-            throw new IllegalArgumentException(label + " must contain " + expectedLength
-                + " bytes, got " + values.length);
+            throw new IllegalArgumentException(
+                    label + " must contain " + expectedLength + " bytes, got " + values.length);
         }
     }
 

@@ -1,0 +1,11 @@
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+[tool.ruff.lint.per-file-ignores]
+# Standalone CLIs bootstrap the sibling common module before other imports.
+"*/compare.py" = ["E402"]
+"opening/capture.py" = ["E402"]

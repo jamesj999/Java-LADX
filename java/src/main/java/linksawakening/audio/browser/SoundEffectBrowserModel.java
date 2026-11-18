@@ -1,13 +1,13 @@
 package linksawakening.audio.browser;
 
-import linksawakening.audio.sfx.SoundEffect;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import linksawakening.audio.sfx.SoundEffect;
 
-public final class SoundEffectBrowserModel {
+/** Headless sound-effect filtering and metadata for the audition browser. */
+final class SoundEffectBrowserModel {
     private final List<SoundEffect> effects;
 
     public SoundEffectBrowserModel(List<SoundEffect> effects) {
@@ -15,7 +15,7 @@ public final class SoundEffectBrowserModel {
     }
 
     public List<SoundEffect> filteredEffects(String filter) {
-        String normalizedFilter = filter == null ? "" : filter.trim().toLowerCase(Locale.ROOT);
+        String normalizedFilter = Objects.requireNonNullElse(filter, "").trim().toLowerCase(Locale.ROOT);
         if (normalizedFilter.isEmpty()) {
             return effects;
         }

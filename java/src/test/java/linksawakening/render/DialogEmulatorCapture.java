@@ -1,0 +1,270 @@
+package linksawakening.render;
+
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.function.BiConsumer;
+import javax.imageio.ImageIO;
+import linksawakening.dialog.DialogController;
+import linksawakening.entity.Link;
+import linksawakening.entity.LinkSpriteSheet;
+import linksawakening.equipment.ItemRegistry;
+import linksawakening.gameplay.DialogTextLoader;
+import linksawakening.gameplay.SignpostDialogRef;
+import linksawakening.gpu.GPU;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomTables;
+import linksawakening.startup.MarinWakeUpMotion;
+import linksawakening.startup.NewGameStartProfile;
+import linksawakening.state.PlayerState;
+import linksawakening.testing.TestRoms;
+import linksawakening.ui.InventoryController;
+import linksawakening.ui.InventoryMenu;
+import linksawakening.ui.InventoryTilemapLoader;
+import linksawakening.world.room.ChestContentsTable;
+import linksawakening.world.room.OverworldTilesetTable;
+import linksawakening.world.room.RoomLoader;
+import linksawakening.world.room.RoomSession;
+import linksawakening.world.room.RoomSessionConfig;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
+
+/** Settled wake-dialog pages; production rendering, with one initial NPC clock synchronization. */
+@linksawakening.testing.RequiresRom
+public final class DialogEmulatorCapture {
+    public static void main(String[] args) throws Exception {
+        String scenario = args.length > 1 ? args[1] : "marin";
+        Path out =
+                "marin".equals(scenario) ? Path.of(args[0]) : Path.of(args[0]).resolve(scenario);
+        Path folder = out.resolve("ours");
+        Files.createDirectories(folder);
+        capture(
+                scenario,
+                Files.readString(out.resolve("initial.tsv")),
+                Files.readAllLines(out.resolve("frames.tsv")),
+                (name, pixels) -> {
+                    BufferedImage image = new BufferedImage(160, 144, BufferedImage.TYPE_INT_ARGB);
+                    for (int y = 0; y < 144; y++)
+                        for (int x = 0; x < 160; x++) {
+                            int i = (y * 160 + x) * 4;
+                            image.setRGB(
+                                    x,
+                                    y,
+                                    0xff000000
+                                            | ((pixels[i] & 255) << 16)
+                                            | ((pixels[i + 1] & 255) << 8)
+                                            | (pixels[i + 2] & 255));
+                        }
+                    try {
+                        ImageIO.write(image, "png", folder.resolve(name).toFile());
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                });
+    }
+
+    static void capture(String initialClocks, List<String> frames, BiConsumer<String, byte[]> consumer)
+            throws Exception {
+        capture("marin", initialClocks, frames, consumer);
+    }
+
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
+    static void capture(String scenario, String initialClocks, List<String> frames, BiConsumer<String, byte[]> consumer)
+            throws Exception {
+        boolean timedDialog =
+                "marin-timing".equals(scenario) || "marin-scroll".equals(scenario) || "marin-close".equals(scenario);
+        boolean bedExit = "bed-exit".equals(scenario);
+        boolean inBed = "marin".equals(scenario) || bedExit || timedDialog;
+        boolean heldShield = "shield-pose".equals(scenario);
+        boolean receivedShield = "tarin-shield".equals(scenario);
+        int linkX = inBed ? 0x38 : 105;
+        int linkY = inBed ? 0x34 : 72;
+        byte[] rom;
+        try (var in = linksawakening.testing.TestRom.open()) {
+            rom = in.readAllBytes();
+        }
+        GPU gpu = new GPU();
+        gpu.loadBaseTiles(Rom.of(rom));
+        var tables = RomTables.load(Rom.unchecked(rom));
+        var collision = new OverworldCollision(tables);
+        var session = new RoomSession(new RoomSessionConfig(
+                Rom.of(rom),
+                gpu,
+                new RoomLoader(Rom.of(rom)),
+                new OverworldTilesetTable(Rom.of(rom)),
+                collision,
+                new RoomSessionConfig.Presentation(null, null, null),
+                new linksawakening.world.entity.RomRandomByteSource()));
+        var profile = NewGameStartProfile.romDefaults();
+        session.rooms().loadIndoor(profile.mapId(), profile.roomId());
+        // Enter the normal entity init pass before synchronizing NPC clocks.
+        // Hidden pot drops must get their source init state; they cannot rely
+        // on missing shared-item graphics to stay invisible in this fixture.
+        session.entities().tickEntities(0, linkX, linkY);
+        var player = new PlayerState();
+        profile.initializePlayerState(player);
+        var input = new InputState();
+        var config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        var link = new Link(
+                input,
+                config,
+                tables,
+                collision,
+                LinkSpriteSheet.loadFromRom(TestRoms.partial(rom)),
+                player,
+                new ItemRegistry());
+        link.position().setPixelPosition(linkX - 8, linkY - 16);
+        link.animation().setRomDirection(0);
+        if (heldShield)
+            link.animation()
+                    .showTarinShieldPresentation(
+                            linksawakening.rom.RomBank.loadPalettes(
+                                    Rom.unchecked(rom),
+                                    linksawakening.rom.RomAddress.fromOffset(
+                                            linksawakening.rom.RomBank.romOffset(0x05, 0x4C94)),
+                                    1)[0]);
+        if (receivedShield) {
+            player.chestRewards().applyChestReward(ChestContentsTable.CHEST_SHIELD);
+            link.animation().showStandingShieldDownPose();
+        }
+        var motion = new MarinWakeUpMotion();
+        var marinSource = session.rooms().activeRoomOrNull().entities().slots().get(0);
+        String[] initial = initialClocks.trim().split("\\t");
+        int firstFrame = Integer.parseInt(initial[0]);
+        int inertia = Integer.parseInt(initial[1]);
+        // One read-only initial synchronization, then continuous NPC ticks.
+        // As with captureHouse, displayed OAM trails the observed clocks by two frames.
+        var marin = synchronizeMarin(motion, marinSource.x(), marinSource.y(), linkX, linkY, firstFrame, inertia);
+        var dialog = createDialog(scenario, heldShield, bedExit, rom, inBed, receivedShield, linkY);
+        session.story().updateHouseTarinPresentation(0, linkX, linkY);
+        var inventory = new InventoryController(
+                input, config, new InventoryMenu(InventoryTilemapLoader.loadFromRom(TestRoms.partial(rom)), player));
+        replay(
+                scenario,
+                frames,
+                consumer,
+                timedDialog,
+                bedExit,
+                inBed,
+                linkX,
+                linkY,
+                session,
+                link,
+                motion,
+                marinSource,
+                firstFrame,
+                marin,
+                dialog,
+                inventory,
+                gpu);
+    }
+
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
+    private static void replay(
+            String scenario,
+            List<String> frames,
+            BiConsumer<String, byte[]> consumer,
+            boolean timedDialog,
+            boolean bedExit,
+            boolean inBed,
+            int linkX,
+            int linkY,
+            RoomSession session,
+            Link link,
+            MarinWakeUpMotion motion,
+            linksawakening.world.entity.RoomEntity marinSource,
+            int firstFrame,
+            MarinWakeUpMotion.MarinPresentation marin,
+            DialogController dialog,
+            InventoryController inventory,
+            GPU gpu) {
+        int page = -1;
+        int elapsed = 0;
+        for (String row : frames) {
+            String[] fields = row.split("\\t");
+            int nextPage = Integer.parseInt(fields[0]);
+            int f = Integer.parseInt(fields[1]);
+            int targetElapsed = Integer.parseInt(fields[2]);
+            int frame = (firstFrame + targetElapsed) & 255;
+            // Match settled pages, not their opening/typewriter/scroll timing.
+            if (timedDialog && targetElapsed > 0) dialog.tick();
+            if ("marin-scroll".equals(scenario) && targetElapsed == 102) dialog.advance();
+            if ("marin-close".equals(scenario) && targetElapsed == 10) dialog.advance();
+            if (!timedDialog && nextPage != page) {
+                if (page >= 0) dialog.advance();
+                for (int i = 0; i < 128; i++) dialog.tick();
+                page = nextPage;
+            }
+            while (elapsed < targetElapsed) {
+                elapsed++;
+                session.story().updateHouseTarinPresentation((firstFrame + elapsed) & 255, linkX, linkY);
+                marin = motion.tickMarinPresentation(
+                        (firstFrame + elapsed) & 255, marinSource.x(), marinSource.y(), linkX, linkY);
+            }
+            session.story().applyMarinWakeUpPresentation(marin.romX(), marin.romY(), marin.spriteVariant());
+            session.story().updateHouseTarinPresentation(frame, linkX, linkY);
+            if (bedExit) {
+                if (targetElapsed < 4) link.animation().showMarinWakeUpBed(3);
+                else {
+                    if (targetElapsed == 4) link.actions().leaveMarinWakeUpBed();
+                    link.motion().update();
+                }
+            } else if (inBed) link.animation().showMarinWakeUpBed(3);
+            byte[] pixels = new byte[160 * 144 * 4];
+            new GameFrameSceneBuilder()
+                    .build(GameFrameState.empty()
+                            .withScreen(RenderScreen.OVERWORLD)
+                            .withRoom(
+                                    session.rooms().renderSnapshotOrNull(),
+                                    new ScrollController(),
+                                    new TransitionController())
+                            .withLink(link)
+                            .withInventoryController(inventory)
+                            .withDialogController(dialog)
+                            .withFrameCounter((frame - 2) & 255))
+                    .drawTo(pixels, gpu, TestDrawObservers.CURRENT.get());
+            consumer.accept(String.format("%02d-%02d.png", nextPage, f), pixels);
+        }
+    }
+
+    private static DialogController createDialog(
+            String scenario,
+            boolean heldShield,
+            boolean bedExit,
+            byte[] rom,
+            boolean inBed,
+            boolean receivedShield,
+            int linkY) {
+        var dialog = DialogController.forGameplay();
+        dialog.setPlayerName("A");
+        if (!heldShield && !bedExit)
+            dialog.openPreformattedForLinkY(
+                    DialogTextLoader.loadFromRom(Rom.of(rom))
+                            .load(new SignpostDialogRef(0, inBed ? 1 : receivedShield ? 0x91 : 0x54)),
+                    linkY);
+        if ("marin-close".equals(scenario)) {
+            for (int i = 0; i < 6; i++) {
+                if (i > 0) dialog.advance();
+                for (int tick = 0; tick < 128; tick++) dialog.tick();
+            }
+        }
+        return dialog;
+    }
+
+    private static MarinWakeUpMotion.MarinPresentation synchronizeMarin(
+            MarinWakeUpMotion motion, int sourceX, int sourceY, int linkX, int linkY, int firstFrame, int inertia) {
+        var marin = motion.tickMarinPresentation(1, sourceX, sourceY, linkX, linkY);
+        for (int i = inertia - 2; i > 0; i--) {
+            marin = motion.tickMarinPresentation((firstFrame - i + 1) & 255, sourceX, sourceY, linkX, linkY);
+        }
+        return marin;
+    }
+}

@@ -42,8 +42,7 @@ public final class PhysicsFlags {
     public static final int CAT_SPIKES = 0xE0;
     public static final int CAT_CONVEYOR = 0xF0;
 
-    private PhysicsFlags() {
-    }
+    private PhysicsFlags() {}
 
     /**
      * Return true if an object with this physics flag blocks walking in the
@@ -58,28 +57,25 @@ public final class PhysicsFlags {
         if (flag == NONE) return false;
 
         switch (flag) {
-            case SOLID:
-            case DEEP_WATER:
-            case LAVA:
+            case SOLID, DEEP_WATER, LAVA -> {
                 return true;
+            }
         }
 
         if (isPitCategory(flag)) {
             return true;
         }
 
-        switch (flag & 0xF0) {
-            case CAT_LEDGE_OVERWORLD:
-            case CAT_REMOVABLE_OBSTACLE:
-            case CAT_HOOKSHOTABLE:
-            case CAT_FINE_COLLISION:
-            case CAT_DOOR_CLOSED:
-            case CAT_KEYHOLE:
-            case CAT_LEDGE:
-                return true;
-            default:
-                return false;
-        }
+        return switch (flag & 0xF0) {
+            case CAT_LEDGE_OVERWORLD,
+                    CAT_REMOVABLE_OBSTACLE,
+                    CAT_HOOKSHOTABLE,
+                    CAT_FINE_COLLISION,
+                    CAT_DOOR_CLOSED,
+                    CAT_KEYHOLE,
+                    CAT_LEDGE -> true;
+            default -> false;
+        };
     }
 
     /**

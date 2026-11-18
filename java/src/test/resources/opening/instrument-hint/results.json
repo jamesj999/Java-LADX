@@ -1,0 +1,13 @@
+{
+  "checkpoint": 663,
+  "route_sha256": "3c3b7b0309e835e050f15d0be6578b5d79f7da62da97adde4234aaec4f894bee",
+  "rgb555_differing_pixels": 28,
+  "difference_bounds": [
+    143,
+    112,
+    150,
+    117
+  ],
+  "remaining_difference": "dialog advance arrow blink phase",
+  "not_verified": "intermediate fade frames and warp swirl sprites"
+}

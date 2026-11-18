@@ -1,10 +1,10 @@
 package linksawakening.cutscene;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 final class CutsceneControllerTest {
 
@@ -13,10 +13,8 @@ final class CutsceneControllerTest {
         RecordingCutsceneContext context = new RecordingCutsceneContext();
         CutsceneController controller = new CutsceneController(context);
 
-        controller.start(CutsceneScript.of(
-            CutsceneStep.waitFrames(3),
-            CutsceneStep.run(ctx -> ctx.setScene("intro-beach"))
-        ));
+        controller.start(
+                CutsceneScript.of(CutsceneStep.waitFrames(3), CutsceneStep.run(ctx -> ctx.setScene("intro-beach"))));
 
         assertTrue(controller.isActive());
         controller.tick();
@@ -34,10 +32,8 @@ final class CutsceneControllerTest {
         RecordingCutsceneContext context = new RecordingCutsceneContext();
         CutsceneController controller = new CutsceneController(context);
 
-        controller.start(CutsceneScript.of(
-            CutsceneStep.showDialog("WAKE UP"),
-            CutsceneStep.run(ctx -> ctx.setScene("done"))
-        ));
+        controller.start(
+                CutsceneScript.of(CutsceneStep.showDialog("WAKE UP"), CutsceneStep.run(ctx -> ctx.setScene("done"))));
 
         controller.tick();
 

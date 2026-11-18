@@ -1,0 +1,209 @@
+package linksawakening;
+
+import java.awt.image.BufferedImage;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.util.HexFormat;
+import javax.imageio.ImageIO;
+import linksawakening.app.HeadlessGameDriver;
+
+/** Exercises Main, without scene injection, using the shared button route. */
+public final class OpeningRouteCapture {
+    private static HeadlessGameDriver game;
+    private static int lastHealth = 24;
+    private static final StringBuilder instrumentTrace = new StringBuilder();
+    private static final StringBuilder kingTrace = new StringBuilder();
+    private static final StringBuilder combatTrace = new StringBuilder();
+
+    // Acquisition and close are the behavior under test; the resource handle need not be read in the body.
+    @SuppressWarnings("try")
+    public static void main(String[] args) throws Exception {
+        Path route = Path.of(args[0]);
+        Path out = Path.of(args[1]);
+        Files.createDirectories(out.resolve("ours"));
+        Files.deleteIfExists(out.resolve("java.json"));
+        combatTrace.setLength(0);
+        kingTrace.setLength(0);
+        instrumentTrace.setLength(0);
+        game = args.length > 2
+                ? new HeadlessGameDriver(linksawakening.recording.RecordingOptions.defaults(Path.of(args[2])))
+                : new HeadlessGameDriver();
+        try (var recordingSession = game) {
+            capture(route, out);
+        }
+    }
+
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
+    private static void capture(Path route, Path out) throws Exception {
+        game.initializeHeadlessNewGame();
+        StringBuilder trace = new StringBuilder();
+        int frame = 0, segment = 0;
+        byte[] rgba = null;
+        try {
+            for (String line : Files.readAllLines(route)) {
+                if (line.isBlank() || line.startsWith("#")) continue;
+                String[] fields = line.split("\\s+");
+                int idle = Integer.parseInt(fields[2]);
+                if (fields[1].contains("=")) {
+                    game.headlessButton(fields[0].replace("*", ""), true);
+                    int ticks = 0;
+                    while (!reached(game, fields[0], fields[1], game.headlessState())) {
+                        if (++ticks > 2000)
+                            throw new IllegalStateException("Route blocked: " + line + " " + game.headlessState()
+                                    + " entities " + game.headlessEntityPositions());
+                        pulseButtons(game, fields[0], ticks - 1);
+                        rgba = game.headlessFrame();
+                        appendTrace(trace, frame++);
+                    }
+                    game.headlessButton(fields[0].replace("*", ""), false);
+                    do {
+                        if (++ticks > 2500) throw new IllegalStateException("Transition did not finish: " + line);
+                        rgba = game.headlessFrame();
+                        appendTrace(trace, frame++);
+                    } while (game.headlessState().loading());
+                }
+                int held = fields[1].contains("=") ? 0 : Integer.parseInt(fields[1]);
+                if (held > 0) game.headlessButton(fields[0].replace("*", ""), true);
+                for (int tick = 0; tick < held + idle; tick++) {
+                    if (tick == held && held > 0) game.headlessButton(fields[0].replace("*", ""), false);
+                    if (tick < held) pulseButtons(game, fields[0], tick);
+                    rgba = game.headlessFrame();
+                    appendTrace(trace, frame++);
+                }
+                if (held > 0 && idle == 0) game.headlessButton(fields[0].replace("*", ""), false);
+                BufferedImage image = new BufferedImage(160, 144, BufferedImage.TYPE_INT_RGB);
+                for (int p = 0; p < 160 * 144; p++)
+                    image.setRGB(
+                            p % 160,
+                            p / 160,
+                            ((rgba[p * 4] & 255) << 16) | ((rgba[p * 4 + 1] & 255) << 8) | (rgba[p * 4 + 2] & 255));
+                ImageIO.write(
+                        image,
+                        "png",
+                        out.resolve("ours/%02d.png".formatted(segment++)).toFile());
+                Files.writeString(out.resolve("java-king.tsv"), kingTrace);
+                System.out.println(
+                        segment + " " + game.headlessState() + " entities " + game.headlessEntityPositions());
+            }
+        } finally {
+            // Failed routes are the most useful evidence when diagnosing the
+            // first divergence. Keep their traces without marking them complete.
+            Files.writeString(out.resolve("java-trace.tsv"), trace);
+            Files.writeString(out.resolve("java-combat.tsv"), combatTrace);
+            Files.writeString(out.resolve("java-instrument.tsv"), instrumentTrace);
+            Files.writeString(out.resolve("java-king.tsv"), kingTrace);
+        }
+        String routeHash =
+                HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(route)));
+        Files.writeString(
+                out.resolve("java.json"),
+                "{\"route_sha256\":\"" + routeHash + "\",\"checkpoints\":" + segment + ",\"bowwow_state\":"
+                        + game.headlessBowWowState() + "}");
+    }
+
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
+    static void pulseButtons(HeadlessGameDriver game, String buttons, int tick) {
+        for (String button : buttons.split("\\+")) {
+            if (!button.endsWith("*")) continue;
+            String key = button.substring(0, button.length() - 1);
+            if (tick % 24 == 8) game.headlessButton(key, false);
+            else if (tick > 0 && tick % 24 == 0) game.headlessButton(key, true);
+        }
+    }
+
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
+    static boolean reached(HeadlessGameDriver game, String button, String condition, HeadlessGameDriver.State s) {
+        String[] parts = condition.split("=");
+        int target = Integer.decode(parts[1]);
+        int value =
+                switch (parts[0]) {
+                    case "bowwow" -> game.headlessBowWowState();
+                    case "kingstate" -> Integer.parseInt(
+                            game.headlessMoblinKingTrace().split(",")[0]);
+                    case "instrumentstate" -> Integer.parseInt(
+                            game.headlessInstrumentTrace().split(";")[1].split(",")[1]);
+                    case "room" -> s.room();
+                    case "dialog" -> s.dialog() ? 1 : 0;
+                    case "sword" -> s.sword();
+                    case "inventorytick" -> s.inventoryTick();
+                    case "bgtick" -> s.bgTick();
+                    case "smallkeys" -> s.smallKeys();
+                    case "nightmarekey" -> s.nightmareKey();
+                    case "x" -> s.x();
+                    case "y" -> s.y();
+                    default -> throw new IllegalArgumentException(condition);
+                };
+        if (!parts[0].equals("x") && !parts[0].equals("y")) return value == target;
+        return (button.startsWith("left") || button.startsWith("up")) ? value <= target : value >= target;
+    }
+
+    private static void appendTrace(StringBuilder trace, int frame) {
+        var s = game.headlessState();
+        if (s.map() == 0x15 && s.room() == 0xE1)
+            kingTrace
+                    .append(frame)
+                    .append('\t')
+                    .append(game.headlessMoblinKingTrace())
+                    .append('\n');
+        if (s.map() == 0 && s.room() == 2)
+            instrumentTrace
+                    .append(frame)
+                    .append('\t')
+                    .append(game.headlessInstrumentTrace())
+                    .append('\n');
+        if (s.map() == 0 && (s.room() == 0x11 || s.room() == 0x06))
+            combatTrace
+                    .append(frame)
+                    .append('\t')
+                    .append(game.headlessCombatTrace())
+                    .append('\n');
+        if (s.health() < lastHealth)
+            System.out.println("Damage at " + frame + " " + s + " entities " + game.headlessEntityPositions());
+        lastHealth = s.health();
+        if (s.health() <= 0) throw new IllegalStateException("Link died at frame " + frame + ": " + s);
+        trace.append(frame)
+                .append('\t')
+                .append(s.map())
+                .append('\t')
+                .append(s.room())
+                .append('\t')
+                .append(s.x())
+                .append('\t')
+                .append(s.y())
+                .append('\t')
+                .append(s.dialog())
+                .append('\t')
+                .append(s.shield())
+                .append('\t')
+                .append(s.smallKeys())
+                .append('\t')
+                .append(s.compass())
+                .append('\t')
+                .append(s.dungeonMap())
+                .append('\t')
+                .append(s.nightmareKey())
+                .append('\t')
+                .append(s.animation())
+                .append('\t')
+                .append(s.direction())
+                .append('\t')
+                .append(s.swordAnimation())
+                .append('\t')
+                .append(s.z())
+                .append('\t')
+                .append(s.velocityZ())
+                .append('\t')
+                .append(s.speedX())
+                .append('\t')
+                .append(s.speedY())
+                .append('\t')
+                .append(s.maxHearts())
+                .append('\t')
+                .append(s.instrument1Flags())
+                .append('\n');
+    }
+}

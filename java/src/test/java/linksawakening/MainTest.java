@@ -1,21 +1,5 @@
 package linksawakening;
 
-import linksawakening.config.AppConfig;
-import linksawakening.cutscene.CutsceneManager;
-import linksawakening.dialog.DialogController;
-import linksawakening.audio.music.MusicTrackIds;
-import linksawakening.scene.BackgroundSceneCatalog;
-import linksawakening.scene.BackgroundSceneLoader;
-import linksawakening.scene.BackgroundSceneSpec;
-import linksawakening.startup.StartupCoordinator;
-import linksawakening.state.PlayerState;
-import linksawakening.world.IndoorRoomPointerTables;
-import linksawakening.world.RoomPointerTable;
-import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -25,6 +9,25 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_F2;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
+import java.util.ArrayList;
+import java.util.List;
+import linksawakening.app.InputRouter;
+import linksawakening.app.ScreenRouter;
+import linksawakening.audio.music.MusicTrackIds;
+import linksawakening.config.AppConfig;
+import linksawakening.cutscene.CutsceneManager;
+import linksawakening.dialog.DialogController;
+import linksawakening.rom.Rom;
+import linksawakening.scene.BackgroundSceneCatalog;
+import linksawakening.scene.BackgroundSceneLoader;
+import linksawakening.scene.BackgroundSceneSpec;
+import linksawakening.startup.StartupCoordinator;
+import linksawakening.state.PlayerState;
+import linksawakening.world.room.IndoorRoomPointerTables;
+import linksawakening.world.room.RoomPointerTable;
+import org.junit.jupiter.api.Test;
+
+@linksawakening.testing.RequiresRom
 final class MainTest {
 
     @Test
@@ -37,7 +40,8 @@ final class MainTest {
 
     @Test
     void startRoomComesFromConfiguredOverworldLocation() {
-        AppConfig config = AppConfig.parse("""
+        AppConfig config = AppConfig.parse(
+                """
             { "startLocation": { "type": "OVERWORLD", "roomId": "0xA1" } }
             """);
 
@@ -46,7 +50,8 @@ final class MainTest {
 
     @Test
     void normalStartupIgnoresConfiguredDebugRoomWhenEnteringGameplay() {
-        AppConfig config = AppConfig.parse("""
+        AppConfig config = AppConfig.parse(
+                """
             {
               "startMode": "NORMAL",
               "startLocation": { "type": "OVERWORLD", "roomId": "0xA1" }
@@ -59,27 +64,36 @@ final class MainTest {
     @Test
     void configuredNewGameProfileClearsTheDebugInventoryBeforeRoomStartup() {
         PlayerState playerState = new PlayerState();
-        playerState.setItemA(PlayerState.INVENTORY_BOW);
-        playerState.setItemB(PlayerState.INVENTORY_HOOKSHOT);
+        playerState.inventory().setItemA(linksawakening.state.InventoryItem.BOW.romValue());
+        playerState.inventory().setItemB(linksawakening.state.InventoryItem.HOOKSHOT.romValue());
 
-        Main.applyConfiguredItemProfile(AppConfig.parse("""
+        ScreenRouter.applyConfiguredItemProfile(
+                AppConfig.parse("""
             { "itemProfile": "NEW_GAME" }
             """), playerState);
 
-        assertEquals(PlayerState.INVENTORY_EMPTY, playerState.itemA());
-        assertEquals(PlayerState.INVENTORY_EMPTY, playerState.itemB());
-        assertEquals(30, playerState.maxArrows());
-        assertEquals(30, playerState.maxBombs());
-        assertEquals(20, playerState.maxMagicPowder());
-        assertEquals(PlayerState.INVENTORY_EMPTY, playerState.subscreenItem(0));
+        assertEquals(
+                linksawakening.state.InventoryItem.EMPTY.romValue(),
+                playerState.inventory().itemA());
+        assertEquals(
+                linksawakening.state.InventoryItem.EMPTY.romValue(),
+                playerState.inventory().itemB());
+        assertEquals(30, playerState.ammunition().maxArrows());
+        assertEquals(30, playerState.ammunition().maxBombs());
+        assertEquals(20, playerState.ammunition().maxMagicPowder());
+        assertEquals(
+                linksawakening.state.InventoryItem.EMPTY.romValue(),
+                playerState.inventory().subscreenItem(0));
     }
 
     @Test
     void introStartupFollowsIntroStoryConfig() {
-        AppConfig introEnabled = AppConfig.parse("""
+        AppConfig introEnabled = AppConfig.parse(
+                """
             { "startMode": "CONFIGURED_LOCATION", "showTitleScreen": true, "playIntroStory": true }
             """);
-        AppConfig introDisabled = AppConfig.parse("""
+        AppConfig introDisabled = AppConfig.parse(
+                """
             { "startMode": "NORMAL", "showTitleScreen": true, "playIntroStory": false }
             """);
 
@@ -88,10 +102,10 @@ final class MainTest {
     }
 
     @Test
-    void checkedInConfigStartsCanonicalNewGameGameplayForPlaytesting() {
+    void checkedInConfigStartsIntroBeforeNewGameGameplay() {
         AppConfig config = AppConfig.loadFromResources();
 
-        assertFalse(StartupCoordinator.shouldStartIntroCutscene(config));
+        assertTrue(StartupCoordinator.shouldStartIntroCutscene(config));
         assertTrue(StartupCoordinator.shouldStartNewGameGameplay(config));
     }
 
@@ -110,7 +124,7 @@ final class MainTest {
 
     @Test
     void backgroundScenesUseFullGameBoyBgMap() {
-        BackgroundSceneLoader loader = new BackgroundSceneLoader(loadRom());
+        BackgroundSceneLoader loader = new BackgroundSceneLoader(Rom.of(loadRom()));
 
         assertEquals(32 * 32, loader.load(BackgroundSceneCatalog.TITLE).tilemap().length);
     }
@@ -120,29 +134,29 @@ final class MainTest {
         AppConfig enabled = AppConfig.parse("{ \"debugEnabled\": true }");
         AppConfig disabled = AppConfig.parse("{ \"debugEnabled\": false }");
 
-        assertTrue(Main.shouldRunDebugDump(enabled, GLFW_KEY_F1, GLFW_PRESS));
-        assertFalse(Main.shouldRunDebugDump(disabled, GLFW_KEY_F1, GLFW_PRESS));
-        assertFalse(Main.shouldRunDebugDump(enabled, GLFW_KEY_F2, GLFW_PRESS));
-        assertFalse(Main.shouldRunDebugDump(enabled, GLFW_KEY_F1, GLFW_RELEASE));
+        assertTrue(InputRouter.shouldRunDebugDump(enabled, GLFW_KEY_F1, GLFW_PRESS));
+        assertFalse(InputRouter.shouldRunDebugDump(disabled, GLFW_KEY_F1, GLFW_PRESS));
+        assertFalse(InputRouter.shouldRunDebugDump(enabled, GLFW_KEY_F2, GLFW_PRESS));
+        assertFalse(InputRouter.shouldRunDebugDump(enabled, GLFW_KEY_F1, GLFW_RELEASE));
     }
 
     @Test
-    void entityAnimationContinuesDuringInventoryMovementButNotWhileFullyOpen() {
-        assertTrue(Main.shouldTickRoomEntities(false, false, false, false));
-        assertTrue(Main.shouldTickRoomEntities(false, false, true, true));
-        assertFalse(Main.shouldTickRoomEntities(false, false, true, false));
-        assertFalse(Main.shouldTickRoomEntities(true, false, false, false));
-        assertFalse(Main.shouldTickRoomEntities(false, true, false, false));
+    void dxInventoryBlocksEntityAnimationDuringTransitionsAndWhileOpen() {
+        assertTrue(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(false, false, false, false));
+        assertFalse(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(false, false, true, true));
+        assertFalse(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(false, false, true, false));
+        assertFalse(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(true, false, false, false));
+        assertFalse(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(false, true, false, false));
     }
 
     @Test
     void gameplayFrameDecrementsDialogCooldownWhenEntityAnimationIsSkipped() {
         DialogController dialog = closedDialogWithCooldown();
-        assertFalse(Main.shouldTickRoomEntities(false, false, true, false));
-        assertFalse(Main.shouldTickRoomEntities(true, false, false, false));
-        assertFalse(Main.shouldTickRoomEntities(false, true, false, false));
+        assertFalse(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(false, false, true, false));
+        assertFalse(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(true, false, false, false));
+        assertFalse(linksawakening.app.gameplay.GameplaySimulation.shouldTickRoomEntities(false, true, false, false));
 
-        Main.completeGameplayFrame(dialog);
+        linksawakening.app.gameplay.GameplaySimulation.completeGameplayFrame(dialog);
 
         assertEquals(0x17, dialog.dialogCooldown());
     }
@@ -154,7 +168,7 @@ final class MainTest {
 
         for (int frame = 0; frame < 0x18; frame++) {
             valuesSeenByOptionalEntityAnimation.add(dialog.dialogCooldown());
-            Main.completeGameplayFrame(dialog);
+            linksawakening.app.gameplay.GameplaySimulation.completeGameplayFrame(dialog);
         }
 
         assertEquals(0x18, valuesSeenByOptionalEntityAnimation.getFirst());
@@ -169,20 +183,22 @@ final class MainTest {
         CutsceneManager manager = new CutsceneManager(new DialogController(16), loadedScenes::add);
         manager.startIntro();
 
-        assertTrue(Main.skipIntroCutsceneIfRequested(GLFW_KEY_ENTER, GLFW_PRESS, manager));
+        assertTrue(InputRouter.skipIntroCutsceneIfRequested(GLFW_KEY_ENTER, GLFW_PRESS, manager));
         assertFalse(manager.isActive());
         assertTrue(manager.isShowingTitleScene());
     }
 
     @Test
     void titleAndIntroMusicTracksMatchDisassemblyEntryPoints() {
-        assertEquals(MusicTrackIds.MUSIC_TITLE_CUTSCENE, Main.introCutsceneMusicTrack());
-        assertEquals(MusicTrackIds.MUSIC_TITLE_SCREEN, Main.naturalIntroTitleMusicTrack());
-        assertEquals(MusicTrackIds.MUSIC_TITLE_SCREEN_NO_INTRO, Main.directTitleScreenMusicTrack());
+        assertEquals(MusicTrackIds.MUSIC_TITLE_CUTSCENE, linksawakening.app.MusicDirector.introCutsceneMusicTrack());
+        assertEquals(MusicTrackIds.MUSIC_TITLE_SCREEN, linksawakening.app.MusicDirector.naturalIntroTitleMusicTrack());
+        assertEquals(
+                MusicTrackIds.MUSIC_TITLE_SCREEN_NO_INTRO,
+                linksawakening.app.MusicDirector.directTitleScreenMusicTrack());
     }
 
     private static byte[] loadRom() {
-        try (var stream = MainTest.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

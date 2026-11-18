@@ -1,40 +1,23 @@
 package linksawakening.equipment;
 
+import java.util.Objects;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.state.PlayerState;
-
-import java.util.Objects;
 
 /**
  * The edge-triggered Ocarina use path from {@code UseOcarina} in bank $02.
  * Song menu navigation is owned by the inventory layer; this item consumes
  * the selected song state and hands the playback countdown to the room.
  */
-public final class Ocarina implements EquippedItem {
-
-    public interface PlaybackTarget {
-        boolean startOcarina(int countdown, int songFlags, int selectedSong);
-
-        boolean ocarinaPlaying();
-
-        /** Mirrors the pre-UseOcarina air/hookshot gate in the ROM. */
-        default boolean canStartOcarina() {
-            return true;
-        }
-
-        /** Returns Link's ROM body animation state, or {@code -1} when idle. */
-        default int ocarinaAnimationState() {
-            return -1;
-        }
-    }
+// Integer facing inputs preserve the animation override contract for unknown engine values.
+public final class Ocarina implements EquipmentItem {
 
     private final PlayerState playerState;
     private final GameplaySoundSink soundSink;
     private final PlaybackTarget target;
 
-    public Ocarina(PlayerState playerState, GameplaySoundSink soundSink,
-                   PlaybackTarget target) {
+    public Ocarina(PlayerState playerState, GameplaySoundSink soundSink, PlaybackTarget target) {
         this.playerState = Objects.requireNonNull(playerState, "playerState");
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
         this.target = Objects.requireNonNull(target, "target");
@@ -46,8 +29,8 @@ public final class Ocarina implements EquippedItem {
             return;
         }
 
-        int songFlags = playerState.ocarinaSongFlags() & 0x07;
-        int selectedSong = playerState.selectedSongIndex() & 0xFF;
+        int songFlags = playerState.progression().ocarinaSongFlags() & 0x07;
+        int selectedSong = playerState.progression().selectedSongIndex() & 0xFF;
         Playback playback = Playback.forSelection(songFlags, selectedSong);
         if (target.startOcarina(playback.countdown(), songFlags, selectedSong)) {
             soundSink.play(playback.sound());
@@ -67,6 +50,22 @@ public final class Ocarina implements EquippedItem {
     @Override
     public int overrideAnimationState(int direction, int walkFrame) {
         return target.ocarinaAnimationState();
+    }
+    /** Contract for playback target. */
+    public interface PlaybackTarget {
+        boolean startOcarina(int countdown, int songFlags, int selectedSong);
+
+        boolean ocarinaPlaying();
+
+        /** Mirrors the pre-UseOcarina air/hookshot gate in the ROM. */
+        default boolean canStartOcarina() {
+            return true;
+        }
+
+        /** Returns Link's ROM body animation state, or {@code -1} when idle. */
+        default int ocarinaAnimationState() {
+            return -1;
+        }
     }
 
     private record Playback(int countdown, GameplaySoundEvent sound) {

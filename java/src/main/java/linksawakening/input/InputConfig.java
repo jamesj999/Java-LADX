@@ -1,15 +1,35 @@
 package linksawakening.input;
 
-import linksawakening.config.AppConfig;
+import static linksawakening.input.KeyCodes.KEY_0;
+import static linksawakening.input.KeyCodes.KEY_A;
+import static linksawakening.input.KeyCodes.KEY_BACKSPACE;
+import static linksawakening.input.KeyCodes.KEY_DOWN;
+import static linksawakening.input.KeyCodes.KEY_ENTER;
+import static linksawakening.input.KeyCodes.KEY_ESCAPE;
+import static linksawakening.input.KeyCodes.KEY_F9;
+import static linksawakening.input.KeyCodes.KEY_LEFT;
+import static linksawakening.input.KeyCodes.KEY_LEFT_ALT;
+import static linksawakening.input.KeyCodes.KEY_LEFT_CONTROL;
+import static linksawakening.input.KeyCodes.KEY_LEFT_SHIFT;
+import static linksawakening.input.KeyCodes.KEY_RIGHT;
+import static linksawakening.input.KeyCodes.KEY_RIGHT_ALT;
+import static linksawakening.input.KeyCodes.KEY_RIGHT_CONTROL;
+import static linksawakening.input.KeyCodes.KEY_RIGHT_SHIFT;
+import static linksawakening.input.KeyCodes.KEY_SPACE;
+import static linksawakening.input.KeyCodes.KEY_TAB;
+import static linksawakening.input.KeyCodes.KEY_UP;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import linksawakening.app.debug.DebugLog;
+import linksawakening.config.AppConfig;
 
-import static org.lwjgl.glfw.GLFW.*;
-
+/** Configurable engine key bindings with the legacy numeric key namespace. */
 public final class InputConfig {
+    private static final int UNKNOWN_KEY = -1;
 
-    private static final Map<String, Integer> KEY_NAME_TO_GLFW = buildKeyTable();
+    private static final Map<String, Integer> KEY_NAME_TO_CODE = buildKeyTable();
 
     private final int menuOpenKey;
     private final int upKey;
@@ -19,14 +39,28 @@ public final class InputConfig {
     private final int aKey;
     private final int bKey;
     private final int selectKey;
+    private final int recordingKey;
 
-    public InputConfig(int menuOpenKey, int upKey, int downKey, int leftKey, int rightKey,
-                       int aKey, int bKey) {
-        this(menuOpenKey, upKey, downKey, leftKey, rightKey, aKey, bKey, GLFW_KEY_TAB);
+    public InputConfig(int menuOpenKey, int upKey, int downKey, int leftKey, int rightKey, int aKey, int bKey) {
+        this(menuOpenKey, upKey, downKey, leftKey, rightKey, aKey, bKey, KEY_TAB);
     }
 
-    public InputConfig(int menuOpenKey, int upKey, int downKey, int leftKey, int rightKey,
-                       int aKey, int bKey, int selectKey) {
+    public InputConfig(
+            int menuOpenKey, int upKey, int downKey, int leftKey, int rightKey, int aKey, int bKey, int selectKey) {
+        this(menuOpenKey, upKey, downKey, leftKey, rightKey, aKey, bKey, selectKey, KEY_F9);
+    }
+
+    public InputConfig(
+            int menuOpenKey,
+            int upKey,
+            int downKey,
+            int leftKey,
+            int rightKey,
+            int aKey,
+            int bKey,
+            int selectKey,
+            int recordingKey) {
+        this.recordingKey = recordingKey;
         this.menuOpenKey = menuOpenKey;
         this.upKey = upKey;
         this.downKey = downKey;
@@ -35,6 +69,26 @@ public final class InputConfig {
         this.aKey = aKey;
         this.bKey = bKey;
         this.selectKey = selectKey;
+    }
+
+    public static InputConfig loadFromResources() {
+        return AppConfig.loadFromResources().inputConfig();
+    }
+
+    public static InputConfig fromKeyNames(Map<String, String> entries) {
+        int menuOpenKey = resolveKey(entries.getOrDefault("menuOpenKey", "ENTER"));
+        int upKey = resolveKey(entries.getOrDefault("upKey", "UP"));
+        int downKey = resolveKey(entries.getOrDefault("downKey", "DOWN"));
+        int leftKey = resolveKey(entries.getOrDefault("leftKey", "LEFT"));
+        int rightKey = resolveKey(entries.getOrDefault("rightKey", "RIGHT"));
+        int aKey = resolveKey(entries.getOrDefault("aKey", "Z"));
+        int bKey = resolveKey(entries.getOrDefault("bKey", "X"));
+        int selectKey = resolveKey(entries.getOrDefault("selectKey", "TAB"));
+        String recordingName = entries.getOrDefault("recordingKey", "F9").toUpperCase(Locale.ROOT);
+        int recordingKey = KEY_NAME_TO_CODE.getOrDefault(recordingName, KEY_F9);
+        if (!KEY_NAME_TO_CODE.containsKey(recordingName))
+            DebugLog.warning("Unknown recording key: " + recordingName + " (falling back to F9)");
+        return new InputConfig(menuOpenKey, upKey, downKey, leftKey, rightKey, aKey, bKey, selectKey, recordingKey);
     }
 
     public int menuOpenKey() {
@@ -65,59 +119,50 @@ public final class InputConfig {
         return bKey;
     }
 
+    public int recordingKey() {
+        return recordingKey;
+    }
+
     public int selectKey() {
         return selectKey;
     }
 
-    public static InputConfig loadFromResources() {
-        return AppConfig.loadFromResources().inputConfig();
-    }
-
-    public static InputConfig fromKeyNames(Map<String, String> entries) {
-        int menuOpenKey = resolveKey(entries.getOrDefault("menuOpenKey", "ENTER"));
-        int upKey = resolveKey(entries.getOrDefault("upKey", "UP"));
-        int downKey = resolveKey(entries.getOrDefault("downKey", "DOWN"));
-        int leftKey = resolveKey(entries.getOrDefault("leftKey", "LEFT"));
-        int rightKey = resolveKey(entries.getOrDefault("rightKey", "RIGHT"));
-        int aKey = resolveKey(entries.getOrDefault("aKey", "Z"));
-        int bKey = resolveKey(entries.getOrDefault("bKey", "X"));
-        int selectKey = resolveKey(entries.getOrDefault("selectKey", "TAB"));
-        return new InputConfig(menuOpenKey, upKey, downKey, leftKey, rightKey, aKey, bKey, selectKey);
-    }
-
+    // Key names are ASCII identifiers: upper-case them independently of the user's locale.
     private static int resolveKey(String name) {
-        Integer glfwKey = KEY_NAME_TO_GLFW.get(name.toUpperCase());
-        if (glfwKey == null) {
-            System.err.println("Unknown key name in input config: " + name + " (falling back to ENTER)");
-            return GLFW_KEY_ENTER;
+        int glfwKey = KEY_NAME_TO_CODE.getOrDefault(name.toUpperCase(Locale.ROOT), UNKNOWN_KEY);
+        if (glfwKey == UNKNOWN_KEY) {
+            DebugLog.warning("Unknown key name in input config: " + name + " (falling back to ENTER)");
+            return KEY_ENTER;
         }
         return glfwKey;
     }
 
     private static Map<String, Integer> buildKeyTable() {
         Map<String, Integer> table = new HashMap<>();
-        table.put("ENTER", GLFW_KEY_ENTER);
-        table.put("RETURN", GLFW_KEY_ENTER);
-        table.put("SPACE", GLFW_KEY_SPACE);
-        table.put("TAB", GLFW_KEY_TAB);
-        table.put("ESCAPE", GLFW_KEY_ESCAPE);
-        table.put("ESC", GLFW_KEY_ESCAPE);
-        table.put("BACKSPACE", GLFW_KEY_BACKSPACE);
-        table.put("LEFT_SHIFT", GLFW_KEY_LEFT_SHIFT);
-        table.put("RIGHT_SHIFT", GLFW_KEY_RIGHT_SHIFT);
-        table.put("LEFT_CONTROL", GLFW_KEY_LEFT_CONTROL);
-        table.put("RIGHT_CONTROL", GLFW_KEY_RIGHT_CONTROL);
-        table.put("LEFT_ALT", GLFW_KEY_LEFT_ALT);
-        table.put("RIGHT_ALT", GLFW_KEY_RIGHT_ALT);
-        table.put("UP", GLFW_KEY_UP);
-        table.put("DOWN", GLFW_KEY_DOWN);
-        table.put("LEFT", GLFW_KEY_LEFT);
-        table.put("RIGHT", GLFW_KEY_RIGHT);
+        table.put("NONE", -1);
+        for (int i = 1; i <= 25; i++) table.put("F" + i, 289 + i);
+        table.put("ENTER", KEY_ENTER);
+        table.put("RETURN", KEY_ENTER);
+        table.put("SPACE", KEY_SPACE);
+        table.put("TAB", KEY_TAB);
+        table.put("ESCAPE", KEY_ESCAPE);
+        table.put("ESC", KEY_ESCAPE);
+        table.put("BACKSPACE", KEY_BACKSPACE);
+        table.put("LEFT_SHIFT", KEY_LEFT_SHIFT);
+        table.put("RIGHT_SHIFT", KEY_RIGHT_SHIFT);
+        table.put("LEFT_CONTROL", KEY_LEFT_CONTROL);
+        table.put("RIGHT_CONTROL", KEY_RIGHT_CONTROL);
+        table.put("LEFT_ALT", KEY_LEFT_ALT);
+        table.put("RIGHT_ALT", KEY_RIGHT_ALT);
+        table.put("UP", KEY_UP);
+        table.put("DOWN", KEY_DOWN);
+        table.put("LEFT", KEY_LEFT);
+        table.put("RIGHT", KEY_RIGHT);
         for (char c = 'A'; c <= 'Z'; c++) {
-            table.put(String.valueOf(c), GLFW_KEY_A + (c - 'A'));
+            table.put(String.valueOf(c), KEY_A + (c - 'A'));
         }
         for (char c = '0'; c <= '9'; c++) {
-            table.put(String.valueOf(c), GLFW_KEY_0 + (c - '0'));
+            table.put(String.valueOf(c), KEY_0 + (c - '0'));
         }
         return table;
     }

@@ -1,32 +1,39 @@
 package linksawakening.gameplay;
 
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
+import linksawakening.rom.RomSymbols;
 
+/** Retained ROM-backed decoder of dialog control bytes into formatted presentation text. */
 public final class DialogTextLoader {
 
-    private static final int POINTER_TABLE_BANK = 0x1C;
-    private static final int POINTER_TABLE_ADDR = 0x4001;
-    private static final int BANK_TABLE_BANK = 0x1C;
-    private static final int BANK_TABLE_ADDR = 0x4741;
+    private static final int POINTER_TABLE_BANK = RomSymbols.DialogPointerTable.bank();
+    private static final int POINTER_TABLE_ADDR = RomSymbols.DialogPointerTable.address();
+    private static final int BANK_TABLE_BANK = RomSymbols.DialogBankTable.bank();
+    private static final int BANK_TABLE_ADDR = RomSymbols.DialogBankTable.address();
     private static final int DIALOG_TABLE_SIZE = 0x100;
     private static final int ROM_BANK_MASK = 0x3F;
     private static final int TERMINATOR = 0xFF;
     private static final int ASK = 0xFE;
 
-    private final byte[] romData;
+    private final Rom romData;
 
-    private DialogTextLoader(byte[] romData) {
-        this.romData = romData.clone();
+    private DialogTextLoader(Rom romData) {
+        this.romData = Rom.unchecked(romData.bytes(RomAddress.fromOffset(0), romData.size()));
     }
 
-    public static DialogTextLoader loadFromRom(byte[] romData) {
+    public static DialogTextLoader loadFromRom(Rom romData) {
         if (romData == null) {
             throw new IllegalArgumentException("ROM data is required");
         }
-        requireRange(romData, RomBank.romOffset(POINTER_TABLE_BANK, POINTER_TABLE_ADDR),
-            DIALOG_TABLE_SIZE * 3 * 2, "DialogPointerTable");
-        requireRange(romData, RomBank.romOffset(BANK_TABLE_BANK, BANK_TABLE_ADDR),
-            DIALOG_TABLE_SIZE * 3, "DialogBankTable");
+        requireRange(
+                romData,
+                RomBank.romOffset(POINTER_TABLE_BANK, POINTER_TABLE_ADDR),
+                DIALOG_TABLE_SIZE * 3 * 2,
+                "DialogPointerTable");
+        requireRange(
+                romData, RomBank.romOffset(BANK_TABLE_BANK, BANK_TABLE_ADDR), DIALOG_TABLE_SIZE * 3, "DialogBankTable");
         return new DialogTextLoader(romData);
     }
 
@@ -36,22 +43,22 @@ public final class DialogTextLoader {
         }
         int dialogIndex = dialogRef.globalDialogId();
         int pointerOffset = RomBank.romOffset(POINTER_TABLE_BANK, POINTER_TABLE_ADDR + dialogIndex * 2);
-        int address = Byte.toUnsignedInt(romData[pointerOffset])
-            | (Byte.toUnsignedInt(romData[pointerOffset + 1]) << 8);
+        int address = romData.u8(RomAddress.fromOffset(pointerOffset))
+                | (romData.u8(RomAddress.fromOffset(pointerOffset + 1)) << 8);
         int bankOffset = RomBank.romOffset(BANK_TABLE_BANK, BANK_TABLE_ADDR + dialogIndex);
-        int bank = Byte.toUnsignedInt(romData[bankOffset]) & ROM_BANK_MASK;
+        int bank = romData.u8(RomAddress.fromOffset(bankOffset)) & ROM_BANK_MASK;
         int textOffset = RomBank.romOffset(bank, address);
 
         StringBuilder text = new StringBuilder();
-        for (int offset = textOffset; offset < romData.length; offset++) {
-            int codepoint = Byte.toUnsignedInt(romData[offset]);
+        for (int offset = textOffset; offset < romData.size(); offset++) {
+            int codepoint = romData.u8(RomAddress.fromOffset(offset));
             text.append(decode(codepoint));
             if (codepoint == TERMINATOR || codepoint == ASK) {
                 return text.toString();
             }
         }
         throw new IllegalArgumentException(
-            "Dialog 0x" + Integer.toHexString(dialogIndex) + " has no terminator before end of ROM");
+                "Dialog 0x" + Integer.toHexString(dialogIndex) + " has no terminator before end of ROM");
     }
 
     private static char decode(int codepoint) {
@@ -61,8 +68,8 @@ public final class DialogTextLoader {
         return (char) (codepoint & 0xFF);
     }
 
-    private static void requireRange(byte[] romData, int offset, int length, String label) {
-        if (offset < 0 || length < 0 || offset > romData.length || romData.length - offset < length) {
+    private static void requireRange(Rom romData, int offset, int length, String label) {
+        if (offset < 0 || length < 0 || offset > romData.size() || romData.size() - offset < length) {
             throw new IllegalArgumentException(label + " is outside the ROM data");
         }
     }

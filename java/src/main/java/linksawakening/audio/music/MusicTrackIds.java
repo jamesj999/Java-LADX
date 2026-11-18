@@ -1,5 +1,6 @@
 package linksawakening.audio.music;
 
+/** Stable public track identifiers used by gameplay music routing. */
 public final class MusicTrackIds {
     public static final int MUSIC_NONE = 0x00;
     public static final int MUSIC_TITLE_SCREEN = 0x01;
@@ -7,6 +8,9 @@ public final class MusicTrackIds {
     public static final int MUSIC_MINIGAME = 0x02;
     public static final int MUSIC_MABE_VILLAGE = 0x04;
     public static final int MUSIC_OVERWORLD = 0x05;
+    /** Extended intro followed by the ROM overworld loop, used by the beach sword event. */
+    public static final int MUSIC_OVERWORLD_INTRO = 0x31;
+
     public static final int MUSIC_TAL_TAL_RANGE = 0x06;
     public static final int MUSIC_SHOP = 0x07;
     public static final int MUSIC_RAFT_RIDE_RAPIDS = 0x08;
@@ -22,10 +26,13 @@ public final class MusicTrackIds {
     public static final int MUSIC_OVERWORLD_SWORDLESS = 0x1D;
     public static final int MUSIC_2D_UNDERGROUND = 0x21;
     public static final int MUSIC_CAVE = 0x26;
+    public static final int MUSIC_ULRIRA = 0x33;
+    public static final int MUSIC_RICHARD_HOUSE = 0x40;
+    public static final int MUSIC_FILE_SELECT_ZELDA = 0x60;
+    public static final int MUSIC_OBTAIN_POWERUP = 0x27;
     public static final int MUSIC_ACTIVE_POWER_UP = 0x49;
     public static final int MUSIC_COLOR_DUNGEON = 0x61;
     public static final int MUSIC_SILENCE = 0xFF;
 
-    private MusicTrackIds() {
-    }
+    private MusicTrackIds() {}
 }

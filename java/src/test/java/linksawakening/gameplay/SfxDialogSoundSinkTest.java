@@ -1,5 +1,13 @@
 package linksawakening.gameplay;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import linksawakening.audio.apu.GameBoyApu;
 import linksawakening.audio.sfx.SoundEffect;
 import linksawakening.audio.sfx.SoundEffectCatalog;
@@ -8,26 +16,27 @@ import linksawakening.audio.sfx.SoundEffectPlayer;
 import linksawakening.dialog.DialogController;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+@linksawakening.testing.RequiresRom
 final class SfxDialogSoundSinkTest {
     @Test
     void dialogSoundMapResolvesMessageboxEventsToRealLadxEffects() {
-        DialogSoundEffectMap map = DialogSoundEffectMap.fromCatalog(SoundEffectCatalog.fromRom(loadRom()));
+        DialogSoundEffectMap map = DialogSoundEffectMap.fromCatalog(
+                SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom())));
 
-        assertMapped(map, DialogController.SoundEvent.TEXT_PRINT,
-                SoundEffectNamespace.WAVE, 0x0F, "WAVE_SFX_TEXT_PRINT");
-        assertMapped(map, DialogController.SoundEvent.DIALOG_BREAK,
-                SoundEffectNamespace.JINGLE, 0x15, "JINGLE_DIALOG_BREAK");
-        assertMapped(map, DialogController.SoundEvent.MOVE_SELECTION,
-                SoundEffectNamespace.JINGLE, 0x0A, "JINGLE_MOVE_SELECTION");
+        assertMapped(
+                map, DialogController.SoundEvent.TEXT_PRINT, SoundEffectNamespace.WAVE, 0x0F, "WAVE_SFX_TEXT_PRINT");
+        assertMapped(
+                map,
+                DialogController.SoundEvent.DIALOG_BREAK,
+                SoundEffectNamespace.JINGLE,
+                0x15,
+                "JINGLE_DIALOG_BREAK");
+        assertMapped(
+                map,
+                DialogController.SoundEvent.MOVE_SELECTION,
+                SoundEffectNamespace.JINGLE,
+                0x0A,
+                "JINGLE_MOVE_SELECTION");
     }
 
     @Test
@@ -37,7 +46,8 @@ final class SfxDialogSoundSinkTest {
         SfxDialogSoundSink sink = new SfxDialogSoundSink(
                 apu,
                 new SoundEffectPlayer(apu),
-                DialogSoundEffectMap.fromCatalog(SoundEffectCatalog.fromRom(loadRom())),
+                DialogSoundEffectMap.fromCatalog(
+                        SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom()))),
                 output);
 
         sink.play(DialogController.SoundEvent.TEXT_PRINT);
@@ -52,7 +62,7 @@ final class SfxDialogSoundSinkTest {
     void textPrintSequenceStartsWithRealWaveRegisters() {
         GameBoyApu apu = new GameBoyApu(44_100);
         SoundEffectPlayer player = new SoundEffectPlayer(apu);
-        SoundEffect textPrint = SoundEffectCatalog.fromRom(loadRom())
+        SoundEffect textPrint = SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom()))
                 .find(SoundEffectNamespace.WAVE, 0x0F)
                 .orElseThrow();
 
@@ -72,7 +82,8 @@ final class SfxDialogSoundSinkTest {
         SfxDialogSoundSink sink = new SfxDialogSoundSink(
                 apu,
                 new SoundEffectPlayer(apu),
-                DialogSoundEffectMap.fromCatalog(SoundEffectCatalog.fromRom(loadRom())),
+                DialogSoundEffectMap.fromCatalog(
+                        SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom()))),
                 output);
 
         sink.play(DialogController.SoundEvent.DIALOG_BREAK);
@@ -89,7 +100,8 @@ final class SfxDialogSoundSinkTest {
         SfxDialogSoundSink afterPageBreakSink = new SfxDialogSoundSink(
                 afterPageBreakApu,
                 new SoundEffectPlayer(afterPageBreakApu),
-                DialogSoundEffectMap.fromCatalog(SoundEffectCatalog.fromRom(loadRom())),
+                DialogSoundEffectMap.fromCatalog(
+                        SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom()))),
                 afterPageBreakOutput);
         afterPageBreakSink.play(DialogController.SoundEvent.DIALOG_BREAK);
         afterPageBreakSink.play(DialogController.SoundEvent.TEXT_PRINT);
@@ -99,7 +111,8 @@ final class SfxDialogSoundSinkTest {
         SfxDialogSoundSink freshSink = new SfxDialogSoundSink(
                 freshApu,
                 new SoundEffectPlayer(freshApu),
-                DialogSoundEffectMap.fromCatalog(SoundEffectCatalog.fromRom(loadRom())),
+                DialogSoundEffectMap.fromCatalog(
+                        SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom()))),
                 freshOutput);
         freshSink.play(DialogController.SoundEvent.TEXT_PRINT);
 
@@ -131,8 +144,7 @@ final class SfxDialogSoundSinkTest {
     }
 
     private static byte[] loadRom() {
-        try (InputStream stream = SfxDialogSoundSinkTest.class.getClassLoader()
-                .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing ROM resource: rom/azle.gbc");
             }

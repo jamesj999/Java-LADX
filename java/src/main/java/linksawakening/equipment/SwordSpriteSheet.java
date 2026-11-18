@@ -1,6 +1,10 @@
 package linksawakening.equipment;
 
 import linksawakening.gpu.Tile;
+import linksawakening.rom.GbcBanks;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomSymbols;
 
 /**
  * Sword blade OAM tiles, sourced from {@code LinkCharacterTiles} (bank $0C /
@@ -16,9 +20,8 @@ import linksawakening.gpu.Tile;
  */
 public final class SwordSpriteSheet {
 
-    private static final int BANK_SIZE = 0x4000;
-    private static final int LINK_CHARACTER_1_BANK_GBC = 0x2C;
-    private static final int LINK_CHARACTER_1_ADDR = 0x4000;
+    private static final int LINK_CHARACTER_1_BANK_GBC = GbcBanks.adjust(RomSymbols.LinkCharacterTiles.bank());
+    private static final int LINK_CHARACTER_1_ADDR = RomSymbols.LinkCharacterTiles.address();
     private static final int TILE_COUNT = 0x20;
     private static final int TILE_BYTES = 0x10;
 
@@ -28,7 +31,14 @@ public final class SwordSpriteSheet {
         this.tiles = tiles;
     }
 
-    public static SwordSpriteSheet loadFromRom(byte[] romData) {
+    /** Transparent tiles for an animation-only sword without a renderer. */
+    public static SwordSpriteSheet invisible() {
+        Tile[] tiles = new Tile[TILE_COUNT];
+        for (int i = 0; i < tiles.length; i++) tiles[i] = new Tile();
+        return new SwordSpriteSheet(tiles);
+    }
+
+    public static SwordSpriteSheet loadFromRom(Rom romData) {
         Tile[] tiles = new Tile[TILE_COUNT];
         int offset = romOffset(LINK_CHARACTER_1_BANK_GBC, LINK_CHARACTER_1_ADDR);
         for (int t = 0; t < TILE_COUNT; t++) {
@@ -41,11 +51,11 @@ public final class SwordSpriteSheet {
         return tiles[index & (TILE_COUNT - 1)];
     }
 
-    private static Tile decodeTile(byte[] romData, int offset) {
+    private static Tile decodeTile(Rom romData, int offset) {
         Tile tile = new Tile();
         for (int y = 0; y < 8; y++) {
-            int lowByte = Byte.toUnsignedInt(romData[offset + y * 2]);
-            int highByte = Byte.toUnsignedInt(romData[offset + y * 2 + 1]);
+            int lowByte = romData.u8(RomAddress.fromOffset(offset + y * 2));
+            int highByte = romData.u8(RomAddress.fromOffset(offset + y * 2 + 1));
             for (int x = 0; x < 8; x++) {
                 int bitIndex = 7 - x;
                 int low = (lowByte >> bitIndex) & 1;
@@ -57,9 +67,6 @@ public final class SwordSpriteSheet {
     }
 
     private static int romOffset(int bank, int address) {
-        if (bank == 0) {
-            return address;
-        }
-        return bank * BANK_SIZE + (address - BANK_SIZE);
+        return new RomAddress(bank, address).offset();
     }
 }

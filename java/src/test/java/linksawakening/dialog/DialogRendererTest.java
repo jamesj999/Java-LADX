@@ -1,12 +1,12 @@
 package linksawakening.dialog;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.io.InputStream;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
+@linksawakening.testing.RequiresRom
 final class DialogRendererTest {
 
     private static final int SCREEN_WIDTH = 160;
@@ -21,7 +21,7 @@ final class DialogRendererTest {
     private static final int BLACK = 0x000000;
     private static final int WHITE = 0xF8F8F8;
     private static final int SENTINEL = 0x123456;
-    private static final DialogFont EXPECTED_FONT = DialogFont.loadFromRom(classpathRom());
+    private static final DialogFont EXPECTED_FONT = DialogFont.loadFromRom(linksawakening.rom.Rom.of(classpathRom()));
 
     @Test
     void rendersTopBoxAtOriginalYAndLeavesBottomAreaUntouched() {
@@ -38,7 +38,7 @@ final class DialogRendererTest {
         assertRgb(buffer, BOX_X + BOX_WIDTH, 8, SENTINEL);
         assertRgb(buffer, BOX_X, 8 - 1, SENTINEL);
         assertRgb(buffer, BOX_X, 8 + BOX_HEIGHT, SENTINEL);
-        assertRgb(buffer, BOX_X, 96, SENTINEL);
+        assertRgb(buffer, BOX_X, 80, SENTINEL);
     }
 
     @Test
@@ -50,12 +50,12 @@ final class DialogRendererTest {
 
         DialogRenderer.render(buffer, dialog);
 
-        assertRgb(buffer, BOX_X, 96, BLACK);
-        assertRgb(buffer, BOX_X + BOX_WIDTH - 1, 96 + BOX_HEIGHT - 1, BLACK);
-        assertRgb(buffer, BOX_X - 1, 96, SENTINEL);
-        assertRgb(buffer, BOX_X + BOX_WIDTH, 96, SENTINEL);
-        assertRgb(buffer, BOX_X, 96 - 1, SENTINEL);
-        assertRgb(buffer, BOX_X, 96 + BOX_HEIGHT, SENTINEL);
+        assertRgb(buffer, BOX_X, 80, BLACK);
+        assertRgb(buffer, BOX_X + BOX_WIDTH - 1, 80 + BOX_HEIGHT - 1, BLACK);
+        assertRgb(buffer, BOX_X - 1, 80, SENTINEL);
+        assertRgb(buffer, BOX_X + BOX_WIDTH, 80, SENTINEL);
+        assertRgb(buffer, BOX_X, 80 - 1, SENTINEL);
+        assertRgb(buffer, BOX_X, 80 + BOX_HEIGHT, SENTINEL);
         assertRgb(buffer, BOX_X, 8, SENTINEL);
     }
 
@@ -124,7 +124,7 @@ final class DialogRendererTest {
     }
 
     private static byte[] classpathRom() {
-        try (InputStream stream = DialogRendererTest.class.getResourceAsStream("/rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("Missing classpath ROM resource /rom/azle.gbc");
             }

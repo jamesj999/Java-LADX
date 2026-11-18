@@ -1,6 +1,6 @@
 {
-  "showTitleScreen": false,
-  "playIntroStory": false,
+  "showTitleScreen": true,
+  "playIntroStory": true,
   "debugEnabled": true,
   "startMode": "CONFIGURED_LOCATION",
   "startLocation": {
@@ -16,6 +16,7 @@
     "rightKey": "RIGHT",
     "aKey": "Z",
     "bKey": "X",
-    "selectKey": "TAB"
+    "selectKey": "TAB",
+    "recordingKey": "F9"
   }
 }

@@ -1,0 +1,21 @@
+# Tarin shield dialogue: carrying, holding B, released.
+- 0 620
+a 8 122
+a 8 122
+a 8 122
+a 8 122
+a 8 122
+a 8 32
+right 8 55
+down 20 1
+right 35 1
+a 8 122
+a 8 122
+a 8 122
+a 8 122
+a 8 122
+a 8 122
+a 8 240
+none 1 0
+b 1 0
+none 1 0

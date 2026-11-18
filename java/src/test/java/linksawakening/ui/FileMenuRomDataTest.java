@@ -1,10 +1,11 @@
 package linksawakening.ui;
 
-import linksawakening.rom.RomBank;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+
+import linksawakening.rom.RomBank;
+import linksawakening.testing.TestRoms;
+import org.junit.jupiter.api.Test;
 
 final class FileMenuRomDataTest {
 
@@ -18,14 +19,13 @@ final class FileMenuRomDataTest {
         writeBytes(rom, 0x01, 0x4BB0, 0x4C, 0x54, 0x5C, 0x64, 0x6C);
         writeBytes(rom, 0x1C, 0x4641, sequence(0x100, 0xA0));
 
-        FileMenuRomData data = new FileMenuRomData(rom);
+        FileMenuRomData data = new FileMenuRomData(TestRoms.partial(rom));
 
-        assertArrayEquals(new int[] { 0x3B, 0x53, 0x6B, 0x83 }, data.selectionCursorYPositions());
+        assertArrayEquals(new int[] {0x3B, 0x53, 0x6B, 0x83}, data.selectionCursorYPositions());
         assertArrayEquals(sequence(0x40, 0x10), data.nameEntryCharacterTable());
         assertArrayEquals(sequence(0x40, 0x20), data.nameCursorYPositions());
         assertArrayEquals(sequence(0x40, 0x60), data.nameCursorXPositions());
-        assertArrayEquals(new int[] { 0x4C, 0x54, 0x5C, 0x64, 0x6C },
-            data.namePositionXPositions());
+        assertArrayEquals(new int[] {0x4C, 0x54, 0x5C, 0x64, 0x6C}, data.namePositionXPositions());
         assertArrayEquals(sequence(0x100, 0xA0), data.codepointToTileMap());
     }
 
@@ -39,7 +39,7 @@ final class FileMenuRomDataTest {
         writeBytes(rom, 0x01, 0x4BB0, 0x4C, 0x54, 0x5C, 0x64, 0x6C);
         writeBytes(rom, 0x1C, 0x4641, sequence(0x100, 0xA0));
 
-        FileMenuRomData data = new FileMenuRomData(rom);
+        FileMenuRomData data = new FileMenuRomData(TestRoms.partial(rom));
         int[] first = data.selectionCursorYPositions();
         int[] second = data.selectionCursorYPositions();
         int[] chars = data.nameEntryCharacterTable();
@@ -50,7 +50,7 @@ final class FileMenuRomDataTest {
 
         assertNotSame(first, second);
         assertNotSame(chars, charsAgain);
-        assertArrayEquals(new int[] { 0x3B, 0x53, 0x6B, 0x83 }, second);
+        assertArrayEquals(new int[] {0x3B, 0x53, 0x6B, 0x83}, second);
         assertArrayEquals(sequence(0x40, 0x10), charsAgain);
     }
 

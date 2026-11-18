@@ -1,46 +1,45 @@
 package linksawakening.ui;
 
+import java.util.Objects;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
 import linksawakening.gpu.Tile;
 
+/** Java tile-plane adapter for InventoryTilemap and file-menu draw-command results. */
 public final class TilemapRenderer {
+    // No attribute plane means palette zero with no flip bits; a supplied empty plane stays invalid.
+    private static final int[] NO_ATTRIBUTES = new int[0];
 
-    private TilemapRenderer() {
-    }
+    private TilemapRenderer() {}
 
     public static void render(
-        byte[] displayBuffer,
-        GPU gpu,
-        int[] tileIds,
-        int[] tileAttrs,
-        int[][] palettes,
-        int tileWidth,
-        int tileHeight,
-        int offsetX,
-        int offsetY
-    ) {
+            byte[] displayBuffer, GPU gpu, int[] tileIds, int[] tileAttrs, int[][] palettes, Region arguments) {
+        tileAttrs = Objects.requireNonNullElse(tileAttrs, NO_ATTRIBUTES);
+        int tileWidth = arguments.tileWidth();
+        int tileHeight = arguments.tileHeight();
+        int offsetX = arguments.offsetX();
+        int offsetY = arguments.offsetY();
+
         for (int y = 0; y < tileHeight; y++) {
             for (int x = 0; x < tileWidth; x++) {
                 int mapIndex = y * tileWidth + x;
                 int tileIndex = resolveSignedBgTileIndex(tileIds[mapIndex] & 0xFF);
-                int attributes = tileAttrs != null ? (tileAttrs[mapIndex] & 0xFF) : 0;
+                int attributes = tileAttrs != NO_ATTRIBUTES ? (tileAttrs[mapIndex] & 0xFF) : 0;
                 int paletteIndex = attributes & 0x07;
                 boolean flipX = (attributes & 0x20) != 0;
                 boolean flipY = (attributes & 0x40) != 0;
 
                 Tile tile = gpu.getTile(tileIndex);
-                if (tile == null) {
-                    continue;
-                }
 
                 int[] palette = palettes[Math.min(paletteIndex, palettes.length - 1)];
 
                 int tileScreenX = x * 8 + offsetX;
                 int tileScreenY = y * 8 + offsetY;
 
-                if (tileScreenX + 8 <= 0 || tileScreenX >= Framebuffer.WIDTH
-                    || tileScreenY + 8 <= 0 || tileScreenY >= Framebuffer.HEIGHT) {
+                if (tileScreenX + 8 <= 0
+                        || tileScreenX >= Framebuffer.WIDTH
+                        || tileScreenY + 8 <= 0
+                        || tileScreenY >= Framebuffer.HEIGHT) {
                     continue;
                 }
 
@@ -58,7 +57,7 @@ public final class TilemapRenderer {
                         int color = palette[tile.getPixel(sourceX, sourceY)];
 
                         int offset = (py * Framebuffer.WIDTH + px) * 4;
-                        displayBuffer[offset]     = (byte) ((color >> 16) & 0xFF);
+                        displayBuffer[offset] = (byte) ((color >> 16) & 0xFF);
                         displayBuffer[offset + 1] = (byte) ((color >> 8) & 0xFF);
                         displayBuffer[offset + 2] = (byte) (color & 0xFF);
                         displayBuffer[offset + 3] = (byte) 0xFF;
@@ -68,7 +67,70 @@ public final class TilemapRenderer {
         }
     }
 
+    public static void submit(
+            linksawakening.render.HardwareFrame frame,
+            GPU gpu,
+            int[] tileIds,
+            int[] attrs,
+            int[][] palettes,
+            Region arguments) {
+        attrs = Objects.requireNonNullElse(attrs, NO_ATTRIBUTES);
+        int width = arguments.tileWidth();
+        int height = arguments.tileHeight();
+        int offsetX = arguments.offsetX();
+        int offsetY = arguments.offsetY();
+
+        for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++) {
+                int at = y * width + x, tile = tileIds[at] & 255;
+                int attr = attrs == NO_ATTRIBUTES ? 0 : attrs[at] & 255;
+                frame.closedHudTile(
+                        gpu.getTile(resolveSignedBgTileIndex(tile)),
+                        tile,
+                        attr,
+                        x * 8 + offsetX,
+                        y * 8 + offsetY,
+                        palettes[Math.min(attr & 7, palettes.length - 1)]);
+            }
+    }
+
     private static int resolveSignedBgTileIndex(int tileId) {
         return tileId < 0x80 ? tileId + 0x100 : tileId;
+    }
+
+    /** Arguments shared by render operations. */
+    public static final class Region {
+        private int tileWidth;
+        private int tileHeight;
+        private int offsetX;
+        private int offsetY;
+
+        public Region(int tileWidth, int tileHeight, int offsetX, int offsetY) {
+            set(tileWidth, tileHeight, offsetX, offsetY);
+        }
+
+        public int tileWidth() {
+            return tileWidth;
+        }
+
+        public int tileHeight() {
+            return tileHeight;
+        }
+
+        public int offsetX() {
+            return offsetX;
+        }
+
+        public int offsetY() {
+            return offsetY;
+        }
+
+        Region set(int tileWidth, int tileHeight, int offsetX, int offsetY) {
+            this.tileWidth = tileWidth;
+            this.tileHeight = tileHeight;
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
+            return this;
+        }
     }
 }

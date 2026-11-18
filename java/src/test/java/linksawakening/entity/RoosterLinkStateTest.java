@@ -1,35 +1,41 @@
 package linksawakening.entity;
 
-import linksawakening.input.InputConfig;
-import linksawakening.input.InputState;
-import linksawakening.state.PlayerState;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.state.Direction;
+import linksawakening.state.PlayerState;
+import linksawakening.testing.TestLinks;
+import org.junit.jupiter.api.Test;
 
 final class RoosterLinkStateTest {
 
     @Test
     void appliesAndClearsTheHandlerOwnedAirborneCarryState() {
-        Link link = new Link(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7),
-            null, null, null, new PlayerState(), new linksawakening.equipment.ItemRegistry());
+        Link link = TestLinks.link()
+                .input(new InputState())
+                .config(new InputConfig(1, 2, 3, 4, 5, 6, 7))
+                .player(new PlayerState())
+                .items(new linksawakening.equipment.ItemRegistry())
+                .build();
 
-        link.applyRoosterFlightState(0x14, 0x00, 0xF8, 0x00, 2);
+        link.actions().applyRoosterFlightState(0x14, 0x00, 0xF8, 0x00, 2);
 
-        assertTrue(link.isRoosterCarryActive());
-        assertTrue(link.isCarryingLiftedObject());
-        assertTrue(link.isAirborne());
-        assertEquals(0x14, link.romEntityZ());
-        assertEquals(0x00, link.zVelocity());
-        assertEquals(Link.DIRECTION_UP, link.direction());
+        assertTrue(link.actions().isRoosterCarryActive());
+        assertTrue(link.actions().isCarryingLiftedObject());
+        assertTrue(link.airborne().isAirborne());
+        assertEquals(0x14, link.animation().romEntityZ());
+        assertEquals(0x00, link.airborne().zVelocity());
+        assertEquals(Direction.UP.javaIndex(), link.animation().direction());
 
-        link.clearRoosterCarryState();
+        link.actions().clearRoosterCarryState();
 
-        assertFalse(link.isRoosterCarryActive());
-        assertFalse(link.isCarryingLiftedObject());
-        assertFalse(link.isAirborne());
-        assertEquals(0x00, link.romEntityZ());
+        assertFalse(link.actions().isRoosterCarryActive());
+        assertFalse(link.actions().isCarryingLiftedObject());
+        assertFalse(link.airborne().isAirborne());
+        assertEquals(0x00, link.animation().romEntityZ());
     }
 }

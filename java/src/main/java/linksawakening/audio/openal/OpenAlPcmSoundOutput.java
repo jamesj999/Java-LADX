@@ -1,33 +1,43 @@
 package linksawakening.audio.openal;
 
-import linksawakening.gameplay.PcmSoundOutput;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.openal.AL;
-import org.lwjgl.openal.AL10;
-import org.lwjgl.openal.ALC;
-import org.lwjgl.openal.ALC10;
-import org.lwjgl.openal.ALCCapabilities;
-import org.lwjgl.system.MemoryUtil;
+import java.util.Objects;
+import java.util.function.IntSupplier;
+import linksawakening.app.debug.DebugLog;
+import linksawakening.audio.music.ReusableFramePcmOutput;
 
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
-
-public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
-
+/** Native PCM output with queue pressure handling and device recovery. */
+public final class OpenAlPcmSoundOutput implements ReusableFramePcmOutput {
     private static final int MAX_BUFFERS = 8;
-
     private final DialogPcmBufferQueue bufferQueue = new DialogPcmBufferQueue(MAX_BUFFERS);
-
+    private final PcmStreamBuffering buffering = new PcmStreamBuffering();
+    private final PcmAlDevice device;
     private boolean available;
     private boolean closed;
     private String statusMessage;
-    private long device;
-    private long context;
-    private int source;
+    private long backpressureCount;
+    private long recoveryCount;
+    private boolean needsRecovery;
+    // Absent until an actual device/playback failure; retained for diagnostics, never a service.
+    private Throwable lastFailure;
+    private final DialogPcmBufferQueue allocatedBuffers = new DialogPcmBufferQueue(MAX_BUFFERS);
 
     public OpenAlPcmSoundOutput() {
-        initializeOpenAl();
+        PcmAlDevice selected;
+        try {
+            selected = new NativePcmAlDevice();
+            available = true;
+            statusMessage = "OpenAL PCM output ready";
+        } catch (RuntimeException | LinkageError failure) {
+            selected = UnavailablePcmAlDevice.INSTANCE;
+            statusMessage = "OpenAL PCM output unavailable: " + conciseMessage(failure);
+        }
+        device = Objects.requireNonNull(selected, "device");
+    }
+
+    OpenAlPcmSoundOutput(PcmAlDevice device) {
+        this.device = Objects.requireNonNull(device);
+        available = true;
+        statusMessage = "OpenAL PCM output ready";
     }
 
     public boolean isAvailable() {
@@ -38,166 +48,199 @@ public final class OpenAlPcmSoundOutput implements PcmSoundOutput {
         return statusMessage;
     }
 
-    @Override
-    public void play(short[] stereoPcm, int sampleRate) {
-        play(stereoPcm, sampleRate, false);
+    public long underrunCount() {
+        return buffering.underrunCount();
+    }
+
+    public long backpressureCount() {
+        return backpressureCount;
+    }
+
+    public long recoveryCount() {
+        return recoveryCount;
+    }
+
+    public boolean hasFailure() {
+        return lastFailure != null;
+    }
+
+    public Throwable lastFailure() {
+        return lastFailure;
+    }
+
+    /** Diagnostic queries must not hide the original playback failure with a second AL error. */
+    public String diagnostics() {
+        return String.format(
+                "status=%s available=%s underruns=%d backpressure=%d recoveries=%d state=%04X queued=%d processed=%d trackedFrames=%d interrupted=%s lastFailure=%s",
+                statusMessage,
+                isAvailable(),
+                underrunCount(),
+                backpressureCount(),
+                recoveryCount,
+                querySafely(() -> device.state()),
+                querySafely(() -> device.queued()),
+                querySafely(() -> device.processed()),
+                bufferQueue.queuedFrames(),
+                Thread.currentThread().isInterrupted(),
+                !hasFailure() ? "none" : conciseMessage(lastFailure));
     }
 
     @Override
-    public void playReplacing(short[] stereoPcm, int sampleRate) {
-        play(stereoPcm, sampleRate, true);
+    public void play(short[] pcm, int rate) {
+        play(pcm, rate, false, false);
     }
 
-    private void play(short[] stereoPcm, int sampleRate, boolean replaceQueuedPlayback) {
-        if (!isAvailable() || stereoPcm == null || stereoPcm.length == 0 || sampleRate <= 0) {
-            return;
-        }
-        PendingOpenAlBuffer pendingBuffer = null;
-        try {
-            ALC10.alcMakeContextCurrent(context);
-            if (replaceQueuedPlayback) {
-                clearQueuedBuffers();
-            } else {
-                unqueueProcessedBuffers();
-                dropOldestBuffersBeforeQueueing();
-            }
+    @Override
+    public void playReplacing(short[] pcm, int rate) {
+        play(pcm, rate, true, false);
+    }
 
-            pendingBuffer = new PendingOpenAlBuffer(AL10.alGenBuffers());
-            checkAlError("create dialog buffer");
-            ShortBuffer pcmBuffer = BufferUtils.createShortBuffer(stereoPcm.length);
-            pcmBuffer.put(stereoPcm).flip();
-            AL10.alBufferData(pendingBuffer.id(), AL10.AL_FORMAT_STEREO16, pcmBuffer, sampleRate);
-            checkAlError("fill dialog buffer");
-            AL10.alSourceQueueBuffers(source, pendingBuffer.id());
-            checkAlError("queue dialog buffer");
-            bufferQueue.trackQueued(pendingBuffer.id());
-            pendingBuffer.markTracked();
-
-            if (AL10.alGetSourcei(source, AL10.AL_SOURCE_STATE) != AL10.AL_PLAYING) {
-                AL10.alSourcePlay(source);
-                checkAlError("play dialog source");
-            }
-        } catch (RuntimeException | LinkageError e) {
-            deletePendingBuffer(pendingBuffer);
-            available = false;
-            statusMessage = "OpenAL dialog output unavailable: " + conciseMessage(e);
-        }
+    @Override
+    public void playFrame(short[] pcm, int rate) {
+        play(pcm, rate, false, true);
     }
 
     @Override
     public void close() {
-        if (closed) {
-            return;
-        }
+        if (closed) return;
         closed = true;
-        releaseNativeResources();
         available = false;
+        try {
+            device.makeCurrent();
+            resetQueue();
+        } catch (RuntimeException | LinkageError failure) {
+            DebugLog.warning("PCM cleanup: " + conciseMessage(failure));
+        } finally {
+            try {
+                device.close();
+            } catch (RuntimeException | LinkageError failure) {
+                DebugLog.warning("PCM device cleanup: " + conciseMessage(failure));
+            }
+            allocatedBuffers.clear();
+        }
     }
 
-    private void initializeOpenAl() {
+    int sourceState() {
+        return device.state();
+    }
+
+    private int querySafely(IntSupplier query) {
+        if (closed) return -1;
         try {
-            device = ALC10.alcOpenDevice((ByteBuffer) null);
-            if (device == MemoryUtil.NULL) {
-                throw new IllegalStateException("could not open device");
-            }
-
-            ALCCapabilities deviceCapabilities = ALC.createCapabilities(device);
-            context = ALC10.alcCreateContext(device, (IntBuffer) null);
-            if (context == MemoryUtil.NULL) {
-                throw new IllegalStateException("could not create context");
-            }
-            if (!ALC10.alcMakeContextCurrent(context)) {
-                throw new IllegalStateException("could not make context current");
-            }
-            AL.createCapabilities(deviceCapabilities);
-
-            source = AL10.alGenSources();
-            checkAlError("create dialog source");
-            AL10.alSourcef(source, AL10.AL_GAIN, 1.0f);
-            checkAlError("configure dialog source");
-            available = true;
-            statusMessage = "OpenAL dialog output ready";
-        } catch (RuntimeException | LinkageError e) {
-            available = false;
-            statusMessage = "OpenAL dialog output unavailable: " + conciseMessage(e);
-            releaseNativeResources();
+            return query.getAsInt();
+        } catch (RuntimeException | LinkageError ignored) {
+            return -1;
         }
+    }
+
+    private void play(short[] pcm, int rate, boolean replace, boolean streaming) {
+        if (!isAvailable() || pcm == null || pcm.length == 0 || rate <= 0) return;
+        if (needsRecovery && !tryRecover()) return;
+        try {
+            device.makeCurrent();
+            if (!device.connected()) {
+                deviceLost();
+                return;
+            }
+            if (replace) resetQueue();
+            else {
+                if (streaming) buffering.observePlaying(device.state() == PcmAlDevice.PLAYING);
+                else buffering.reset();
+                unqueueProcessedBuffers();
+                // A STOPPED source reports even newly queued buffers as processed.
+                // Rewind to INITIAL so the prefill can accumulate without being discarded.
+                if (streaming && device.state() == PcmAlDevice.STOPPED) device.rewind();
+                if (bufferQueue.isFull()) {
+                    backpressureCount++;
+                    // A burst/full queue is an exceptional transport resync. Do not wait
+                    // on the render thread or turn a thread interrupt into permanent silence.
+                    resetQueue();
+                    statusMessage = "OpenAL PCM rebuffering after queue pressure";
+                }
+            }
+            int buffer = device.createBuffer(pcm, rate);
+            allocatedBuffers.trackQueued(buffer); // Retain ownership even if queue() fails after submission.
+            device.queue(buffer);
+            bufferQueue.trackQueued(buffer, pcm.length / 2);
+            int state = device.state();
+            if (streaming && state == PcmAlDevice.STOPPED) {
+                // The device can drain between the state query and queue operation.
+                buffering.observePlaying(false);
+                device.rewind();
+                state = PcmAlDevice.INITIAL;
+            }
+            if (state != PcmAlDevice.PLAYING && (!streaming || buffering.ready(bufferQueue.queuedFrames(), rate))) {
+                device.play();
+                if (streaming) buffering.started();
+                statusMessage = "OpenAL PCM output playing";
+            }
+        } catch (RuntimeException | LinkageError failure) {
+            playbackFailure(failure);
+        }
+    }
+
+    private void playbackFailure(Throwable failure) {
+        lastFailure = failure;
+        recoveryCount++;
+        needsRecovery = true;
+        statusMessage = "OpenAL PCM recovering: " + conciseMessage(failure);
+        DebugLog.warning("PCM recovery: " + diagnostics());
+        DebugLog.failure("PCM failure", failure);
+        tryRecover();
+    }
+
+    private boolean tryRecover() {
+        try {
+            if (!device.connected()) {
+                deviceLost();
+                return false;
+            }
+            device.makeCurrent();
+            resetQueue();
+            needsRecovery = false;
+            statusMessage = "OpenAL PCM rebuffering after recovery";
+            return true;
+        } catch (RuntimeException | LinkageError retryFailure) {
+            // Keep retrying on subsequent frames. A failed AL call is not evidence
+            // that the physical device was disconnected.
+            statusMessage = "OpenAL PCM recovery pending: " + conciseMessage(retryFailure);
+            return false;
+        }
+    }
+
+    private void deviceLost() {
+        available = false;
+        statusMessage = "OpenAL PCM device disconnected";
+        DebugLog.warning(diagnostics());
     }
 
     private void unqueueProcessedBuffers() {
-        int processed = AL10.alGetSourcei(source, AL10.AL_BUFFERS_PROCESSED);
+        int processed = device.processed();
         for (int i = 0; i < processed; i++) {
-            int buffer = AL10.alSourceUnqueueBuffers(source);
+            int buffer = device.unqueue();
             bufferQueue.markDeleted(buffer);
-            AL10.alDeleteBuffers(buffer);
-        }
-        checkAlError("unqueue dialog buffers");
-    }
-
-    private void dropOldestBuffersBeforeQueueing() {
-        for (int ignored : bufferQueue.buffersToDropBeforeQueueing()) {
-            clearQueuedBuffers();
-            break;
-        }
-        checkAlError("drop old dialog buffers");
-    }
-
-    private void clearQueuedBuffers() {
-        AL10.alSourceStop(source);
-        while (AL10.alGetSourcei(source, AL10.AL_BUFFERS_QUEUED) > 0) {
-            int buffer = AL10.alSourceUnqueueBuffers(source);
-            AL10.alDeleteBuffers(buffer);
-            bufferQueue.markDeleted(buffer);
-        }
-        checkAlError("clear dialog buffers");
-    }
-
-    private void releaseNativeResources() {
-        try {
-            if (context != MemoryUtil.NULL) {
-                ALC10.alcMakeContextCurrent(context);
-            }
-            if (source != 0) {
-                clearQueuedBuffers();
-                for (int buffer : bufferQueue.buffersToDeleteOnClose()) {
-                    AL10.alDeleteBuffers(buffer);
-                }
-                AL10.alDeleteSources(source);
-                source = 0;
-            }
-        } catch (RuntimeException | LinkageError ignored) {
-            bufferQueue.buffersToDeleteOnClose();
-        } finally {
-            if (context != MemoryUtil.NULL) {
-                ALC10.alcDestroyContext(context);
-                context = MemoryUtil.NULL;
-            }
-            if (device != MemoryUtil.NULL) {
-                ALC10.alcCloseDevice(device);
-                device = MemoryUtil.NULL;
-            }
+            device.deleteBuffer(buffer);
+            allocatedBuffers.markDeleted(buffer);
         }
     }
 
-    private void deletePendingBuffer(PendingOpenAlBuffer pendingBuffer) {
-        if (pendingBuffer == null) {
-            return;
+    private void resetQueue() {
+        // Deleting/recreating the source detaches buffers even in AL_INITIAL,
+        // where alSourceStop is a no-op and unqueueing pending buffers is illegal.
+        device.resetSource();
+        for (int buffer : allocatedBuffers.liveBuffers()) {
+            device.deleteBuffer(buffer);
+            allocatedBuffers.markDeleted(buffer);
         }
-        int buffer = pendingBuffer.releaseUntracked();
-        if (buffer != 0) {
-            AL10.alDeleteBuffers(buffer);
-        }
+        allocatedBuffers.clear();
+        bufferQueue.clear();
+        buffering.reset();
     }
 
-    private static void checkAlError(String operation) {
-        int error = AL10.alGetError();
-        if (error != AL10.AL_NO_ERROR) {
-            throw new IllegalStateException(operation + " failed with OpenAL error 0x" + Integer.toHexString(error));
-        }
-    }
-
-    private static String conciseMessage(Throwable throwable) {
-        String message = throwable.getMessage();
-        return message == null || message.isBlank() ? throwable.getClass().getSimpleName() : message;
+    private static String conciseMessage(Throwable failure) {
+        String message = failure.getMessage();
+        return Objects.requireNonNullElse(message, "").isBlank()
+                ? failure.getClass().getSimpleName()
+                : message;
     }
 }

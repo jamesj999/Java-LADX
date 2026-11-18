@@ -1,16 +1,28 @@
 package linksawakening.save;
 
-import linksawakening.state.PlayerState;
-
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
+import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
+import linksawakening.app.debug.DebugLog;
+import linksawakening.state.FollowerFlags;
+import linksawakening.state.PlayerState;
 
 /** Host persistence adapter for the source-shaped SRAM image. */
 public final class SaveRamStore {
 
+    // A missing destination denotes an explicitly in-memory save image (see inMemory()).
     private final Path path;
+    // No backup path until an existing corrupt image is moved aside during open().
+    private Path corruptBackup;
     private final SaveRamImage image;
 
     private SaveRamStore(Path path, SaveRamImage image) {
@@ -19,22 +31,46 @@ public final class SaveRamStore {
     }
 
     public static SaveRamStore open(Path path) throws IOException {
+        return open(path, Files::readAllBytes);
+    }
+
+    static SaveRamStore open(Path path, ImageReader reader) throws IOException {
         Objects.requireNonNull(path, "path");
-        SaveRamImage image;
-        if (!Files.exists(path)) {
-            image = SaveRamImage.empty();
-        } else {
-            byte[] bytes = Files.readAllBytes(path);
-            image = bytes.length == SaveRamLayout.IMAGE_SIZE
-                ? SaveRamImage.fromBytes(bytes)
-                : SaveRamImage.empty();
-            image.initializeInvalidSlots();
+        byte[] bytes;
+        try {
+            bytes = reader.read(path);
+        } catch (NoSuchFileException missing) {
+            return new SaveRamStore(path, SaveRamImage.empty());
         }
-        return new SaveRamStore(path, image);
+        SaveRamImage image;
+        Path backup = null;
+        if (bytes.length == SaveRamLayout.IMAGE_SIZE) {
+            image = SaveRamImage.fromBytes(bytes);
+        } else {
+            String timestamp = Instant.now().toString().replace(':', '-');
+            backup = path.resolveSibling(path.getFileName() + ".corrupt-" + timestamp);
+            Files.copy(path, backup);
+            DebugLog.warning("Wrong-sized save preserved at " + backup);
+            image = SaveRamImage.empty();
+        }
+        image.initializeInvalidSlots();
+        SaveRamStore store = new SaveRamStore(path, image);
+        store.corruptBackup = backup;
+        return store;
     }
 
     public static SaveRamStore inMemory() {
         return new SaveRamStore(null, SaveRamImage.empty());
+    }
+
+    /** Snapshot with no host file attached, for gameplay recovery without saving. */
+    public SaveRamStore detachedCopy() {
+        return new SaveRamStore(null, image());
+    }
+
+    /** Original wrong-sized image preserved during open, when present. */
+    public Optional<Path> corruptBackup() {
+        return Optional.ofNullable(corruptBackup);
     }
 
     public static Path defaultPath() {
@@ -77,20 +113,26 @@ public final class SaveRamStore {
         image.writeOcarinaState(slot, songFlags, selectedSongIndex);
     }
 
-    public void writeRoomStatuses(int slot, byte[] overworldRoomStatus,
-                                  byte[] indoorARoomStatus, byte[] indoorBRoomStatus,
-                                  byte[] colorDungeonRoomStatus) {
-        image.writeRoomStatuses(slot, overworldRoomStatus, indoorARoomStatus,
-            indoorBRoomStatus, colorDungeonRoomStatus);
+    public void writeRoomStatuses(
+            int slot,
+            byte[] overworldRoomStatus,
+            byte[] indoorARoomStatus,
+            byte[] indoorBRoomStatus,
+            byte[] colorDungeonRoomStatus) {
+        image.writeRoomStatuses(
+                slot, overworldRoomStatus, indoorARoomStatus, indoorBRoomStatus, colorDungeonRoomStatus);
     }
 
-    public void writeDungeonItemFlags(int slot, byte[] dungeonItemFlags,
-                                      byte[] colorDungeonItemFlags) {
+    public void writeDungeonItemFlags(int slot, byte[] dungeonItemFlags, byte[] colorDungeonItemFlags) {
         image.writeDungeonItemFlags(slot, dungeonItemFlags, colorDungeonItemFlags);
     }
 
     public void writeDungeonProgressFlags(int slot, byte[] dungeonProgressFlags) {
         image.writeDungeonProgressFlags(slot, dungeonProgressFlags);
+    }
+
+    public void writeFollowers(int slot, FollowerFlags state) {
+        image.writeFollowers(slot, state);
     }
 
     public void writeBowWowState(int slot, int state) {
@@ -101,25 +143,71 @@ public final class SaveRamStore {
         image.writeTarinFlag(slot, flag);
     }
 
-    public void writeSpawnLocation(int slot, int isIndoor, int mapId, int mapRoom,
-                                   int positionX, int positionY, int indoorRoom) {
-        image.writeSpawnLocation(slot, isIndoor, mapId, mapRoom,
-            positionX, positionY, indoorRoom);
+    public void writeRichardSpokenFlag(int slot, int flag) {
+        image.writeRichardSpokenFlag(slot, flag);
+    }
+
+    public void writeWorldMapRoom(int slot, int room) {
+        image.writeWorldMapRoom(slot, room);
+    }
+
+    public void writeSpawnLocation(
+            int slot, int isIndoor, int mapId, int mapRoom, int positionX, int positionY, int indoorRoom) {
+        image.writeSpawnLocation(slot, isIndoor, mapId, mapRoom, positionX, positionY, indoorRoom);
     }
 
     public void writePlayerState(int slot, PlayerState playerState) {
         image.writePlayerState(slot, playerState);
     }
 
+    /** Whether this image has a disk destination; in-memory saves never touch the filesystem. */
+    public boolean persistent() {
+        return path != null;
+    }
+
     public void flush() throws IOException {
-        if (path == null) {
+        if (!persistent()) {
             return;
         }
         Path absolutePath = path.toAbsolutePath();
+        // Retain the former Files.write behavior for save paths linked elsewhere.
+        if (Files.isSymbolicLink(absolutePath)) {
+            absolutePath = absolutePath.toRealPath();
+        }
         Path parent = absolutePath.getParent();
         if (parent != null) {
             Files.createDirectories(parent);
         }
-        Files.write(path, image.bytes());
+        // Write a complete sibling image before replacing the old directory entry.
+        // A failed write or move leaves the previous save intact.
+        Path temporary = Files.createTempFile(parent, ".azle-save-", ".tmp");
+        try {
+            try (FileChannel channel = FileChannel.open(temporary, StandardOpenOption.WRITE)) {
+                ByteBuffer data = ByteBuffer.wrap(image.bytes());
+                while (data.hasRemaining()) {
+                    channel.write(data);
+                }
+                channel.force(true);
+            }
+            try {
+                Files.move(
+                        temporary, absolutePath, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException unsupported) {
+                Files.move(temporary, absolutePath, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException | RuntimeException | Error failure) {
+            try {
+                Files.deleteIfExists(temporary);
+            } catch (IOException cleanup) {
+                failure.addSuppressed(cleanup);
+            }
+            throw failure;
+        }
+        Files.deleteIfExists(temporary);
+    }
+
+    @FunctionalInterface
+    interface ImageReader {
+        byte[] read(Path path) throws IOException;
     }
 }

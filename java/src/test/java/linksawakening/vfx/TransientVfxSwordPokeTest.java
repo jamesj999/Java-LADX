@@ -1,15 +1,17 @@
 package linksawakening.vfx;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import linksawakening.rom.Rom;
+import org.junit.jupiter.api.Test;
+
+@linksawakening.testing.RequiresRom
 final class TransientVfxSwordPokeTest {
 
     @Test
     void decodesBothRomSwordPokePhasesAndOamOffsets() {
-        TransientVfxSpriteSheet sheet = TransientVfxSpriteSheet.loadFromRom(loadRom());
+        TransientVfxSpriteSheet sheet = TransientVfxSpriteSheet.loadFromRom(Rom.of(loadRom()));
         CutLeavesEffectRenderer renderer = new CutLeavesEffectRenderer(sheet);
 
         var tilePhase = renderer.renderSwordPoke(0x40, 0x50, 0x07);
@@ -34,7 +36,7 @@ final class TransientVfxSwordPokeTest {
 
     @Test
     void decodesTheRomSmokePhasesAndOamOffsets() {
-        TransientVfxSpriteSheet sheet = TransientVfxSpriteSheet.loadFromRom(loadRom());
+        TransientVfxSpriteSheet sheet = TransientVfxSpriteSheet.loadFromRom(Rom.of(loadRom()));
         CutLeavesEffectRenderer renderer = new CutLeavesEffectRenderer(sheet);
 
         var first = renderer.renderSmoke(0x40, 0x50, 0x07);
@@ -53,8 +55,7 @@ final class TransientVfxSwordPokeTest {
     }
 
     private static byte[] loadRom() {
-        try (var stream = TransientVfxSwordPokeTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

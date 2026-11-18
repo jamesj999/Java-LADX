@@ -1,24 +1,36 @@
 package linksawakening.entity;
 
+import static linksawakening.world.entity.EntityRoomLoader.RoomTable.COLOR_DUNGEON;
+import static linksawakening.world.entity.EntityRoomLoader.RoomTable.INDOORS_A;
+import static linksawakening.world.entity.EntityRoomLoader.RoomTable.INDOORS_B;
+import static linksawakening.world.entity.EntityRoomLoader.RoomTable.OVERWORLD;
+
+import java.util.Objects;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
-import linksawakening.world.EntityRoomLoader;
-import linksawakening.world.RoomPaletteLoader;
+import linksawakening.rom.RomSymbols;
+import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.room.RoomPaletteLoader;
 
 /** Reads room sprite groups, sheet selectors, and object palettes from the ROM. */
 public final class EntitySpriteCatalog {
+    private static final byte[] NO_ROOM_STATUS = new byte[0];
 
     public static final int ENTITY_SHEET_SLOT_COUNT = 4;
     public static final int OBJECT_PALETTE_COUNT = 6;
     public static final int EAGLES_TOWER_OBJECT_PALETTE_COUNT = 7;
 
-    private static final int DATA_BANK = 0x20;
-    private static final int OVERWORLD_GROUP_ADDRESS = 0x70D3;
-    private static final int INDOORS_A_GROUP_ADDRESS = 0x71D3;
-    private static final int INDOORS_B_GROUP_ADDRESS = 0x72D3;
-    private static final int OVERWORLD_SHEETS_ADDRESS = 0x73F3;
-    private static final int INDOOR_SHEETS_ADDRESS = 0x763B;
-    private static final int PALETTE_BANK = 0x21;
-    private static final int OBJECT_PALETTES_ADDRESS = 0x5518;
+    private static final int DATA_BANK = RomSymbols.RoomSpritesheetGroupsTable.bank();
+    private static final int OVERWORLD_GROUP_ADDRESS = RomSymbols.RoomSpritesheetGroupsTable.address();
+    private static final int INDOORS_A_GROUP_ADDRESS =
+            RomSymbols.RoomSpritesheetGroupsTable.plus(0x100).address();
+    private static final int INDOORS_B_GROUP_ADDRESS =
+            RomSymbols.RoomSpritesheetGroupsTable.plus(0x200).address();
+    private static final int OVERWORLD_SHEETS_ADDRESS = RomSymbols.OverworldEntitySpritesheetsTable.address();
+    private static final int INDOOR_SHEETS_ADDRESS = RomSymbols.IndoorEntitySpritesheetsTable.address();
+    private static final int PALETTE_BANK = RomSymbols.ObjectPalettes.bank();
+    private static final int OBJECT_PALETTES_ADDRESS = RomSymbols.ObjectPalettes.address();
 
     private static final int MAP_HOUSE = 0x10;
     private static final int ROOM_INDOOR_B_CAMERA_SHOP = 0xB5;
@@ -26,11 +38,11 @@ public final class EntitySpriteCatalog {
     private static final int ROOM_OW_WALRUS = 0xFD;
     private static final int OW_ROOM_STATUS_OWL_TALKED = 0x20;
 
-    private final byte[] romData;
+    private final Rom romData;
     private final EntitySpriteHandlerCatalog entitySpriteHandlerCatalog;
     private final RoomPaletteLoader roomPaletteLoader;
 
-    public EntitySpriteCatalog(byte[] romData) {
+    public EntitySpriteCatalog(Rom romData) {
         if (romData == null) {
             throw new IllegalArgumentException("ROM data cannot be null");
         }
@@ -46,30 +58,41 @@ public final class EntitySpriteCatalog {
     /**
      * Loads the sprite selection using the same room context as the game's
      * OAM-loader path. The status array is the WRAM
-     * {@code wOverworldRoomStatus} table; it is only consulted for overworld
+     * overworld room-status table; it is only consulted for overworld
      * Siren and Walrus group overrides.
      */
-    public EntitySpriteSelection load(EntityRoomLoader.RoomTable roomTable, int roomId,
-                                      int mapId, byte[] overworldRoomStatus) {
+    public EntitySpriteSelection load(
+            EntityRoomLoader.RoomTable roomTable, int roomId, int mapId, byte[] overworldRoomStatus) {
         return load(roomTable, roomId, mapId, overworldRoomStatus, false);
     }
 
-    public EntitySpriteSelection load(EntityRoomLoader.RoomTable roomTable, int roomId,
-                                      int mapId, byte[] overworldRoomStatus,
-                                      boolean sideScrolling) {
+    public EntitySpriteSelection load(
+            EntityRoomLoader.RoomTable roomTable,
+            int roomId,
+            int mapId,
+            byte[] overworldRoomStatus,
+            boolean sideScrolling) {
         return load(roomTable, roomId, mapId, overworldRoomStatus, sideScrolling, 0);
     }
 
-    public EntitySpriteSelection load(EntityRoomLoader.RoomTable roomTable, int roomId,
-                                      int mapId, byte[] overworldRoomStatus,
-                                      boolean sideScrolling, int tarinFlag) {
-        return load(roomTable, roomId, mapId, overworldRoomStatus,
-            sideScrolling, tarinFlag, 0);
+    public EntitySpriteSelection load(
+            EntityRoomLoader.RoomTable roomTable,
+            int roomId,
+            int mapId,
+            byte[] overworldRoomStatus,
+            boolean sideScrolling,
+            int tarinFlag) {
+        return load(roomTable, roomId, mapId, overworldRoomStatus, sideScrolling, tarinFlag, 0);
     }
 
-    public EntitySpriteSelection load(EntityRoomLoader.RoomTable roomTable, int roomId,
-                                      int mapId, byte[] overworldRoomStatus,
-                                      boolean sideScrolling, int tarinFlag, int shieldLevel) {
+    public EntitySpriteSelection load(
+            EntityRoomLoader.RoomTable roomTable,
+            int roomId,
+            int mapId,
+            byte[] overworldRoomStatus,
+            boolean sideScrolling,
+            int tarinFlag,
+            int shieldLevel) {
         if (roomTable == null) {
             throw new IllegalArgumentException("Room entity table cannot be null");
         }
@@ -79,64 +102,82 @@ public final class EntitySpriteCatalog {
         if (mapId < -1 || mapId > 0xFF) {
             throw new IllegalArgumentException("Map id out of range: " + mapId);
         }
-        if (overworldRoomStatus != null && overworldRoomStatus.length > 0x100) {
+        overworldRoomStatus = Objects.requireNonNullElse(overworldRoomStatus, NO_ROOM_STATUS);
+        if (overworldRoomStatus.length > 0x100) {
             throw new IllegalArgumentException("Overworld room status table is too large");
         }
 
-        int groupAddress = switch (roomTable) {
-            case OVERWORLD, COLOR_DUNGEON -> OVERWORLD_GROUP_ADDRESS;
-            case INDOORS_A -> INDOORS_A_GROUP_ADDRESS;
-            case INDOORS_B -> INDOORS_B_GROUP_ADDRESS;
-        };
-        int groupOffset = checkedOffset(DATA_BANK, groupAddress + roomId, 1,
-            "room spritesheet group");
-        int groupIndex = Byte.toUnsignedInt(romData[groupOffset]);
-        groupIndex = applyRoomContextOverride(roomTable, roomId, groupIndex, mapId,
-            overworldRoomStatus);
-        int[][] palettes = switch (roomTable) {
-            case OVERWORLD -> roomPaletteLoader.loadOverworldObjectPalettes(roomId);
-            case COLOR_DUNGEON -> roomPaletteLoader.loadIndoorObjectPalettes(0xFF, roomId);
-            case INDOORS_A, INDOORS_B -> mapId < 0 ? loadObjectPalettes()
-                : roomPaletteLoader.loadIndoorObjectPalettes(
-                    mapId, roomId, sideScrolling, tarinFlag, shieldLevel);
-        };
+        int groupAddress =
+                switch (roomTable) {
+                    case OVERWORLD, COLOR_DUNGEON -> OVERWORLD_GROUP_ADDRESS;
+                    case INDOORS_A -> INDOORS_A_GROUP_ADDRESS;
+                    case INDOORS_B -> INDOORS_B_GROUP_ADDRESS;
+                };
+        int groupOffset = checkedOffset(DATA_BANK, groupAddress + roomId, 1, "room spritesheet group");
+        int groupIndex = romData.u8(RomAddress.fromOffset(groupOffset));
+        groupIndex = applyRoomContextOverride(roomTable, roomId, groupIndex, mapId, overworldRoomStatus);
+        int[][] palettes =
+                switch (roomTable) {
+                    case OVERWORLD -> roomPaletteLoader.loadOverworldObjectPalettes(roomId);
+                    case COLOR_DUNGEON -> roomPaletteLoader.loadIndoorObjectPalettes(0xFF, roomId);
+                    case INDOORS_A, INDOORS_B -> mapId < 0
+                            ? loadObjectPalettes()
+                            : roomPaletteLoader.loadIndoorObjectPalettes(
+                                    mapId, roomId, sideScrolling, tarinFlag, shieldLevel);
+                };
         EntitySpriteDefinition death = entitySpriteHandlerCatalog.forDeathEntity();
-        EntitySpriteDefinition powerDeath =
-            entitySpriteHandlerCatalog.forPowerRecoilDeathEntity();
+        EntitySpriteDefinition powerDeath = entitySpriteHandlerCatalog.forPowerRecoilDeathEntity();
 
         // Color Dungeon NPC tiles are loaded by LoadColorDungeonTiles through
         // four entity-specific tables, not through the standard group tables.
         if (roomTable == EntityRoomLoader.RoomTable.COLOR_DUNGEON) {
-            return new EntitySpriteSelection(roomTable, roomId, groupIndex,
-                new int[0], false, palettes)
-                // The bank-$06 $86 branch is deferred, but $E5 still uses
-                // the ordinary handler and therefore keeps its rectangle.
-                .withSpriteOverlay(0xE5, entitySpriteHandlerCatalog.forFloatingItemOverlay())
-                .withBurningSpriteDefinition(entitySpriteHandlerCatalog.forBurningEntity())
-                .withDeathSpriteDefinitions(death, powerDeath);
+            return new EntitySpriteSelection(roomTable, roomId, groupIndex, new int[0], false, palettes)
+                    // The bank-$06 $86 branch is deferred, but $E5 still uses
+                    // the ordinary handler and therefore keeps its rectangle.
+                    .withSpriteOverlay(0xE5, entitySpriteHandlerCatalog.forFloatingItemOverlay())
+                    .withBurningSpriteDefinition(entitySpriteHandlerCatalog.forBurningEntity())
+                    .withDeathSpriteDefinitions(death, powerDeath);
         }
 
-        int tableAddress = roomTable == EntityRoomLoader.RoomTable.OVERWORLD
-            ? OVERWORLD_SHEETS_ADDRESS
-            : INDOOR_SHEETS_ADDRESS;
-        int sheetOffset = checkedOffset(DATA_BANK, tableAddress + groupIndex * ENTITY_SHEET_SLOT_COUNT,
-            ENTITY_SHEET_SLOT_COUNT, "entity spritesheet table");
+        int tableAddress =
+                roomTable == EntityRoomLoader.RoomTable.OVERWORLD ? OVERWORLD_SHEETS_ADDRESS : INDOOR_SHEETS_ADDRESS;
+        int sheetOffset = checkedOffset(
+                DATA_BANK,
+                tableAddress + groupIndex * ENTITY_SHEET_SLOT_COUNT,
+                ENTITY_SHEET_SLOT_COUNT,
+                "entity spritesheet table");
         int[] sheetValues = new int[ENTITY_SHEET_SLOT_COUNT];
         for (int slot = 0; slot < ENTITY_SHEET_SLOT_COUNT; slot++) {
-            sheetValues[slot] = Byte.toUnsignedInt(romData[sheetOffset + slot]);
+            sheetValues[slot] = romData.u8(RomAddress.fromOffset(sheetOffset + slot));
         }
         EntitySpriteDefinition floatingOverlay = entitySpriteHandlerCatalog.forFloatingItemOverlay();
-        return new EntitySpriteSelection(roomTable, roomId, groupIndex, sheetValues,
-            true, palettes)
-            .withSpriteOverlay(0x86, floatingOverlay)
-            .withSpriteOverlay(0xE5, floatingOverlay)
-            .withBurningSpriteDefinition(entitySpriteHandlerCatalog.forBurningEntity())
-            .withDeathSpriteDefinitions(death, powerDeath);
+        return new EntitySpriteSelection(roomTable, roomId, groupIndex, sheetValues, true, palettes)
+                .withSpriteOverlay(0x86, floatingOverlay)
+                .withSpriteOverlay(0xE5, floatingOverlay)
+                .withBurningSpriteDefinition(entitySpriteHandlerCatalog.forBurningEntity())
+                .withDeathSpriteDefinitions(death, powerDeath);
     }
 
-    private static int applyRoomContextOverride(EntityRoomLoader.RoomTable roomTable, int roomId,
-                                                int groupIndex, int mapId,
-                                                byte[] overworldRoomStatus) {
+    public int[][] loadObjectPalettes() {
+        return loadObjectPalettes(false);
+    }
+
+    public int[][] loadObjectPalettes(boolean includeEaglesTowerPalette) {
+        int paletteCount = includeEaglesTowerPalette ? EAGLES_TOWER_OBJECT_PALETTE_COUNT : OBJECT_PALETTE_COUNT;
+        int[][] palettes = new int[paletteCount][4];
+        int offset = checkedOffset(PALETTE_BANK, OBJECT_PALETTES_ADDRESS, paletteCount * 4 * 2, "object palette table");
+        for (int palette = 0; palette < paletteCount; palette++) {
+            for (int color = 0; color < 4; color++) {
+                int low = romData.u8(RomAddress.fromOffset(offset++));
+                int high = romData.u8(RomAddress.fromOffset(offset++));
+                palettes[palette][color] = RomBank.decodeRgb555(low | (high << 8));
+            }
+        }
+        return palettes;
+    }
+
+    private static int applyRoomContextOverride(
+            EntityRoomLoader.RoomTable roomTable, int roomId, int groupIndex, int mapId, byte[] overworldRoomStatus) {
         if (roomTable != EntityRoomLoader.RoomTable.OVERWORLD) {
             if (mapId == MAP_HOUSE && roomId == ROOM_INDOOR_B_CAMERA_SHOP) {
                 return 0x3D;
@@ -154,30 +195,8 @@ public final class EntitySpriteCatalog {
     }
 
     private static boolean roomStatus(byte[] overworldRoomStatus, int roomId) {
-        return overworldRoomStatus != null
-            && roomId < overworldRoomStatus.length
-            && (Byte.toUnsignedInt(overworldRoomStatus[roomId]) & OW_ROOM_STATUS_OWL_TALKED) != 0;
-    }
-
-    public int[][] loadObjectPalettes() {
-        return loadObjectPalettes(false);
-    }
-
-    public int[][] loadObjectPalettes(boolean includeEaglesTowerPalette) {
-        int paletteCount = includeEaglesTowerPalette
-            ? EAGLES_TOWER_OBJECT_PALETTE_COUNT
-            : OBJECT_PALETTE_COUNT;
-        int[][] palettes = new int[paletteCount][4];
-        int offset = checkedOffset(PALETTE_BANK, OBJECT_PALETTES_ADDRESS,
-            paletteCount * 4 * 2, "object palette table");
-        for (int palette = 0; palette < paletteCount; palette++) {
-            for (int color = 0; color < 4; color++) {
-                int low = Byte.toUnsignedInt(romData[offset++]);
-                int high = Byte.toUnsignedInt(romData[offset++]);
-                palettes[palette][color] = RomBank.decodeRgb555(low | (high << 8));
-            }
-        }
-        return palettes;
+        return roomId < overworldRoomStatus.length
+                && (Byte.toUnsignedInt(overworldRoomStatus[roomId]) & OW_ROOM_STATUS_OWL_TALKED) != 0;
     }
 
     private int checkedOffset(int bank, int address, int length, String description) {
@@ -187,9 +206,9 @@ public final class EntitySpriteCatalog {
         } catch (RuntimeException exception) {
             throw new IllegalArgumentException("Invalid " + description + " address", exception);
         }
-        if (offset < 0 || length < 0 || offset > romData.length - length) {
-            throw new IllegalArgumentException("Truncated " + description + " at ROM offset 0x"
-                + Integer.toHexString(Math.max(offset, 0)));
+        if (offset < 0 || length < 0 || offset > romData.size() - length) {
+            throw new IllegalArgumentException(
+                    "Truncated " + description + " at ROM offset 0x" + Integer.toHexString(Math.max(offset, 0)));
         }
         return offset;
     }

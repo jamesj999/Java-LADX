@@ -1,16 +1,17 @@
 package linksawakening.gameplay;
 
-import linksawakening.dialog.DialogController;
-import linksawakening.entity.Link;
-import linksawakening.world.Warp;
+import static linksawakening.world.room.RoomConstants.OBJECTS_PER_COLUMN;
+import static linksawakening.world.room.RoomConstants.OBJECTS_PER_ROW;
+import static linksawakening.world.room.RoomConstants.ROOM_OBJECTS_BASE;
+import static linksawakening.world.room.RoomConstants.ROOM_OBJECT_ROW_STRIDE;
 
 import java.util.Objects;
+import linksawakening.dialog.DialogController;
+import linksawakening.entity.Link;
+import linksawakening.state.Direction;
+import linksawakening.world.transition.Warp;
 
-import static linksawakening.world.RoomConstants.OBJECTS_PER_COLUMN;
-import static linksawakening.world.RoomConstants.OBJECTS_PER_ROW;
-import static linksawakening.world.RoomConstants.ROOM_OBJECTS_BASE;
-import static linksawakening.world.RoomConstants.ROOM_OBJECT_ROW_STRIDE;
-
+/** Session-owned signpost interaction service that combines ROM lookup with live dialog gates. */
 public final class OverworldDialogInteraction {
 
     private static final int OBJECT_OWL_STATUE = 0x6F;
@@ -24,22 +25,25 @@ public final class OverworldDialogInteraction {
         this.dialogTextLoader = Objects.requireNonNull(dialogTextLoader);
     }
 
-    public boolean tryOpenSignpostDialog(int roomId,
-                                         int mapCategory,
-                                         int[] roomObjectsArea,
-                                         int linkPixelX,
-                                         int linkPixelY,
-                                         int linkDirection,
-                                         boolean actionPressed,
-                                         OverworldDialogBlockers blockers,
-                                         DialogController dialogController) {
+    public boolean tryOpenSignpostDialog(
+            int roomId,
+            int mapCategory,
+            int[] roomObjectsArea,
+            int linkPixelX,
+            int linkPixelY,
+            int linkDirection,
+            Interaction arguments) {
+        boolean actionPressed = arguments.actionPressed();
+        OverworldDialogBlockers blockers = arguments.blockers();
+        DialogController dialogController = arguments.dialogController();
+
         if (!actionPressed
-            || (blockers != null && blockers.blocksOpening())
-            || mapCategory != Warp.CATEGORY_OVERWORLD
-            || linkDirection != Link.DIRECTION_UP
-            || roomObjectsArea == null
-            || dialogController == null
-            || dialogController.isActive()) {
+                || (blockers != null && blockers.blocksOpening())
+                || mapCategory != Warp.CATEGORY_OVERWORLD
+                || linkDirection != Direction.UP.javaIndex()
+                || roomObjectsArea == null
+                || dialogController == null
+                || dialogController.isActive()) {
             return false;
         }
 
@@ -55,8 +59,7 @@ public final class OverworldDialogInteraction {
 
         SignpostDialogRef dialogRef = signpostDialogTable.resolve(roomId);
         dialogController.openPreformattedForLinkY(
-            dialogTextLoader.load(dialogRef),
-            LinkDialogPosition.dialogYFromTopLeft(linkPixelY));
+                dialogTextLoader.load(dialogRef), LinkDialogPosition.dialogYFromTopLeft(linkPixelY));
         return true;
     }
 
@@ -68,4 +71,8 @@ public final class OverworldDialogInteraction {
         }
         return ROOM_OBJECTS_BASE + row * ROOM_OBJECT_ROW_STRIDE + col;
     }
+
+    /** Arguments shared by tryOpenSignpostDialog operations. */
+    public record Interaction(
+            boolean actionPressed, OverworldDialogBlockers blockers, DialogController dialogController) {}
 }

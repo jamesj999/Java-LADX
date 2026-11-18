@@ -16,7 +16,7 @@ public final class EntitySpriteTileSnapshot {
             if (sourceTiles[i] == null) {
                 throw new IllegalArgumentException("Entity tile cannot be null: " + i);
             }
-            this.tiles[i] = sourceTiles[i].copy();
+            this.tiles[i] = sourceTiles[i].frozenCopy();
         }
     }
 
@@ -26,5 +26,20 @@ public final class EntitySpriteTileSnapshot {
             return null;
         }
         return tiles[offset].copy();
+    }
+    /** Stable read-only tile for rendering; callers needing mutable storage use tile(). */
+    public Tile readOnlyTile(int tileIndex) {
+        int offset = tileIndex - BASE_TILE_INDEX;
+        return offset < 0 || offset >= TILE_COUNT ? null : tiles[offset];
+    }
+
+    boolean matches(Tile[] source, int start) {
+        for (int i = 0; i < TILE_COUNT; i++) {
+            if (source[start + i] == null) return false;
+            for (int y = 0; y < 8; y++)
+                for (int x = 0; x < 8; x++)
+                    if (source[start + i].getPixel(x, y) != tiles[i].getPixel(x, y)) return false;
+        }
+        return true;
     }
 }

@@ -1,10 +1,5 @@
 package linksawakening.ui;
 
-import linksawakening.input.InputConfig;
-import linksawakening.input.InputState;
-import linksawakening.scene.BackgroundScene;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -16,10 +11,15 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.scene.BackgroundScene;
+import org.junit.jupiter.api.Test;
+
 final class FileSaveControllerTest {
 
-    private static final InputConfig INPUT = new InputConfig(
-        GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN, 4, 5, GLFW_KEY_A, GLFW_KEY_B);
+    private static final InputConfig INPUT =
+            new InputConfig(GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN, 4, 5, GLFW_KEY_A, GLFW_KEY_B);
 
     @Test
     void startsOnReturnToGameWithTheRomSelectionArrow() {
@@ -30,7 +30,8 @@ final class FileSaveControllerTest {
         assertEquals(1, controller.snapshot().sprites().size());
         assertEquals(0xBE, controller.snapshot().sprites().get(0).tileIndex());
         assertEquals(0x1C, controller.snapshot().sprites().get(0).x());
-        assertEquals(0x40, controller.snapshot().sprites().get(0).y());
+        assertEquals(0x38, controller.snapshot().sprites().get(0).y());
+        assertEquals(16, controller.snapshot().sprites().get(0).height());
     }
 
     @Test
@@ -49,19 +50,20 @@ final class FileSaveControllerTest {
     void actionButtonsReturnTheSelectedRomCommand() {
         FileSaveController controller = newController();
 
-        assertEquals(FileSaveAction.Type.RETURN_TO_GAME,
-            press(controller, GLFW_KEY_A).type());
+        assertEquals(
+                FileSaveAction.Type.RETURN_TO_GAME,
+                press(controller, GLFW_KEY_A).type());
         press(controller, GLFW_KEY_DOWN);
-        assertEquals(FileSaveAction.Type.SAVE_AND_QUIT,
-            press(controller, GLFW_KEY_B).type());
+        assertEquals(
+                FileSaveAction.Type.SAVE_AND_QUIT, press(controller, GLFW_KEY_B).type());
         assertFalse(controller.snapshot().creation());
         assertTrue(controller.snapshot().nameBytes().length == 5);
     }
 
     private static FileSaveController newController() {
         return new FileSaveController(sceneId -> new BackgroundScene(
-            new int[32 * 32], new int[32 * 32],
-            new int[][] {{0, 0, 0, 0}}, new int[][] {{0, 0, 0, 0}}));
+                new int[32 * 32], new int[32 * 32],
+                new int[][] {{0, 0, 0, 0}}, new int[][] {{0, 0, 0, 0}}));
     }
 
     private static FileSaveAction press(FileSaveController controller, int key) {

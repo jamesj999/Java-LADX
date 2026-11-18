@@ -2,22 +2,15 @@ package linksawakening.ui;
 
 import java.util.Objects;
 
+/** Immutable file menu action values. */
 public record FileMenuAction(Type type, int selectedSlot, int targetSlot, int[] nameBytes) {
-
-    public enum Type {
-        NONE,
-        START_NEW_GAME,
-        LOAD_GAME,
-        ERASE_SLOT,
-        COPY_SLOT
-    }
 
     public FileMenuAction(Type type, int selectedSlot, int[] nameBytes) {
         this(type, selectedSlot, -1, nameBytes);
     }
 
     public FileMenuAction {
-        type = Objects.requireNonNull(type, "type");
+        Objects.requireNonNull(type, "type");
         nameBytes = nameBytes == null ? new int[0] : nameBytes.clone();
     }
 
@@ -28,5 +21,13 @@ public record FileMenuAction(Type type, int selectedSlot, int targetSlot, int[] 
     @Override
     public int[] nameBytes() {
         return nameBytes.clone();
+    }
+    /** Named type values. */
+    public enum Type {
+        NONE,
+        CREATE_FILE,
+        LOAD_GAME,
+        ERASE_SLOT,
+        COPY_SLOT
     }
 }

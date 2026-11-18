@@ -1,0 +1,46 @@
+package linksawakening.app.screen;
+
+import static linksawakening.input.KeyCodes.KEY_ENTER;
+import static linksawakening.input.KeyCodes.PRESS;
+
+import java.util.Objects;
+import linksawakening.cutscene.CutsceneManager;
+import linksawakening.input.InputState;
+import linksawakening.render.RenderScreen;
+
+/**
+ * Owns title-screen input edges and advances title presentation. One instance is retained for the owning
+ * session.
+ */
+public final class TitleScreen implements Screen {
+
+    private final Dependencies dependencies;
+
+    public TitleScreen(Dependencies dependencies) {
+        this.dependencies = Objects.requireNonNull(dependencies);
+    }
+
+    @Override
+    public void tick() {
+        dependencies.cutsceneManager().tick();
+        dependencies.inputState().tickEdges();
+    }
+
+    @Override
+    public void onKey(int key, int action) {
+        if (key == KEY_ENTER && action == PRESS) dependencies.navigator().startFileSelection();
+    }
+
+    @Override
+    public RenderScreen renderScreen() {
+        return RenderScreen.TITLE;
+    }
+    /** Required screen collaborators, validated before the first tick. */
+    public record Dependencies(CutsceneManager cutsceneManager, InputState inputState, ScreenNavigator navigator) {
+        public Dependencies {
+            Objects.requireNonNull(cutsceneManager);
+            Objects.requireNonNull(inputState);
+            Objects.requireNonNull(navigator);
+        }
+    }
+}

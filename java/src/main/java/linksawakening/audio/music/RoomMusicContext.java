@@ -1,16 +1,30 @@
 package linksawakening.audio.music;
 
 import linksawakening.state.PlayerState;
-import linksawakening.world.ActiveRoom;
-import linksawakening.world.Warp;
+import linksawakening.world.room.ActiveRoom;
+import linksawakening.world.transition.Warp;
 
-public record RoomMusicContext(int roomId,
-                               int mapId,
-                               boolean indoor,
-                               boolean sideScrolling,
-                               int swordLevel,
-                               boolean bossDefeated,
-                               int activePowerUp) {
+/** Room and player inputs used for ROM music selection. */
+public record RoomMusicContext(
+        int roomId,
+        int mapId,
+        boolean indoor,
+        boolean sideScrolling,
+        int swordLevel,
+        boolean bossDefeated,
+        int activePowerUp,
+        boolean scrollingTransition) {
+
+    public RoomMusicContext(
+            int roomId,
+            int mapId,
+            boolean indoor,
+            boolean sideScrolling,
+            int swordLevel,
+            boolean bossDefeated,
+            int activePowerUp) {
+        this(roomId, mapId, indoor, sideScrolling, swordLevel, bossDefeated, activePowerUp, false);
+    }
 
     public RoomMusicContext {
         roomId &= 0xFF;
@@ -22,14 +36,13 @@ public record RoomMusicContext(int roomId,
     public static RoomMusicContext from(ActiveRoom room, PlayerState playerState) {
         int category = room.mapCategory();
         return new RoomMusicContext(
-            room.roomId(),
-            room.mapId(),
-            category != Warp.CATEGORY_OVERWORLD,
-            category == Warp.CATEGORY_SIDESCROLL,
-            playerState.swordLevel(),
-            false,
-            0
-        );
+                room.roomId(),
+                room.mapId(),
+                category != Warp.CATEGORY_OVERWORLD,
+                category == Warp.CATEGORY_SIDESCROLL,
+                playerState.equipmentLevels().swordLevel(),
+                false,
+                playerState.equipmentLevels().activePowerUp());
     }
 
     public static RoomMusicContext overworld(int roomId, int swordLevel) {
@@ -42,5 +55,10 @@ public record RoomMusicContext(int roomId,
 
     public static RoomMusicContext sideScrolling(int mapId, int roomId, int swordLevel) {
         return new RoomMusicContext(roomId, mapId, true, true, swordLevel, false, 0);
+    }
+
+    public RoomMusicContext forScroll() {
+        return new RoomMusicContext(
+                roomId, mapId, indoor, sideScrolling, swordLevel, bossDefeated, activePowerUp, true);
     }
 }

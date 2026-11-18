@@ -1,7 +1,11 @@
 package linksawakening.physics;
 
+import java.util.Arrays;
+import java.util.Objects;
+import linksawakening.rom.CollisionTables;
+import linksawakening.rom.PhysicsTables;
 import linksawakening.rom.RomTables;
-import linksawakening.world.SwitchBlockLinkInteraction;
+import linksawakening.world.object.SwitchBlockLinkInteraction;
 
 /**
  * Queries against the active overworld room's 16x16 object grid. Matches the
@@ -9,43 +13,57 @@ import linksawakening.world.SwitchBlockLinkInteraction;
  * physics flag from {@code OverworldObjectPhysicFlags}.
  */
 public final class OverworldCollision {
+    private static final GroundInteractionSample EMPTY_SAMPLE =
+            new GroundInteractionSample(0xFF, PhysicsFlags.NONE, 0, 0);
 
     private static final int CELL_SIZE = 16;
     private static final int ROOM_OBJECTS_BASE = 0x11;
     private static final int ROOM_OBJECT_ROW_STRIDE = 0x10;
     private static final int OBJECTS_PER_ROW = 10;
     private static final int OBJECTS_PER_COLUMN = 8;
+    // Identity sentinel: no room is bound. A caller-supplied empty buffer remains a distinct room.
+    private static final int[] NO_ROOM = new int[0];
+    // Immutable samples may be retained by callers. Refresh only the changed cell value.
+    private final GroundInteractionSample[] groundSamples = new GroundInteractionSample[256];
 
-    private final RomTables romTables;
-    private int[] roomObjectsArea;
+    private final PhysicsTables physicsTables;
+    private final CollisionTables collisionTables;
+    private int[] roomObjectsArea = NO_ROOM;
+
     private int physicsTableIndex = RomTables.PHYSICS_TABLE_OVERWORLD;
     private int switchBlocksState;
     private boolean linkStandingOnSwitchBlock;
 
-    /**
-     * Java top-left sprite position that aligns Link's ROM-style center/bottom
-     * sample point with the pit cell's center/bottom target.
-     */
-    public record PitCell(int targetTopLeftX, int targetTopLeftY, int physicsFlag) {}
-
-    /** The complete padded-buffer sample used by entity ground interaction. */
-    public record GroundInteractionSample(int objectId, int physicsFlag,
-                                          int objectLeft, int objectTop) {}
-
     public OverworldCollision(RomTables romTables) {
-        this.romTables = romTables;
+        this(
+                romTables == null ? PhysicsTables.openWorld() : romTables.physicsTables(),
+                romTables == null ? CollisionTables.openWorld() : romTables.collisionTables());
+    }
+
+    /** Queries an open world with no room bound and no blocking objects. */
+    public static OverworldCollision openWorld() {
+        return new OverworldCollision(PhysicsTables.openWorld(), CollisionTables.openWorld());
+    }
+
+    public OverworldCollision(PhysicsTables physicsTables, CollisionTables collisionTables) {
+        this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
+        this.collisionTables = Objects.requireNonNull(collisionTables, "collisionTables");
+        Arrays.fill(groundSamples, EMPTY_SAMPLE);
+    }
+
+    public boolean hasRoom() {
+        return roomObjectsArea != NO_ROOM;
     }
 
     public void setRoom(int[] roomObjectsArea) {
-        this.roomObjectsArea = roomObjectsArea;
+        this.roomObjectsArea = Objects.requireNonNullElse(roomObjectsArea, NO_ROOM);
         linkStandingOnSwitchBlock = false;
     }
 
     /** Mirrors the unsigned WRAM {@code wSwitchBlocksState} value. */
     public void setSwitchBlocksState(int value) {
         if (value != 0x00 && value != 0x02) {
-            throw new IllegalArgumentException("Switch-block state must be $00 or $02: "
-                + value);
+            throw new IllegalArgumentException("Switch-block state must be $00 or $02: " + value);
         }
         switchBlocksState = value;
     }
@@ -93,21 +111,20 @@ public final class OverworldCollision {
     }
 
     /**
-     * Link's leading-edge collision query with the source's flipper exception.
-     * Deep-water physics remains solid for ordinary walking, but becomes
-     * passable once Link owns the flippers (bank2.asm:7706-7734).
+     * Link's leading-edge collision query. Water, lava and pits are passable;
+     * ground physics handles their consequences ($02:7461).
      */
     public boolean pointBlockedForLink(int pixelX, int pixelY, boolean hasFlippers) {
-        if (roomObjectsArea == null) {
+        if (!hasRoom()) {
             return false;
         }
         int cellX = cellCoordinate(pixelX);
         int cellY = cellCoordinate(pixelY);
-        return isCellBlocking(cellX, cellY, pixelX, pixelY, hasFlippers);
+        return isCellBlocking(cellX, cellY, pixelX, pixelY);
     }
 
     public boolean pointNormalPit(int pixelX, int pixelY) {
-        if (roomObjectsArea == null) {
+        if (!hasRoom()) {
             return false;
         }
         int cellX = cellCoordinate(pixelX);
@@ -117,25 +134,24 @@ public final class OverworldCollision {
 
     /**
      * Returns the ROM physics byte for the cell sampled at a background
-     * collision point. Invalid/off-room points have no entity terrain flag.
+     * collision point. The padded room-object border contains object $FF.
      */
     public int objectPhysicsFlagAtPoint(int pixelX, int pixelY) {
-        if (roomObjectsArea == null) {
+        if (!hasRoom()) {
             return PhysicsFlags.NONE;
         }
         int cellX = cellCoordinate(pixelX);
         int cellY = cellCoordinate(pixelY);
-        if (cellX < 0 || cellX >= OBJECTS_PER_ROW
-            || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
-            return PhysicsFlags.NONE;
+        if (cellX < 0 || cellX >= OBJECTS_PER_ROW || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
+            return physicsTables.objectPhysicsFlag(physicsTableIndex, 0xFF);
         }
         int objectId = objectIdAtCell(cellX, cellY);
-        return romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        return physicsTables.objectPhysicsFlag(physicsTableIndex, objectId);
     }
 
     /** Returns the raw room object sampled at an entity collision point. */
     public int objectIdAtPoint(int pixelX, int pixelY) {
-        if (roomObjectsArea == null) {
+        if (!hasRoom()) {
             return 0xFF;
         }
         int cellX = cellCoordinate(pixelX);
@@ -151,32 +167,37 @@ public final class OverworldCollision {
      */
     public boolean linkOnSlowGround(int linkPixelX, int linkPixelY) {
         int objectId = objectUnderLinkFeet(linkPixelX, linkPixelY);
-        int flag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        int flag = physicsTables.objectPhysicsFlag(physicsTableIndex, objectId);
         return PhysicsFlags.slowsWalking(flag);
     }
 
     public boolean linkOnNormalPit(int linkPixelX, int linkPixelY) {
         int objectId = objectUnderLinkFeet(linkPixelX, linkPixelY);
-        int flag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        int flag = physicsTables.objectPhysicsFlag(physicsTableIndex, objectId);
         return PhysicsFlags.isNormalPit(flag);
     }
 
     public boolean linkOnDeepWater(int linkPixelX, int linkPixelY) {
         int objectId = objectUnderLinkFeet(linkPixelX, linkPixelY);
-        int flag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        int flag = physicsTables.objectPhysicsFlag(physicsTableIndex, objectId);
         return flag == PhysicsFlags.DEEP_WATER;
+    }
+
+    public boolean linkOnPit(int x, int y) {
+        int flag = objectPhysicsFlagAtPoint(x + 8, y + 12);
+        return flag == 0x50 || flag == 0x51;
     }
 
     public PitCell normalPitUnderLink(int linkPixelX, int linkPixelY) {
         int cellX = cellCoordinate(linkPixelX + 8);
         int cellY = cellCoordinate(linkPixelY + 12);
         if (cellX < 0 || cellX >= OBJECTS_PER_ROW || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
-            return null;
+            return PitCell.NONE;
         }
         int objectId = objectIdAtCell(cellX, cellY);
-        int flag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
-        if (!PhysicsFlags.isNormalPit(flag)) {
-            return null;
+        int flag = physicsTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        if (flag != 0x50 && flag != 0x51) {
+            return PitCell.NONE;
         }
         return new PitCell(cellX * CELL_SIZE, cellY * CELL_SIZE, flag);
     }
@@ -194,9 +215,8 @@ public final class OverworldCollision {
      */
     public boolean refreshLinkGroundInteraction(int linkPixelX, int linkPixelY) {
         int objectId = objectUnderLinkFeet(linkPixelX, linkPixelY);
-        int physicsFlag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
-        linkStandingOnSwitchBlock = SwitchBlockLinkInteraction.marksStanding(
-            objectId, physicsFlag, switchBlocksState);
+        int physicsFlag = physicsTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        linkStandingOnSwitchBlock = SwitchBlockLinkInteraction.marksStanding(objectId, physicsFlag, switchBlocksState);
         return linkStandingOnSwitchBlock;
     }
 
@@ -217,22 +237,14 @@ public final class OverworldCollision {
      * for status, splash, conveyor, and (later) pit handling.
      */
     public GroundInteractionSample groundInteractionSample(int entityX, int entityY) {
-        if (roomObjectsArea == null) {
-            return new GroundInteractionSample(0xFF, PhysicsFlags.NONE, 0, 0);
+        if (!hasRoom()) {
+            return EMPTY_SAMPLE;
         }
         int sampleX = (entityX - 1) & 0xFF;
         int sampleY = (entityY - 7) & 0xFF;
         int objectLeft = sampleX & 0xF0;
         int objectTop = sampleY & 0xF0;
-        int areaIndex = ROOM_OBJECTS_BASE + objectTop + (objectLeft >>> 4);
-        if (areaIndex < 0 || areaIndex >= roomObjectsArea.length) {
-            return new GroundInteractionSample(0xFF, PhysicsFlags.NONE,
-                objectLeft, objectTop);
-        }
-        int objectId = roomObjectsArea[areaIndex] & 0xFF;
-        return new GroundInteractionSample(objectId,
-            romTables.objectPhysicsFlag(physicsTableIndex, objectId),
-            objectLeft, objectTop);
+        return sampleAt(objectLeft, objectTop);
     }
 
     /**
@@ -247,26 +259,34 @@ public final class OverworldCollision {
 
     /** Complete padded-buffer sample used by ApplySwordIntersectionWithObjects. */
     public GroundInteractionSample entityInteractionSample(int entityX, int entityY) {
-        if (roomObjectsArea == null) {
-            return new GroundInteractionSample(0xFF, PhysicsFlags.NONE, 0, 0);
+        if (!hasRoom()) {
+            return EMPTY_SAMPLE;
         }
         int x = entityX & 0xFF;
         int y = (entityY - 0x08) & 0xFF;
         int objectLeft = x & 0xF0;
         int objectTop = y & 0xF0;
-        int areaIndex = ROOM_OBJECTS_BASE + objectTop + (objectLeft >>> 4);
-        if (areaIndex < 0 || areaIndex >= roomObjectsArea.length) {
-            return new GroundInteractionSample(0xFF, PhysicsFlags.NONE,
-                objectLeft, objectTop);
-        }
-        int objectId = roomObjectsArea[areaIndex] & 0xFF;
-        return new GroundInteractionSample(objectId,
-            romTables.objectPhysicsFlag(physicsTableIndex, objectId),
-            objectLeft, objectTop);
+        return sampleAt(objectLeft, objectTop);
     }
 
-    private boolean isCellBlocking(int cellX, int cellY, int pixelX, int pixelY,
-                                   boolean hasFlippers) {
+    private GroundInteractionSample sampleAt(int objectLeft, int objectTop) {
+        int cell = objectTop + (objectLeft >>> 4);
+        int areaIndex = ROOM_OBJECTS_BASE + cell;
+        boolean inBounds = areaIndex >= 0 && areaIndex < roomObjectsArea.length;
+        int objectId = inBounds ? roomObjectsArea[areaIndex] & 0xFF : 0xFF;
+        int physicsFlag = inBounds ? physicsTables.objectPhysicsFlag(physicsTableIndex, objectId) : PhysicsFlags.NONE;
+        GroundInteractionSample sample = groundSamples[cell];
+        if (sample.objectId() != objectId
+                || sample.physicsFlag() != physicsFlag
+                || sample.objectLeft() != objectLeft
+                || sample.objectTop() != objectTop) {
+            sample = new GroundInteractionSample(objectId, physicsFlag, objectLeft, objectTop);
+            groundSamples[cell] = sample;
+        }
+        return sample;
+    }
+
+    private boolean isCellBlocking(int cellX, int cellY, int pixelX, int pixelY) {
         if (cellX < 0 || cellX >= OBJECTS_PER_ROW || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
             // Off-room cells are the caller's problem - they trigger room scroll,
             // not a collision block. Treat as passable here.
@@ -277,7 +297,7 @@ public final class OverworldCollision {
             return false;
         }
         int rawId = roomObjectsArea[areaIndex] & 0xFF;
-        int physicsFlag = romTables.objectPhysicsFlag(physicsTableIndex, rawId);
+        int physicsFlag = physicsTables.objectPhysicsFlag(physicsTableIndex, rawId);
 
         // Link's source path handles $7C..$8F through Data_002_49CA: bit 3
         // of each collision-point coordinate selects one of the object's four
@@ -286,17 +306,18 @@ public final class OverworldCollision {
         // $8E/$8F beyond the entity FineCollisionShapes label.
         if (physicsFlag >= 0x7C && physicsFlag < 0x90) {
             int quadrant = ((pixelX >>> 3) & 0x01) | ((pixelY >>> 2) & 0x02);
-            return romTables.linkFineCollisionShape(physicsFlag, quadrant) != 0;
+            return collisionTables.linkFineCollisionShape(physicsFlag, quadrant) != 0;
         }
 
-        if (hasFlippers && physicsFlag == PhysicsFlags.DEEP_WATER) {
+        if (physicsFlag == PhysicsFlags.DEEP_WATER
+                || physicsFlag == PhysicsFlags.LAVA
+                || PhysicsFlags.isPitCategory(physicsFlag)) {
             return false;
         }
 
         if (physicsFlag == SwitchBlockLinkInteraction.PHYSICS_OCEAN_SWITCH_BLOCK
-            && SwitchBlockLinkInteraction.isSwitchBlock(rawId)) {
-            return SwitchBlockLinkInteraction.blocks(
-                rawId, physicsFlag, switchBlocksState, linkStandingOnSwitchBlock);
+                && SwitchBlockLinkInteraction.isSwitchBlock(rawId)) {
+            return SwitchBlockLinkInteraction.blocks(rawId, physicsFlag, switchBlocksState, linkStandingOnSwitchBlock);
         }
 
         return idBlocks(rawId);
@@ -307,14 +328,12 @@ public final class OverworldCollision {
             return false;
         }
         int objectId = objectIdAtCell(cellX, cellY);
-        int flag = romTables.objectPhysicsFlag(physicsTableIndex, objectId);
+        int flag = physicsTables.objectPhysicsFlag(physicsTableIndex, objectId);
         return PhysicsFlags.isNormalPit(flag);
     }
 
     private int objectIdAtCell(int cellX, int cellY) {
-        if (roomObjectsArea == null
-            || cellX < 0 || cellX >= OBJECTS_PER_ROW
-            || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
+        if (!hasRoom() || cellX < 0 || cellX >= OBJECTS_PER_ROW || cellY < 0 || cellY >= OBJECTS_PER_COLUMN) {
             return 0xFF;
         }
         int areaIndex = ROOM_OBJECTS_BASE + cellY * ROOM_OBJECT_ROW_STRIDE + cellX;
@@ -325,37 +344,31 @@ public final class OverworldCollision {
     }
 
     private static int cellCoordinate(int pixel) {
-        return pixel < 0
-            ? pixel / CELL_SIZE - (pixel % CELL_SIZE == 0 ? 0 : 1)
-            : pixel / CELL_SIZE;
+        return pixel < 0 ? pixel / CELL_SIZE - (pixel % CELL_SIZE == 0 ? 0 : 1) : pixel / CELL_SIZE;
     }
 
-    /**
-     * Per-object-id collision decision, with overrides for cases where the
-     * raw physics-table flag doesn't reflect in-game behaviour:
-     *
-     * <ul>
-     *   <li>Door / warp-trigger types ({@code $C2/$C5/$C6/$E1/$E2/$E3/
-     *       $BA/$CB/$61}) are walkable so {@code maybeTriggerWarpTransition}
-     *       sees Link on the tile and the warp fires.</li>
-     * </ul>
-     */
+    /** Uses the active ROM physics table; object IDs have different meanings indoors. */
     private boolean idBlocks(int id) {
         if (id < 0 || id > 0xFF) {
             return false;
         }
-        switch (id) {
-            case 0xC2:
-            case 0xC5:
-            case 0xC6:
-            case 0xE1:
-            case 0xE2:
-            case 0xE3:
-            case 0xBA:
-            case 0xCB:
-            case 0x61:
-                return false;
-        }
-        return PhysicsFlags.blocksWalking(romTables.objectPhysicsFlag(physicsTableIndex, id));
+        return PhysicsFlags.blocksWalking(physicsTables.objectPhysicsFlag(physicsTableIndex, id));
     }
+
+    /**
+     * Java top-left sprite position that aligns Link's ROM-style center/bottom
+     * sample point with the pit cell's center/bottom target.
+     */
+    public record PitCell(int targetTopLeftX, int targetTopLeftY, int physicsFlag) {
+        private static final PitCell NONE = new PitCell(0, 0, PhysicsFlags.NONE);
+
+        // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+        @SuppressWarnings("ReferenceEquality")
+        public boolean present() {
+            return this != NONE;
+        }
+    }
+
+    /** The complete padded-buffer sample used by entity ground interaction. */
+    public record GroundInteractionSample(int objectId, int physicsFlag, int objectLeft, int objectTop) {}
 }

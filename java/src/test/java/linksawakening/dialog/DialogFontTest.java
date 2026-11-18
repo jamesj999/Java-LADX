@@ -1,19 +1,30 @@
 package linksawakening.dialog;
 
-import linksawakening.rom.RomBank;
-import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Arrays;
+import linksawakening.rom.RomBank;
+import linksawakening.testing.TestRoms;
+import org.junit.jupiter.api.Test;
 
 final class DialogFontTest {
 
     private static final int FONT_OFFSET = RomBank.romOffset(0x0F, 0x5000);
     private static final int CODEPOINT_TABLE_OFFSET = RomBank.romOffset(0x1C, 0x4641);
     private static final int TILE_SIZE = 16;
+
+    @Test
+    void ownedGlyphCopyCannotChangeSubsequentRendering() {
+        byte[] rom = new byte[CODEPOINT_TABLE_OFFSET + 256];
+        rom[FONT_OFFSET] = 42;
+        var font = DialogFont.loadFromRom(TestRoms.partial(rom));
+        byte[] owned = font.tileFor('A');
+        owned[0] = 0;
+        org.junit.jupiter.api.Assertions.assertEquals(42, font.tileView('A')[0]);
+        org.junit.jupiter.api.Assertions.assertEquals(42, font.tileFor('A')[0]);
+    }
 
     @Test
     void loadFromRomUsesFontTilesAndCodepointMapFromRomOffsets() {
@@ -26,16 +37,15 @@ final class DialogFontTest {
         }
         System.arraycopy(expectedTile, 0, rom, FONT_OFFSET + 2 * TILE_SIZE, TILE_SIZE);
 
-        DialogFont font = DialogFont.loadFromRom(rom);
+        DialogFont font = DialogFont.loadFromRom(TestRoms.partial(rom));
 
         assertArrayEquals(expectedTile, font.tileFor('A'));
     }
 
     @Test
     void loadFromRomRejectsMissingRomData() {
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> DialogFont.loadFromRom(null));
+        IllegalArgumentException exception =
+                assertThrows(IllegalArgumentException.class, () -> DialogFont.loadFromRom(null));
 
         assertTrue(exception.getMessage().contains("ROM data"));
     }
@@ -44,9 +54,8 @@ final class DialogFontTest {
     void loadFromRomRejectsTruncatedFontTilesRange() {
         byte[] rom = new byte[FONT_OFFSET + TILE_SIZE - 1];
 
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> DialogFont.loadFromRom(rom));
+        IllegalArgumentException exception =
+                assertThrows(IllegalArgumentException.class, () -> DialogFont.loadFromRom(TestRoms.partial(rom)));
 
         assertTrue(exception.getMessage().contains("FontTiles"));
     }
@@ -55,9 +64,8 @@ final class DialogFontTest {
     void loadFromRomRejectsTruncatedCodepointTableRange() {
         byte[] rom = new byte[CODEPOINT_TABLE_OFFSET + 255];
 
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> DialogFont.loadFromRom(rom));
+        IllegalArgumentException exception =
+                assertThrows(IllegalArgumentException.class, () -> DialogFont.loadFromRom(TestRoms.partial(rom)));
 
         assertTrue(exception.getMessage().contains("CodepointToTileMap"));
     }

@@ -1,0 +1,370 @@
+package linksawakening.world.room;
+
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.rom.RomTables;
+import linksawakening.world.entity.EnemyDropResolver;
+import linksawakening.world.entity.EntityBackgroundCollisionResolver;
+import linksawakening.world.entity.EntityCollisionPointProbe;
+import linksawakening.world.entity.FollowingNpcEntitySpawner;
+import linksawakening.world.entity.RomEnemyCombatTables;
+import linksawakening.world.object.OverworldBushInteraction;
+
+/** Private, eager dependency wiring; no collaborator lookup is deferred to hide initialization order. */
+final class RoomSessionContext {
+    private final RoomSessionComponents.Builder values = new RoomSessionComponents.Builder();
+
+    static Wiring create(
+            RoomSessionConfig config,
+            LoadedRoomHandle loadedRooms,
+            Consumer<RoomRuntime> installRoom,
+            UnaryOperator<RoomRuntime> roomLoaded) {
+        return new RoomSessionContext(config, loadedRooms, installRoom, roomLoaded).wire(loadedRooms);
+    }
+
+    record Wiring(
+            RoomRoleViews roles,
+            RoomDoors doors,
+            RoomTransitions transitions,
+            RoomPlayerItems playerItems,
+            RoomStory story,
+            RoomFrameInputApplier frameInputs,
+            EntityFrameResults frameResults,
+            RoomDungeonLiveView dungeonView) {}
+
+    private Wiring wire(LoadedRoomHandle rooms) {
+        RoomSessionComponents c = values.build();
+        RoomRoleViews roles = new RoomRoleViews(
+                c.entityBridge(),
+                new RoomEntityControl(new RoomEntityControl.Dependencies(
+                        c.entityBridge(), c.entityInputs(), c.followers(), c.entityFrame())),
+                c.roomLoadCoordinator(),
+                c.roomState(),
+                new RoomProgression(
+                        new RoomProgression.Dependencies(
+                                c.entityFrame(), c.location(), c.terrain(), c.roomLoadCoordinator()),
+                        rooms),
+                c.roomObjectMutations());
+        return new Wiring(
+                roles,
+                c.roomDoorInteractions(),
+                c.roomTransitionController(),
+                c.roomPlayerItemActions(),
+                c.roomStoryState(),
+                new RoomFrameInputApplier(c.entityInputs(), c.entityBridge(), c.entityFrame(), c.roomStoryState()),
+                new EntityFrameResults(
+                        new LinkOutputs(c.linkOutputsDependencies(), c.entityBridge()),
+                        new RewardOutputs(c.rewardOutputsDependencies(), c.entityBridge()),
+                        new PresentationOutputs(c.entityBridge())),
+                c.roomState().view());
+    }
+
+    private RoomSessionContext(
+            RoomSessionConfig config,
+            LoadedRoomHandle loadedRooms,
+            Consumer<RoomRuntime> installRoom,
+            UnaryOperator<RoomRuntime> roomLoaded) {
+
+        var romData = config.romData();
+        var gpu = config.gpu();
+        var roomLoader = config.roomLoader();
+        var overworldTilesetTable = config.overworldTilesetTable();
+        var overworldCollision = config.overworldCollision();
+        boolean transientVfxEnabled = config.presentation().transientVfxSystem() != null;
+        var transientVfxSystem = transientVfxEnabled
+                ? config.presentation().transientVfxSystem()
+                : new linksawakening.vfx.TransientVfxSystem(0);
+        var droppableRupeeSystem = config.presentation().droppableRupeeSystem() == null
+                ? new DroppableRupeeSystem(0, () -> 0)
+                : config.presentation().droppableRupeeSystem();
+        var randomByteSource = config.randomByteSource();
+        values.entityRandomByteSource(Objects.requireNonNull(randomByteSource));
+        values.romData(romData);
+        values.roomState(new RoomWorldState(romData, loadedRooms));
+        values.scrollNavigation(new RoomScrollNavigation(romData, values.roomState()));
+        values.indoorTorchPaletteEffect(new IndoorTorchPaletteEffect(romData));
+        values.gpu(gpu);
+        values.roomLoader(roomLoader);
+        values.roomPaletteLoader(new RoomPaletteLoader(romData));
+        values.overworldTilesetTable(overworldTilesetTable);
+        values.manboWarpResolver(new ManboWarpResolver(romData));
+        values.owlEventDialogResolver(new OwlEventDialogResolver(romData));
+        values.owlStatueDialogResolver(new OwlStatueDialogResolver(romData));
+        values.overworldCollision(overworldCollision);
+        values.transientVfxSystem(transientVfxSystem);
+        values.droppableRupeeSystem(droppableRupeeSystem);
+        values.roomTilemapBuilder(new RoomTilemapBuilder(romData));
+        values.entitySpriteHandlerCatalog(new EntitySpriteHandlerCatalog(romData));
+        values.followingNpcEntitySpawner(new FollowingNpcEntitySpawner(values.entitySpriteHandlerCatalog()));
+        values.enemyCombatTables(new RomEnemyCombatTables(romData));
+        values.chestContentsTable(new ChestContentsTable(romData));
+        values.dungeonRoomEventTable(new DungeonRoomEventTable(romData));
+        values.romTables(RomTables.load(romData));
+        values.entityBackgroundCollisionResolver(new EntityBackgroundCollisionResolver(
+                values.romTables().collisionTables(), values.romTables().entityPropertyTables()));
+        values.enemyDropResolver(new EnemyDropResolver(romData));
+        values.entityCollisionPointProbe(new EntityCollisionPointProbe(
+                values.romTables().collisionTables(), values.romTables().entityPropertyTables()));
+        values.overworldBushInteraction(new OverworldBushInteraction(romData, values.romTables()));
+        values.roomSessionViews(new RoomSessionViews(new RoomSessionViews.Dependencies(
+                values.entityFrame(), values.location(), values.roomState(), values.scrollNavigation())));
+        values.roomTransientState(new RoomTransientState(new RoomTransientState.Dependencies(
+                values.entityFrame(),
+                values.items(),
+                values.location(),
+                values.droppableRupeeSystem(),
+                values.entityFrame(),
+                values.transientVfxSystem())));
+        RoomTransientState transients = values.roomTransientState();
+        Runnable resetRoomTransients = () -> {
+            RoomRuntime loaded = loadedRooms.currentOrNull();
+            if (loaded == null) transients.clearTransientRoomState();
+            else transients.clearTransientRoomState(loaded.contents());
+        };
+        values.roomCollisionQueries(new RoomCollisionQueries(new RoomCollisionQueries.Dependencies(
+                values.entityFrame(),
+                values.terrain(),
+                values.entityBackgroundCollisionResolver(),
+                values.entityCollisionPointProbe(),
+                values.overworldCollision(),
+                values.romTables())));
+        values.roomObjectMutations(new RoomObjectMutations(
+                loadedRooms,
+                new RoomObjectMutations.Dependencies(
+                        values.entityFrame(),
+                        values.location(),
+                        values.puzzles(),
+                        values.terrain(),
+                        values.entityFrame(),
+                        values.indoorTorchPaletteEffect(),
+                        values.overworldBushInteraction(),
+                        values.overworldCollision(),
+                        values.romTables(),
+                        values.roomSessionViews(),
+                        values.roomState(),
+                        values.transientVfxSystem(),
+                        values.romData(),
+                        values.roomTilemapBuilder())));
+        values.entityInputs(new RoomEntityInputs(loadedRooms));
+        values.roomRuntimeServices(new RoomRuntime.Services(
+                values.roomCollisionQueries(),
+                values.roomObjectMutations(),
+                values.entityFrame(),
+                values.followers(),
+                values.roomState(),
+                transientVfxSystem));
+
+        var shovelActions = new RoomShovelActions(new RoomShovelActions.Dependencies(
+                values.entityFrame(),
+                values.followers(),
+                values.items(),
+                values.location(),
+                values.overworldBushInteraction(),
+                values.overworldCollision(),
+                values.romTables(),
+                values.roomObjectMutations(),
+                values.roomSessionViews(),
+                values.roomObjectMutations()));
+        values.roomPlayerItemActions(new RoomPlayerItemActions(loadedRooms, shovelActions));
+        values.roomPuzzleController(new RoomPuzzleController(new RoomPuzzleController.Dependencies(
+                values.entityFrame(),
+                values.puzzles(),
+                values.entityFrame(),
+                values.entityInputs(),
+                values.gpu(),
+                values.overworldCollision(),
+                values.romData(),
+                values.romTables(),
+                values.roomObjectMutations(),
+                values.roomSessionViews(),
+                values.roomState(),
+                values.roomObjectMutations(),
+                values.transientVfxSystem())));
+        var storyDependencies = new RoomStoryState.Dependencies(
+                values.entityFrame(),
+                values.followers(),
+                values.location(),
+                values.puzzles(),
+                values.terrain(),
+                values.chestContentsTable(),
+                values.enemyCombatTables(),
+                values.entityInputs(),
+                values.entityRandomByteSource(),
+                values.entitySpriteHandlerCatalog(),
+                values.followingNpcEntitySpawner(),
+                values.indoorTorchPaletteEffect(),
+                values.owlEventDialogResolver(),
+                values.romData(),
+                values.romTables(),
+                values.enemyDropResolver(),
+                values.roomSessionViews(),
+                values.roomState(),
+                installRoom,
+                values.roomRuntimeServices());
+        var npcPresentation =
+                new RoomNpcPresentation(new RoomNpcPresentation.Dependencies(storyDependencies.followers()));
+        var followerSynchronizer = new RoomFollowerSynchronizer(new RoomFollowerSynchronizer.Dependencies(
+                storyDependencies.chestContentsTable(),
+                storyDependencies.enemyCombatTables(),
+                storyDependencies.entityInputs(),
+                storyDependencies.entityRandomByteSource(),
+                storyDependencies.entitySpriteHandlerCatalog(),
+                storyDependencies.followers(),
+                storyDependencies.followingNpcEntitySpawner(),
+                storyDependencies.owlEventDialogResolver(),
+                storyDependencies.romData(),
+                storyDependencies.romTables(),
+                storyDependencies.entityFrame(),
+                storyDependencies.roomSessionViews(),
+                storyDependencies.roomState(),
+                storyDependencies.dropResolver(),
+                storyDependencies.installRoom(),
+                storyDependencies.roomRuntimeServices()));
+        values.roomStoryState(new RoomStoryState(
+                loadedRooms, values.roomTransientState(), storyDependencies, npcPresentation, followerSynchronizer));
+        var doorDependencies = new RoomDoorInteractions.Dependencies(
+                values.entityFrame(),
+                values.followers(),
+                values.location(),
+                values.puzzles(),
+                values.chestContentsTable(),
+                values.entityFrame(),
+                values.overworldBushInteraction(),
+                values.overworldCollision(),
+                values.romData(),
+                values.roomObjectMutations(),
+                values.roomSessionViews(),
+                values.roomState(),
+                values.roomObjectMutations());
+        var chests = new RoomChestInteractions(new RoomChestInteractions.Dependencies(
+                doorDependencies.chestContentsTable(),
+                doorDependencies.overworldCollision(),
+                doorDependencies.romData(),
+                doorDependencies.roomObjectMutations(),
+                doorDependencies.roomSessionViews(),
+                doorDependencies.roomState(),
+                doorDependencies.roomTileRedraw()));
+        var lifts = new RoomLiftInteractions(new RoomLiftInteractions.Dependencies(
+                doorDependencies.entityRuntimeState(),
+                doorDependencies.followers(),
+                doorDependencies.overworldBushInteraction(),
+                doorDependencies.overworldCollision(),
+                doorDependencies.roomObjectMutations(),
+                doorDependencies.roomSessionViews(),
+                doorDependencies.roomTileRedraw()));
+        values.roomDoorInteractions(new RoomDoorInteractions(loadedRooms, doorDependencies, chests, lifts));
+        values.roomLoadCoordinator(new RoomLoadCoordinator(
+                loadedRooms,
+                new RoomLoadCoordinator.Dependencies(
+                        values.entityFrame(),
+                        values.puzzles(),
+                        values.followers(),
+                        values.location(),
+                        values.terrain(),
+                        values.chestContentsTable(),
+                        values.dungeonRoomEventTable(),
+                        values.enemyCombatTables(),
+                        values.enemyDropResolver(),
+                        values.entityInputs(),
+                        values.entityRandomByteSource(),
+                        values.entitySpriteHandlerCatalog(),
+                        values.gpu(),
+                        values.indoorTorchPaletteEffect(),
+                        values.overworldCollision(),
+                        values.overworldTilesetTable(),
+                        values.owlEventDialogResolver(),
+                        values.romData(),
+                        values.romTables(),
+                        roomLoaded,
+                        values.roomLoader(),
+                        values.roomObjectMutations(),
+                        values.roomPaletteLoader(),
+                        values.roomPuzzleController(),
+                        values.roomSessionViews(),
+                        values.roomState(),
+                        values.roomStoryState(),
+                        resetRoomTransients,
+                        installRoom,
+                        values.roomRuntimeServices())));
+        values.roomEntityRewards(new RoomEntityRewards(new RoomEntityRewards.Dependencies(
+                values.followers(),
+                values.items(),
+                values.entityFrame(),
+                values.entityInputs(),
+                values.roomSessionViews(),
+                values.roomState(),
+                values.roomStoryState())));
+        values.roomTransitionController(new RoomTransitionController(
+                loadedRooms,
+                new RoomTransitionController.Dependencies(
+                        values.followers(),
+                        values.puzzles(),
+                        values.roomCollisionQueries(),
+                        values.roomSessionViews(),
+                        values.roomStoryState(),
+                        values.items(),
+                        values.location(),
+                        values.entityFrame(),
+                        values.manboWarpResolver(),
+                        values.roomLoadCoordinator(),
+                        values.roomState(),
+                        values.scrollNavigation())));
+        values.entityEffects(new RoomEntitySimulation.EffectsDependencies(
+                values.entityFrame(),
+                values.followers(),
+                values.items(),
+                values.location(),
+                values.terrain(),
+                values.entityFrame(),
+                values.roomEntityRewards(),
+                values.roomObjectMutations(),
+                values.roomPuzzleController(),
+                values.roomSessionViews(),
+                values.roomState(),
+                values.roomObjectMutations(),
+                values.roomTransitionController(),
+                values.transientVfxSystem(),
+                transientVfxEnabled));
+        values.entityConfiguration(new RoomEntitySimulation.SetupDependencies(
+                values.entityFrame(),
+                values.followers(),
+                values.items(),
+                values.location(),
+                values.puzzles(),
+                values.terrain(),
+                values.entityFrame(),
+                values.entityInputs(),
+                values.indoorTorchPaletteEffect(),
+                values.owlStatueDialogResolver(),
+                values.roomObjectMutations(),
+                values.roomState(),
+                values.roomStoryState(),
+                values.roomTransitionController()));
+        var entityDependencies = new RoomEntityBridge.Dependencies(
+                values.entityFrame(),
+                values.roomState(),
+                values.entityInputs(),
+                values.followers(),
+                values.items(),
+                values.location(),
+                values.terrain(),
+                values.entityEffects(),
+                values.entityConfiguration(),
+                values.entityRandomByteSource(),
+                values.gpu(),
+                values.romData(),
+                values.roomLoadCoordinator());
+        var entitySimulation = new RoomEntitySimulation(
+                new RoomEntitySimulation.Dependencies(
+                        entityDependencies.entityFrame(),
+                        entityDependencies.entityRandomByteSource(),
+                        entityDependencies.followers(),
+                        entityDependencies.items(),
+                        entityDependencies.location()),
+                entityDependencies.entityConfiguration(),
+                entityDependencies.entityEffects());
+        values.entityBridge(new RoomEntityBridge(loadedRooms, entityDependencies, entitySimulation));
+    }
+}

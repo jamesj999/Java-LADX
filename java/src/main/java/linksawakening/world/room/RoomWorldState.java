@@ -1,0 +1,243 @@
+package linksawakening.world.room;
+
+import java.util.Arrays;
+import java.util.Objects;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomSymbols;
+import linksawakening.world.transition.Warp;
+
+/** Persistent room-status regions, dungeon inventory, and ROM map-layout queries. */
+final class RoomWorldState implements RoomDungeon {
+    private final LoadedRoomHandle rooms;
+    private final RoomDungeonLiveView view;
+
+    @Override
+    public RoomDungeonLiveView view() {
+        return view;
+    }
+
+    @Override
+    public void setDungeonItemForDebug(int mapId, int index, int value) {
+        dungeonItemState.setFlagForDebug(mapId, index, value);
+    }
+
+    @Override
+    public byte[] dungeonMinimapRoomStatusSnapshot() {
+        RoomRuntime room = rooms.currentOrNull();
+        return room == null ? new byte[64] : dungeonMinimapRoomStatusSnapshot(room.room());
+    }
+
+    private static final int ROOM_STATUS_TABLE_SIZE = 0x100;
+    private final Rom romData;
+    private static final int COLOR_DUNGEON_SAVE_STATUS_SIZE = 0x20;
+    private static final int INDOOR_MAP_LAYOUT_SIZE = 0x40;
+    private final byte[] overworldRoomStatus = new byte[0x100];
+    private final byte[] indoorARoomStatus = new byte[0x100];
+    private final byte[] indoorBRoomStatus = new byte[0x100];
+    private final byte[] colorDungeonRoomStatus = new byte[0x100];
+    private final byte[] dungeonProgressFlags = new byte[0x1A];
+    private final DungeonItemState dungeonItemState = new DungeonItemState();
+
+    RoomWorldState(Rom romData, LoadedRoomHandle rooms) {
+        this.rooms = Objects.requireNonNull(rooms);
+        view = new RoomDungeonLiveView(this, -1);
+        this.romData = romData;
+    }
+
+    @Override
+    public byte[] overworldRoomStatusSnapshot() {
+        return overworldRoomStatus.clone();
+    }
+
+    @Override
+    public byte[] indoorARoomStatusSnapshot() {
+        return indoorARoomStatus.clone();
+    }
+
+    @Override
+    public byte[] indoorBRoomStatusSnapshot() {
+        return indoorBRoomStatus.clone();
+    }
+
+    @Override
+    public byte[] colorDungeonRoomStatusSnapshot() {
+        return Arrays.copyOf(colorDungeonRoomStatus, COLOR_DUNGEON_SAVE_STATUS_SIZE);
+    }
+
+    @Override
+    public byte[] dungeonItemFlagsSnapshot() {
+        return dungeonItemState.dungeonItemFlagsSnapshot();
+    }
+
+    @Override
+    public byte[] colorDungeonItemFlagsSnapshot() {
+        return dungeonItemState.colorDungeonItemFlagsSnapshot();
+    }
+
+    @Override
+    public byte[] currentDungeonItemFlagsSnapshot() {
+        return dungeonItemState.currentFlagsSnapshot();
+    }
+
+    @Override
+    public void restoreDungeonItemFlags(byte[] dungeonFlags, byte[] colorFlags) {
+        dungeonItemState.restore(dungeonFlags, colorFlags);
+    }
+
+    @Override
+    public byte[] dungeonProgressFlagsSnapshot() {
+        return Arrays.copyOf(dungeonProgressFlags, 0x08);
+    }
+
+    @Override
+    public void restoreDungeonProgressFlags(byte[] flags) {
+        requireLength(flags, 0x08, "dungeonProgressFlags");
+        Arrays.fill(dungeonProgressFlags, (byte) 0);
+        System.arraycopy(flags, 0, dungeonProgressFlags, 0, flags.length);
+    }
+
+    int overworldRoomStatusForTest(int roomId) {
+        if (roomId < 0 || roomId >= overworldRoomStatus.length) {
+            throw new IllegalArgumentException("Room id out of range: " + roomId);
+        }
+        return Byte.toUnsignedInt(overworldRoomStatus[roomId]);
+    }
+
+    int indoorRoomStatusForTest(int mapId, int roomId) {
+        if (roomId < 0 || roomId >= 0x100) {
+            throw new IllegalArgumentException("Room id out of range: " + roomId);
+        }
+        return Byte.toUnsignedInt(indoorStatusTableForMap(mapId)[roomId]);
+    }
+
+    int findIndoorMapPosition(int mapId, int roomId) {
+        int layoutOffset = indoorMapLayoutOffset(mapId);
+        if (layoutOffset < 0 || layoutOffset + INDOOR_MAP_LAYOUT_SIZE > romData.size()) {
+            return -1;
+        }
+        if ((roomId & 0xFF) == 0) {
+            // MapLayout11 intentionally uses room $00 as both filler and the
+            // Color Dungeon boss room. External loads target the real room;
+            // subsequent transitions retain this position as wIndoorRoom.
+            return mapId == 0xFF ? 0x19 : -1;
+        }
+        for (int position = 0; position < INDOOR_MAP_LAYOUT_SIZE; position++) {
+            if (romData.u8(RomAddress.fromOffset(layoutOffset + position)) == (roomId & 0xFF)) {
+                return position;
+            }
+        }
+        return -1;
+    }
+
+    int indoorMapLayoutOffset(int mapId) {
+        if (mapId == 0xFF) {
+            return RomSymbols.MapLayout11.offset();
+        }
+        if (mapId < 0 || mapId >= 0x0B) {
+            return -1;
+        }
+        // bank0:$192E and bank14:$58B7 select MapLayout12 once Eagle's
+        // Tower's pillar-collapse bit is set in wHasInstrument7.
+        if (mapId == 0x06 && (dungeonProgressFlags[0x06] & 0x04) != 0) {
+            return RomSymbols.MapLayout12.offset();
+        }
+        return RomSymbols.MapLayout0.plus(mapId * INDOOR_MAP_LAYOUT_SIZE).offset();
+    }
+
+    byte[] indoorStatusTableForMap(int mapId) {
+        if (mapId == 0xFF) {
+            return colorDungeonRoomStatus;
+        }
+        return mapId >= 0x06 && mapId < 0x1A ? indoorBRoomStatus : indoorARoomStatus;
+    }
+
+    private static void requireLength(byte[] values, int expectedLength, String label) {
+        if (values == null) {
+            throw new NullPointerException(label);
+        }
+        if (values.length != expectedLength) {
+            throw new IllegalArgumentException(
+                    label + " must contain " + expectedLength + " bytes, got " + values.length);
+        }
+    }
+
+    int minimapRoomAtOffset(int offset) {
+        return romData.u8(RomAddress.fromOffset(offset));
+    }
+
+    byte[] dungeonMinimapRoomStatusSnapshot(ActiveRoom activeRoom) {
+        byte[] result = new byte[64];
+        int offset = indoorMapLayoutOffset(activeRoom.mapId());
+        if (offset < 0) return result;
+        byte[] status = indoorStatusTableForMap(activeRoom.mapId());
+        for (int i = 0; i < result.length; i++) {
+            int room = romData.u8(RomAddress.fromOffset(offset + i));
+            if (room < status.length) result[i] = status[room];
+        }
+        return result;
+    }
+
+    int activeRoomStatusFlags(ActiveRoom activeRoom) {
+        byte[] status = activeRoom.mapCategory() == Warp.CATEGORY_OVERWORLD
+                ? overworldRoomStatus
+                : indoorStatusTableForMap(activeRoom.mapId());
+        return Byte.toUnsignedInt(status[activeRoom.roomId()]);
+    }
+
+    void restoreRoomStatuses(
+            byte[] overworldStatus, byte[] indoorAStatus, byte[] indoorBStatus, byte[] colorDungeonStatus) {
+        requireLength(overworldStatus, ROOM_STATUS_TABLE_SIZE, "overworldStatus");
+        requireLength(indoorAStatus, ROOM_STATUS_TABLE_SIZE, "indoorAStatus");
+        requireLength(indoorBStatus, ROOM_STATUS_TABLE_SIZE, "indoorBStatus");
+        requireLength(colorDungeonStatus, COLOR_DUNGEON_SAVE_STATUS_SIZE, "colorDungeonStatus");
+        System.arraycopy(overworldStatus, 0, overworldRoomStatus, 0, ROOM_STATUS_TABLE_SIZE);
+        System.arraycopy(indoorAStatus, 0, indoorARoomStatus, 0, ROOM_STATUS_TABLE_SIZE);
+        System.arraycopy(indoorBStatus, 0, indoorBRoomStatus, 0, ROOM_STATUS_TABLE_SIZE);
+        Arrays.fill(colorDungeonRoomStatus, (byte) 0);
+        System.arraycopy(colorDungeonStatus, 0, colorDungeonRoomStatus, 0, COLOR_DUNGEON_SAVE_STATUS_SIZE);
+    }
+
+    void markCompleted(ActiveRoom room) {
+        byte[] status = room.mapCategory() == linksawakening.world.transition.Warp.CATEGORY_OVERWORLD
+                ? overworldRoomStatus
+                : indoorStatusTableForMap(room.mapId());
+        status[room.roomId()] |= (byte) RoomSessionRules.ROOM_STATUS_EVENT_1;
+    }
+
+    byte[] indoorARoomStatus() {
+        return this.indoorARoomStatus;
+    }
+
+    DungeonItemState dungeonItemState() {
+        return this.dungeonItemState;
+    }
+
+    int nextVisitedWarpHole(int source) {
+        // WarpLocationsTable ($19:5C6A) is a four-room cycle.
+        var table = RomSymbols.WarpLocationsTable;
+        int next = source;
+        for (int i = 0; i < 4; i++) {
+            next = romData.u8(table.plus(next));
+            if (!Warp.isOverworldWarpHoleRoom(next)) break;
+            if ((overworldRoomStatus[next] & 0x80) != 0) return next;
+        }
+        return source;
+    }
+
+    byte[] overworldRoomStatus() {
+        return this.overworldRoomStatus;
+    }
+
+    byte[] dungeonProgressFlags() {
+        return this.dungeonProgressFlags;
+    }
+
+    byte[] indoorBRoomStatus() {
+        return this.indoorBRoomStatus;
+    }
+
+    byte[] colorDungeonRoomStatus() {
+        return this.colorDungeonRoomStatus;
+    }
+}

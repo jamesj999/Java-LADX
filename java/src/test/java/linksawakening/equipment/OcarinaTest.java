@@ -1,24 +1,22 @@
 package linksawakening.equipment;
 
-import linksawakening.gameplay.GameplaySoundEvent;
-import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.state.PlayerState;
-import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.state.PlayerState;
+import org.junit.jupiter.api.Test;
 
 final class OcarinaTest {
 
     @Test
     void startsTheRomBalladCountdownAndSound() {
         PlayerState player = new PlayerState();
-        player.setOcarinaSongFlags(0x04);
-        player.setSelectedSongIndex(0);
+        player.progression().setOcarinaSongFlags(0x04);
+        player.progression().setSelectedSongIndex(0);
         RecordingTarget target = new RecordingTarget();
         List<GameplaySoundEvent> sounds = new ArrayList<>();
         Ocarina ocarina = new Ocarina(player, sounds::add, target);
@@ -36,17 +34,17 @@ final class OcarinaTest {
     @Test
     void selectsTheRomMamboAndFrogDurations() {
         PlayerState player = new PlayerState();
-        player.setOcarinaSongFlags(0x07);
+        player.progression().setOcarinaSongFlags(0x07);
         RecordingTarget target = new RecordingTarget();
         Ocarina ocarina = new Ocarina(player, event -> {}, target);
 
-        player.setSelectedSongIndex(1);
+        player.progression().setSelectedSongIndex(1);
         ocarina.onPress();
         assertEquals(0xD0, target.countdown);
         assertEquals(GameplaySoundEvent.OCARINA_MAMBO, target.sound);
 
         target.playing = false;
-        player.setSelectedSongIndex(2);
+        player.progression().setSelectedSongIndex(2);
         ocarina.onPress();
         assertEquals(0xBB, target.countdown);
         assertEquals(GameplaySoundEvent.OCARINA_FROG, target.sound);
@@ -120,9 +118,7 @@ final class OcarinaTest {
             this.sound = switch (selectedSong) {
                 case 1 -> GameplaySoundEvent.OCARINA_MAMBO;
                 case 2 -> GameplaySoundEvent.OCARINA_FROG;
-                default -> songFlags == 0
-                    ? GameplaySoundEvent.OCARINA_NO_SONG
-                    : GameplaySoundEvent.OCARINA_BALLAD;
+                default -> songFlags == 0 ? GameplaySoundEvent.OCARINA_NO_SONG : GameplaySoundEvent.OCARINA_BALLAD;
             };
             return true;
         }

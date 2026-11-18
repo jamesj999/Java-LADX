@@ -1,0 +1,145 @@
+package linksawakening.app;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_F2;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_F4;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_TAB;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+
+import java.util.Arrays;
+import linksawakening.app.debug.DebugMenu;
+import linksawakening.config.AppConfig;
+import linksawakening.testing.RequiresRom;
+import org.junit.jupiter.api.Test;
+
+@RequiresRom
+class DebugMenuIntegrationTest {
+    @Test
+    void menuPausesEditsTeleportsAndConsumesEscape() throws Exception {
+        var game = new GameSession();
+        game.initializeHeadlessNewGame();
+        game.state().options().replace(AppConfig.parse("{\"debugEnabled\":true}"));
+        game.onKeyEvent(GLFW_KEY_F2, GLFW_PRESS);
+        game.onKeyEvent(GLFW_KEY_RIGHT, GLFW_PRESS);
+        game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
+        var menu = menu(game);
+        assertTrue(menu.isOpen());
+        int frame = game.diagnostics().frameCounter();
+        game.headlessFrame();
+        game.headlessFrame();
+        assertEquals(frame, game.diagnostics().frameCounter());
+        // Teleport to Tail Cave using the same menu actions as desktop.
+        menu.entries().get(0).write().accept(1);
+        menu.entries().get(1).write().accept(0);
+        menu.entries().get(2).write().accept(0x17);
+        menu.entries().get(3).write().accept(72);
+        menu.entries().get(4).write().accept(96);
+        game.onKeyEvent(GLFW_KEY_ENTER, GLFW_PRESS);
+        assertEquals(0x17, game.diagnostics().roomSession().rooms().currentRoomId());
+        assertEquals(1, game.diagnostics().roomSession().rooms().mapCategory());
+        assertEquals(72, game.diagnostics().link().position().pixelX());
+        assertEquals(96, game.diagnostics().link().position().pixelY());
+        // Exercise category changes and the separate Color Dungeon tables.
+        teleport(game, menu, 2, 0, 0x19);
+        assertEquals(2, game.diagnostics().roomSession().rooms().mapCategory());
+        teleport(game, menu, 1, 255, 0x12);
+        assertEquals(255, game.diagnostics().roomSession().rooms().mapId());
+        teleport(game, menu, 0, 0, 0x92);
+        assertEquals(0, game.diagnostics().roomSession().rooms().mapCategory());
+        assertEquals(0x92, game.diagnostics().roomSession().rooms().currentRoomId());
+        game.onKeyEvent(GLFW_KEY_TAB, GLFW_PRESS);
+        var sword = menu.entries().stream()
+                .filter(e -> e.label().equals("A"))
+                .findFirst()
+                .orElseThrow();
+        sword.write().accept(0);
+        assertEquals(0, game.diagnostics().playerState().inventory().itemA());
+        game.onKeyEvent(GLFW_KEY_TAB, GLFW_PRESS);
+        game.diagnostics().playerState().playerRewards().applyEntityPickup(0x2E);
+        menu.entries().getFirst().write().accept(123);
+        assertEquals(123, game.diagnostics().playerState().wallet().rupees());
+        assertEquals(0, game.diagnostics().playerState().wallet().addRupeeBuffer());
+        game.onKeyEvent(GLFW_KEY_ESCAPE, GLFW_PRESS);
+        assertFalse(menu.isOpen());
+        assertTrue(game.lifecycle().running());
+        game.headlessFrame();
+        assertEquals((frame + 1) & 255, game.diagnostics().frameCounter());
+    }
+
+    @Test
+    void openingHouseMenuRemainsInteractiveAndEscapeDoesNotQuitGameplay() throws Exception {
+        var game = new GameSession();
+        game.initializeHeadlessNewGame();
+        game.state().options().replace(AppConfig.parse("{\"debugEnabled\":true}"));
+        // Keep the real Marin/Tarin wake-up sequence; do not skip it with F2.
+        var before = game.diagnostics().headlessState();
+        game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
+        assertTrue(menu(game).isOpen());
+        byte[] first = game.headlessFrame();
+        game.onKeyEvent(GLFW_KEY_DOWN, GLFW_PRESS);
+        assertEquals(1, menu(game).selected());
+        assertFalse(Arrays.equals(first, game.headlessFrame()));
+        game.onKeyEvent(GLFW_KEY_TAB, GLFW_PRESS);
+        assertEquals("DEBUG 2/5 INVENTORY", menu(game).title());
+        game.onKeyEvent(GLFW_KEY_RIGHT, GLFW_PRESS);
+        assertEquals(1, game.diagnostics().playerState().inventory().itemA());
+        game.headlessFrame();
+        assertEquals(before.frame(), game.diagnostics().frameCounter());
+        game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
+        assertFalse(menu(game).isOpen());
+        game.headlessFrame();
+        assertEquals((before.frame() + 1) & 255, game.diagnostics().frameCounter());
+        game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
+        assertTrue(menu(game).isOpen());
+        game.headlessFrame();
+        game.onKeyEvent(GLFW_KEY_ESCAPE, GLFW_PRESS);
+        assertFalse(menu(game).isOpen());
+        game.onKeyEvent(GLFW_KEY_ESCAPE, GLFW_PRESS);
+        assertTrue(game.lifecycle().running());
+        game.headlessFrame(); // Wake-up blocks and discards the save request.
+        assertTrue(game.lifecycle().running());
+    }
+
+    @Test
+    void configDisablesMenu() throws Exception {
+        var game = new GameSession();
+        game.initializeHeadlessNewGame();
+        game.state().options().replace(AppConfig.parse("{\"debugEnabled\":false}"));
+        game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
+        assertFalse(menu(game).isOpen(), "The prewired debug menu must remain closed");
+    }
+
+    @Test
+    void menuWaitsForRoomTransitionsAndDialogs() throws Exception {
+        var game = new GameSession();
+        game.initializeHeadlessNewGame();
+        game.state().options().replace(AppConfig.parse("{\"debugEnabled\":true}"));
+        game.onKeyEvent(GLFW_KEY_F2, GLFW_PRESS);
+        game.diagnostics().transitionController().startFadeOut(() -> {});
+        game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
+        assertFalse(menu(game).isOpen(), "The prewired debug menu must remain closed");
+        for (int i = 0; i < 32; i++) game.diagnostics().transitionController().tick();
+        game.diagnostics().dialogController().open("Test dialog");
+        game.onKeyEvent(GLFW_KEY_F4, GLFW_PRESS);
+        assertFalse(menu(game).isOpen(), "The prewired debug menu must remain closed");
+    }
+
+    private void teleport(GameSession game, DebugMenu menu, int category, int map, int room) {
+        menu.entries().get(0).write().accept(category);
+        menu.entries().get(1).write().accept(map);
+        menu.entries().get(2).write().accept(room);
+        game.onKeyEvent(GLFW_KEY_ENTER, GLFW_PRESS);
+        game.headlessFrame();
+        assertEquals("Teleported. F4 resumes.", menu.message());
+    }
+
+    private DebugMenu menu(GameSession game) throws Exception {
+        return game.context.runtime().debug().menu();
+    }
+}

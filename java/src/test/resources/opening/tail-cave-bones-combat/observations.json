@@ -1,0 +1,19 @@
+{
+  "first_jump_checkpoint": 588,
+  "java_link": [
+    41,
+    72
+  ],
+  "rom_link": [
+    41,
+    72
+  ],
+  "full_frame_differing_pixels": 220,
+  "final_checkpoint": 599,
+  "rom_boss_defeated": true,
+  "java_boss_defeated": false,
+  "limitations": [
+    "Airborne steering and jump animation differ.",
+    "Java Rolling Bones fight remains incomplete."
+  ]
+}

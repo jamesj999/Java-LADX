@@ -1,38 +1,28 @@
 package linksawakening.equipment;
 
+import java.util.Objects;
+import java.util.function.BooleanSupplier;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.state.PlayerState;
 
-import java.util.Objects;
-import java.util.function.BooleanSupplier;
-
 /** Port of {@code UseMagicPowder} and {@code SprinkleMagicPowder}. */
-public final class MagicPowder implements EquippedItem {
-
-    public interface SprinkleTarget {
-        /** Allocates the ROM's type-$08 sprinkle entity. */
-        boolean sprinkleMagicPowder();
-
-        /** Writes the ROM's generic item attack-step countdown ($0E). */
-        void startMagicPowderAttackStep();
-
-        /** Mirrors the shared Link attack-step gate before UseMagicPowder. */
-        boolean magicPowderAttackStepActive();
-    }
+public final class MagicPowder implements EquipmentItem {
 
     private final PlayerState playerState;
     private final GameplaySoundSink soundSink;
     private final SprinkleTarget target;
     private final BooleanSupplier itemUseAllowed;
 
-    public MagicPowder(PlayerState playerState, GameplaySoundSink soundSink,
-                       SprinkleTarget target) {
+    public MagicPowder(PlayerState playerState, GameplaySoundSink soundSink, SprinkleTarget target) {
         this(playerState, soundSink, target, () -> true);
     }
 
-    public MagicPowder(PlayerState playerState, GameplaySoundSink soundSink,
-                       SprinkleTarget target, BooleanSupplier itemUseAllowed) {
+    public MagicPowder(
+            PlayerState playerState,
+            GameplaySoundSink soundSink,
+            SprinkleTarget target,
+            BooleanSupplier itemUseAllowed) {
         this.playerState = Objects.requireNonNull(playerState, "playerState");
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
         this.target = Objects.requireNonNull(target, "target");
@@ -44,7 +34,15 @@ public final class MagicPowder implements EquippedItem {
         if (!itemUseAllowed.getAsBoolean() || target.magicPowderAttackStepActive()) {
             return;
         }
-        if (playerState.magicPowderCount() == 0) {
+        // UseMagicPowder $00:1492-14A6 checks the mushroom before the
+        // powder count. Grounded use starts DIALOG_GOT_TOADSTOOL/$2A;
+        // ApplyGotItem later shows the item and opens Dialog00E.
+        if (playerState.ammunition().hasToadstool()) {
+            if (target.linkPositionZ() != 0) return;
+            target.presentToadstool();
+            return;
+        }
+        if (playerState.ammunition().magicPowderCount() == 0) {
             soundSink.play(GameplaySoundEvent.WRONG_ANSWER);
             return;
         }
@@ -55,7 +53,7 @@ public final class MagicPowder implements EquippedItem {
         if (!target.sprinkleMagicPowder()) {
             return;
         }
-        if (!playerState.consumeMagicPowder()) {
+        if (!playerState.ammunition().consumeMagicPowder()) {
             throw new IllegalStateException("Magic Powder disappeared after a successful spawn");
         }
         target.startMagicPowderAttackStep();
@@ -70,5 +68,20 @@ public final class MagicPowder implements EquippedItem {
     @Override
     public boolean locksFacing() {
         return target.magicPowderAttackStepActive();
+    }
+    /** Contract for sprinkle target. */
+    public interface SprinkleTarget {
+        /** Allocates the ROM's type-$08 sprinkle entity. */
+        boolean sprinkleMagicPowder();
+
+        /** Writes the ROM's generic item attack-step countdown ($0E). */
+        void startMagicPowderAttackStep();
+
+        /** Mirrors the shared Link attack-step gate before UseMagicPowder. */
+        boolean magicPowderAttackStepActive();
+
+        int linkPositionZ();
+
+        void presentToadstool();
     }
 }

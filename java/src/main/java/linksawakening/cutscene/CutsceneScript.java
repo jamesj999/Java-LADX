@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/** Java scene-sequence contract used by the IntroHandler presentation adapter. */
 public final class CutsceneScript {
 
     private final List<CutsceneStep> steps;

@@ -1,0 +1,123 @@
+package linksawakening.world.entity.motion;
+
+import java.util.function.IntSupplier;
+import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
+import linksawakening.world.entity.RoomEntity;
+
+/** Bank-$06 WizrobeProjectileEntityHandler movement and palette pulse. */
+public final class WizrobeProjectileMotion {
+    private static final int ENTITY_WIZROBE_PROJECTILE = 0x22;
+    private static final int[] SPEED_X_BY_DIRECTION = {0x20, 0xE0, 0x00, 0x00};
+    private static final int[] SPEED_Y_BY_DIRECTION = {0x00, 0x00, 0xE0, 0x20};
+
+    private final int[] direction = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+
+    public void initialize(int slot, IntSupplier randomByteSupplier) {
+        if (randomByteSupplier == null) {
+            throw new IllegalArgumentException("Wizrobe projectile random-byte supplier cannot be null");
+        }
+        reset(slot);
+        direction[slot] = randomByteSupplier.getAsInt() & 0x03;
+        initialized[slot] = true;
+    }
+
+    public void initializeSpawn(int slot, int projectileDirection) {
+        checkDirection(projectileDirection);
+        reset(slot);
+        direction[slot] = projectileDirection;
+        speedX[slot] = SPEED_X_BY_DIRECTION[projectileDirection];
+        speedY[slot] = SPEED_Y_BY_DIRECTION[projectileDirection];
+        initialized[slot] = true;
+    }
+
+    public RoomEntity advance(RoomEntity entity) {
+        if ((entity.type() & 0xFF) != ENTITY_WIZROBE_PROJECTILE) {
+            throw new IllegalArgumentException(
+                    "Unsupported Wizrobe projectile type: 0x" + Integer.toHexString(entity.type()));
+        }
+        int slot = entity.slot();
+        if (!initialized[slot]) {
+            initializeSpawn(slot, 0);
+        }
+        int x = addSpeed(entity.x(), speedX[slot], speedXAccumulator, slot);
+        int y = addSpeed(entity.y(), speedY[slot], speedYAccumulator, slot);
+        return EntitySnapshots.withMotion(
+                entity, x, y, entity.spriteVariant(), entity.entityFlipAttribute(), entity.z(), -1, false);
+    }
+
+    public int flipAttribute(int frameCounter) {
+        return ((frameCounter & 0xFF) & 0x04) << 2;
+    }
+
+    public void clear(int slot) {
+        reset(slot);
+        initialized[slot] = false;
+    }
+
+    public int direction(int slot) {
+        return direction[slot] & 0x03;
+    }
+
+    public int speedX(int slot) {
+        return speedX[slot] & 0xFF;
+    }
+
+    public int speedY(int slot) {
+        return speedY[slot] & 0xFF;
+    }
+
+    void reset(int slot) {
+        direction[slot] = 0;
+        speedX[slot] = 0;
+        speedY[slot] = 0;
+        speedXAccumulator[slot] = 0;
+        speedYAccumulator[slot] = 0;
+    }
+
+    private static int addSpeed(int position, int speed, int[] accumulator, int slot) {
+        if ((speed & 0xFF) == 0) {
+            return position & 0xFF;
+        }
+        int fractionalSum = accumulator[slot] + ((speed << 4) & 0xF0);
+        accumulator[slot] = fractionalSum & 0xFF;
+        int signedSpeed = signedByte(speed);
+        int delta = signedSpeed >> 4;
+        if (fractionalSum > 0xFF) {
+            delta++;
+        }
+        return (position + delta) & 0xFF;
+    }
+
+    private static int signedByte(int value) {
+        int unsigned = value & 0xFF;
+        return unsigned < 0x80 ? unsigned : unsigned - 0x100;
+    }
+
+    static void checkDirection(int direction) {
+        if (direction < 0 || direction > 3) {
+            throw new IllegalArgumentException("Wizrobe projectile direction out of range: " + direction);
+        }
+    }
+
+    int[] speedX() {
+        return this.speedX;
+    }
+
+    int[] speedY() {
+        return this.speedY;
+    }
+
+    int[] direction() {
+        return this.direction;
+    }
+
+    boolean[] initialized() {
+        return this.initialized;
+    }
+}

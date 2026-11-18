@@ -1,0 +1,91 @@
+package linksawakening.app.screen;
+
+import static linksawakening.input.KeyCodes.KEY_ENTER;
+import static linksawakening.input.KeyCodes.PRESS;
+
+import java.util.Objects;
+import linksawakening.app.audio.MusicDirector;
+import linksawakening.app.gameplay.interaction.DialogSoundRouting;
+import linksawakening.app.story.MusicRequests;
+import linksawakening.cutscene.CutsceneManager;
+import linksawakening.dialog.DialogController;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.render.RenderScreen;
+
+/**
+ * Ticks intro dialogs and cutscenes before completing the input frame. One instance is retained for the
+ * owning session.
+ */
+public final class CutsceneScreen implements Screen {
+
+    private final Dependencies dependencies;
+    private int inputDelay;
+
+    public void delayInput(int frames) {
+        inputDelay = frames;
+    }
+
+    public CutsceneScreen(Dependencies dependencies) {
+        this.dependencies = Objects.requireNonNull(dependencies);
+    }
+
+    @Override
+    public void tick() {
+        if (inputDelay > 0) inputDelay--;
+
+        dependencies.dialogController().tick();
+        dependencies.sounds().route();
+
+        if (dependencies.cutsceneManager().isActive()) {
+            dependencies.cutsceneManager().tick();
+        }
+        if (!dependencies.cutsceneManager().isActive()
+                && dependencies.cutsceneManager().isShowingTitleScene()) {
+            dependencies.navigator().show(ScreenKind.TITLE);
+        }
+        dependencies.inputState().tickEdges();
+    }
+
+    @Override
+    public void onKey(int key, int action) {
+        if (inputDelay > 0) return;
+        if (key == KEY_ENTER
+                && action == PRESS
+                && dependencies.cutsceneManager().skipIntroToTitle()) {
+            dependencies.navigator().show(ScreenKind.TITLE);
+            dependencies.music().playDirectMusic(MusicDirector.directTitleScreenMusicTrack());
+            return;
+        }
+        if (action == PRESS
+                && (key == dependencies.inputConfig().aKey()
+                        || key == dependencies.inputConfig().bKey()
+                        || key == KEY_ENTER)) {
+            dependencies.dialogController().advance();
+        }
+    }
+
+    @Override
+    public RenderScreen renderScreen() {
+        return RenderScreen.CUTSCENE;
+    }
+    /** Required screen collaborators, validated before the first tick. */
+    public record Dependencies(
+            CutsceneManager cutsceneManager,
+            InputState inputState,
+            DialogController dialogController,
+            InputConfig inputConfig,
+            DialogSoundRouting sounds,
+            ScreenNavigator navigator,
+            MusicRequests music) {
+        public Dependencies {
+            Objects.requireNonNull(cutsceneManager);
+            Objects.requireNonNull(inputState);
+            Objects.requireNonNull(dialogController);
+            Objects.requireNonNull(inputConfig);
+            Objects.requireNonNull(sounds);
+            Objects.requireNonNull(navigator);
+            Objects.requireNonNull(music);
+        }
+    }
+}

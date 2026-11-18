@@ -1,11 +1,9 @@
 package linksawakening.equipment;
 
-import linksawakening.input.InputConfig;
-import linksawakening.input.InputState;
-import linksawakening.state.PlayerState;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_B;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN;
@@ -16,21 +14,28 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.state.Direction;
+import linksawakening.state.InventoryItem;
+import linksawakening.state.PlayerState;
+import org.junit.jupiter.api.Test;
+
 final class EquipmentControllerTest {
 
     @Test
     void dispatchesPressReleaseAndHeldStateForEquippedButtons() {
         InputState input = new InputState();
-        InputConfig inputConfig = new InputConfig(GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN,
-            GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_A, GLFW_KEY_B);
+        InputConfig inputConfig = new InputConfig(
+                GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_A, GLFW_KEY_B);
         PlayerState player = new PlayerState();
-        player.setItemA(PlayerState.INVENTORY_SWORD);
-        player.setItemB(PlayerState.INVENTORY_BOMBS);
+        player.inventory().setItemA(InventoryItem.SWORD.romValue());
+        player.inventory().setItemB(InventoryItem.BOMBS.romValue());
         ItemRegistry registry = new ItemRegistry();
         RecordingItem sword = new RecordingItem();
         RecordingItem bombs = new RecordingItem();
-        registry.register(PlayerState.INVENTORY_SWORD, sword);
-        registry.register(PlayerState.INVENTORY_BOMBS, bombs);
+        registry.register(InventoryItem.SWORD.romValue(), sword);
+        registry.register(InventoryItem.BOMBS.romValue(), bombs);
         EquipmentController controller = new EquipmentController(input, inputConfig, player, registry);
 
         input.onKeyEvent(GLFW_KEY_A, GLFW_PRESS);
@@ -55,13 +60,13 @@ final class EquipmentControllerTest {
     @Test
     void forwardsTheGlobalFrameCounterToEquippedItems() {
         InputState input = new InputState();
-        InputConfig inputConfig = new InputConfig(GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN,
-            GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_A, GLFW_KEY_B);
+        InputConfig inputConfig = new InputConfig(
+                GLFW_KEY_ENTER, GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_A, GLFW_KEY_B);
         PlayerState player = new PlayerState();
-        player.setItemA(PlayerState.INVENTORY_SWORD);
+        player.inventory().setItemA(InventoryItem.SWORD.romValue());
         ItemRegistry registry = new ItemRegistry();
         RecordingItem sword = new RecordingItem();
-        registry.register(PlayerState.INVENTORY_SWORD, sword);
+        registry.register(InventoryItem.SWORD.romValue(), sword);
         EquipmentController controller = new EquipmentController(input, inputConfig, player, registry);
 
         controller.tickEquippedItems(0xA5);
@@ -69,7 +74,46 @@ final class EquipmentControllerTest {
         assertEquals(0xA5, sword.frameCounter);
     }
 
-    private static final class RecordingItem implements EquippedItem {
+    @Test
+    void forcedAcquisitionSpinIsAvailableBeforeTheSwordIsEquipped() {
+        PlayerState player = new PlayerState();
+        player.inventory().setItemA(InventoryItem.EMPTY.romValue());
+        player.inventory().setItemB(InventoryItem.SHIELD.romValue());
+        player.equipmentLevels().setSwordLevel(0);
+        ItemRegistry registry = new ItemRegistry();
+        Sword sword = new Sword(Sword.Assets.animationOnly());
+        registry.register(InventoryItem.SWORD.romValue(), sword);
+        EquipmentController controller =
+                new EquipmentController(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7), player, registry);
+        assertNull(controller.activeSword());
+        sword.startSwordAcquisitionSpin(Direction.DOWN.javaIndex());
+        assertSame(sword, controller.activeSword());
+        sword.resetSpinAttack();
+        assertNull(controller.activeSword());
+    }
+
+    @Test
+    void blockedItemInputLetsASwingFinishWithoutHoldingOrStartingASpin() {
+        PlayerState player = new PlayerState();
+        player.inventory().setItemA(InventoryItem.SWORD.romValue());
+        ItemRegistry registry = new ItemRegistry();
+        Sword sword = new Sword(Sword.Assets.animationOnly());
+        registry.register(InventoryItem.SWORD.romValue(), sword);
+        EquipmentController controller =
+                new EquipmentController(new InputState(), new InputConfig(1, 2, 3, 4, 5, 6, 7), player, registry);
+        sword.onPress();
+        for (int frame = 0; frame < 32; frame++) controller.tickEquippedItemsWithoutInput(frame);
+        assertEquals(Sword.STATE_NONE, sword.state());
+        sword.onPress();
+        for (int frame = 0; frame < 80; frame++) sword.tick(true, frame);
+        assertEquals(Sword.STATE_HOLDING, sword.state());
+        controller.tickEquippedItemsWithoutInput(80);
+        assertEquals(Sword.STATE_NONE, sword.state());
+        assertEquals(0, sword.charge());
+        assertFalse(sword.spinAttackActive());
+    }
+
+    private static final class RecordingItem implements EquipmentItem {
         private int presses;
         private int releases;
         private int heldTicks;

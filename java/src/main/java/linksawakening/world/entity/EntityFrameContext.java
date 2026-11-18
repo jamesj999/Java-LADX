@@ -1,0 +1,80 @@
+package linksawakening.world.entity;
+
+import java.util.Objects;
+import java.util.function.IntSupplier;
+
+/** Immutable frame inputs; referenced collision and RNG services retain their identity. */
+public record EntityFrameContext(
+        int frameCounter,
+        int linkEntityX,
+        int linkEntityY,
+        int collisionType,
+        IntSupplier randomByteSupplier,
+        RoomEntityBackgroundCollision backgroundCollision,
+        RoomEntityObjectCollision objectCollision,
+        // Optional room geometry/history; null preserves the path without that room input.
+        LinkPositionHistory linkPositionHistory,
+        int linkZ,
+        boolean linkAirborne,
+        int linkDirection,
+        int entityYOffset,
+        EnemyProjectileCollision.LinkState projectileLinkState,
+        boolean swordCollisionActive,
+        int swordX,
+        int swordWidth,
+        int swordY,
+        int swordHeight,
+        int linkSpeedX,
+        int linkSpeedY,
+        boolean creditsGameplay,
+        boolean handlerLinkCollisionEnabled) {
+
+    public EntityFrameContext {
+        randomByteSupplier = Objects.requireNonNullElse(randomByteSupplier, EntityFrameRandom.REQUIRED_SOURCE);
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
+        objectCollision = RoomEntityObjectCollision.orNone(objectCollision);
+    }
+
+    public static EntityFrameContextBuilder builder() {
+        return new EntityFrameContextBuilder();
+    }
+
+    public EntityFrameContextBuilder toBuilder() {
+        return builder()
+                .frameCounter(frameCounter)
+                .linkEntityX(linkEntityX)
+                .linkEntityY(linkEntityY)
+                .collisionType(collisionType)
+                .randomByteSupplier(randomByteSupplier)
+                .backgroundCollision(backgroundCollision)
+                .objectCollision(objectCollision)
+                .linkPositionHistory(linkPositionHistory)
+                .linkZ(linkZ)
+                .linkAirborne(linkAirborne)
+                .linkDirection(linkDirection)
+                .entityYOffset(entityYOffset)
+                .projectileLinkState(projectileLinkState)
+                .swordCollisionActive(swordCollisionActive)
+                .swordX(swordX)
+                .swordWidth(swordWidth)
+                .swordY(swordY)
+                .swordHeight(swordHeight)
+                .linkSpeedX(linkSpeedX)
+                .linkSpeedY(linkSpeedY)
+                .creditsGameplay(creditsGameplay)
+                .handlerLinkCollisionEnabled(handlerLinkCollisionEnabled);
+    }
+
+    EntityFrameContext withRuntimeInputs(int frame, int linkX, int linkY, RoomEntityBackgroundCollision collision) {
+        return toBuilder()
+                .frameCounter(frame)
+                .linkEntityX(linkX)
+                .linkEntityY(linkY)
+                .backgroundCollision(collision)
+                .build();
+    }
+
+    EntityFrameContext withLinkSpeeds(int speedX, int speedY) {
+        return toBuilder().linkSpeedX(speedX).linkSpeedY(speedY).build();
+    }
+}

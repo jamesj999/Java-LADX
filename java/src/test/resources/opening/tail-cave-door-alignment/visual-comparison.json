@@ -1,0 +1,10 @@
+[
+  {
+    "checkpoint": 577,
+    "full_frame_rgb555_differing_pixels": 542
+  },
+  {
+    "checkpoint": 587,
+    "full_frame_rgb555_differing_pixels": 892
+  }
+]

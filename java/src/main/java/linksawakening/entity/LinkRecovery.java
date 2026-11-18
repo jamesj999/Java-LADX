@@ -1,0 +1,99 @@
+package linksawakening.entity;
+
+import java.util.Objects;
+import linksawakening.state.LinkMotionState;
+
+/** Link recovery state and operations used by ROM {@code ApplyLinkMotionState}. */
+final class LinkRecovery {
+    private final LinkComponentRef<LinkAirborne> linkAirborne;
+    private final LinkComponentRef<LinkAnimationState> linkAnimationState;
+    private final LinkComponentRef<LinkAnimator> linkAnimator;
+    private final LinkComponentRef<LinkDamage> linkDamage;
+    private final LinkComponentRef<LinkMotion> linkMotion;
+    private final LinkComponentRef<LinkServices> linkServices;
+    private final LinkComponentRef<LinkStateMachine> linkStateMachine;
+
+    int passOutCountdown = -1;
+    int passOutPaletteEffect;
+    int gameOverCountdown;
+
+    LinkRecovery(Dependencies dependencies) {
+        linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
+        linkAnimationState = Objects.requireNonNull(dependencies.linkAnimationState, "linkAnimationState");
+        linkAnimator = Objects.requireNonNull(dependencies.linkAnimator, "linkAnimator");
+        linkDamage = Objects.requireNonNull(dependencies.linkDamage, "linkDamage");
+        linkMotion = Objects.requireNonNull(dependencies.linkMotion, "linkMotion");
+        linkServices = Objects.requireNonNull(dependencies.linkServices, "linkServices");
+        linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
+    }
+
+    boolean accessIsPassingOut() {
+        return linkAirborne.get().accessRomMotionState() == LinkMotionState.PASS_OUT.romValue();
+    }
+
+    boolean accessGameOverScreenPending() {
+        return accessIsPassingOut() && passOutCountdown == 0;
+    }
+
+    int accessGameOverStage() {
+        return accessIsPassingOut() ? linkStateMachine.get().roomPhysics().accessRomPhysicsModifier() : 0;
+    }
+
+    int accessGameOverCountdown() {
+        return gameOverCountdown;
+    }
+
+    void accessPresentGameOverStage(int stage, int countdown) {
+        linkStateMachine.get().roomPhysics().physicsModifier(stage);
+        gameOverCountdown = countdown;
+    }
+
+    int accessPassOutCountdown() {
+        return passOutCountdown;
+    }
+
+    int accessPassOutBgPaletteEffectAddress() {
+        return accessIsPassingOut() && !accessGameOverScreenPending() ? 0x10 : 0;
+    }
+
+    int accessPassOutPaletteEffect() {
+        return passOutPaletteEffect;
+    }
+
+    int accessPassOutPaletteFrames() {
+        return accessIsPassingOut() ? 192 - passOutCountdown : 0;
+    }
+
+    void accessFinishGameOver() {
+        passOutCountdown = -1;
+        passOutPaletteEffect = 0;
+        gameOverCountdown = 0;
+    }
+
+    void accessBeginPassOut() {
+        linkStateMachine.get().status().motionState(LinkMotionState.PASS_OUT);
+        linkStateMachine.get().roomPhysics().physicsModifier(0);
+        linkServices.get().playerState.vitals().setInvincibilityCounter(0);
+        linkDamage.get().collisionIgnoreFramesRemaining = 0;
+        linkMotion.get().position().forcedSpeedPending(false);
+        linkMotion.get().position().lastRomSpeedX(0);
+        linkMotion.get().position().lastRomSpeedY(0);
+        linkAnimationState.get().movingThisFrame = false;
+    }
+
+    void accessPresentPassOut(int countdown, int animationState, int paletteEffect) {
+        passOutCountdown = countdown;
+        passOutPaletteEffect = paletteEffect;
+        linkAnimator.get().romAnimationStateOverride(animationState);
+    }
+
+    static final class Dependencies {
+        LinkComponentRef<LinkAirborne> linkAirborne;
+        LinkComponentRef<LinkAnimationState> linkAnimationState;
+        LinkComponentRef<LinkAnimator> linkAnimator;
+        LinkComponentRef<LinkDamage> linkDamage;
+        LinkComponentRef<LinkMotion> linkMotion;
+        LinkComponentRef<LinkServices> linkServices;
+        LinkComponentRef<LinkStateMachine> linkStateMachine;
+    }
+}

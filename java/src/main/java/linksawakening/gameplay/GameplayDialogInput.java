@@ -1,23 +1,28 @@
 package linksawakening.gameplay;
 
-import linksawakening.dialog.DialogController;
-import linksawakening.input.InputConfig;
-
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 
+import linksawakening.dialog.DialogController;
+import linksawakening.input.InputConfig;
+
+/** Stateless rules for button priority and dialog blocking at gameplay input boundaries. */
 public final class GameplayDialogInput {
 
-    private GameplayDialogInput() {
-    }
+    private GameplayDialogInput() {}
 
-    public static boolean handleOverworldKeyPress(int key,
-                                                  int action,
-                                                  InputConfig inputConfig,
-                                                  DialogController dialogController) {
+    public static boolean handleOverworldKeyPress(
+            int key, int action, InputConfig inputConfig, DialogController dialogController) {
         if (action != GLFW_PRESS || !blocksGameplay(dialogController)) {
             return false;
         }
+        if (dialogController.isChoicePrompt()
+                && inputConfig != null
+                && (key == inputConfig.leftKey() || key == inputConfig.rightKey())) {
+            dialogController.moveChoiceSelection(key == inputConfig.leftKey() ? -1 : 1);
+            return true;
+        }
+        if (dialogController.isChoicePrompt() && inputConfig != null && key == inputConfig.bKey()) return true;
         if (isAdvanceKey(key, inputConfig)) {
             dialogController.advance();
             return true;

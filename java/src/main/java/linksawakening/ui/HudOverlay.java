@@ -1,8 +1,12 @@
 package linksawakening.ui;
 
+import java.util.Objects;
 import linksawakening.state.PlayerState;
 
+/** Applies InventoryItemTiles and live player quantities to the two HUD tile rows. */
+// Item IDs remain raw saved bytes so unknown inventory values preserve the HUD fallback.
 public final class HudOverlay {
+    private static final int[] NO_ATTRIBUTES = new int[0];
 
     private static final int WIDTH = InventoryTilemapLoader.WIDTH;
 
@@ -16,14 +20,11 @@ public final class HudOverlay {
     // Tile $BA is the "-" glyph: its presence in bottom-row[1] of the
     // disassembly's InventoryItemTiles table is how leveled items (sword,
     // shield, bracelet) are identified.
-    private static final int LEVEL_DASH_TILE = 0xBA;
-    private static final int DEFAULT_ITEM_LEVEL = 1;
     private static final int ITEM_SLOT_ROW_TOP = 0;
     private static final int ITEM_SLOT_ROW_BOTTOM = 1;
 
     private static final int RUPEE_DIGITS_COL = 10;
     private static final int RUPEE_DIGITS_ROW = 1;
-    private static final int RUPEE_DIGITS_COUNT = 3;
     private static final int RUPEE_DIGIT_TILE_BASE = 0xB0;
 
     private static final int HEART_COL = 13;
@@ -34,33 +35,40 @@ public final class HudOverlay {
     private static final int HEART_TILE_HALF = 0xCE;
     private static final int HEART_TILE_EMPTY = 0xCD;
     private static final int HEART_TILE_BLANK = 0x7F;
+    private static final int ATTR_PALETTE_MASK = 0x07;
 
     private static final int[][] INVENTORY_ITEM_TILES = buildInventoryItemTiles();
 
-    private HudOverlay() {
-    }
+    private HudOverlay() {}
 
     public static void apply(int[] tilemap, PlayerState player) {
-        patchItemSlot(tilemap, B_SLOT_COL, player.itemB());
-        patchItemSlot(tilemap, A_SLOT_COL, player.itemA());
-        patchRupees(tilemap, player.rupees());
-        patchHearts(tilemap, player.health(), player.maxHearts());
+        apply(tilemap, NO_ATTRIBUTES, player);
     }
 
-    private static void patchItemSlot(int[] tilemap, int col, int itemId) {
+    public static void apply(int[] tilemap, int[] attrmap, PlayerState player) {
+        attrmap = Objects.requireNonNullElse(attrmap, NO_ATTRIBUTES);
+        patchItemSlot(tilemap, attrmap, B_SLOT_COL, player.inventory().itemB(), player);
+        patchItemSlot(tilemap, attrmap, A_SLOT_COL, player.inventory().itemA(), player);
+        patchRupees(tilemap, player.wallet().rupees());
+        patchHearts(tilemap, player.vitals().health(), player.vitals().maxHearts());
+    }
+
+    private static void patchItemSlot(int[] tilemap, int[] attrmap, int col, int itemId, PlayerState player) {
         // Item icons are 1 tile wide but 2 tiles tall: top-row[0] is the upper
         // half, bottom-row[0] is the lower half (which also contains the "L"
         // glyph for leveled items, merged into the same tile).
         // For leveled items the table sets bottom-row[1]=$BA (the "-" glyph),
         // and the actual level digit is computed at runtime.
         int[] itemTiles = INVENTORY_ITEM_TILES[itemId < INVENTORY_ITEM_TILES.length ? itemId : 0];
-        writeTile(tilemap, col, ITEM_SLOT_ROW_TOP,    itemTiles[0]);
+        writeTile(tilemap, col, ITEM_SLOT_ROW_TOP, itemTiles[0]);
         writeTile(tilemap, col, ITEM_SLOT_ROW_BOTTOM, itemTiles[3]);
+        int paletteIndexes = InventoryItemPalettes.palettePair(itemId, player);
+        writePalette(attrmap, col, ITEM_SLOT_ROW_TOP, paletteIndexes >>> 8);
+        writePalette(attrmap, col, ITEM_SLOT_ROW_BOTTOM, paletteIndexes & 255);
 
-        if (itemTiles[4] == LEVEL_DASH_TILE) {
-            writeTile(tilemap, col + 1, ITEM_SLOT_ROW_BOTTOM, LEVEL_DASH_TILE);
-            writeTile(tilemap, col + 2, ITEM_SLOT_ROW_BOTTOM, RUPEE_DIGIT_TILE_BASE + DEFAULT_ITEM_LEVEL);
-        }
+        long numbers = InventoryItemNumbers.tilePair(itemId, player);
+        writeTile(tilemap, col + 1, ITEM_SLOT_ROW_BOTTOM, (int) (numbers >> 32));
+        writeTile(tilemap, col + 2, ITEM_SLOT_ROW_BOTTOM, (int) numbers);
     }
 
     private static void patchRupees(int[] tilemap, int rupees) {
@@ -68,7 +76,7 @@ public final class HudOverlay {
         int hundreds = clamped / 100;
         int tens = (clamped / 10) % 10;
         int ones = clamped % 10;
-        writeTile(tilemap, RUPEE_DIGITS_COL,     RUPEE_DIGITS_ROW, RUPEE_DIGIT_TILE_BASE + hundreds);
+        writeTile(tilemap, RUPEE_DIGITS_COL, RUPEE_DIGITS_ROW, RUPEE_DIGIT_TILE_BASE + hundreds);
         writeTile(tilemap, RUPEE_DIGITS_COL + 1, RUPEE_DIGITS_ROW, RUPEE_DIGIT_TILE_BASE + tens);
         writeTile(tilemap, RUPEE_DIGITS_COL + 2, RUPEE_DIGITS_ROW, RUPEE_DIGIT_TILE_BASE + ones);
     }
@@ -97,6 +105,13 @@ public final class HudOverlay {
         int index = row * WIDTH + col;
         if (index >= 0 && index < tilemap.length) {
             tilemap[index] = tileId & 0xFF;
+        }
+    }
+
+    private static void writePalette(int[] attrmap, int col, int row, int paletteIndex) {
+        int index = row * WIDTH + col;
+        if (index >= 0 && index < attrmap.length) {
+            attrmap[index] = (attrmap[index] & ~ATTR_PALETTE_MASK) | (paletteIndex & ATTR_PALETTE_MASK);
         }
     }
 

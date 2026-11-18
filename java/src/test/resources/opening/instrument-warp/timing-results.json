@@ -1,0 +1,10 @@
+{
+  "java_performance_start": 68094,
+  "java_warp_start": 68349,
+  "rom_performance_start": 65015,
+  "rom_warp_start": 65270,
+  "performance_frames_both": 255,
+  "checkpoint_681_rgb555_different_pixels": 910,
+  "final_hint_rgb555_different_pixels": 28,
+  "remaining": "global frame phase offset, intermediate palette/OAM differences, existing room and HUD differences"
+}

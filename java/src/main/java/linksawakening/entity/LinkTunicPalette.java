@@ -1,17 +1,15 @@
 package linksawakening.entity;
 
-import linksawakening.state.PlayerState;
-
 import java.util.Arrays;
+import linksawakening.rom.Rom;
+import linksawakening.state.Tunic;
 
 /** ROM object palettes used by Link's green, red, and blue tunics. */
 public final class LinkTunicPalette {
     private static final int GREEN_OBJECT_PALETTE = 0;
     private static final int RED_OBJECT_PALETTE = 2;
     private static final int BLUE_OBJECT_PALETTE = 3;
-    private static final int[] PALETTE_ROW_FOR_TUNIC = {
-        GREEN_OBJECT_PALETTE, RED_OBJECT_PALETTE, BLUE_OBJECT_PALETTE
-    };
+    private static final int[] PALETTE_ROW_FOR_TUNIC = {GREEN_OBJECT_PALETTE, RED_OBJECT_PALETTE, BLUE_OBJECT_PALETTE};
 
     private final int[][] objectPalettes;
 
@@ -19,48 +17,55 @@ public final class LinkTunicPalette {
         if (objectPalettes == null || objectPalettes.length <= BLUE_OBJECT_PALETTE) {
             throw new IllegalArgumentException("ROM object palette rows are incomplete");
         }
-        this.objectPalettes = clonePalettes(objectPalettes);
-        for (int[] palette : this.objectPalettes) {
+        for (int[] palette : objectPalettes) {
             if (palette == null || palette.length != 4) {
                 throw new IllegalArgumentException("ROM object palettes must contain four colors");
             }
         }
+        this.objectPalettes = clonePalettes(objectPalettes);
     }
 
     /** Loads {@code ObjectPalettes} through the existing ROM palette decoder. */
-    public static LinkTunicPalette loadFromRom(byte[] romData) {
+    public static LinkTunicPalette loadFromRom(Rom romData) {
         return new LinkTunicPalette(new EntitySpriteCatalog(romData).loadObjectPalettes());
     }
 
-    /** Returns the exact four RGB colors selected by {@code wTunicType}. */
+    /** Fixed green presentation palette for ROM-free actors. */
+    public static LinkTunicPalette green() {
+        int[] green = {0x00000000, 0x00000000, 0x0010A840, 0x00F8B888};
+        return new LinkTunicPalette(
+                new int[][] {green, green.clone(), green.clone(), green.clone(), green.clone(), green.clone()});
+    }
+
+    /** Returns the exact four RGB colors selected by the tunic type ROM register. */
     public int[] forTunic(int tunicType) {
-        if (tunicType < PlayerState.TUNIC_GREEN || tunicType > PlayerState.TUNIC_BLUE) {
-            throw new IllegalArgumentException("Tunic type must be 0..2: " + tunicType);
-        }
-        return objectPalettes[PALETTE_ROW_FOR_TUNIC[tunicType]].clone();
+        return tunicView(tunicType).clone();
     }
 
     /** Returns the ROM object palette selected by an auxiliary OAM attribute. */
     public int[] forObjectPalette(int paletteIndex) {
-        if (paletteIndex < 0 || paletteIndex >= objectPalettes.length) {
-            throw new IllegalArgumentException("Object palette index out of range: "
-                + paletteIndex);
-        }
-        return objectPalettes[paletteIndex].clone();
+        return objectPaletteView(paletteIndex).clone();
     }
 
-    /** Compatibility source for isolated Link fixtures without a ROM. */
-    static LinkTunicPalette greenCompatibility() {
-        int[] green = {0x00000000, 0x00000000, 0x0010A840, 0x00F8B888};
-        return new LinkTunicPalette(new int[][] {
-            green, green.clone(), green.clone(), green.clone(), green.clone(), green.clone()
-        });
+    // Borrowed immutable palette rows for immediate OAM consumption.
+    int[] tunicView(int tunicType) {
+        if (tunicType < Tunic.GREEN.romValue() || tunicType > Tunic.BLUE.romValue()) {
+            throw new IllegalArgumentException("Tunic type must be 0..2: " + tunicType);
+        }
+        return objectPalettes[PALETTE_ROW_FOR_TUNIC[tunicType]];
+    }
+
+    int[] objectPaletteView(int paletteIndex) {
+        if (paletteIndex < 0 || paletteIndex >= objectPalettes.length) {
+            throw new IllegalArgumentException("Object palette index out of range: " + paletteIndex);
+        }
+        return objectPalettes[paletteIndex];
     }
 
     private static int[][] clonePalettes(int[][] source) {
         int[][] copy = new int[source.length][];
         for (int i = 0; i < source.length; i++) {
-            copy[i] = source[i] == null ? null : Arrays.copyOf(source[i], source[i].length);
+            copy[i] = Arrays.copyOf(source[i], source[i].length);
         }
         return copy;
     }

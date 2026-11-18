@@ -1,9 +1,10 @@
 package linksawakening.gpu;
 
-import linksawakening.rom.RomBank;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import linksawakening.rom.RomBank;
+import linksawakening.testing.TestRoms;
+import org.junit.jupiter.api.Test;
 
 final class GPUSwitchBlockTilesTest {
 
@@ -16,11 +17,10 @@ final class GPUSwitchBlockTilesTest {
         }
 
         GPU gpu = new GPU();
-        gpu.copySwitchBlockTiles(rom, 0x40, 0x108);
+        gpu.copySwitchBlockTiles(TestRoms.partial(rom), 0x40, 0x108);
 
         for (int i = 0; i < 0x40; i++) {
-            assertEquals(0x80 + i, Byte.toUnsignedInt(gpu.readVRAM(0x108 * 0x10 + i)),
-                "switch-block VRAM byte " + i);
+            assertEquals(0x80 + i, Byte.toUnsignedInt(gpu.readVRAM(0x108 * 0x10 + i)), "switch-block VRAM byte " + i);
         }
     }
 }

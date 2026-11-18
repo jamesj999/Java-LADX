@@ -1,0 +1,90 @@
+package linksawakening.entity;
+
+import static linksawakening.entity.LinkRomConstants.COLLISION_TYPE_DOWN;
+import static linksawakening.entity.LinkRomConstants.COLLISION_TYPE_LEFT;
+import static linksawakening.entity.LinkRomConstants.COLLISION_TYPE_RIGHT;
+import static linksawakening.entity.LinkRomConstants.COLLISION_TYPE_UP;
+import static linksawakening.entity.LinkRomConstants.WALK_FRAME_TICKS;
+import static linksawakening.state.Direction.DOWN;
+import static linksawakening.state.Direction.LEFT;
+import static linksawakening.state.Direction.RIGHT;
+import static linksawakening.state.Direction.UP;
+
+import java.util.Objects;
+import linksawakening.state.Direction;
+
+/** Link animation state state and operations used by ROM {@code UpdateLinkAnimation}. */
+final class LinkAnimationState {
+    private final LinkComponentRef<LinkAirborne> linkAirborne;
+    private final LinkComponentRef<LinkMotion> linkMotion;
+
+    Direction direction = Direction.DOWN;
+    int walkTickCounter;
+    int walkFrame;
+    boolean movingThisFrame;
+    int romConsecutiveStepsCount = 7;
+    boolean topDownFeatherStarted;
+
+    LinkAnimationState(Dependencies dependencies) {
+        linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
+        linkMotion = Objects.requireNonNull(dependencies.linkMotion, "linkMotion");
+    }
+
+    int accessRomEntityZ() {
+        return linkAirborne.get().accessZPixels();
+    }
+
+    boolean accessHasFacingCollision() {
+        int flag =
+                switch (direction) {
+                    case UP -> COLLISION_TYPE_UP;
+                    case DOWN -> COLLISION_TYPE_DOWN;
+                    case LEFT -> COLLISION_TYPE_LEFT;
+                    case RIGHT -> COLLISION_TYPE_RIGHT;
+                    default -> 0;
+                };
+        return (linkMotion.get().collisionState().romCollisionType() & flag) != 0;
+    }
+
+    int accessDirection() {
+        return direction.javaIndex();
+    }
+
+    void accessSetDirection(int newDirection) {
+        if (newDirection < Direction.DOWN.javaIndex() || newDirection > Direction.RIGHT.javaIndex()) {
+            throw new IllegalArgumentException("Invalid Link direction: " + newDirection);
+        }
+        direction = Direction.fromJava(newDirection);
+        walkTickCounter = 0;
+        walkFrame = 0;
+    }
+
+    void accessSetRomDirection(int romDirection) {
+        accessSetDirection(Direction.fromRom(romDirection).javaIndex());
+    }
+
+    void accessFaceRomDirectionPreservingWalkPhase(int romDirection) {
+        direction = Direction.fromRom(romDirection);
+    }
+
+    boolean accessGrassGroundEffectFlipX() {
+        return (romConsecutiveStepsCount & 8) != 0;
+    }
+
+    int accessRomConsecutiveStepsCount() {
+        return romConsecutiveStepsCount;
+    }
+
+    void accessTickAnimation() {
+        walkTickCounter++;
+        if (walkTickCounter >= WALK_FRAME_TICKS) {
+            walkTickCounter = 0;
+            walkFrame ^= 1;
+        }
+    }
+
+    static final class Dependencies {
+        LinkComponentRef<LinkAirborne> linkAirborne;
+        LinkComponentRef<LinkMotion> linkMotion;
+    }
+}

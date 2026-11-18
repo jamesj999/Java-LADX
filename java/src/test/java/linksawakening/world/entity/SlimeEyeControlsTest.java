@@ -1,0 +1,214 @@
+package linksawakening.world.entity;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.awt.image.BufferedImage;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+import javax.imageio.ImageIO;
+import linksawakening.app.GameSession;
+import linksawakening.entity.Link;
+import linksawakening.state.Direction;
+import linksawakening.state.InventoryItem;
+import org.junit.jupiter.api.Test;
+
+/** Direct initial D3 setup, then normal buttons only for the entire encounter. */
+@linksawakening.testing.RequiresRom
+final class SlimeEyeControlsTest {
+    private static final String[] KEYS = {"right", "left", "up", "down"};
+
+    @Test
+    void controlsOnlyDefeatsBothHalvesAndCollectsReward() throws Exception {
+        var game = new GameSession();
+        var out = Path.of("build/slime-eye/controls");
+        Files.createDirectories(out);
+        StringBuilder trace = new StringBuilder("frame\tbuttons\tlinkX\tlinkY\tlinkZ\thealth\trunning\teyes\n");
+        try {
+            game.initializeHeadlessNewGame();
+            game.openingState().wakeUp(null);
+            game.openingState().shield(null);
+            var d = game.diagnostics();
+            var room = d.roomSession();
+            var link = d.link();
+            var player = d.playerState();
+            player.equipmentLevels().setSwordLevel(1);
+            player.inventory().setItemA(InventoryItem.SWORD.romValue());
+            player.inventory().setItemB(InventoryItem.PEGASUS_BOOTS.romValue());
+            player.vitals().setMaxHearts(6);
+            player.vitals().setHealth(48);
+            room.rooms().loadIndoor(2, 0x5A);
+            link.position().setRoomEntryRomPosition(72, 80);
+            link.animation().setDirection(Direction.UP.javaIndex());
+            d.scrollController().startScreenShake(7, 0);
+            var runtime = linksawakening.world.room.RoomFrameTestAccess.runtime(room);
+            // All setup writes end here. Below this point only headlessButton/headlessFrame mutate gameplay.
+            Set<String> pressed = new HashSet<>();
+            boolean split = false, firstDeath = false, dead = false, reward = false, body = false;
+            int splitFrame = -1, bodyHits = 0;
+            int previousBodyStretch = 0;
+            for (int frame = 0; frame < 9000; frame++) {
+                var eyes = room.rooms().activeRoomOrNull().entities().loadedEntities().stream()
+                        .filter(e -> e.type() == 0x5B)
+                        .toList();
+                var active = eyes.stream()
+                        .filter(e -> e.status() == EntityStatus.ACTIVE)
+                        .toList();
+                Set<String> desired = new HashSet<>();
+                if (d.dialogController().isActive()) {
+                    if (frame % 24 < 8) desired.add("a");
+                } else if (!split && eyes.size() == 1) {
+                    var eye = eyes.getFirst();
+                    int stretch = runtime.execution().slimeEye().stretch(eye.slot());
+                    if (stretch > previousBodyStretch) bodyHits++;
+                    previousBodyStretch = stretch;
+                    if (runtime.execution().slimeEye().state(eye.slot()) >= 2) {
+                        approach(desired, link, eye.x(), eye.y());
+                        if (stretch == 4) {
+                            desired.add("a");
+                            desired.add("b");
+                        } else if (frame % 24 < 8) desired.add("a");
+                    }
+                } else if (!active.isEmpty()) {
+                    if (!split) {
+                        split = true;
+                        splitFrame = frame;
+                    }
+                    if (player.equipmentLevels().runningWithPegasusBoots()) {
+                        // Keep the blade out: the first half contact must end the run
+                        // through the ROM Slime Eye sword response, not a test reset.
+                        desired.add("a");
+                    } else {
+                        RoomEntity target = active.stream()
+                                .filter(e -> e.z() < 0x70)
+                                .min(Comparator.comparingInt(e -> distance(link, e.x(), e.y())))
+                                .orElse(active.getFirst());
+                        if (target.z() < 32) approach(desired, link, target.x(), target.y());
+                        else move(desired, link, 80, 100, -1);
+                        if (frame % 24 < 8) desired.add("a");
+                    }
+                } else if (eyes.isEmpty()) {
+                    dead = true;
+                    var heart = room.rooms().activeRoomOrNull().entities().loadedEntities().stream()
+                            .filter(e -> e.type() == 0x36)
+                            .findFirst()
+                            .orElse(null);
+                    if (heart != null) move(desired, link, heart.x(), heart.y(), -1);
+                    else if (player.vitals().maxHearts() >= 7) {
+                        reward = true;
+                    }
+                }
+                for (String key : pressed) if (!desired.contains(key)) game.headlessButton(key, false);
+                for (String key : desired) if (!pressed.contains(key)) game.headlessButton(key, true);
+                pressed = desired;
+                byte[] rgba = game.headlessFrame();
+                var after = room.rooms().activeRoomOrNull().entities().loadedEntities().stream()
+                        .filter(e -> e.type() == 0x5B)
+                        .toList();
+                trace.append(frame)
+                        .append('\t')
+                        .append(String.join("+", desired.stream().sorted().toList()))
+                        .append('\t')
+                        .append(link.position().romEntityX())
+                        .append('\t')
+                        .append(link.position().romEntityY())
+                        .append('\t')
+                        .append(link.animation().romEntityZ())
+                        .append('\t')
+                        .append(player.vitals().health())
+                        .append('\t')
+                        .append(player.equipmentLevels().runningWithPegasusBoots())
+                        .append('\t')
+                        .append(after.stream()
+                                .map(e -> "%d,%d,%d,%d,%d,%d,%d,%d"
+                                        .formatted(
+                                                e.slot(),
+                                                e.status().value(),
+                                                runtime.execution().slimeEye().state(e.slot()),
+                                                e.x(),
+                                                e.y(),
+                                                e.z(),
+                                                room.entityState().entityHealth(e.slot()),
+                                                runtime.inspection()
+                                                        .physicsTables()
+                                                        .readEnemyTransitionCountdown(e.slot())))
+                                .collect(Collectors.joining(";")))
+                        .append('\n');
+                if (!body
+                        && after.size() == 1
+                        && runtime.execution().slimeEye().state(after.getFirst().slot()) == 3) {
+                    save(rgba, out.resolve("body.png"));
+                    body = true;
+                }
+                if (split && frame == splitFrame) save(rgba, out.resolve("split.png"));
+                if (split && !firstDeath && after.stream().anyMatch(e -> e.status() == EntityStatus.DYING)) {
+                    save(rgba, out.resolve("first-death.png"));
+                    firstDeath = true;
+                }
+                if (dead && !reward && frame % 8 == 0) save(rgba, out.resolve("defeated.png"));
+                if (reward) {
+                    save(rgba, out.resolve("reward.png"));
+                    break;
+                }
+                if (player.vitals().health() == 0) break;
+            }
+            Files.writeString(out.resolve("engine.tsv"), trace);
+            assertTrue(split, "Body must split via normal controls; hits=" + bodyHits);
+            assertTrue(dead, "Both halves must die via normal controls");
+            assertTrue(reward, "Reward must be collected via normal controls");
+        } finally {
+            Files.writeString(out.resolve("engine.tsv"), trace);
+            game.close();
+        }
+    }
+
+    private int distance(Link link, int x, int y) {
+        return Math.abs(x - link.position().romEntityX())
+                + Math.abs(y - link.position().romEntityY());
+    }
+
+    private void approach(Set<String> desired, Link link, int x, int y) {
+        // Approach a reachable cardinal sword pose; preserve the chosen side while close.
+        int[][] poses = {{x - 16, y, 0}, {x + 16, y, 1}, {x, y + 16, 2}, {x, y - 16, 3}};
+        int[] best = null;
+        int score = Integer.MAX_VALUE;
+        for (int[] pose : poses) {
+            if (pose[0] < 24 || pose[0] > 136 || pose[1] < 32 || pose[1] > 112) continue;
+            int cost = distance(link, pose[0], pose[1]);
+            if (pose[2] != romDirection(link.animation().direction())) cost += 4;
+            if (cost < score) {
+                score = cost;
+                best = pose;
+            }
+        }
+        if (best == null) best = new int[] {80, 100, -1};
+        move(desired, link, best[0], best[1], best[2]);
+    }
+
+    private void move(Set<String> desired, Link link, int x, int y, int facing) {
+        int dx = x - link.position().romEntityX(), dy = y - link.position().romEntityY();
+        if (Math.abs(dx) > 2 || Math.abs(dy) > 2)
+            desired.add(KEYS[Math.abs(dx) >= Math.abs(dy) ? (dx >= 0 ? 0 : 1) : (dy >= 0 ? 3 : 2)]);
+        else if (facing >= 0 && romDirection(link.animation().direction()) != facing) desired.add(KEYS[facing]);
+    }
+
+    private int romDirection(int direction) {
+        return Direction.fromJavaOrDown(direction).romIndex();
+    }
+
+    private void save(byte[] pixels, Path file) throws Exception {
+        var image = new BufferedImage(160, 144, BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < 144; y++)
+            for (int x = 0; x < 160; x++) {
+                int i = (y * 160 + x) * 4;
+                image.setRGB(
+                        x,
+                        y,
+                        0xff000000 | ((pixels[i] & 255) << 16) | ((pixels[i + 1] & 255) << 8) | (pixels[i + 2] & 255));
+            }
+        ImageIO.write(image, "png", file.toFile());
+    }
+}

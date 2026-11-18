@@ -1,10 +1,10 @@
 package linksawakening.cutscene;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 final class IntroCutsceneScriptTest {
 
@@ -47,8 +47,7 @@ final class IntroCutsceneScriptTest {
         }
 
         @Override
-        public void showDialog(String text) {
-        }
+        public void showDialog(String text) {}
 
         @Override
         public boolean isDialogActive() {

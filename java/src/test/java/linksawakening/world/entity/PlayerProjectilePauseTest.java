@@ -1,0 +1,185 @@
+package linksawakening.world.entity;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.ArrayList;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
+
+@linksawakening.testing.RequiresRom
+final class PlayerProjectilePauseTest {
+    @ParameterizedTest
+    @CsvSource({
+        "1, dialog",
+        "4, dialog",
+        "0xDF, dialog",
+        "1, inventory",
+        "4, inventory",
+        "0xDF, inventory",
+        "1, transition",
+        "4, transition",
+        "0xDF, transition",
+        "1, gameplay",
+        "4, gameplay",
+        "0xDF, gameplay",
+        "1, sequence",
+        "4, sequence",
+        "0xDF, sequence",
+        "1, got_item",
+        "4, got_item",
+        "0xDF, got_item"
+    })
+    void gameplayGatesStopMovementAndObjectLookup(int type, String gate) {
+        RoomEntityRuntime runtime = runtime();
+        int slot = spawn(runtime, type);
+        RoomEntity before = runtime.inspection().snapshot().slots().get(slot);
+        setGate(runtime, gate, true);
+        runtime.configuration().setObjectIntersectionQuery(entity -> {
+            throw new AssertionError("Paused projectile reached object lookup: " + gate);
+        });
+        tick(runtime, 8, 0);
+        RoomEntity paused = runtime.inspection().snapshot().slots().get(slot);
+        assertEquals(before.x(), paused.x());
+        assertEquals(before.y(), paused.y());
+        assertEquals(before.z(), paused.z());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
+        if (type == 1) {
+            // wC1A8 gates the handler, but UpdateEntityTimers does not read it.
+            assertEquals(
+                    gate.equals("got_item") ? 0x27 : 0x28,
+                    new EntityRoomInspectionQueries(runtime.inspection()).boomerangTransitionCountdown(slot));
+        }
+
+        setGate(runtime, gate, false);
+        runtime.configuration().setObjectIntersectionQuery(entity -> RoomEntityObjectSample.none());
+        tick(runtime, 9, 0);
+        assertEquals(
+                before.x() + speed(type),
+                runtime.inspection().snapshot().slots().get(slot).x());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"1, 2", "4, 2", "0xDF, 2", "1, 5", "4, 5", "0xDF, 5"})
+    void linksMotionStateAloneDoesNotPauseProjectiles(int type, int motionState) {
+        RoomEntityRuntime runtime = runtime();
+        int slot = spawn(runtime, type);
+        int beforeX = runtime.inspection().snapshot().slots().get(slot).x();
+        tick(runtime, 8, motionState);
+        assertEquals(
+                beforeX + speed(type),
+                runtime.inspection().snapshot().slots().get(slot).x());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"dialog", "inventory", "transition", "gameplay", "sequence", "got_item"})
+    void wallFlameUsesTheTimerGateWhileItsPaletteStillUpdates(String gate) {
+        RoomEntityRuntime runtime = runtime();
+        int slot = spawn(runtime, 4);
+        runtime.configuration().setObjectIntersectionQuery(entity -> new RoomEntityObjectSample(1, 1, 0x40, 0x40));
+        tick(runtime, 0, 0);
+        assertEquals(
+                0x30,
+                new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballFireTransitionCountdown(slot));
+        setGate(runtime, gate, true);
+        tick(runtime, 8, 0);
+        tick(runtime, 9, 0);
+        assertEquals(
+                gate.equals("got_item") ? 0x2E : 0x30,
+                new EntityRoomInspectionQueries(runtime.inspection()).magicRodFireballFireTransitionCountdown(slot));
+        // The fireball writes its next frame before ReturnIfNonInteractive.
+        assertEquals(1, runtime.inspection().snapshot().slots().get(slot).spriteVariant());
+    }
+
+    @Test
+    void ocarinaStopsTheBoomerangTimerWithoutStoppingItsHandler() {
+        RoomEntityRuntime runtime = runtime();
+        int slot = spawn(runtime, 1);
+        int beforeX = runtime.inspection().snapshot().slots().get(slot).x();
+        EntityRuntimeFixture.debug(runtime).setOcarinaPlaybackForTest(1, 0, 0);
+        tick(runtime, 8, 0);
+        assertEquals(0x28, new EntityRoomInspectionQueries(runtime.inspection()).boomerangTransitionCountdown(slot));
+        assertEquals(
+                beforeX + 2, runtime.inspection().snapshot().slots().get(slot).x());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {1, 4, 0xDF})
+    void creditsBypassTheWorldGameplayAndTransitionSequenceChecks(int type) {
+        RoomEntityRuntime runtime = runtime();
+        int slot = spawn(runtime, type);
+        int beforeX = runtime.inspection().snapshot().slots().get(slot).x();
+        EntityRuntimeFixture.debug(runtime).setGameplayWorldForTest(false);
+        EntityRuntimeFixture.debug(runtime).setTransitionSequenceCounterForTest(3);
+        runtime.tick(EntityTestFrames.frame(runtime, 8, 0, 0, () -> 0, true));
+        assertEquals(
+                beforeX + speed(type),
+                runtime.inspection().snapshot().slots().get(slot).x());
+    }
+
+    private static RoomEntityRuntime runtime() {
+        var slots = new ArrayList<RoomEntity>();
+        for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            slots.add(RoomEntity.disabled(slot));
+        }
+        try (var stream = linksawakening.testing.TestRom.open()) {
+            if (stream == null) {
+                throw new IOException("Missing shipped ROM");
+            }
+            return new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
+                    .indoorRoom(false)
+                    .randomByteSupplier(() -> 0)
+                    .spriteHandlers(new EntitySpriteHandlerCatalog(TestRoms.partial(stream.readAllBytes())))
+                    .build();
+        } catch (IOException exception) {
+            throw new UncheckedIOException(exception);
+        }
+    }
+
+    private static int spawn(RoomEntityRuntime runtime, int type) {
+        return switch (type) {
+            case 1 -> runtime.spawns().spawnBoomerang(0x40, 0x50, 0, 0, 0);
+            case 4 -> runtime.spawns().spawnMagicRodFireball(0x40, 0x50, 0, 0);
+            case 0xDF -> {
+                int slot = runtime.spawns().spawnSwordBeam(0x40, 0x50, 0, 0);
+                tick(runtime, 0, 0); // State zero precedes the ROM pause check.
+                runtime.outbox().consumePendingEntityEvents();
+                yield slot;
+            }
+            default -> throw new IllegalArgumentException("Unexpected projectile");
+        };
+    }
+
+    private static int speed(int type) {
+        return type == 1 ? 2 : type == 4 ? 3 : 4;
+    }
+
+    private static void tick(RoomEntityRuntime runtime, int frame, int motionState) {
+        runtime.tick(EntityTestFrames.projectileFrame(
+                runtime,
+                frame,
+                0,
+                0,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
+                new EnemyProjectileCollision.LinkState(0, 0, 0, motionState, 0, false)));
+    }
+
+    private static void setGate(RoomEntityRuntime runtime, String gate, boolean active) {
+        switch (gate) {
+            case "dialog" -> runtime.configuration().setDialogActive(active);
+            case "inventory" -> runtime.configuration().setTalkState(active, 0, 0x80);
+            case "transition" -> EntityRuntimeFixture.debug(runtime).setRoomTransitionStateForTest(active);
+            case "gameplay" -> EntityRuntimeFixture.debug(runtime).setGameplayWorldForTest(!active);
+            case "sequence" -> EntityRuntimeFixture.debug(runtime).setTransitionSequenceCounterForTest(active ? 3 : 4);
+            case "got_item" -> EntityRuntimeFixture.debug(runtime).setWitchGotItemPresentationActiveForTest(active);
+            default -> throw new IllegalArgumentException("Unexpected gate");
+        }
+    }
+}

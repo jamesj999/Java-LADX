@@ -1,16 +1,18 @@
 package linksawakening.vfx;
 
 import linksawakening.gpu.Tile;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomSymbols;
 
 /**
  * ROM-backed OAM graphics used by transient effects.
  */
 public final class TransientVfxSpriteSheet {
 
-    private static final int BANK_SIZE = 0x4000;
-    private static final int CHARACTER_VFX_BANK = 0x0C;
-    private static final int LINK_CHARACTER_ADDR = 0x4000;
-    private static final int CHARACTER_VFX_ADDR = 0x4200;
+    private static final int CHARACTER_VFX_BANK = RomSymbols.LinkCharacterTiles.bank();
+    private static final int LINK_CHARACTER_ADDR = RomSymbols.LinkCharacterTiles.address();
+    private static final int CHARACTER_VFX_ADDR = RomSymbols.CharacterVfxTiles.address();
     private static final int CHARACTER_TILE_COUNT = 0x20;
     private static final int TILE_BYTES = 0x10;
     private static final int BASE_TILE_INDEX = 0x00;
@@ -23,7 +25,7 @@ public final class TransientVfxSpriteSheet {
         this.vfxTiles = vfxTiles;
     }
 
-    public static TransientVfxSpriteSheet loadFromRom(byte[] romData) {
+    public static TransientVfxSpriteSheet loadFromRom(Rom romData) {
         Tile[] linkTiles = new Tile[CHARACTER_TILE_COUNT];
         Tile[] vfxTiles = new Tile[CHARACTER_TILE_COUNT];
         int linkOffset = romOffset(CHARACTER_VFX_BANK, LINK_CHARACTER_ADDR);
@@ -51,11 +53,11 @@ public final class TransientVfxSpriteSheet {
         return BASE_TILE_INDEX;
     }
 
-    private static Tile decodeTile(byte[] romData, int offset) {
+    private static Tile decodeTile(Rom romData, int offset) {
         Tile tile = new Tile();
         for (int y = 0; y < 8; y++) {
-            int lowByte = Byte.toUnsignedInt(romData[offset + y * 2]);
-            int highByte = Byte.toUnsignedInt(romData[offset + y * 2 + 1]);
+            int lowByte = romData.u8(RomAddress.fromOffset(offset + y * 2));
+            int highByte = romData.u8(RomAddress.fromOffset(offset + y * 2 + 1));
             for (int x = 0; x < 8; x++) {
                 int bitIndex = 7 - x;
                 int low = (lowByte >> bitIndex) & 1;
@@ -67,9 +69,6 @@ public final class TransientVfxSpriteSheet {
     }
 
     private static int romOffset(int bank, int address) {
-        if (bank == 0) {
-            return address;
-        }
-        return bank * BANK_SIZE + (address - BANK_SIZE);
+        return new RomAddress(bank, address).offset();
     }
 }

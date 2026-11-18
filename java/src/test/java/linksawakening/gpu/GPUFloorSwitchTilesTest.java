@@ -1,12 +1,13 @@
 package linksawakening.gpu;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.io.IOException;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
+@linksawakening.testing.RequiresRom
 final class GPUFloorSwitchTilesTest {
 
     @Test
@@ -14,19 +15,18 @@ final class GPUFloorSwitchTilesTest {
         byte[] rom = loadRom();
         GPU gpu = new GPU();
 
-        gpu.copyPressedFloorSwitchTiles(rom);
+        gpu.copyPressedFloorSwitchTiles(Rom.of(rom));
 
         int romOffset = RomBank.romOffset(0x32, 0x7F00);
         int vramOffset = 0x114 * GPU.TILE_DATA_SIZE;
         for (int index = 0; index < 0x40; index++) {
-            assertEquals(Byte.toUnsignedInt(rom[romOffset + index]),
-                Byte.toUnsignedInt(gpu.readVRAM(vramOffset + index)));
+            assertEquals(
+                    Byte.toUnsignedInt(rom[romOffset + index]), Byte.toUnsignedInt(gpu.readVRAM(vramOffset + index)));
         }
     }
 
     private static byte[] loadRom() throws IOException {
-        try (var stream = GPUFloorSwitchTilesTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("ROM resource missing");
             }

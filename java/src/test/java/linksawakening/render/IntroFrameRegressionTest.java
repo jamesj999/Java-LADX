@@ -1,29 +1,31 @@
 package linksawakening.render;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
 import linksawakening.cutscene.IntroFrameSnapshot;
 import linksawakening.cutscene.IntroSequence;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
+import linksawakening.rom.Rom;
 import linksawakening.scene.BackgroundSceneCatalog;
 import linksawakening.scene.BackgroundSceneLoader;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-
+@linksawakening.testing.RequiresRom
 final class IntroFrameRegressionTest {
 
     @Test
     void changingOnlyTheIntroFrameChangesTheRenderedOpeningFrame() {
         byte[] rom = loadRom();
         GPU gpu = new GPU();
-        gpu.loadIntroSequenceTiles(rom);
-        BackgroundSceneLoader loader = new BackgroundSceneLoader(rom);
-        IntroSequence sequence = new IntroSequence(rom, sceneId -> loader.load(
-            BackgroundSceneCatalog.forCutsceneScene(sceneId)));
+        gpu.loadIntroSequenceTiles(Rom.of(rom));
+        BackgroundSceneLoader loader = new BackgroundSceneLoader(Rom.of(rom));
+        IntroSequence sequence = new IntroSequence(
+                Rom.of(rom), sceneId -> loader.load(BackgroundSceneCatalog.forCutsceneScene(sceneId)));
         GameFrameSceneBuilder builder = new GameFrameSceneBuilder();
 
         IntroFrameSnapshot initial = sequence.snapshot();
@@ -35,21 +37,18 @@ final class IntroFrameRegressionTest {
         byte[] lightningFrame = render(builder, gpu, lightning);
 
         assertArrayEquals(initial.tilemap(), lightning.tilemap());
-        assertFalse(java.util.Arrays.equals(initialFrame, lightningFrame));
+        assertFalse(Arrays.equals(initialFrame, lightningFrame));
     }
 
     private static byte[] render(GameFrameSceneBuilder builder, GPU gpu, IntroFrameSnapshot snapshot) {
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
-        builder.build(GameFrameState.empty()
-            .withScreen(RenderScreen.CUTSCENE)
-            .withIntroFrameSnapshot(snapshot))
-            .drawTo(buffer, gpu);
+        builder.build(GameFrameState.empty().withScreen(RenderScreen.CUTSCENE).withIntroFrameSnapshot(snapshot))
+                .drawTo(buffer, gpu, TestDrawObservers.CURRENT.get());
         return buffer;
     }
 
     private static byte[] loadRom() {
-        try (InputStream stream = IntroFrameRegressionTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

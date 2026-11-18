@@ -1,12 +1,5 @@
 package linksawakening.cutscene;
 
-import linksawakening.scene.BackgroundScene;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -14,7 +7,27 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import linksawakening.rom.Rom;
+import linksawakening.scene.BackgroundScene;
+import org.junit.jupiter.api.Test;
+
+@linksawakening.testing.RequiresRom
 final class IntroSequenceTest {
+
+    @Test
+    void openingLightningRequestsExplosionWithoutBeachWaves() {
+        IntroSequence intro = newIntro();
+        List<Integer> sounds = new ArrayList<>();
+        intro.setNoiseSound(sounds::add);
+        for (int frame = 0; frame < 1040; frame++) intro.tick();
+        assertTrue(sounds.size() >= 6);
+        assertTrue(sounds.stream().allMatch(id -> id == 0x0C));
+    }
 
     @Test
     void initialSnapshotUsesRomShipDataAndIsImmutable() {
@@ -26,14 +39,14 @@ final class IntroSequenceTest {
         assertEquals("SEA", snapshot.substate());
         assertEquals(0, snapshot.frameCounter());
         assertEquals(22, snapshot.sprites().size());
-        assertTrue(snapshot.sprites().stream().anyMatch(sprite ->
-            sprite.tileIndex() == 0x1C && sprite.x() == 0xB8 && sprite.y() == 0x3F));
+        assertTrue(snapshot.sprites().stream()
+                .anyMatch(sprite -> sprite.tileIndex() == 0x1C && sprite.x() == 0xB8 && sprite.y() == 0x3F));
 
         int[] tilemap = snapshot.tilemap();
         tilemap[0] = 0xFF;
         assertEquals(0x7E, intro.snapshot().tilemap()[0]);
-        assertThrows(UnsupportedOperationException.class,
-            () -> snapshot.sprites().add(snapshot.sprites().get(0)));
+        assertThrows(UnsupportedOperationException.class, () -> snapshot.sprites()
+                .add(snapshot.sprites().get(0)));
     }
 
     @Test
@@ -46,6 +59,8 @@ final class IntroSequenceTest {
 
         tick(intro, 1);
         assertEquals(1, intro.snapshot().scrollX());
+        assertEquals(0xB8, spriteX(intro.snapshot(), 0x1C)); // OAM is built before movement, then transferred on VBlank
+        tick(intro, 2);
         assertEquals(0xB7, spriteX(intro.snapshot(), 0x1C));
         assertEquals(22, intro.snapshot().sprites().size());
     }
@@ -58,32 +73,29 @@ final class IntroSequenceTest {
         assertEquals(IntroCutsceneScript.SCENE_LINK_FACE, intro.sceneId());
         assertEquals("LINK_FACE", intro.snapshot().substate());
 
-        tick(intro, 127);
+        tick(intro, 3 + 127);
         assertEquals("LINK_FACE", intro.snapshot().substate());
         tick(intro, 1);
         assertEquals("LINK_FACE_SCREAM", intro.snapshot().substate());
         tick(intro, 16);
         assertEquals("LINK_FACE_LIGHTNING", intro.snapshot().substate());
-        assertTrue(intro.snapshot().sprites().stream().anyMatch(sprite -> sprite.tileIndex() == 0x34));
+        assertFalse(intro.snapshot().sprites().stream().anyMatch(sprite -> sprite.tileIndex() == 0x34));
 
         tick(intro, 16);
         assertEquals(IntroCutsceneScript.SCENE_SEA, intro.sceneId());
         assertEquals("SEA_FADE", intro.snapshot().substate());
 
-        tick(intro, IntroSequence.SEA_FADE_FRAMES);
-        assertEquals(IntroCutsceneScript.SCENE_BEACH, intro.sceneId());
-        assertEquals("BEACH_FADE", intro.snapshot().substate());
+        tick(intro, 1 + IntroSequence.SEA_FADE_FRAMES);
+        assertEquals(IntroCutsceneScript.SCENE_SEA, intro.sceneId()); // final sea frame before the LCD-off load
+        assertEquals("BEACH_LOAD", intro.snapshot().substate());
     }
 
     @Test
     void beachPublishesLineScrollAndTitleRowsInRomPointerOrder() {
         IntroSequence intro = newIntro();
-        tick(intro, IntroSequence.SEA_SCROLL_FRAMES
-            + IntroSequence.LINK_FACE_FRAMES
-            + IntroSequence.SEA_FADE_FRAMES);
-
-        assertEquals(IntroCutsceneScript.SCENE_BEACH, intro.sceneId());
-        tick(intro, IntroSequence.BEACH_FADE_FRAMES);
+        tick(intro, 1148); // emulator frame 1236 minus first sea-state frame 88
+        assertEquals("BEACH_LOAD", intro.snapshot().substate());
+        tick(intro, 4 + 2 + IntroSequence.BEACH_FADE_FRAMES);
         assertEquals("MARIN_STATE_0", intro.snapshot().substate());
         assertNotNull(intro.snapshot().lineScrollX());
 
@@ -91,22 +103,24 @@ final class IntroSequenceTest {
         assertEquals("TITLE_REVEAL", intro.snapshot().substate());
         assertEquals(0, intro.titleRevealRows());
 
-        tick(intro, 1);
-        IntroRomData.TitleRow firstRow = new IntroRomData(loadRom()).titleRows().get(0);
-        assertEquals(1, intro.titleRevealRows());
-        assertArrayEquals(firstRow.tileBytes(), rowBytes(intro.snapshot().tilemap(),
-            firstRow.tileTargetAddress()));
-        assertArrayEquals(firstRow.attributeBytes(), rowBytes(intro.snapshot().attrmap(),
-            firstRow.attributeTargetAddress()));
+        tick(intro, 2); // queued row becomes visible on the next VBlank
+        IntroRomData.TitleRow firstRow =
+                new IntroRomData(Rom.of(loadRom())).titleRows().get(0);
+        assertEquals(2, intro.titleRevealRows());
+        assertArrayEquals(firstRow.tileBytes(), rowBytes(intro.snapshot().tilemap(), firstRow.tileTargetAddress()));
+        assertArrayEquals(
+                firstRow.attributeBytes(), rowBytes(intro.snapshot().attrmap(), firstRow.attributeTargetAddress()));
     }
 
     @Test
     void marinStateThreePreservesTheSourceShoreScrollPauses() {
         IntroSequence intro = newIntro();
-        tick(intro, IntroSequence.SEA_SCROLL_FRAMES
-            + IntroSequence.LINK_FACE_FRAMES
-            + IntroSequence.SEA_FADE_FRAMES
-            + IntroSequence.BEACH_FADE_FRAMES);
+        tick(
+                intro,
+                IntroSequence.SEA_SCROLL_FRAMES
+                        + IntroSequence.LINK_FACE_FRAMES
+                        + IntroSequence.SEA_FADE_FRAMES
+                        + IntroSequence.BEACH_FADE_FRAMES);
         tickUntilSubstate(intro, "MARIN_STATE_3", 3000);
 
         assertEquals(0x30, intro.snapshot().scrollX());
@@ -137,7 +151,7 @@ final class IntroSequenceTest {
 
     private static IntroSequence newIntro() {
         byte[] rom = loadRom();
-        return new IntroSequence(rom, IntroSequenceTest::backgroundFor);
+        return new IntroSequence(Rom.of(rom), IntroSequenceTest::backgroundFor);
     }
 
     private static BackgroundScene backgroundFor(String sceneId) {
@@ -152,15 +166,17 @@ final class IntroSequenceTest {
 
     private static int spriteX(IntroFrameSnapshot snapshot, int tileIndex) {
         return snapshot.sprites().stream()
-            .filter(sprite -> sprite.tileIndex() == tileIndex)
-            .findFirst()
-            .orElseThrow()
-            .x();
+                .filter(sprite -> sprite.tileIndex() == tileIndex)
+                .findFirst()
+                .orElseThrow()
+                .x();
     }
 
     private static int[] rowBytes(int[] map, int targetAddress) {
         int index = targetAddress - 0x9800;
-        return Arrays.copyOfRange(map, index, index + 16);
+        int[] row = new int[16];
+        for (int i = 0; i < row.length; i++) row[i] = map[(index & 0x3E0) | ((index + i) & 31)];
+        return row;
     }
 
     private static void tickUntil(IntroSequence intro, String sceneId, int maxFrames) {
@@ -171,7 +187,9 @@ final class IntroSequenceTest {
     }
 
     private static void tickUntilSubstate(IntroSequence intro, String substate, int maxFrames) {
-        for (int frame = 0; frame < maxFrames && !substate.equals(intro.snapshot().substate()); frame++) {
+        for (int frame = 0;
+                frame < maxFrames && !substate.equals(intro.snapshot().substate());
+                frame++) {
             intro.tick();
         }
         assertEquals(substate, intro.snapshot().substate());
@@ -191,8 +209,7 @@ final class IntroSequenceTest {
     }
 
     private static byte[] loadRom() {
-        try (InputStream stream = IntroSequenceTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

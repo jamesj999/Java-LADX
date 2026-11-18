@@ -1,0 +1,243 @@
+package linksawakening.app;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import linksawakening.render.RenderScreen;
+import linksawakening.testing.RequiresRom;
+import linksawakening.world.transition.ScrollController;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+
+@RequiresRom
+final class EscapeSaveScreenTest {
+    @Test
+    void escapeIsConsumedAtTheFrameBoundaryAndIgnoredOnTheSaveScreen() throws Exception {
+        GameSession game = readyGame();
+        game.headlessButton("escape", true);
+        assertEquals(RenderScreen.OVERWORLD, screen(game));
+        assertTrue(running(game));
+        assertFalse(game.services().input().inputState().isDown(GLFW_KEY_ESCAPE));
+        game.headlessFrame();
+        assertEquals(RenderScreen.FILE_SAVE, screen(game));
+        game.headlessButton("escape", false);
+        press(game, "escape");
+        assertEquals(RenderScreen.FILE_SAVE, screen(game));
+        assertTrue(running(game));
+        press(game, "a"); // Confirmation during entry is consumed.
+        frames(game, 42);
+        assertEquals(RenderScreen.FILE_SAVE, screen(game));
+        press(game, "a");
+        assertEquals(RenderScreen.FILE_SAVE, screen(game));
+        frames(game, 46);
+        assertEquals(RenderScreen.FILE_SAVE, screen(game));
+        game.headlessFrame();
+        assertEquals(RenderScreen.OVERWORLD, screen(game));
+    }
+
+    @Test
+    void saveChordFromIslandMapReturnsToOriginalRoom() throws Exception {
+        try (GameSession game = readyGame()) {
+            var room = game.diagnostics().roomSession().rooms().requireActiveRoom();
+            press(game, "select");
+            frames(game, 41);
+            assertEquals(RenderScreen.WORLD_MAP, screen(game));
+            var chord = java.util.List.of("a", "b", "start", "select");
+            for (String button : chord) game.headlessButton(button, true);
+            game.headlessFrame();
+            assertEquals(RenderScreen.FILE_SAVE, screen(game));
+            for (String button : chord) game.headlessButton(button, false);
+            frames(game, 42);
+            press(game, "a");
+            frames(game, 48);
+            assertEquals(RenderScreen.OVERWORLD, screen(game));
+            org.junit.jupiter.api.Assertions.assertSame(
+                    room, game.diagnostics().roomSession().rooms().requireActiveRoom());
+        }
+    }
+
+    enum Blocker {
+        DIALOG,
+        INVENTORY,
+        SCROLL,
+        TRANSITION,
+        PASS_OUT
+    }
+
+    @ParameterizedTest
+    @EnumSource(Blocker.class)
+    void blockedEscapeIsDroppedRatherThanOpenedLater(Blocker blocker) throws Exception {
+        GameSession game = readyGame();
+        var state = game.diagnostics();
+        switch (blocker) {
+            case DIALOG -> state.dialogController().open("Test");
+            case INVENTORY -> {
+                press(game, "start");
+                frames(game, 60);
+                assertTrue(state.inventoryMenu().isFullyOpen());
+            }
+            case SCROLL -> state.scrollController()
+                    .start(
+                            ScrollController.RIGHT,
+                            80,
+                            80,
+                            state.roomSession().rooms().renderSnapshotOrNull(),
+                            160);
+            case TRANSITION -> state.transitionController().startFadeOut(() -> {});
+            case PASS_OUT -> state.link().status().beginPassOut();
+        }
+        press(game, "escape");
+        assertEquals(RenderScreen.OVERWORLD, screen(game));
+        assertTrue(running(game));
+        switch (blocker) {
+            case DIALOG -> {
+                for (int i = 0; i < 100 && state.dialogController().isActive(); i++) {
+                    state.dialogController().advance();
+                    game.headlessFrame();
+                }
+                assertFalse(state.dialogController().isActive());
+            }
+            case INVENTORY -> {
+                press(game, "start");
+                frames(game, 60);
+                assertTrue(state.inventoryMenu().isFullyClosed());
+            }
+            case SCROLL -> state.scrollController().tick(160);
+            case TRANSITION -> {
+                for (int i = 0; i < 80 && state.transitionController().isActive(); i++) game.headlessFrame();
+                assertFalse(state.transitionController().isActive());
+            }
+            case PASS_OUT -> state.link().status().finishGameOver();
+        }
+        frames(game, 2);
+        assertEquals(RenderScreen.OVERWORLD, screen(game), "Blocked request must be discarded");
+        press(game, "escape");
+        assertEquals(RenderScreen.FILE_SAVE, screen(game), "A fresh unblocked request must work");
+    }
+
+    @Test
+    void wakingUpBlocksAndDropsEscape() throws Exception {
+        GameSession game = new GameSession();
+        game.initializeHeadlessNewGame();
+        press(game, "escape");
+        assertEquals(RenderScreen.OVERWORLD, screen(game));
+        assertTrue(running(game));
+        finishWakeUp(game);
+        assertEquals(RenderScreen.OVERWORLD, screen(game));
+        press(game, "escape");
+        assertEquals(RenderScreen.FILE_SAVE, screen(game));
+    }
+
+    enum QuitScreen {
+        INTRO,
+        TITLE,
+        FILE_SELECTION,
+        NAME_ENTRY
+    }
+
+    @ParameterizedTest
+    @EnumSource(QuitScreen.class)
+    void escapeStillQuitsOutsideGameplay(QuitScreen target) throws Exception {
+        GameSession game = new GameSession();
+        game.initializeHeadlessIntro();
+        if (target != QuitScreen.INTRO) {
+            press(game, "start");
+            assertEquals(RenderScreen.TITLE, screen(game));
+        }
+        if (target == QuitScreen.FILE_SELECTION || target == QuitScreen.NAME_ENTRY) {
+            press(game, "start");
+            assertEquals(RenderScreen.FILE_MENU, screen(game));
+        }
+        if (target == QuitScreen.NAME_ENTRY) press(game, "a");
+        assertTrue(running(game));
+        game.headlessButton("escape", true);
+        assertFalse(running(game));
+    }
+
+    @Test
+    void romChordStillOpensTheSameScreen() throws Exception {
+        GameSession game = readyGame();
+        game.headlessButton("start+a+b+select", true);
+        game.headlessFrame();
+        assertEquals(RenderScreen.FILE_SAVE, screen(game));
+        assertTrue(running(game));
+    }
+
+    @Test
+    void dxInventoryReturnKeepsMotionAndSaveBlockedUntilTheFadeFinishes() throws Exception {
+        GameSession game = readyGame();
+        var menu = game.diagnostics().inventoryMenu();
+        press(game, "start");
+        frames(game, 60);
+        assertTrue(menu.isFullyOpen());
+        menu.requestToggle();
+        game.headlessButton("down", true);
+        int x = game.diagnostics().headlessState().x(),
+                y = game.diagnostics().headlessState().y();
+        for (int frame = 0; menu.shouldBlockOverworldInput(); frame++) {
+            assertTrue(frame < 60, "DX return must finish");
+            game.headlessButton("escape", true);
+            game.headlessFrame();
+            game.headlessButton("escape", false);
+            assertEquals(RenderScreen.OVERWORLD, screen(game));
+            assertEquals(x, game.diagnostics().headlessState().x());
+            assertEquals(y, game.diagnostics().headlessState().y());
+        }
+        // $00:1A0F restores normal motion then returns; movement begins next frame.
+        game.headlessFrame();
+        assertTrue(game.diagnostics().headlessState().y() > y);
+        assertEquals(RenderScreen.OVERWORLD, screen(game), "Blocked Escape must not queue a save");
+        game.headlessButton("down", false);
+        press(game, "escape");
+        assertEquals(RenderScreen.FILE_SAVE, screen(game));
+    }
+
+    private static GameSession readyGame() throws Exception {
+        GameSession game = new GameSession();
+        game.initializeHeadlessNewGame();
+        finishWakeUp(game);
+        return game;
+    }
+
+    // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.
+    @SuppressWarnings("StringSplitter")
+    private static void finishWakeUp(GameSession game) throws Exception {
+        // Replay only the existing opening route's wake-up and bed-exit prefix.
+        for (String command : Files.readAllLines(Path.of("../tools/opening/tail-cave-warp-route.tsv")).stream()
+                .filter(line -> !line.isBlank() && !line.startsWith("#"))
+                .limit(8)
+                .toList()) {
+            String[] fields = command.split("\\s+");
+            int held = Integer.parseInt(fields[1]);
+            if (held > 0) game.headlessButton(fields[0], true);
+            frames(game, held);
+            if (held > 0) game.headlessButton(fields[0], false);
+            frames(game, Integer.parseInt(fields[2]));
+        }
+        assertFalse(game.diagnostics().dialogController().isActive());
+    }
+
+    private static void press(GameSession game, String button) {
+        game.headlessButton(button, true);
+        game.headlessFrame();
+        game.headlessButton(button, false);
+        game.headlessFrame();
+    }
+
+    private static void frames(GameSession game, int count) {
+        for (int i = 0; i < count; i++) game.headlessFrame();
+    }
+
+    private static RenderScreen screen(GameSession game) throws Exception {
+        return game.state().screens().currentScreen.renderScreen();
+    }
+
+    private static boolean running(GameSession game) throws Exception {
+        return game.lifecycle().running();
+    }
+}

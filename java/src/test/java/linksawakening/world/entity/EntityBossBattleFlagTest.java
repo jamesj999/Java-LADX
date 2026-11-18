@@ -1,0 +1,99 @@
+package linksawakening.world.entity;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.util.stream.IntStream;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomTables;
+import linksawakening.testing.RequiresRom;
+import linksawakening.testing.TestRom;
+import linksawakening.testing.TestRoms;
+import org.junit.jupiter.api.Test;
+
+@RequiresRom
+class EntityBossBattleFlagTest {
+    private RoomEntityRuntime runtime() throws IOException {
+        byte[] rom;
+        try (var in = TestRom.open()) {
+            rom = in.readAllBytes();
+        }
+        var slots = IntStream.range(0, 16).mapToObj(RoomEntity::disabled).toList();
+        var runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
+                .indoorRoom(true)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(null)
+                .enemyCombatTables(new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom)))
+                .chestContentsTable(new linksawakening.world.room.ChestContentsTable(
+                        (rom == null ? (Rom) null : TestRoms.partial(rom))))
+                .romTables(RomTables.load(linksawakening.world.entity.EntityRomTestData.view(rom)))
+                .rom(linksawakening.world.entity.EntityRomTestData.view(rom))
+                .build();
+        runtime.execution()
+                .bossRewards()
+                .writeEnemyDropResolver(new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom)));
+        return runtime;
+    }
+
+    private RoomEntity entity(int slot, int type) {
+        return new RoomEntityBuilder()
+                .slot(slot)
+                .sourceLoadOrder(slot)
+                .type(type)
+                .at(64, 80)
+                .status(EntityStatus.INIT)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(type))
+                .build();
+    }
+
+    @Test
+    void laterBossInitSetsFlagAndDeathDoesNotClearItButRoomResetDoes() throws IOException {
+        var runtime = runtime();
+        assertFalse(runtime.inspection().inBossBattle());
+        runtime.inspection().slots().replace(15, entity(15, 0x81));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
+        assertTrue(runtime.inspection().inBossBattle());
+        runtime.lifecycle().disableEntityWithoutPersistence(15);
+        assertTrue(runtime.inspection().inBossBattle());
+        runtime.execution().bossRewards().resetRoomVariables();
+        assertFalse(runtime.inspection().inBossBattle());
+        assertFalse(runtime().inspection().inBossBattle());
+    }
+
+    @Test
+    void nonBossAndDefeatedBossDoNotSetFlag() throws IOException {
+        var runtime = runtime();
+        runtime.inspection().slots().replace(15, entity(15, 9));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
+        assertFalse(runtime.inspection().inBossBattle());
+        runtime.inspection().slots().replace(14, entity(14, 0x81));
+        runtime.inspection().roomVariables().writeEntityRoomStatus(0x20);
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
+        assertFalse(runtime.inspection().inBossBattle());
+        assertEquals(EntityStatus.DISABLED, runtime.inspection().slots().get(14).status());
+    }
+
+    @Test
+    void battleFlagSuppressesPowerUpsButStillAllowsOrdinaryDrops() throws IOException {
+        var runtime = runtime();
+        var source = entity(0, 9);
+        runtime.inspection().slots().replace(0, source);
+        runtime.inspection().slots().replace(15, entity(15, 0x81));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
+        runtime.execution().bossRewards().setEnemyDropCounters(new EnemyDropResolver.CounterState(11, 0));
+        runtime.execution()
+                .bossRewards()
+                .handleTerminalEnemyDeath(runtime.inspection().slots().get(0), () -> 0);
+        assertFalse(runtime.inspection().snapshot().loadedEntities().stream().anyMatch(e -> e.type() == 0x34));
+        assertTrue(runtime.inspection().snapshot().loadedEntities().stream().anyMatch(e -> e.type() == 0x2E));
+        var peaceful = runtime();
+        peaceful.inspection().slots().replace(0, source);
+        peaceful.lifecycle().initializeHealthGroup(0);
+        peaceful.execution().bossRewards().setEnemyDropCounters(new EnemyDropResolver.CounterState(11, 0));
+        peaceful.execution().bossRewards().handleTerminalEnemyDeath(source, () -> 0);
+        assertTrue(peaceful.inspection().snapshot().loadedEntities().stream().anyMatch(e -> e.type() == 0x34));
+    }
+}

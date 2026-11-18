@@ -5,8 +5,7 @@ public final class RomBank {
     public static final int BANK_SIZE = 0x4000;
     private static final int BG_MAP_ROW_WIDTH = 0x20;
 
-    private RomBank() {
-    }
+    private RomBank() {}
 
     public static int romOffset(int bank, int address) {
         if (bank < 0) {
@@ -25,14 +24,14 @@ public final class RomBank {
         return (red << 16) | (green << 8) | blue;
     }
 
-    public static int[][] loadPalettes(byte[] romData, int bank, int address, int paletteCount) {
+    public static int[][] loadPalettes(Rom rom, RomAddress address, int paletteCount) {
         int[][] palettes = new int[paletteCount][4];
-        int offset = romOffset(bank, address);
+        int offset = address.offset();
 
         for (int paletteIndex = 0; paletteIndex < paletteCount; paletteIndex++) {
             for (int colorIndex = 0; colorIndex < 4; colorIndex++) {
-                int low = Byte.toUnsignedInt(romData[offset++]);
-                int high = Byte.toUnsignedInt(romData[offset++]);
+                int low = rom.u8(RomAddress.fromOffset(offset++));
+                int high = rom.u8(RomAddress.fromOffset(offset++));
                 palettes[paletteIndex][colorIndex] = decodeRgb555(low | (high << 8));
             }
         }
@@ -40,41 +39,50 @@ public final class RomBank {
         return palettes;
     }
 
-    public static int[] decodeBackground(byte[] romData, int bank, int address,
-                                         int tilemapWidth, int filler) {
-        int[] bgMap = decodeBackgroundMap(romData, bank, address, filler);
+    public static int[] decodeBackground(Rom rom, RomAddress address, int tilemapWidth, int filler) {
+        int[] bgMap = decodeBackgroundMap(rom, address, filler);
         int rowCount = bgMap.length / BG_MAP_ROW_WIDTH;
         int[] clamped = new int[rowCount * tilemapWidth];
         for (int row = 0; row < rowCount; row++) {
-            System.arraycopy(bgMap, row * BG_MAP_ROW_WIDTH, clamped, row * tilemapWidth,
-                Math.min(tilemapWidth, BG_MAP_ROW_WIDTH));
+            System.arraycopy(
+                    bgMap,
+                    row * BG_MAP_ROW_WIDTH,
+                    clamped,
+                    row * tilemapWidth,
+                    Math.min(tilemapWidth, BG_MAP_ROW_WIDTH));
         }
         return clamped;
     }
 
-    public static int[] decodeBackgroundMap(byte[] romData, int bank, int address, int filler) {
-        int offset = romOffset(bank, address);
+    public static int[] decodeBackgroundMap(Rom rom, RomAddress address, int filler) {
         int[] bgMap = new int[BG_MAP_ROW_WIDTH * BG_MAP_ROW_WIDTH];
         for (int i = 0; i < bgMap.length; i++) {
             bgMap[i] = filler & 0xFF;
         }
 
-        while (offset < romData.length) {
-            int high = Byte.toUnsignedInt(romData[offset]);
+        return decodeBackgroundMap(rom, address, bgMap);
+    }
+
+    /** Apply a ROM draw-command stream while preserving untouched VRAM cells. */
+    public static int[] decodeBackgroundMap(Rom rom, RomAddress address, int[] initialMap) {
+        int[] bgMap = initialMap.clone();
+        int offset = address.offset();
+        while (offset < rom.size()) {
+            int high = rom.u8(RomAddress.fromOffset(offset));
             if (high == 0) {
                 break;
             }
 
-            int targetAddress = (high << 8) | Byte.toUnsignedInt(romData[offset + 1]);
-            int options = Byte.toUnsignedInt(romData[offset + 2]);
+            int targetAddress = (high << 8) | rom.u8(RomAddress.fromOffset(offset + 1));
+            int options = rom.u8(RomAddress.fromOffset(offset + 2));
             int amount = (options & 0x3F) + 1;
             boolean repeat = (options & 0x40) != 0;
             boolean vertical = (options & 0x80) != 0;
             offset += 3;
 
-            int repeatedValue = repeat ? Byte.toUnsignedInt(romData[offset]) : 0;
+            int repeatedValue = repeat ? rom.u8(RomAddress.fromOffset(offset)) : 0;
             for (int i = 0; i < amount; i++) {
-                int value = repeat ? repeatedValue : Byte.toUnsignedInt(romData[offset + i]);
+                int value = repeat ? repeatedValue : rom.u8(RomAddress.fromOffset(offset + i));
                 int bgOffset = targetAddress - 0x9800;
                 if (bgOffset >= 0 && bgOffset < bgMap.length) {
                     bgMap[bgOffset] = value;

@@ -1,0 +1,86 @@
+package linksawakening.app.gameplay;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
+import linksawakening.app.GameSession;
+import linksawakening.testing.RequiresRom;
+import linksawakening.world.transition.Warp;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+@RequiresRom
+class GameOverOutcomeSessionTest {
+    @ParameterizedTest
+    @ValueSource(ints = {0, 1, 2})
+    void choicesSaveOrRetainLiveProgressAndResumeAtSpawn(int option) throws Exception {
+        var game = new GameSession();
+        game.initializeHeadlessNewGame();
+        for (int i = 0; i < 520; i++) game.headlessFrame();
+        for (int i = 0; i < 600 && game.diagnostics().dialogController().isActive(); i++) {
+            game.headlessButton("a", (i & 1) == 0);
+            game.headlessFrame();
+        }
+        game.headlessButton("a", false);
+        game.headlessButton("right", true);
+        for (int i = 0; i < 32; i++) game.headlessFrame();
+        game.headlessButton("right", false);
+        var store = game.saveState().saveRamStore;
+        store.createNewGame(0, new int[] {1, 0, 0, 0, 0});
+        game.state().screens().currentSaveSlot = 0;
+        var room = game.diagnostics().roomSession();
+        room.transitions().loadWarpDestination(new Warp(0, 0, 0x92, 0x50, 0x60, -1));
+        room.rooms().loadOverworld(0x93); // Scrolling must not replace wSpawnLocationData.
+        var link = game.diagnostics().link();
+        link.position().setPixelPosition(80, 64);
+        var player = game.diagnostics().playerState();
+        player.vitals().setMaxHearts(6);
+        player.wallet().setRupees(17);
+        player.progression().setDeathCount(8);
+        player.equipmentLevels().setActivePowerUp(1);
+        player.vitals().applyRomEnemyDamage(1);
+        player.playerResources().clearResourceBuffersForDebug();
+        player.vitals().setHealth(0);
+        for (int i = 0; i < 208; i++) game.headlessFrame();
+        assertEquals(4, link.status().gameOverStage());
+        assertEquals(9, player.progression().deathCount());
+        assertEquals(0, player.equipmentLevels().activePowerUp());
+        assertEquals(0, player.equipmentLevels().powerUpHits());
+        game.headlessFrame(); // First interactive handler draws cursor.
+        for (int i = 0; i < option; i++) {
+            game.headlessButton("down", true);
+            game.headlessFrame();
+            game.headlessButton("down", false);
+            game.headlessFrame();
+        }
+        game.headlessButton(option == 0 ? "a" : option == 1 ? "b" : "start", true);
+        game.headlessFrame();
+        assertEquals(40, player.vitals().health()); // MaxHeartsToStartingHealthTable[6]: five hearts.
+        assertEquals(17, player.wallet().rupees());
+        assertEquals(9, player.progression().deathCount());
+        assertEquals(0, link.airborne().romMotionState());
+        assertEquals(0, link.motion().romPhysicsModifier());
+        assertNotEquals(255, link.animation().romAnimationState());
+        assertEquals(0, player.equipmentLevels().activePowerUp());
+        assertEquals(0, player.equipmentLevels().powerUpHits());
+        if (option == 1) {
+            assertInstanceOf(
+                    linksawakening.app.screen.CutsceneScreen.class, game.state().screens().currentScreen);
+        } else {
+            assertEquals(0x92, room.rooms().currentRoomId());
+            assertEquals(0, room.rooms().mapCategory());
+            assertEquals(0x50 - 8, link.position().pixelX());
+            assertEquals(0x60 - 16, link.position().pixelY());
+            assertEquals(128, player.vitals().invincibilityCounter());
+        }
+        assertEquals(option == 2 ? 0 : 9, store.readSlot(0).deathCountBcd());
+        if (option != 2) {
+            assertEquals(0x92, store.readSlot(0).spawnMapRoom());
+            assertEquals(0x50, store.readSlot(0).spawnPositionX());
+            assertEquals(40, store.readSlot(0).health());
+        }
+        assertFalse(link.status().gameOverScreenPending());
+    }
+}

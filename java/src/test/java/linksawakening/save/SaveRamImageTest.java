@@ -1,15 +1,45 @@
 package linksawakening.save;
 
-import linksawakening.state.PlayerState;
-import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.Arrays;
+import linksawakening.state.PlayerState;
+import org.junit.jupiter.api.Test;
+
 final class SaveRamImageTest {
+
+    @Test
+    void deathCountRollsBcdDigitsCapsAndRoundTripsThroughSave() {
+        var player = new PlayerState();
+        player.progression().setDeathCount(9);
+        player.progression().incrementDeathCount();
+        assertEquals(0x10, player.progression().deathCountBcd());
+        player.progression().setDeathCount(99);
+        player.progression().incrementDeathCount();
+        assertEquals(0x100, player.progression().deathCountBcd());
+        player.progression().setDeathCount(999);
+        player.progression().incrementDeathCount();
+        assertEquals(999, player.progression().deathCount());
+        assertEquals(0x999, player.progression().deathCountBcd());
+        var image = SaveRamImage.empty();
+        image.writePlayerState(0, player);
+        assertEquals(0x999, image.readSlot(0).deathCountBcd());
+        var restored = new PlayerState();
+        restored.playerSaveLoader().applySavedGame(image.readSlot(0));
+        assertEquals(999, restored.progression().deathCount());
+    }
+
+    @Test
+    void slotSummaryReadsDeathCountAsLittleEndianPackedBcd() {
+        byte[] bytes = SaveRamImage.empty().bytes();
+        int offset = SaveRamLayout.slotOffset(1) + SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET;
+        bytes[offset] = 0x23;
+        bytes[offset + 1] = 0x01;
+        bytes[offset + 2] = 0x7F; // Original third byte is unused.
+        assertEquals(0x123, SaveRamImage.fromBytes(bytes).readSlot(1).deathCountBcd());
+    }
 
     @Test
     void emptyImageHasValidPrefixesButNoInitializedNames() {
@@ -17,9 +47,12 @@ final class SaveRamImageTest {
 
         assertEquals(SaveRamLayout.IMAGE_SIZE, image.bytes().length);
         for (int slot = 0; slot < SaveRamLayout.SLOT_COUNT; slot++) {
-            assertArrayEquals(new byte[] {1, 3, 5, 7, 9},
-                Arrays.copyOfRange(image.bytes(), SaveRamLayout.slotOffset(slot),
-                    SaveRamLayout.slotOffset(slot) + SaveRamLayout.PREFIX_SIZE));
+            assertArrayEquals(
+                    new byte[] {1, 3, 5, 7, 9},
+                    Arrays.copyOfRange(
+                            image.bytes(),
+                            SaveRamLayout.slotOffset(slot),
+                            SaveRamLayout.slotOffset(slot) + SaveRamLayout.PREFIX_SIZE));
             assertArrayEquals(new int[SaveRamLayout.NAME_LENGTH], image.savedNames()[slot]);
         }
         assertEquals(0, image.saveFilesMask());
@@ -33,14 +66,20 @@ final class SaveRamImageTest {
         image.createNewGame(1, name);
 
         int main = SaveRamLayout.slotOffset(1) + SaveRamLayout.mainOffset();
-        assertArrayEquals(new byte[] {1, 2, 3, 4, 5}, Arrays.copyOfRange(image.bytes(),
-            main + SaveRamLayout.MAIN_NAME_OFFSET,
-            main + SaveRamLayout.MAIN_NAME_OFFSET + SaveRamLayout.NAME_LENGTH));
+        assertArrayEquals(
+                new byte[] {1, 2, 3, 4, 5},
+                Arrays.copyOfRange(
+                        image.bytes(),
+                        main + SaveRamLayout.MAIN_NAME_OFFSET,
+                        main + SaveRamLayout.MAIN_NAME_OFFSET + SaveRamLayout.NAME_LENGTH));
         assertEquals(0x18, unsigned(image.bytes()[main + SaveRamLayout.MAIN_HEALTH_OFFSET]));
         assertEquals(0x03, unsigned(image.bytes()[main + SaveRamLayout.MAIN_MAX_HEARTS_OFFSET]));
-        assertArrayEquals(new byte[] {0, 0, 0}, Arrays.copyOfRange(image.bytes(),
-            main + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET,
-            main + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET + 3));
+        assertArrayEquals(
+                new byte[] {0, 0, 0},
+                Arrays.copyOfRange(
+                        image.bytes(),
+                        main + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET,
+                        main + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET + 3));
         assertEquals(1 << 1, image.saveFilesMask());
         assertArrayEquals(name, image.savedNames()[1]);
     }
@@ -61,9 +100,9 @@ final class SaveRamImageTest {
 
         image.copySlot(0, 1);
 
-        assertArrayEquals(Arrays.copyOfRange(image.bytes(), source,
-                source + SaveRamLayout.SLOT_SIZE),
-            Arrays.copyOfRange(image.bytes(), target, target + SaveRamLayout.SLOT_SIZE));
+        assertArrayEquals(
+                Arrays.copyOfRange(image.bytes(), source, source + SaveRamLayout.SLOT_SIZE),
+                Arrays.copyOfRange(image.bytes(), target, target + SaveRamLayout.SLOT_SIZE));
         assertEquals((byte) 0x5A, image.bytes()[target - 1]);
         assertEquals((byte) 0xA5, image.bytes()[target + SaveRamLayout.SLOT_SIZE]);
     }
@@ -82,12 +121,12 @@ final class SaveRamImageTest {
         image.eraseSlot(1);
 
         assertEquals(0, image.saveFilesMask());
-        byte[] slot = Arrays.copyOfRange(image.bytes(), SaveRamLayout.slotOffset(1),
-            SaveRamLayout.slotOffset(1) + SaveRamLayout.SLOT_SIZE);
-        assertArrayEquals(new byte[] {1, 3, 5, 7, 9},
-            Arrays.copyOf(slot, SaveRamLayout.PREFIX_SIZE));
-        assertArrayEquals(new byte[SaveRamLayout.SLOT_SIZE - SaveRamLayout.PREFIX_SIZE],
-            Arrays.copyOfRange(slot, SaveRamLayout.PREFIX_SIZE, slot.length));
+        byte[] slot = Arrays.copyOfRange(
+                image.bytes(), SaveRamLayout.slotOffset(1), SaveRamLayout.slotOffset(1) + SaveRamLayout.SLOT_SIZE);
+        assertArrayEquals(new byte[] {1, 3, 5, 7, 9}, Arrays.copyOf(slot, SaveRamLayout.PREFIX_SIZE));
+        assertArrayEquals(
+                new byte[SaveRamLayout.SLOT_SIZE - SaveRamLayout.PREFIX_SIZE],
+                Arrays.copyOfRange(slot, SaveRamLayout.PREFIX_SIZE, slot.length));
         assertEquals((byte) 0x5A, image.bytes()[target - 1]);
         assertEquals((byte) 0xA5, image.bytes()[target + SaveRamLayout.SLOT_SIZE]);
     }
@@ -116,10 +155,8 @@ final class SaveRamImageTest {
         byte[] after = image.bytes();
         assertEquals(0x07, unsigned(after[main + SaveRamLayout.MAIN_OCARINA_SONG_FLAGS_OFFSET]));
         assertEquals(0x02, unsigned(after[main + SaveRamLayout.MAIN_SELECTED_SONG_INDEX_OFFSET]));
-        assertEquals((byte) 0xA5,
-            after[main + SaveRamLayout.MAIN_OCARINA_SONG_FLAGS_OFFSET - 1]);
-        assertEquals((byte) 0x5A,
-            after[main + SaveRamLayout.MAIN_SELECTED_SONG_INDEX_OFFSET + 1]);
+        assertEquals((byte) 0xA5, after[main + SaveRamLayout.MAIN_OCARINA_SONG_FLAGS_OFFSET - 1]);
+        assertEquals((byte) 0x5A, after[main + SaveRamLayout.MAIN_SELECTED_SONG_INDEX_OFFSET + 1]);
         assertEquals(0x07, image.readSlot(1).ocarinaSongFlags());
         assertEquals(0x02, image.readSlot(1).selectedSongIndex());
     }
@@ -144,6 +181,25 @@ final class SaveRamImageTest {
     }
 
     @Test
+    void writesRichardSpokenFlagAtDb55WithoutTouchingAdjacentBytes() {
+        SaveRamImage image = SaveRamImage.empty();
+        image.createNewGame(1, new int[] {1, 2, 3, 4, 5});
+        int main = SaveRamLayout.slotOffset(1) + SaveRamLayout.mainOffset();
+        byte[] before = image.bytes();
+        before[main + 0x354] = (byte) 0xA5;
+        before[main + 0x356] = (byte) 0x5A;
+        image = SaveRamImage.fromBytes(before);
+
+        image.writeRichardSpokenFlag(1, 2);
+
+        assertEquals(2, image.readSlot(1).richardSpokenFlag());
+        assertEquals((byte) 0xA5, image.bytes()[main + 0x354]);
+        assertEquals((byte) 0x5A, image.bytes()[main + 0x356]);
+        SaveRamImage written = image;
+        assertThrows(IllegalArgumentException.class, () -> written.writeRichardSpokenFlag(1, 0x100));
+    }
+
+    @Test
     void writesTheRomSpawnLocationFieldsWithoutTouchingAdjacentProgress() {
         SaveRamImage image = SaveRamImage.empty();
         image.createNewGame(1, new int[] {1, 2, 3, 4, 5});
@@ -162,20 +218,16 @@ final class SaveRamImageTest {
         assertEquals(0x52, state.spawnPositionX());
         assertEquals(0x63, state.spawnPositionY());
         assertEquals(0x27, state.spawnIndoorRoom());
-        assertEquals((byte) 0xA1,
-            image.bytes()[main + SaveRamLayout.MAIN_SPAWN_INDOOR_OFFSET - 1]);
-        assertEquals((byte) 0xB2,
-            image.bytes()[main + SaveRamLayout.MAIN_SPAWN_INDOOR_ROOM_OFFSET + 1]);
+        assertEquals((byte) 0xA1, image.bytes()[main + SaveRamLayout.MAIN_SPAWN_INDOOR_OFFSET - 1]);
+        assertEquals((byte) 0xB2, image.bytes()[main + SaveRamLayout.MAIN_SPAWN_INDOOR_ROOM_OFFSET + 1]);
     }
 
     @Test
     void rejectsSpawnLocationValuesThatCannotBeStoredInTheSourceByteFields() {
         SaveRamImage image = SaveRamImage.empty();
 
-        assertThrows(IllegalArgumentException.class,
-            () -> image.writeSpawnLocation(0, 0, 0, 0, 0x100, 0, 0));
-        assertThrows(IllegalArgumentException.class,
-            () -> image.writeSpawnLocation(0, 0, 0, 0, 0, -1, 0));
+        assertThrows(IllegalArgumentException.class, () -> image.writeSpawnLocation(0, 0, 0, 0, 0x100, 0, 0));
+        assertThrows(IllegalArgumentException.class, () -> image.writeSpawnLocation(0, 0, 0, 0, 0, -1, 0));
     }
 
     @Test
@@ -191,44 +243,44 @@ final class SaveRamImageTest {
         image = SaveRamImage.fromBytes(before);
 
         PlayerState player = new PlayerState();
-        player.initializeNewGame(0x30, 0x30, 0x20);
-        player.setItemA(PlayerState.INVENTORY_BOW);
-        player.setItemB(PlayerState.INVENTORY_HOOKSHOT);
-        player.setSubscreenItems(new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
-        player.setSeashells(37);
-        player.setHasFlippers(true);
-        player.setHasMedicine(true);
-        player.setTradeSequenceItem(0x0E);
-        player.setMedicineCount(2);
-        player.setTailKeyCount(1);
-        player.setAnglerKeyCount(2);
-        player.setFaceKeyCount(3);
-        player.setBirdKeyCount(4);
-        player.setGoldenLeavesCount(5);
-        player.setShieldLevel(2);
-        player.setSwordLevel(1);
-        player.setMaxArrows(40);
-        player.setArrowCount(17);
-        player.setMaxBombs(60);
-        player.setBombCount(23);
-        player.setMaxMagicPowder(32);
-        player.setMagicPowderCount(19);
-        player.setHasToadstool(true);
-        player.setMaxHearts(10);
-        player.setHealth(0);
-        player.setHeartPieces(2);
-        player.setRupees(509);
-        player.setPowerBraceletLevel(2);
-        player.setHasMedicine(true);
-        player.setOcarinaSongFlags(0x07);
-        player.setSelectedSongIndex(2);
-        player.setTunicType(PlayerState.TUNIC_BLUE);
+        player.playerInitialization().initializeNewGame(0x30, 0x30, 0x20);
+        player.inventory().setItemA(linksawakening.state.InventoryItem.BOW.romValue());
+        player.inventory().setItemB(linksawakening.state.InventoryItem.HOOKSHOT.romValue());
+        player.inventory().setSubscreenItems(new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+        player.progression().setSeashells(37);
+        player.progression().setHasFlippers(true);
+        player.progression().setHasMedicine(true);
+        player.progression().setTradeSequenceItem(0x0E);
+        player.progression().setMedicineCount(2);
+        player.progression().setTailKeyCount(1);
+        player.progression().setAnglerKeyCount(2);
+        player.progression().setFaceKeyCount(3);
+        player.progression().setBirdKeyCount(4);
+        player.progression().setGoldenLeavesCount(5);
+        player.equipmentLevels().setShieldLevel(2);
+        player.equipmentLevels().setSwordLevel(1);
+        player.ammunition().setMaxArrows(40);
+        player.ammunition().setArrowCount(17);
+        player.ammunition().setMaxBombs(60);
+        player.ammunition().setBombCount(23);
+        player.ammunition().setMaxMagicPowder(32);
+        player.ammunition().setMagicPowderCount(19);
+        player.ammunition().setHasToadstool(true);
+        player.vitals().setMaxHearts(10);
+        player.vitals().setHealth(0);
+        player.progression().setHeartPieces(2);
+        player.wallet().setRupees(509);
+        player.equipmentLevels().setPowerBraceletLevel(2);
+        player.progression().setHasMedicine(true);
+        player.progression().setOcarinaSongFlags(0x07);
+        player.progression().setSelectedSongIndex(2);
+        player.equipmentLevels().setTunicType(linksawakening.state.Tunic.BLUE.romValue());
 
         image.writePlayerState(1, player);
 
         SaveSlotState state = image.readSlot(1);
-        assertEquals(PlayerState.INVENTORY_BOW, state.itemA());
-        assertEquals(PlayerState.INVENTORY_HOOKSHOT, state.itemB());
+        assertEquals(linksawakening.state.InventoryItem.BOW.romValue(), state.itemA());
+        assertEquals(linksawakening.state.InventoryItem.HOOKSHOT.romValue(), state.itemB());
         assertArrayEquals(new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, state.subscreen());
         assertEquals(37, state.seashells());
         assertEquals(1, state.hasFlippers());
@@ -256,13 +308,10 @@ final class SaveRamImageTest {
         assertEquals(509, state.rupees());
         assertEquals(0x07, state.ocarinaSongFlags());
         assertEquals(2, state.selectedSongIndex());
-        assertEquals(PlayerState.TUNIC_BLUE, state.tunicType());
-        assertEquals((byte) 0xA5,
-            image.bytes()[main + SaveRamLayout.MAIN_SPAWN_X_OFFSET]);
-        assertEquals((byte) 0xB6,
-            image.bytes()[main + SaveRamLayout.MAIN_DEATH_COUNT_OFFSET]);
-        assertEquals((byte) 0xC7,
-            image.bytes()[slotStart + SaveRamLayout.dx3Offset() + 1]);
+        assertEquals(linksawakening.state.Tunic.BLUE.romValue(), state.tunicType());
+        assertEquals((byte) 0xA5, image.bytes()[main + SaveRamLayout.MAIN_SPAWN_X_OFFSET]);
+        assertEquals(0, image.readSlot(1).deathCountBcd());
+        assertEquals((byte) 0xC7, image.bytes()[slotStart + SaveRamLayout.dx3Offset() + 1]);
         assertEquals(0x05, unsigned(image.bytes()[main + SaveRamLayout.MAIN_RUPEE_HIGH_OFFSET]));
         assertEquals(0x09, unsigned(image.bytes()[main + SaveRamLayout.MAIN_RUPEE_LOW_OFFSET]));
     }
@@ -274,8 +323,7 @@ final class SaveRamImageTest {
         int slotStart = SaveRamLayout.slotOffset(1);
         byte[] before = image.bytes();
         before[slotStart + SaveRamLayout.dx1Offset()] = (byte) 0xD1;
-        before[slotStart + SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_ITEM_B_OFFSET]
-            = (byte) 0xE2;
+        before[slotStart + SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_ITEM_B_OFFSET] = (byte) 0xE2;
         image = SaveRamImage.fromBytes(before);
 
         byte[] overworld = pattern(0x100, 0x10);
@@ -291,9 +339,8 @@ final class SaveRamImageTest {
         assertArrayEquals(indoorB, state.indoorBRoomStatus());
         assertArrayEquals(colorDungeon, state.colorDungeonRoomStatus());
         assertEquals((byte) 0xD1, image.bytes()[slotStart + SaveRamLayout.dx1Offset()]);
-        assertEquals((byte) 0xE2,
-            image.bytes()[slotStart + SaveRamLayout.mainOffset()
-                + SaveRamLayout.MAIN_ITEM_B_OFFSET]);
+        assertEquals(
+                (byte) 0xE2, image.bytes()[slotStart + SaveRamLayout.mainOffset() + SaveRamLayout.MAIN_ITEM_B_OFFSET]);
     }
 
     @Test
@@ -304,8 +351,8 @@ final class SaveRamImageTest {
         int main = slotStart + SaveRamLayout.mainOffset();
         byte[] before = image.bytes();
         before[main + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_OFFSET - 1] = (byte) 0xA1;
-        before[main + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_OFFSET
-            + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_SIZE] = (byte) 0xB2;
+        before[main + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_OFFSET + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_SIZE] =
+                (byte) 0xB2;
         before[slotStart + SaveRamLayout.dx1Offset() - 1] = (byte) 0xC3;
         image = SaveRamImage.fromBytes(before);
 
@@ -316,13 +363,14 @@ final class SaveRamImageTest {
         SaveSlotState state = image.readSlot(1);
         assertArrayEquals(dungeonFlags, state.dungeonItemFlags());
         assertArrayEquals(colorFlags, state.colorDungeonItemFlags());
-        assertEquals((byte) 0xA1,
-            image.bytes()[main + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_OFFSET - 1]);
-        assertEquals((byte) 0xB2,
-            image.bytes()[main + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_OFFSET
-                + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_SIZE]);
-        assertEquals((byte) 0xC3,
-            image.bytes()[slotStart + SaveRamLayout.dx1Offset() - 1]);
+        assertEquals((byte) 0xA1, image.bytes()[main + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_OFFSET - 1]);
+        assertEquals(
+                (byte) 0xB2,
+                image.bytes()[
+                        main
+                                + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_OFFSET
+                                + SaveRamLayout.MAIN_DUNGEON_ITEM_FLAGS_SIZE]);
+        assertEquals((byte) 0xC3, image.bytes()[slotStart + SaveRamLayout.dx1Offset() - 1]);
     }
 
     @Test
@@ -330,16 +378,16 @@ final class SaveRamImageTest {
         byte[] bytes = SaveRamImage.empty().bytes();
         int slotStart = SaveRamLayout.slotOffset(0);
         int main = slotStart + SaveRamLayout.mainOffset();
-        put(bytes, main, SaveRamLayout.MAIN_ITEM_B_OFFSET, PlayerState.INVENTORY_BOW);
-        put(bytes, main, SaveRamLayout.MAIN_ITEM_A_OFFSET, PlayerState.INVENTORY_HOOKSHOT);
+        put(bytes, main, SaveRamLayout.MAIN_ITEM_B_OFFSET, linksawakening.state.InventoryItem.BOW.romValue());
+        put(bytes, main, SaveRamLayout.MAIN_ITEM_A_OFFSET, linksawakening.state.InventoryItem.HOOKSHOT.romValue());
         for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
             put(bytes, main, SaveRamLayout.MAIN_SUBSCREEN_OFFSET + slot, 0x20 + slot);
         }
-        put(bytes, main, SaveRamLayout.MAIN_SEASHELLS_OFFSET, 17);
+        put(bytes, main, SaveRamLayout.MAIN_SEASHELLS_OFFSET, 0x17);
         put(bytes, main, SaveRamLayout.MAIN_FLIPPERS_OFFSET, 1);
-        put(bytes, main, SaveRamLayout.MAIN_MEDICINE_OFFSET, 1);
+        put(bytes, main, SaveRamLayout.MAIN_MEDICINE_OFFSET, 2);
         put(bytes, main, SaveRamLayout.MAIN_TRADE_SEQUENCE_ITEM_OFFSET, 0x0E);
-        put(bytes, main, SaveRamLayout.MAIN_MEDICINE_COUNT_OFFSET, 2);
+        put(bytes, main, SaveRamLayout.MAIN_FOLLOWER_CONTEXT_OFFSET, 0);
         put(bytes, main, SaveRamLayout.MAIN_TAIL_KEY_OFFSET, 1);
         put(bytes, main, SaveRamLayout.MAIN_ANGLER_KEY_OFFSET, 2);
         put(bytes, main, SaveRamLayout.MAIN_FACE_KEY_OFFSET, 3);
@@ -348,7 +396,7 @@ final class SaveRamImageTest {
         put(bytes, main, SaveRamLayout.MAIN_SHIELD_OFFSET, 2);
         put(bytes, main, SaveRamLayout.MAIN_ARROWS_OFFSET, 7);
         put(bytes, main, SaveRamLayout.MAIN_MAGIC_POWDER_OFFSET, 9);
-        put(bytes, main, SaveRamLayout.MAIN_BOMBS_OFFSET, 11);
+        put(bytes, main, SaveRamLayout.MAIN_BOMBS_OFFSET, 0x11);
         put(bytes, main, SaveRamLayout.MAIN_SWORD_OFFSET, 2);
         put(bytes, main, SaveRamLayout.MAIN_HEALTH_OFFSET, 31);
         put(bytes, main, SaveRamLayout.MAIN_MAX_HEARTS_OFFSET, 5);
@@ -356,7 +404,7 @@ final class SaveRamImageTest {
         put(bytes, main, SaveRamLayout.MAIN_RUPEE_HIGH_OFFSET, 0x05);
         put(bytes, main, SaveRamLayout.MAIN_RUPEE_LOW_OFFSET, 0x09);
         put(bytes, main, SaveRamLayout.MAIN_POWER_BRACELET_OFFSET, 2);
-        put(bytes, main, SaveRamLayout.MAIN_MEDICINE_OFFSET, 1);
+        put(bytes, main, SaveRamLayout.MAIN_MEDICINE_OFFSET, 2);
         put(bytes, main, SaveRamLayout.MAIN_SPAWN_INDOOR_OFFSET, 1);
         put(bytes, main, SaveRamLayout.MAIN_SPAWN_MAP_ID_OFFSET, 0x10);
         put(bytes, main, SaveRamLayout.MAIN_SPAWN_MAP_ROOM_OFFSET, 0xA3);
@@ -375,8 +423,8 @@ final class SaveRamImageTest {
         SaveSlotState state = SaveRamImage.fromBytes(bytes).readSlot(0);
 
         assertEquals(0, state.slot());
-        assertEquals(PlayerState.INVENTORY_BOW, state.itemB());
-        assertEquals(PlayerState.INVENTORY_HOOKSHOT, state.itemA());
+        assertEquals(linksawakening.state.InventoryItem.BOW.romValue(), state.itemB());
+        assertEquals(linksawakening.state.InventoryItem.HOOKSHOT.romValue(), state.itemA());
         assertEquals(0x20, state.subscreen()[0]);
         assertEquals(17, state.seashells());
         assertEquals(1, state.hasFlippers());
@@ -404,9 +452,9 @@ final class SaveRamImageTest {
         assertEquals(0x52, state.spawnPositionX());
         assertEquals(0x63, state.spawnPositionY());
         assertEquals(0xA3, state.spawnIndoorRoom());
-        assertEquals(0x20, state.maxMagicPowder());
-        assertEquals(0x30, state.maxBombs());
-        assertEquals(0x30, state.maxArrows());
+        assertEquals(20, state.maxMagicPowder());
+        assertEquals(30, state.maxBombs());
+        assertEquals(30, state.maxArrows());
         assertEquals(0x05, state.ocarinaSongFlags());
         assertEquals(0x02, state.selectedSongIndex());
         assertEquals(2, state.tunicType());
@@ -435,12 +483,11 @@ final class SaveRamImageTest {
 
     @Test
     void rejectsMalformedImageLengthsAndNames() {
-        assertThrows(IllegalArgumentException.class,
-            () -> SaveRamImage.fromBytes(new byte[SaveRamLayout.IMAGE_SIZE - 1]));
-        assertThrows(IllegalArgumentException.class,
-            () -> SaveRamImage.empty().createNewGame(0, new int[4]));
-        assertThrows(IllegalArgumentException.class,
-            () -> SaveRamImage.empty().createNewGame(0, new int[] {0, 1, 2, 3, 0x100}));
+        assertThrows(
+                IllegalArgumentException.class, () -> SaveRamImage.fromBytes(new byte[SaveRamLayout.IMAGE_SIZE - 1]));
+        assertThrows(IllegalArgumentException.class, () -> SaveRamImage.empty().createNewGame(0, new int[4]));
+        assertThrows(IllegalArgumentException.class, () -> SaveRamImage.empty()
+                .createNewGame(0, new int[] {0, 1, 2, 3, 0x100}));
     }
 
     private static void put(byte[] bytes, int base, int offset, int value) {

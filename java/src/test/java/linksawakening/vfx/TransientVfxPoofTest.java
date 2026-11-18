@@ -1,14 +1,16 @@
 package linksawakening.vfx;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import linksawakening.rom.Rom;
+import org.junit.jupiter.api.Test;
+
+@linksawakening.testing.RequiresRom
 final class TransientVfxPoofTest {
 
     @Test
     void decodesTheRomPoofFramesAndOamOrigin() {
-        TransientVfxSpriteSheet sheet = TransientVfxSpriteSheet.loadFromRom(loadRom());
+        TransientVfxSpriteSheet sheet = TransientVfxSpriteSheet.loadFromRom(Rom.of(loadRom()));
         CutLeavesEffectRenderer renderer = new CutLeavesEffectRenderer(sheet);
 
         var small = renderer.renderPoof(0x40, 0x50, 0x03);
@@ -23,8 +25,7 @@ final class TransientVfxPoofTest {
     }
 
     private static byte[] loadRom() {
-        try (var stream = TransientVfxPoofTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }
