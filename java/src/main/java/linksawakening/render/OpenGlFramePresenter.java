@@ -91,6 +91,19 @@ public final class OpenGlFramePresenter {
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 
+            GL11.glTexImage2D(
+                    GL11.GL_TEXTURE_2D,
+                    0,
+                    GL11.GL_RGBA,
+                    Framebuffer.WIDTH,
+                    Framebuffer.HEIGHT,
+                    0,
+                    GL11.GL_RGBA,
+                    GL11.GL_UNSIGNED_BYTE,
+                    0L);
+            shader.use();
+            shader.setUniform1i("uTexture", 0);
+
             return new OpenGlFramePresenter(window, vao, shader, texture, resources);
         } catch (RuntimeException | Error failure) {
             resources.closeAfterFailure(failure);
@@ -110,9 +123,7 @@ public final class OpenGlFramePresenter {
         GL11.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
         shader.use();
-        shader.setUniform1i("uTexture", 0);
 
         GL30.glBindVertexArray(vao);
         GL11.glDrawArrays(GL11.GL_TRIANGLE_FAN, 0, 4);
@@ -141,13 +152,13 @@ public final class OpenGlFramePresenter {
         textureUploadBuffer.clear();
         textureUploadBuffer.put(indexedDisplayBuffer).flip();
 
-        GL11.glTexImage2D(
+        GL11.glTexSubImage2D(
                 GL11.GL_TEXTURE_2D,
                 0,
-                GL11.GL_RGBA,
+                0,
+                0,
                 Framebuffer.WIDTH,
                 Framebuffer.HEIGHT,
-                0,
                 GL11.GL_RGBA,
                 GL11.GL_UNSIGNED_BYTE,
                 textureUploadBuffer);

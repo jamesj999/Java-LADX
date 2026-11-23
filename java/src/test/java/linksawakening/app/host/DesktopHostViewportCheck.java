@@ -23,7 +23,11 @@ import static org.lwjgl.glfw.GLFW.glfwWindowHint;
 import static org.lwjgl.opengl.GL11.GL_VIEWPORT;
 import static org.lwjgl.opengl.GL11.glGetIntegerv;
 
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 import linksawakening.gpu.Framebuffer;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
 
 /** Native regression check; launch on the main OS thread (-XstartOnFirstThread on macOS). */
@@ -71,7 +75,14 @@ public final class DesktopHostViewportCheck {
             glfwMakeContextCurrent(window);
             var presenter = linksawakening.render.OpenGlFramePresenter.initialize(window);
             try {
-                presenter.present(new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4]);
+                byte[] frame = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
+                ByteBuffer uploaded = BufferUtils.createByteBuffer(frame.length);
+                for (byte color : new byte[] {0x31, 0x62}) {
+                    Arrays.fill(frame, color);
+                    presenter.present(frame);
+                    GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, uploaded);
+                    if (!uploaded.equals(ByteBuffer.wrap(frame))) throw new AssertionError("Texture upload mismatch");
+                }
                 assertViewport(window, "unscaled first frame");
             } finally {
                 presenter.cleanup();
