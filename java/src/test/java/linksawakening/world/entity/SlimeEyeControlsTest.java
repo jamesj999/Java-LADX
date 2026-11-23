@@ -62,10 +62,10 @@ final class SlimeEyeControlsTest {
                     if (frame % 24 < 8) desired.add("a");
                 } else if (!split && eyes.size() == 1) {
                     var eye = eyes.getFirst();
-                    int stretch = runtime.execution().slimeEye().stretch(eye.slot());
+                    int stretch = EntityBossInspectionFixture.slimeEye(runtime).stretch(eye.slot());
                     if (stretch > previousBodyStretch) bodyHits++;
                     previousBodyStretch = stretch;
-                    if (runtime.execution().slimeEye().state(eye.slot()) >= 2) {
+                    if (EntityBossInspectionFixture.slimeEye(runtime).state(eye.slot()) >= 2) {
                         approach(desired, link, eye.x(), eye.y());
                         if (stretch == 4) {
                             desired.add("a");
@@ -127,7 +127,8 @@ final class SlimeEyeControlsTest {
                                         .formatted(
                                                 e.slot(),
                                                 e.status().value(),
-                                                runtime.execution().slimeEye().state(e.slot()),
+                                                EntityBossInspectionFixture.slimeEye(runtime)
+                                                        .state(e.slot()),
                                                 e.x(),
                                                 e.y(),
                                                 e.z(),
@@ -139,7 +140,9 @@ final class SlimeEyeControlsTest {
                         .append('\n');
                 if (!body
                         && after.size() == 1
-                        && runtime.execution().slimeEye().state(after.getFirst().slot()) == 3) {
+                        && EntityBossInspectionFixture.slimeEye(runtime)
+                                        .state(after.getFirst().slot())
+                                == 3) {
                     save(rgba, out.resolve("body.png"));
                     body = true;
                 }

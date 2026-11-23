@@ -86,13 +86,13 @@ final class SlimeEyeRuntimeTest {
         assertEquals(0x7E, eyes(r).getFirst().z());
         r.configuration().setScreenShakeCountdown(4);
         tick(r);
-        assertEquals(0, r.execution().slimeEye().state(0));
+        assertEquals(0, EntityBossInspectionFixture.slimeEye(r).state(0));
         r.configuration().setScreenShakeCountdown(5);
         tick(r);
-        assertEquals(1, r.execution().slimeEye().state(0));
+        assertEquals(1, EntityBossInspectionFixture.slimeEye(r).state(0));
         r.configuration().setScreenShakeCountdown(0);
-        for (int i = 0; i < 200 && r.execution().slimeEye().state(0) != 3; i++) tick(r);
-        assertEquals(3, r.execution().slimeEye().state(0));
+        for (int i = 0; i < 200 && EntityBossInspectionFixture.slimeEye(r).state(0) != 3; i++) tick(r);
+        assertEquals(3, EntityBossInspectionFixture.slimeEye(r).state(0));
         assertEquals(0, eyes(r).getFirst().z());
     }
 
@@ -102,10 +102,10 @@ final class SlimeEyeRuntimeTest {
         tick(r);
         for (int i = 0; i < 160; i++) tick(r);
         assertTrue(r.inspection().snapshot().slots().stream().anyMatch(e -> e.loaded() && e.type() == 0x1B));
-        assertEquals(0, r.execution().slimeEye().state(0));
+        assertEquals(0, EntityBossInspectionFixture.slimeEye(r).state(0));
         r.configuration().setScreenShakeCountdown(5);
         tick(r);
-        assertEquals(1, r.execution().slimeEye().state(0));
+        assertEquals(1, EntityBossInspectionFixture.slimeEye(r).state(0));
         assertTrue(r.outbox().consumePendingEntityEvents().stream().anyMatch(e -> e.soundId() == 8));
     }
 
@@ -114,11 +114,11 @@ final class SlimeEyeRuntimeTest {
         var r = runtime();
         drop(r);
         // Keep sword collision active as the ROM player can; collision timers govern accepted hits.
-        for (int i = 0; i < 500 && r.execution().slimeEye().stretch(0) < 4; i++) {
+        for (int i = 0; i < 500 && EntityBossInspectionFixture.slimeEye(r).stretch(0) < 4; i++) {
             sword(r, eyes(r).getFirst(), false);
             tick(r);
         }
-        assertEquals(4, r.execution().slimeEye().stretch(0));
+        assertEquals(4, EntityBossInspectionFixture.slimeEye(r).stretch(0));
         r.outbox().consumePendingLinkMotionBlockRequests();
         var splitBlockValues = new ArrayList<Integer>();
         for (int i = 0; i < 30 && eyes(r).size() == 1; i++) {
@@ -134,7 +134,7 @@ final class SlimeEyeRuntimeTest {
                 "04:4A94 writes the live split countdown, not a Boolean 2");
         assertEquals(2, eyes(r).size());
         assertTrue(eyes(r).stream()
-                .allMatch(e -> r.execution().slimeEye().half(e.slot())
+                .allMatch(e -> EntityBossInspectionFixture.slimeEye(r).half(e.slot())
                         && r.inspection().combatTables().readEnemyHealth(e.slot()) == 5));
         assertFalse(r.inspection().snapshot().slots().getFirst().loaded());
         int hits = 0;
@@ -196,7 +196,7 @@ final class SlimeEyeRuntimeTest {
                         .append('\t')
                         .append(e.status().value())
                         .append('\t')
-                        .append(r.execution().slimeEye().state(0))
+                        .append(EntityBossInspectionFixture.slimeEye(r).state(0))
                         .append('\t')
                         .append(e.x())
                         .append('\t')
@@ -204,13 +204,13 @@ final class SlimeEyeRuntimeTest {
                         .append('\t')
                         .append(e.z())
                         .append('\t')
-                        .append(r.execution().slimeEye().speedZ(0))
+                        .append(EntityBossInspectionFixture.slimeEye(r).speedZ(0))
                         .append('\t')
                         .append(r.inspection().physicsTables().readEnemyTransitionCountdown(0))
                         .append('\t')
-                        .append(r.execution().slimeEye().variant(0))
+                        .append(EntityBossInspectionFixture.slimeEye(r).variant(0))
                         .append('\t')
-                        .append(r.execution().slimeEye().dropping(0))
+                        .append(EntityBossInspectionFixture.slimeEye(r).dropping(0))
                         .append('\t')
                         .append(r.inspection().physicsTables().readSlowTransitionCountdown(0))
                         .append('\t')
@@ -385,11 +385,11 @@ final class SlimeEyeRuntimeTest {
         assertEquals(EntityStatus.DYING, r.inspection().slots().get(0).status());
         tick(r); // active handler's lethal collision frame
         tick(r); // first destruction handler visit
-        assertEquals(1, r.execution().slimeEye().state(0));
+        assertEquals(1, EntityBossInspectionFixture.slimeEye(r).state(0));
         assertEquals(0x40, r.inspection().physicsTables().readEnemyTransitionCountdown(0));
         r.lifecycle().disableEntityWithoutPersistence(0);
-        assertFalse(r.execution().slimeEye().half(0));
-        assertEquals(0, r.execution().slimeEye().state(0));
+        assertFalse(EntityBossInspectionFixture.slimeEye(r).half(0));
+        assertEquals(0, EntityBossInspectionFixture.slimeEye(r).state(0));
     }
 
     @Test

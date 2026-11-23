@@ -11,8 +11,10 @@ import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.vfx.TransientVfxType;
+import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.TransientVfxRequest;
+import linksawakening.world.entity.motion.BossIntroMotion;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
 import linksawakening.world.entity.motion.GenieMotion;
 import linksawakening.world.entity.motion.ThrownEntityMotion;
@@ -23,6 +25,10 @@ import linksawakening.world.entity.motion.ThrownEntityMotion;
  */
 public final class GenieEntityController {
     private final State encounter;
+    private final EntityBackgroundMechanics background;
+    private final EntityLinkView link;
+    private final EntityPresentationState presentation;
+    private final EntityRoomInspection roomInspection;
     private final EntityBossRewards bossRewards;
     private final EntityCombatTables combatTables;
     private final EntityEventChannels events;
@@ -36,6 +42,10 @@ public final class GenieEntityController {
 
     GenieEntityController(
             State encounter,
+            EntityBackgroundMechanics background,
+            EntityLinkView link,
+            EntityPresentationState presentation,
+            EntityRoomInspection roomInspection,
             EntityBossRewards bossRewards,
             EntityEventChannels events,
             EntityLiftState liftThrow,
@@ -47,6 +57,10 @@ public final class GenieEntityController {
         EntityCombatTables combatTables = slots.combat();
         EntityPhysicsTables physicsTables = slots.physics();
         this.encounter = Objects.requireNonNull(encounter, "encounter");
+        this.background = Objects.requireNonNull(background, "background");
+        this.link = Objects.requireNonNull(link, "link");
+        this.presentation = Objects.requireNonNull(presentation, "presentation");
+        this.roomInspection = Objects.requireNonNull(roomInspection, "roomInspection");
         this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
         this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
         this.events = Objects.requireNonNull(events, "events");
@@ -57,6 +71,86 @@ public final class GenieEntityController {
         this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle");
         this.slotProperties = Objects.requireNonNull(slotProperties, "slotProperties");
         this.slots = Objects.requireNonNull(slots, "slots");
+    }
+
+    public boolean advanceActiveSlot(
+            EntitySlotExecution slotState, EntityFrameInputLatch frameInput, EntityTimerGates timerGates) {
+        if (slotState.status() != EntityStatus.ACTIVE || slotState.wasInitializing()) return true;
+        RoomEntity entity = slotState.entity();
+        int slot = entity.slot();
+
+        boolean introCanAdvance = !link.inventoryAppearing() && !roomInspection.roomTransitionActive();
+        BossIntroMotion.Update bossIntro = introCanAdvance
+                ? motions.get(BossIntroMotion.class, BossIntroMotion::new)
+                        .advance(
+                                slotProperties.options1(slot),
+                                entity.type(),
+                                roomInspection.entityMapId(),
+                                lifecycle.transitionSequenceCounter())
+                : BossIntroMotion.Update.none();
+        if (bossIntro.musicTrack() >= 0) {
+            presentation.writePendingMusicTrack(bossIntro.musicTrack());
+        }
+        if (bossIntro.dialogLowId() >= 0) {
+            events.dialog(new DialogRequest(bossIntro.dialogTableId(), bossIntro.dialogLowId()));
+        }
+        boolean genieThresholdReached = jarDamageCounter(slot) >= GenieMotion.JAR_HEALTH_THRESHOLD;
+        if (phase(slot) == 0 && !genieThresholdReached) {
+            setGenieControllerSlot(slot);
+        }
+        if (phase(slot) == 0
+                && (genieThresholdReached || roomInspection.genieState0Interactive(frameInput.creditsGameplay()))) {
+            advanceGenieJar(entity, frameInput.linkEntityY());
+            if (!slots.get(slot).loaded()) {
+                return false;
+            }
+            slotState.updated(slots.get(slot));
+        }
+        if (phase(slot) == 2 && roomInspection.genieState0Interactive(frameInput.creditsGameplay())) {
+            advanceGenieAppearance(entity);
+            if (!slots.get(slot).loaded()) {
+                return false;
+            }
+            slotState.updated(slots.get(slot));
+        }
+        if (phase(slot) == 3 && roomInspection.genieState0Interactive(frameInput.creditsGameplay())) {
+            advanceGenieSideProjectile(entity, frameInput.frameCounter());
+            if (!slots.get(slot).loaded()) {
+                return false;
+            }
+            slotState.updated(slots.get(slot));
+        }
+        if (phase(slot) == 4 && roomInspection.genieState0Interactive(frameInput.creditsGameplay())) {
+            if (timerGates.handlerLinkCollisionEnabled()
+                    && RoomEntityCombatRules.overlapsLink(entity, frameInput.linkEntityX(), frameInput.linkEntityY())) {
+                background.requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
+            }
+            advanceGenieFireball(entity, frameInput.frameCounter());
+            if (!slots.get(slot).loaded()) {
+                return false;
+            }
+            slotState.updated(slots.get(slot));
+        }
+        if (phase(slot) == 1 && roomInspection.genieState0Interactive(frameInput.creditsGameplay())) {
+            setGenieSharedBodySpeedX(genieSpeedX(slot) & 0xFF);
+            setGenieSharedBodySpeedY(genieSpeedY(slot) & 0xFF);
+            if (genieActiveState(slot) != 5
+                    && timerGates.handlerLinkCollisionEnabled()
+                    && RoomEntityCombatRules.overlapsLink(entity, frameInput.linkEntityX(), frameInput.linkEntityY())) {
+                background.requestLinkPush(entity, EntityLinkCollisionRules.STANDARD_PUSH);
+            }
+            advanceGenieBody(
+                    entity,
+                    frameInput.frameCounter(),
+                    frameInput.linkEntityX(),
+                    frameInput.linkEntityY(),
+                    frameInput.randomByteSupplier());
+            if (!slots.get(slot).loaded()) {
+                return false;
+            }
+            slotState.updated(slots.get(slot));
+        }
+        return true;
     }
 
     public void advanceGenieJar(RoomEntity jarEntity, int linkEntityY) {
@@ -441,10 +535,6 @@ public final class GenieEntityController {
 
     int genieControllerSlot() {
         return encounter.genieControllerSlot;
-    }
-
-    void beginFrame() {
-        Arrays.fill(encounter.genieImpactRegisteredThisFrame, false);
     }
 
     private final GenieJarStep genieJarStep = new GenieJarStep(this);

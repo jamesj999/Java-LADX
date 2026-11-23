@@ -93,9 +93,9 @@ final class EntityRoomInitialization {
         this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle");
     }
 
-    EntityHandlerRegistry createEntityHandlers() {
+    EntityHandlerRegistry createEntityHandlers(SlimeEyeController slimeEye) {
         EntityHandlerRegistry registry = new EntityHandlerRegistry(this.motions);
-        EntityHandlerFamilies.install(registry);
+        EntityHandlerFamilies.install(registry, genie, slimeEye);
         return registry;
     }
 

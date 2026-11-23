@@ -4,8 +4,10 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_GOPONGA_FLOW
 
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.EntitySlotView;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.motion.GopongaProjectileMotion;
 
 /** ROM handler stages for GopongaFlowerProjectile. */
@@ -20,30 +22,39 @@ final class GopongaFlowerProjectileHandler {
 
     private static boolean phase3GopongaFlowerProjectile(EntityFrameExecution state) {
         var slotState = state.slotFrame();
-        var frameInput = state.inputs();
-        var timerGates = state.gates();
-        var presentationFlags = state.presentation();
-
-        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
-            GopongaProjectileMotion.Update projectileUpdate = state.motion(
-                            GopongaProjectileMotion.class, GopongaProjectileMotion::new)
-                    .advance(
-                            slotState.entity(),
-                            frameInput.frame(),
-                            state.slot().transitionCountdown(slotState.entity().slot()),
-                            state.slot().ignoreHits(slotState.entity().slot()),
-                            timerGates.handlerLinkCollisionEnabled());
-            state.slot().setHealth(slotState.entity().slot(), GopongaProjectileMotion.HEALTH_OVERRIDE);
-            state.slot().setTransitionCountdown(slotState.entity().slot(), projectileUpdate.transitionCountdown());
-            state.slot().setIgnoreHits(slotState.entity().slot(), projectileUpdate.ignoreHitsCountdown());
-            if (projectileUpdate.unloadRequested()) {
-                state.lifecycle()
-                        .disableEntityWithoutPersistence(slotState.entity().slot());
-                return false;
-            }
-            slotState.updated(projectileUpdate.entity());
-            presentationFlags.preserveGopongaProjectilePresentation(true);
+        if (slotState.status() != EntityStatus.ACTIVE || slotState.wasInitializing()) {
+            return true;
         }
+
+        RoomEntity projectile = slotState.entity();
+        GopongaProjectileMotion.Update update = advanceProjectile(
+                projectile,
+                state.motion(GopongaProjectileMotion.class, GopongaProjectileMotion::new),
+                state.inputs().frame(),
+                state.gates().handlerLinkCollisionEnabled(),
+                state.slot());
+        if (update.unloadRequested()) {
+            state.lifecycle().disableEntityWithoutPersistence(projectile.slot());
+            return false;
+        }
+
+        slotState.updated(update.entity());
+        state.presentation().preserveGopongaProjectilePresentation(true);
         return true;
+    }
+
+    private static GopongaProjectileMotion.Update advanceProjectile(
+            RoomEntity projectile,
+            GopongaProjectileMotion motion,
+            int frame,
+            boolean linkCollisionEnabled,
+            EntitySlotView slots) {
+        int slot = projectile.slot();
+        GopongaProjectileMotion.Update update = motion.advance(
+                projectile, frame, slots.transitionCountdown(slot), slots.ignoreHits(slot), linkCollisionEnabled);
+        slots.setHealth(slot, GopongaProjectileMotion.HEALTH_OVERRIDE);
+        slots.setTransitionCountdown(slot, update.transitionCountdown());
+        slots.setIgnoreHits(slot, update.ignoreHitsCountdown());
+        return update;
     }
 }

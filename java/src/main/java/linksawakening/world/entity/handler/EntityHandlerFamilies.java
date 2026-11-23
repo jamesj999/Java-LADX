@@ -3,6 +3,8 @@ package linksawakening.world.entity.handler;
 import java.util.List;
 import java.util.function.Consumer;
 import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.GenieEntityController;
+import linksawakening.world.entity.SlimeEyeController;
 
 /** Ordered family registration; the slot phases establish tick execution order. */
 public final class EntityHandlerFamilies {
@@ -13,7 +15,6 @@ public final class EntityHandlerFamilies {
             BooBuddyHandler::install,
             BowWowHandler::install,
             MoldormHandler::install,
-            SlimeEyeHandler::install,
             SideViewPotHandler::install,
             DogHandler::install,
             HookshotBridgeHandler::install,
@@ -34,7 +35,6 @@ public final class EntityHandlerFamilies {
             OwlEventHandler::install,
             Type0X35Handler::install,
             CrowHandler::install,
-            GenieHandler::install,
             WarpHandler::install,
             Type0X42Handler::install,
             KidHandler::install,
@@ -114,7 +114,10 @@ public final class EntityHandlerFamilies {
             GibdoHandler::install,
             ButterflyHandler::install);
 
-    public static void install(EntityHandlerRegistry registry) {
+    public static void install(
+            EntityHandlerRegistry registry, GenieEntityController genie, SlimeEyeController slimeEye) {
         for (var installer : INSTALLERS) installer.accept(registry);
+        SlimeEyeHandler.install(registry, slimeEye);
+        GenieHandler.install(registry, genie);
     }
 }

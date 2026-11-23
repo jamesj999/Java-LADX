@@ -3,11 +3,16 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_WIZROBE_PROJECTILE;
 import static linksawakening.world.entity.EntitySnapshots.withFlipAttribute;
 
+import java.util.List;
 import linksawakening.world.entity.EnemyProjectileCollision;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.EntityPresentationFlags;
+import linksawakening.world.entity.EntitySlotExecution;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityObjectCollision;
 import linksawakening.world.entity.event.EntityProjectileEvent;
 import linksawakening.world.entity.motion.WizrobeProjectileMotion;
 
@@ -39,32 +44,45 @@ final class WizrobeProjectileHandler {
     }
 
     private static boolean phase3WizrobeProjectile(EntityFrameExecution state) {
-        var resolvedWizrobeProjectileMotion = state.motion(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new);
-
+        var motion = state.motion(WizrobeProjectileMotion.class, WizrobeProjectileMotion::new);
         var slotState = state.slotFrame();
-        var frameInput = state.inputs();
-        var presentationFlags = state.presentation();
-
-        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
-            var collisionEvent = EnemyProjectileCollision.check(
-                    slotState.entity(),
-                    resolvedWizrobeProjectileMotion.direction(slotState.entity().slot()),
-                    frameInput.projectileLinkState());
-            if (collisionEvent.isPresent()) {
-                frameInput.projectileEvents().add(collisionEvent.orElseThrow());
-            }
-            slotState.updated(resolvedWizrobeProjectileMotion.advance(slotState.entity()));
-            slotState.updated(withFlipAttribute(
-                    slotState.updated(), resolvedWizrobeProjectileMotion.flipAttribute(frameInput.frame())));
-            presentationFlags.preserveWizrobeProjectilePresentation(true);
-            boolean objectCollisionHit = frameInput.objectCollision().collides(slotState.updated());
-            if (objectCollisionHit
-                    || collisionEvent.map(EntityProjectileEvent::remove).orElse(false)) {
-                state.lifecycle()
-                        .disableEntityWithoutPersistence(slotState.entity().slot());
-                return false;
-            }
+        if (slotState.status() != EntityStatus.ACTIVE || slotState.wasInitializing()) {
+            return true;
         }
+
+        var inputs = state.inputs();
+        if (advanceProjectile(
+                slotState,
+                motion,
+                inputs.frame(),
+                inputs.projectileLinkState(),
+                inputs.projectileEvents(),
+                inputs.objectCollision(),
+                state.presentation())) {
+            state.lifecycle().disableEntityWithoutPersistence(slotState.entity().slot());
+            return false;
+        }
+
         return true;
+    }
+
+    private static boolean advanceProjectile(
+            EntitySlotExecution slotState,
+            WizrobeProjectileMotion motion,
+            int frame,
+            EnemyProjectileCollision.LinkState link,
+            List<EntityProjectileEvent> events,
+            RoomEntityObjectCollision objectCollision,
+            EntityPresentationFlags presentation) {
+        RoomEntity projectile = slotState.entity();
+        var collision = EnemyProjectileCollision.check(projectile, motion.direction(projectile.slot()), link);
+        if (collision.isPresent()) {
+            events.add(collision.orElseThrow());
+        }
+        slotState.updated(motion.advance(projectile));
+        slotState.updated(withFlipAttribute(slotState.updated(), motion.flipAttribute(frame)));
+        presentation.preserveWizrobeProjectilePresentation(true);
+        return objectCollision.collides(slotState.updated())
+                || collision.map(EntityProjectileEvent::remove).orElse(false);
     }
 }

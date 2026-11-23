@@ -3,14 +3,21 @@ package linksawakening.world.entity.handler;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_MOLDORM;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_ROLLING_BONES;
 
-import java.util.Objects;
+import java.util.function.Consumer;
 import linksawakening.world.entity.EntityBossRewards;
 import linksawakening.world.entity.EntityFrameExecution;
 import linksawakening.world.entity.EntityFrameInputLatch;
 import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.EntityPresentationFlags;
+import linksawakening.world.entity.EntityRoomInspection;
 import linksawakening.world.entity.EntitySlotExecution;
+import linksawakening.world.entity.EntitySlotView;
+import linksawakening.world.entity.EntitySpriteViews;
 import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.EntityTimerGates;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.event.DialogRequest;
 import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.LinkMotionBlockRequest;
@@ -81,8 +88,19 @@ final class MoldormHandler {
     }
 
     private static boolean phase2Moldorm(EntityFrameExecution state) {
-        return state.scratch(MoldormHandlerFrameStep.class, MoldormHandlerFrameStep::new)
-                .execute();
+        MoldormHandlerFrameStep step = state.scratch(
+                MoldormHandlerFrameStep.class,
+                frame -> new MoldormHandlerFrameStep(
+                        frame.slotFrame(),
+                        frame.inputs(),
+                        frame.gates(),
+                        frame.presentation(),
+                        frame.slot(),
+                        frame.sprites(),
+                        frame.roomInspection(),
+                        frame::replaceEntity,
+                        frame::emit));
+        return step.advance(state.motion(MoldormMotion.class, MoldormMotion::new));
     }
 
     private static boolean phase2Moldorm2(
@@ -99,160 +117,78 @@ final class MoldormHandler {
         return true;
     }
 
-    private static final class MoldormHandlerFrameStep {
-        // Owning frame execution is stable for this cached scratch holder.
-        private final linksawakening.world.entity.EntityFrameExecution state;
-        // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntitySlotExecution slotState;
-        // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityFrameInputLatch frameInput;
-        // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityTimerGates timerGates;
-        // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityPresentationFlags presentationFlags;
+    private record MoldormHandlerFrameStep(
+            EntitySlotExecution slotState,
+            EntityFrameInputLatch frameInput,
+            EntityTimerGates timerGates,
+            EntityPresentationFlags presentationFlags,
+            EntitySlotView slotView,
+            EntitySpriteViews sprites,
+            EntityRoomInspection room,
+            Consumer<RoomEntity> replaceEntity,
+            Consumer<EntityCombatEvent> emitCombat) {
+        boolean advance(MoldormMotion motion) {
+            if (slotState.status() != EntityStatus.ACTIVE || slotState.wasInitializing()) return true;
 
-        MoldormHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
-            this.state = Objects.requireNonNull(state, "state");
-        }
-
-        boolean run() {
-            if (!prepareMotion()) return completedResult;
-            if (!applyMotionAndPresentation()) return completedResult;
-
-            return true;
-        }
-
-        private int slot;
-        private linksawakening.world.entity.RoomEntityBackgroundInteraction moldormBackgroundInteraction;
-        private int transitionForMotion;
-        // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.motion.MoldormMotion.Update moldormUpdate;
-
-        private boolean completedResult;
-
-        private boolean prepareMotion() {
-            var resolvedMoldormMotion = state.motion(MoldormMotion.class, MoldormMotion::new);
-
-            slotState = state.slotFrame();
-            frameInput = state.inputs();
-            timerGates = state.gates();
-            presentationFlags = state.presentation();
-
-            if (!(slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing())) {
-                completedResult = true;
-                return false;
-            }
-
-            slot = slotState.entity().slot();
+            RoomEntity entity = slotState.entity();
+            int slot = entity.slot();
             if (!timerGates.handlerInteractive()
                     || timerGates.countdownBlocksInteraction()
                     || slotState.moldormIntroOpenedThisFrame()) {
-                {
-                    state.replaceEntity(state.sprites()
-                            .present(
-                                    slotState.entity(),
-                                    state.sprites()
-                                            .forMoldormState(
-                                                    resolvedMoldormMotion.headSpriteVariant(slot),
-                                                    slotState.entity().x(),
-                                                    (slotState.entity().y()
-                                                                    - slotState
-                                                                            .entity()
-                                                                            .z())
-                                                            & 0xFF,
-                                                    resolvedMoldormMotion.currentTailSegments(slot),
-                                                    0,
-                                                    frameInput.frame()),
-                                    0));
-                }
-                if (state.roomInspection().roomTransitionActive()) resolvedMoldormMotion.resetHistory(slot);
-
-                completedResult = false;
+                replaceEntity.accept(sprites.present(
+                        entity,
+                        sprites.forMoldormState(
+                                motion.headSpriteVariant(slot),
+                                entity.x(),
+                                (entity.y() - entity.z()) & 0xFF,
+                                motion.currentTailSegments(slot),
+                                0,
+                                frameInput.frame()),
+                        0));
+                if (room.roomTransitionActive()) motion.resetHistory(slot);
                 return false;
             }
-            moldormBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
 
-            transitionForMotion = state.slot().transitionCountdown(slot);
+            RoomEntityBackgroundInteraction background = frameInput.hinoxBackgroundInteraction();
+            int transitionForMotion = slotView.transitionCountdown(slot);
             if (transitionForMotion != 0) {
-                // Common countdowns have already ticked before dispatch;
-                // the direct motion API performs the same decrement.
+                // Common countdowns have already ticked before dispatch.
+                // The direct motion API performs the same decrement.
                 transitionForMotion = (transitionForMotion + 1) & 0xFF;
             }
-            return true;
-        }
-
-        private boolean applyMotionAndPresentation() {
-            moldormUpdate = state.motion(MoldormMotion.class, MoldormMotion::new)
-                    .advance(
-                            slotState.entity(),
-                            frameInput.frame(),
-                            transitionForMotion,
-                            state.slot().ignoreHits(slot),
-                            state.slot().flashCountdown(slot),
-                            state.slot().health(slot),
-                            frameInput.randomByteSupplier(),
-                            moldormBackgroundInteraction);
-            slotState.updated(moldormUpdate.entity());
-            state.slot().setTransitionCountdown(slot, moldormUpdate.transitionCountdown());
-            if (moldormUpdate.noiseRequested()) {
-                state.emit(new EntityCombatEvent(
+            MoldormMotion.Update update = motion.advance(
+                    entity,
+                    frameInput.frame(),
+                    transitionForMotion,
+                    slotView.ignoreHits(slot),
+                    slotView.flashCountdown(slot),
+                    slotView.health(slot),
+                    frameInput.randomByteSupplier(),
+                    background);
+            slotState.updated(update.entity());
+            slotView.setTransitionCountdown(slot, update.transitionCountdown());
+            if (update.noiseRequested()) {
+                emitCombat.accept(new EntityCombatEvent(
                         slot, slotState.entity().type(), 0, false, EntityCombatEvent.SoundChannel.NOISE, 0x1B));
             }
-            {
-                MoldormMotion.Presentation presentation = moldormUpdate.presentation();
-                slotState.updated(state.sprites()
-                        .present(
-                                slotState.updated(),
-                                state.sprites()
-                                        .forMoldormPresentation(
-                                                presentation.headSpriteVariant(),
-                                                presentation.headX(),
-                                                presentation.headY(),
-                                                slotState.updated().x(),
-                                                (slotState.updated().y()
-                                                                - slotState
-                                                                        .updated()
-                                                                        .z())
-                                                        & 0xFF,
-                                                presentation.segments(),
-                                                0,
-                                                frameInput.frame()),
-                                0));
-            }
-            state.slot().setPhysicsFlags(slot, 0x02);
+
+            MoldormMotion.Presentation presentation = update.presentation();
+            RoomEntity updated = slotState.updated();
+            slotState.updated(sprites.present(
+                    updated,
+                    sprites.forMoldormPresentation(
+                            presentation.headSpriteVariant(),
+                            presentation.headX(),
+                            presentation.headY(),
+                            updated.x(),
+                            (updated.y() - updated.z()) & 0xFF,
+                            presentation.segments(),
+                            0,
+                            frameInput.frame()),
+                    0));
+            slotView.setPhysicsFlags(slot, 0x02);
             presentationFlags.preserveMoldormPresentation(true);
             return true;
-        }
-
-        private boolean inUse;
-
-        boolean execute() {
-            if (inUse) {
-                return new MoldormHandlerFrameStep(state).execute();
-            }
-            inUse = true;
-            slotState = null;
-            frameInput = null;
-            timerGates = null;
-            presentationFlags = null;
-            slot = 0;
-            moldormBackgroundInteraction = null;
-            transitionForMotion = 0;
-            moldormUpdate = null;
-            completedResult = false;
-
-            try {
-                return run();
-            } finally {
-                inUse = false;
-
-                this.slotState = null;
-                this.frameInput = null;
-                this.timerGates = null;
-                this.presentationFlags = null;
-                this.moldormBackgroundInteraction = null;
-                this.moldormUpdate = null;
-            }
         }
     }
 }

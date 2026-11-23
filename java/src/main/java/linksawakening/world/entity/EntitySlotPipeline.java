@@ -40,10 +40,15 @@ import linksawakening.world.entity.motion.ZolGelMotion;
 final class EntitySlotPipeline {
     private final EntityFrameExecution frameExecution;
     private final EntityFrameRandom frameRandom;
+    private final GenieEntityController.State genieEncounter;
 
-    EntitySlotPipeline(EntityFrameExecution frameExecution, EntityFrameRandom frameRandom) {
+    EntitySlotPipeline(
+            EntityFrameExecution frameExecution,
+            EntityFrameRandom frameRandom,
+            GenieEntityController.State genieEncounter) {
         this.frameExecution = Objects.requireNonNull(frameExecution);
         this.frameRandom = Objects.requireNonNull(frameRandom);
+        this.genieEncounter = Objects.requireNonNull(genieEncounter);
     }
 
     EntityFrameContext frameContext(int frameCounter) {
@@ -62,7 +67,7 @@ final class EntitySlotPipeline {
         frameExecution.linkState().writeCurrentLinkSpeedX(context.linkSpeedX());
         frameExecution.linkState().writeCurrentLinkSpeedY(context.linkSpeedY());
         try {
-            return advanceFrame(frameExecution, context);
+            return advanceFrame(context);
         } finally {
             frameExecution.combat().clearDeferredContactRecoil();
             frameExecution.linkState().writeCurrentLinkSpeedX(0);
@@ -70,7 +75,7 @@ final class EntitySlotPipeline {
         }
     }
 
-    static List<EntityProjectileEvent> advanceFrame(EntityFrameExecution frameExecution, EntityFrameContext context) {
+    private List<EntityProjectileEvent> advanceFrame(EntityFrameContext context) {
         EntityFrameExecution state = frameExecution.acquire(context);
         try {
             return advancePreparedFrame(state);
@@ -79,7 +84,7 @@ final class EntitySlotPipeline {
         }
     }
 
-    private static List<EntityProjectileEvent> advancePreparedFrame(EntityFrameExecution state) {
+    private List<EntityProjectileEvent> advancePreparedFrame(EntityFrameExecution state) {
         copyInputs(state);
         prepareInteractionGates(state);
         advanceRoomClocks(state);
@@ -214,12 +219,12 @@ final class EntitySlotPipeline {
         }
     }
 
-    private static void resetSlotAndLinkEffects(EntityFrameExecution state) {
+    private void resetSlotAndLinkEffects(EntityFrameExecution state) {
 
         state.events().clearProjectileLaunchRequests();
         state.physicsTables().clearEnemyProjectileSpawnedThisFrame();
         state.physicsTables().clearDynamicEntitySpawnedThisFrame();
-        state.genie().beginFrame();
+        genieEncounter.beginFrame();
         Arrays.fill(state.slotProperties().storageWingedSwordAttackThisFrame(), false);
         Arrays.fill(state.slotProperties().storageWingedStateTwoThisFrame(), false);
         state.events().clearTransientVfxRequests();

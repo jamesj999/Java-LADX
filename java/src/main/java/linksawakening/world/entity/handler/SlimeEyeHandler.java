@@ -1,17 +1,17 @@
 package linksawakening.world.entity.handler;
 
-import linksawakening.world.entity.EntityFrameExecution;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_SLIME_EYE;
+
 import linksawakening.world.entity.EntityHandlerRegistry;
 import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.SlimeEyeController;
 
 /** The complete bank-$04 handler owns its slot through its early return. */
 final class SlimeEyeHandler {
-    static void install(EntityHandlerRegistry registry) {
-        registry.registerTick(0x5B, EntityTickStage.PHASE_2_BEFORE_STATUS_BRANCHES, 0, SlimeEyeHandler::phase2SlimeEye);
-    }
-
-    private static boolean phase2SlimeEye(EntityFrameExecution frame) {
-        frame.slimeEye().advance(frame);
-        return false;
+    static void install(EntityHandlerRegistry registry, SlimeEyeController slimeEye) {
+        registry.registerTick(ENTITY_SLIME_EYE, EntityTickStage.PHASE_2_BEFORE_STATUS_BRANCHES, 0, frame -> {
+            slimeEye.advance(frame.slotFrame().entity(), frame.inputs(), frame.gates());
+            return false;
+        });
     }
 }

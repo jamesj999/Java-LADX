@@ -384,8 +384,10 @@ public final class RoomEntityRuntimeBuilder {
                 backgroundMechanics,
                 bossRewards,
                 entityState.events(),
+                entityState.linkView(),
+                entityState.presentationState(),
+                roomInspection,
                 entityState.motions(),
-                entityState.roomVariables(),
                 lifecycle,
                 slotProperties,
                 enemyCombatTables,
@@ -453,6 +455,10 @@ public final class RoomEntityRuntimeBuilder {
                 projectileState);
         genie = new GenieEntityController(
                 genieState,
+                backgroundMechanics,
+                entityState.linkView(),
+                entityState.presentationState(),
+                roomInspection,
                 bossRewards,
                 entityState.events(),
                 liftThrowState,
@@ -493,7 +499,7 @@ public final class RoomEntityRuntimeBuilder {
                 slots,
                 lifecycle);
 
-        entityHandlers = roomInitialization.createEntityHandlers();
+        entityHandlers = roomInitialization.createEntityHandlers(slimeEye);
         if (this.hasRom()) roomInitialization.initializeRomPresentation(romData);
         warpMotion = this.hasRom() ? new WarpMotion(romData) : WarpMotion.DISABLED;
 
@@ -510,8 +516,6 @@ public final class RoomEntityRuntimeBuilder {
                 bombInteractions,
                 rewards,
                 story,
-                slimeEye,
-                genie,
                 pickups,
                 bossRewards,
                 roomInspection,
@@ -534,7 +538,7 @@ public final class RoomEntityRuntimeBuilder {
         roomInitialization.initializeRoomSlots(initial);
 
         return new RoomEntityRuntime(
-                new EntitySlotPipeline(frameExecution, frameRandom),
+                new EntitySlotPipeline(frameExecution, frameRandom, genieState),
                 combat,
                 rewards,
                 entityPlayerSpawns,

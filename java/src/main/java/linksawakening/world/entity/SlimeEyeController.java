@@ -37,9 +37,11 @@ public final class SlimeEyeController {
     private final EntityBossRewards bossRewards;
     private final EntityCombatTables combatTables;
     private final EntityEventChannels events;
+    private final EntityLinkView link;
+    private final EntityPresentationState presentation;
+    private final EntityRoomInspection roomInspection;
     private final EntityMotionRegistry motions;
     private final EntityPhysicsTables physicsTables;
-    private final EntityRoomVariables roomVariables;
     private final EntitySlotLifecycle lifecycle;
     private final EntitySlotProperties slotProperties;
     private final RomEnemyCombatTables enemyCombatTables;
@@ -55,8 +57,10 @@ public final class SlimeEyeController {
             EntityBackgroundMechanics backgroundMechanics,
             EntityBossRewards bossRewards,
             EntityEventChannels events,
+            EntityLinkView link,
+            EntityPresentationState presentation,
+            EntityRoomInspection roomInspection,
             EntityMotionRegistry motions,
-            EntityRoomVariables roomVariables,
             EntitySlotLifecycle lifecycle,
             EntitySlotProperties slotProperties,
             RomEnemyCombatTables enemyCombatTables,
@@ -77,9 +81,11 @@ public final class SlimeEyeController {
         this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
         this.combatTables = Objects.requireNonNull(combatTables, "combatTables");
         this.events = Objects.requireNonNull(events, "events");
+        this.link = Objects.requireNonNull(link, "link");
+        this.presentation = Objects.requireNonNull(presentation, "presentation");
+        this.roomInspection = Objects.requireNonNull(roomInspection, "roomInspection");
         this.motions = Objects.requireNonNull(motions, "motions");
         this.physicsTables = Objects.requireNonNull(physicsTables, "physicsTables");
-        this.roomVariables = Objects.requireNonNull(roomVariables, "roomVariables");
         this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle");
         this.slotProperties = Objects.requireNonNull(slotProperties, "slotProperties");
         this.enemyCombatTables = Objects.requireNonNull(enemyCombatTables, "combat rules");
@@ -140,16 +146,15 @@ public final class SlimeEyeController {
         return readByte.applyAsInt(table.plus(index));
     }
 
-    public void advance(EntityFrameExecution frame) {
+    public void advance(RoomEntity entity, EntityFrameInputLatch inputs, EntityTimerGates gates) {
         try {
-            advanceHandler(frame);
+            advanceHandler(entity, inputs, gates);
         } finally {
-            encounter.swordHitFrame[frame.slotFrame().entity().slot()] = 0;
+            encounter.swordHitFrame[entity.slot()] = 0;
         }
     }
 
-    private void advanceHandler(EntityFrameExecution frame) {
-        RoomEntity entity = frame.slotFrame().entity();
+    private void advanceHandler(RoomEntity entity, EntityFrameInputLatch inputs, EntityTimerGates gates) {
         int slot = entity.slot();
         if (entity.status() == EntityStatus.INIT) {
             this.clear(slot);
@@ -163,64 +168,61 @@ public final class SlimeEyeController {
         // UpdateEntityTimers precedes the handler's interactivity guards.
         if (this.encounter.privateCountdown1[slot] > 0) this.encounter.privateCountdown1[slot]--;
         if (this.encounter.splitting[slot] > 0) this.encounter.splitting[slot]--;
-        if (!frame.roomInspection().roomTransitionActive()
-                && !frame.roomInspection().freeMovementMode()) {
+        if (!roomInspection.roomTransitionActive() && !roomInspection.freeMovementMode()) {
             int dx = 0, dy = 0;
-            if (((frame.inputs().linkEntityX() - 0x11) & 255) >= 0x7E)
-                dx = frame.inputs().linkEntityX() < 0x50 ? 1 : -1;
-            else if (((frame.inputs().linkEntityY() - 0x16) & 255) >= 0x5E) dy = -1;
+            if (((inputs.linkEntityX() - 0x11) & 255) >= 0x7E) dx = inputs.linkEntityX() < 0x50 ? 1 : -1;
+            else if (((inputs.linkEntityY() - 0x16) & 255) >= 0x5E) dy = -1;
             if (dx != 0 || dy != 0) {
-                frame.emit(new LinkMotionBlockRequest(slot, dx, dy, 1));
-                frame.inputs().linkEntityX((frame.inputs().linkEntityX() + dx) & 255);
-                frame.inputs().linkEntityY((frame.inputs().linkEntityY() + dy) & 255);
-                frame.lifecycle().delayInteractions(2);
+                events.linkMotionBlock(new LinkMotionBlockRequest(slot, dx, dy, 1));
+                inputs.linkEntityX((inputs.linkEntityX() + dx) & 255);
+                inputs.linkEntityY((inputs.linkEntityY() + dy) & 255);
+                lifecycle.delayInteractions(2);
             }
         }
-        this.lifecycle.decrementSlowTransitionCountdown(slot, frame.inputs().frame());
-        if (!frame.link().inventoryAppearing() && !frame.roomInspection().roomTransitionActive()) {
+        this.lifecycle.decrementSlowTransitionCountdown(slot, inputs.frame());
+        if (!link.inventoryAppearing() && !roomInspection.roomTransitionActive()) {
             BossIntroMotion.Update intro = this.motions
                     .get(BossIntroMotion.class, BossIntroMotion::new)
                     .advance(
                             this.slotProperties.options1(slot),
                             entity.type(),
-                            this.roomVariables.readEntityMapId(),
+                            roomInspection.entityMapId(),
                             this.lifecycle.transitionSequenceCounter());
-            if (intro.musicTrack() >= 0) frame.requestMusic(intro.musicTrack());
+            if (intro.musicTrack() >= 0) presentation.writePendingMusicTrack(intro.musicTrack());
             if (intro.dialogLowId() >= 0) {
-                frame.emit(new DialogRequest(intro.dialogTableId(), intro.dialogLowId()));
+                events.dialog(new DialogRequest(intro.dialogTableId(), intro.dialogLowId()));
                 this.render(slot);
                 return;
             }
         }
         // Main's combat pass precedes tick. Restore the fresh write that the
         // common flash tick would otherwise age before the ROM collision site.
-        if (this.hitThisFrame(slot, frame.inputs().frame())) this.combatTables.writeEnemyFlashCountdown(slot, 0x18);
+        if (this.hitThisFrame(slot, inputs.frame())) this.combatTables.writeEnemyFlashCountdown(slot, 0x18);
         // RenderActiveEntitySpritesRect runs before this frame's state changes.
         this.render(slot);
         if (this.physicsTables.readSlowTransitionCountdown(slot) != 0) {
-            frame.emit(new LinkMotionBlockRequest(slot));
-            frame.emit(new LinkFallenPoseRequest(slot));
+            events.linkMotionBlock(new LinkMotionBlockRequest(slot));
+            events.linkFallenPose(new LinkFallenPoseRequest(slot));
         }
         if (entity.status() == EntityStatus.DYING) {
             // The lethal collision occurs inside the active handler in ROM.
             // Its destruction handler starts on the following slot visit.
-            if (this.hitThisFrame(slot, frame.inputs().frame())) return;
+            if (this.hitThisFrame(slot, inputs.frame())) return;
             if (!this.encounter.dying[slot]) {
                 this.encounter.state[slot] = 0;
                 this.encounter.dying[slot] = true;
             }
-            this.advanceDeath(frame);
+            this.advanceDeath(entity, inputs);
             return;
         }
         if (this.encounter.half[slot] == 0) this.combatTables.writeEnemyHealth(slot, 0x50);
         if ((this.encounter.half[slot] != 0 || this.encounter.state[slot] != 0)
-                && (!frame.gates().handlerInteractive() || frame.gates().countdownBlocksInteraction())) return;
-        if (this.encounter.half[slot] == 0) this.advanceBody(frame);
-        else this.advanceHalf(frame);
+                && (!gates.handlerInteractive() || gates.countdownBlocksInteraction())) return;
+        if (this.encounter.half[slot] == 0) this.advanceBody(slot, inputs);
+        else this.slimeEyeHalfStep.run(slot, inputs);
     }
 
-    void advanceBody(EntityFrameExecution f) {
-        int s = f.slotFrame().entity().slot();
+    private void advanceBody(int s, EntityFrameInputLatch inputs) {
         RoomEntity e = this.slots.get(s);
         this.combatTables.writeEnemyHealth(s, 0x50);
         switch (this.encounter.state[s]) {
@@ -237,8 +239,8 @@ public final class SlimeEyeController {
                     if (zols < 2)
                         this.spawn(
                                 0x1B,
-                                (f.inputs().randomByteSupplier().getAsInt() & 0x3F) + 0x40,
-                                (f.inputs().randomByteSupplier().getAsInt() & 0x3F) + 0x30,
+                                (inputs.randomByteSupplier().getAsInt() & 0x3F) + 0x40,
+                                (inputs.randomByteSupplier().getAsInt() & 0x3F) + 0x30,
                                 0x70);
                 }
             }
@@ -247,10 +249,10 @@ public final class SlimeEyeController {
                 if (this.encounter.speedZ[s] != 0xA0) this.encounter.speedZ[s] = (this.encounter.speedZ[s] - 2) & 255;
                 if ((e.z() & 0x80) != 0) {
                     e = withZ(e, 0);
-                    f.emit(new ScreenShakeRequest(s, 0x50, 4));
+                    events.screenShake(new ScreenShakeRequest(s, 0x50, 4));
                     this.physicsTables.writeEnemyTransitionCountdown(s, 0x40);
                     this.noise(s, 0x0C);
-                    if (!f.inputs().linkAirborne()) this.stunLink(s, 0x14);
+                    if (!inputs.linkAirborne()) this.stunLink(s, 0x14);
                     this.encounter.state[s] = 2;
                 }
                 this.slots.replace(s, e);
@@ -259,21 +261,20 @@ public final class SlimeEyeController {
                 if (this.physicsTables.readEnemyTransitionCountdown(s) == 0) this.encounter.state[s] = 3;
             }
             case 3 -> {
-                if (this.combatTables.readEnemyIgnoreHitsCountdown(s) > 0
-                        && !this.hitThisFrame(s, f.inputs().frame()))
+                if (this.combatTables.readEnemyIgnoreHitsCountdown(s) > 0 && !this.hitThisFrame(s, inputs.frame()))
                     this.combatTables.postEnemyIgnoreHitsCountdown(s, -1);
                 if (this.encounter.splitting[s] != 0) {
                     if (this.encounter.splitting[s] == 1) {
                         this.split(e);
                         return;
                     }
-                    f.emit(new LinkMotionBlockRequest(
-                            s, 0, (f.inputs().frame() & 1) == 0 ? -1 : 0, this.encounter.splitting[s]));
+                    events.linkMotionBlock(new LinkMotionBlockRequest(
+                            s, 0, (inputs.frame() & 1) == 0 ? -1 : 0, this.encounter.splitting[s]));
                     this.encounter.variant[s] = 6;
                     return;
                 }
-                this.wander(f);
-                this.encounter.variant[s] = (f.inputs().frame() >> 4) & 1;
+                this.wander(s, inputs);
+                this.encounter.variant[s] = (inputs.frame() >> 4) & 1;
                 if (this.encounter.stretch[s] != 0) {
                     this.encounter.variant[s] = this.encounter.stretch[s] + 1;
                     if (this.encounter.privateCountdown1[s] == 0) {
@@ -281,8 +282,7 @@ public final class SlimeEyeController {
                         this.encounter.stretch[s]--;
                     }
                 }
-                if (this.combatTables.readEnemyFlashCountdown(s) != 0
-                        && (f.inputs().frame() & 0x1F) == 0) {
+                if (this.combatTables.readEnemyFlashCountdown(s) != 0 && (inputs.frame() & 0x1F) == 0) {
                     this.encounter.privateCountdown1[s] = 0x50;
                     if (this.encounter.stretch[s] != 4) this.encounter.stretch[s]++;
                 }
@@ -291,27 +291,22 @@ public final class SlimeEyeController {
         }
     }
 
-    void wander(EntityFrameExecution f) {
-        int s = f.slotFrame().entity().slot(), countdown = this.physicsTables.readEnemyTransitionCountdown(s);
+    private void wander(int s, EntityFrameInputLatch inputs) {
+        int countdown = this.physicsTables.readEnemyTransitionCountdown(s);
         RoomEntity e = this.slots.get(s);
         if (encounter.moving[s] == 0) {
             if (countdown != 0) return;
             this.physicsTables.writeEnemyTransitionCountdown(
-                    s, (f.inputs().randomByteSupplier().getAsInt() & 0x1F) + 0x10);
+                    s, (inputs.randomByteSupplier().getAsInt() & 0x1F) + 0x10);
             encounter.moving[s] = 1;
             int quadrant = (e.x() >= 0x50 ? 1 : 0) | (((e.y() - e.z()) & 255) >= 0x48 ? 2 : 0);
-            int index = quadrant * 4 | (f.inputs().randomByteSupplier().getAsInt() & 3);
+            int index = quadrant * 4 | (inputs.randomByteSupplier().getAsInt() & 3);
             encounter.speedX[s] = read(BODY_SPEED_X, index);
             encounter.speedY[s] = read(BODY_SPEED_Y, index);
         } else if (countdown == 0) {
             this.physicsTables.writeEnemyTransitionCountdown(s, 0x30);
             encounter.moving[s] = 0;
-        } else if ((countdown & 0x0E) == 0)
-            this.slots.replace(s, integrateXY(e, f.inputs().backgroundCollision()));
-    }
-
-    void advanceHalf(EntityFrameExecution f) {
-        this.slimeEyeHalfStep.run(f);
+        } else if ((countdown & 0x0E) == 0) this.slots.replace(s, integrateXY(e, inputs.backgroundCollision()));
     }
 
     boolean hitThisFrame(int slot, int frame) {
@@ -394,9 +389,9 @@ public final class SlimeEyeController {
         this.lifecycle.disableEntityWithoutPersistence(e.slot());
     }
 
-    void advanceDeath(EntityFrameExecution f) {
-        int s = f.slotFrame().entity().slot();
-        this.combatTables.writeEnemyFlashCountdown(s, f.inputs().frame() & 255);
+    private void advanceDeath(RoomEntity entity, EntityFrameInputLatch inputs) {
+        int s = entity.slot();
+        this.combatTables.writeEnemyFlashCountdown(s, inputs.frame() & 255);
         switch (this.encounter.state[s]) {
             case 0 -> {
                 this.physicsTables.writeEnemyTransitionCountdown(s, 0x40);
@@ -414,22 +409,18 @@ public final class SlimeEyeController {
                             .anyMatch(e ->
                                     e.loaded() && e.slot() != s && e.type() == EntityRomConstants.ENTITY_SLIME_EYE);
                     if (!another) {
-                        this.bossRewards.spawnMoldormHeartContainer(
-                                f.slotFrame().entity());
+                        this.bossRewards.spawnMoldormHeartContainer(entity);
                         this.noise(s, 0x1A);
                     }
                     this.lifecycle.disableEntityWithoutPersistence(s);
                 } else if ((this.physicsTables.readEnemyTransitionCountdown(s) & 7) == 0) {
-                    int x = (f.slotFrame().entity().x()
-                                    + (f.inputs().randomByteSupplier().getAsInt() & 31)
+                    int x = (entity.x() + (inputs.randomByteSupplier().getAsInt() & 31) - 16) & 255;
+                    int y = (entity.y()
+                                    - entity.z()
+                                    + (inputs.randomByteSupplier().getAsInt() & 31)
                                     - 16)
                             & 255;
-                    int y = (f.slotFrame().entity().y()
-                                    - f.slotFrame().entity().z()
-                                    + (f.inputs().randomByteSupplier().getAsInt() & 31)
-                                    - 16)
-                            & 255;
-                    this.bossRewards.createMoldormPoof(f.slotFrame().entity(), x, y);
+                    this.bossRewards.createMoldormPoof(entity, x, y);
                 }
             }
         }
@@ -747,7 +738,7 @@ public final class SlimeEyeController {
     static final class SlimeEyeHalfStep {
         private final linksawakening.world.entity.SlimeEyeController owner;
         // Absent before initialization or while this reusable execution scratch is inactive.
-        private linksawakening.world.entity.EntityFrameExecution f;
+        private EntityFrameInputLatch inputs;
         private int s;
         // Absent before initialization or while this reusable execution scratch is inactive.
         private linksawakening.world.entity.RoomEntity e;
@@ -757,8 +748,6 @@ public final class SlimeEyeController {
         }
 
         void run() {
-
-            s = f.slotFrame().entity().slot();
             e = owner.slots.get(s);
             if (owner.combatTables.readEnemyIgnoreHitsCountdown(s) == 2) {
                 if (owner.encounter.angry[s] == 0) owner.encounter.angry[s] = 1;
@@ -768,12 +757,11 @@ public final class SlimeEyeController {
                     owner.sound(s, 0x24);
                 }
             }
-            if (owner.combatTables.readEnemyIgnoreHitsCountdown(s) != 0
-                    && !owner.hitThisFrame(s, f.inputs().frame())) {
+            if (owner.combatTables.readEnemyIgnoreHitsCountdown(s) != 0 && !owner.hitThisFrame(s, inputs.frame())) {
                 var enemyRecoilMotion = owner.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
                 if (enemyRecoilMotion.isActive(s)) {
                     e = owner.backgroundMechanics
-                            .applyEnemyRecoilIfNeeded(e, f.inputs().backgroundCollision())
+                            .applyEnemyRecoilIfNeeded(e, inputs.backgroundCollision())
                             .entity();
                     owner.slots.replace(s, e);
                 } else owner.combatTables.postEnemyIgnoreHitsCountdown(s, -1);
@@ -800,16 +788,16 @@ public final class SlimeEyeController {
 
         private boolean advanceState0() {
             if (owner.physicsTables.readEnemyTransitionCountdown(s) == 0) {
-                int index = f.inputs().randomByteSupplier().getAsInt() & 7;
+                int index = inputs.randomByteSupplier().getAsInt() & 7;
                 owner.encounter.speedX[s] = owner.read(HALF_SPEED_X, index);
                 owner.encounter.speedY[s] = owner.read(HALF_SPEED_Y, index);
-                if ((f.inputs().randomByteSupplier().getAsInt() & 3) == 0) {
+                if ((inputs.randomByteSupplier().getAsInt() & 3) == 0) {
                     EntityMotionMath.Vector v = EntityMotionMath.vectorAwayFromLink(
-                            e.x(), e.y(), f.inputs().linkEntityX(), f.inputs().linkEntityY(), 0x18);
+                            e.x(), e.y(), inputs.linkEntityX(), inputs.linkEntityY(), 0x18);
                     owner.encounter.speedX[s] = -v.x() & 255;
                     owner.encounter.speedY[s] = -v.y() & 255;
                 }
-                owner.encounter.speedZ[s] = (f.inputs().randomByteSupplier().getAsInt() & 15) + 8;
+                owner.encounter.speedZ[s] = (inputs.randomByteSupplier().getAsInt() & 15) + 8;
                 owner.encounter.state[s] = 1;
             }
             owner.encounter.variant[s] = 0;
@@ -819,16 +807,16 @@ public final class SlimeEyeController {
 
         private boolean advanceState1() {
             if (owner.physicsTables.readEnemyTransitionCountdown(s) == 0) {
-                e = owner.integrateXY(e, f.inputs().backgroundCollision());
+                e = owner.integrateXY(e, inputs.backgroundCollision());
                 e = owner.integrateZ(e);
                 owner.encounter.speedZ[s] = (owner.encounter.speedZ[s] - 2) & 255;
                 if ((e.z() & 0x80) != 0) {
                     e = withZ(e, 0);
                     owner.encounter.dropping[s] = 0;
                     if ((((owner.encounter.speedZ[s] - 0xE0) & 255) & 0x80) != 0) {
-                        f.emit(new ScreenShakeRequest(s, 0x18, 0));
+                        owner.events.screenShake(new ScreenShakeRequest(s, 0x18, 0));
                         owner.sound(s, 0x0B);
-                        if (!f.inputs().linkAirborne()) owner.stunLink(s, 0x0E);
+                        if (!inputs.linkAirborne()) owner.stunLink(s, 0x0E);
                     } else if (owner.encounter.speedZ[s] < 0xF2) owner.sound(s, 0x20);
                     owner.encounter.speedZ[s] = 0;
                     owner.encounter.state[s] = 0;
@@ -865,8 +853,8 @@ public final class SlimeEyeController {
                     owner.encounter.dropping[s],
                     e.x(),
                     e.y(),
-                    f.inputs().linkEntityX(),
-                    f.inputs().linkEntityY());
+                    inputs.linkEntityX(),
+                    inputs.linkEntityY());
             owner.encounter.state[s] = result.state();
             owner.encounter.speedZ[s] = result.speedZ();
             owner.encounter.variant[s] = result.spriteVariant();
@@ -880,23 +868,23 @@ public final class SlimeEyeController {
 
         private boolean inUse;
 
-        void run(linksawakening.world.entity.EntityFrameExecution f) {
+        void run(int slot, EntityFrameInputLatch inputs) {
             if (inUse) {
-                new SlimeEyeHalfStep(owner).run(f);
+                new SlimeEyeHalfStep(owner).run(slot, inputs);
                 return;
             }
             inUse = true;
 
-            s = 0;
+            s = slot;
             e = null;
 
-            this.f = f;
+            this.inputs = inputs;
             try {
                 run();
             } finally {
                 inUse = false;
 
-                this.f = null;
+                this.inputs = null;
 
                 this.e = null;
             }

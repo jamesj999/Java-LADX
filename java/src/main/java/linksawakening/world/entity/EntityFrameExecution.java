@@ -66,8 +66,6 @@ public final class EntityFrameExecution {
     private final EntityBombInteractions bombInteractions;
     private final EntityRewardController rewards;
     private final EntityStoryController story;
-    private final SlimeEyeController slimeEye;
-    private final GenieEntityController genie;
     private final EntityPickupController pickups;
     private final EntityBossRewards bossRewards;
     private final EntityRoomInspection roomInspection;
@@ -101,8 +99,6 @@ public final class EntityFrameExecution {
             EntityBombInteractions bombInteractions,
             EntityRewardController rewards,
             EntityStoryController story,
-            SlimeEyeController slimeEye,
-            GenieEntityController genie,
             EntityPickupController pickups,
             EntityBossRewards bossRewards,
             EntityRoomInspection roomInspection,
@@ -136,8 +132,6 @@ public final class EntityFrameExecution {
         this.bombInteractions = Objects.requireNonNull(bombInteractions, "bombInteractions");
         this.rewards = Objects.requireNonNull(rewards, "rewards");
         this.story = Objects.requireNonNull(story, "story");
-        this.slimeEye = Objects.requireNonNull(slimeEye, "slimeEye");
-        this.genie = Objects.requireNonNull(genie, "genie");
         this.pickups = Objects.requireNonNull(pickups, "pickups");
         this.bossRewards = Objects.requireNonNull(bossRewards, "bossRewards");
         this.roomInspection = Objects.requireNonNull(roomInspection, "roomInspection");
@@ -315,14 +309,6 @@ public final class EntityFrameExecution {
         return story;
     }
 
-    public SlimeEyeController slimeEye() {
-        return slimeEye;
-    }
-
-    public GenieEntityController genie() {
-        return genie;
-    }
-
     public EntityPickupController pickups() {
         return pickups;
     }
@@ -418,8 +404,6 @@ public final class EntityFrameExecution {
                             bombInteractions,
                             rewards,
                             story,
-                            slimeEye,
-                            genie,
                             pickups,
                             bossRewards,
                             roomInspection,

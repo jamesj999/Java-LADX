@@ -362,27 +362,27 @@ final class EntityDebugConfigurationFixture {
 
     void setGeniePrivateState1ForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        runtime.execution().genie().setGeniePrivateState1(slot, value);
+        EntityBossInspectionFixture.genie(runtime).setGeniePrivateState1(slot, value);
     }
 
     void setGenieActiveStateForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        runtime.execution().genie().setGenieActiveState(slot, value);
+        EntityBossInspectionFixture.genie(runtime).setGenieActiveState(slot, value);
     }
 
     void setGeniePrivateState3ForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        runtime.execution().genie().setGeniePrivateState3(slot, value);
+        EntityBossInspectionFixture.genie(runtime).setGeniePrivateState3(slot, value);
     }
 
     void setGeniePrivateCountdown1ForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        runtime.execution().genie().setGeniePrivateCountdown1(slot, value);
+        EntityBossInspectionFixture.genie(runtime).setGeniePrivateCountdown1(slot, value);
     }
 
     void setGeniePrivateState4ForTest(int slot, int value) {
         EntitySlotValidation.validateCountdownTestValue(slot, value);
-        runtime.execution().genie().setGeniePrivateState4(slot, value);
+        EntityBossInspectionFixture.genie(runtime).setGeniePrivateState4(slot, value);
     }
 
     void setPhysicsFlagsForTest(int slot, int value) {
