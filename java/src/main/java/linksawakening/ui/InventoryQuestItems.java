@@ -27,6 +27,8 @@ final class InventoryQuestItems {
     private final TilemapRenderer.Region region = new TilemapRenderer.Region(0, 0, 0, 0);
     private final GPU graphics = new GPU();
     private final Rom rom;
+    private boolean overridesTradeColors;
+    private int tradeAttribute;
     private int loadedTrade = -1;
     private boolean loadedSlimeKey;
     private boolean loadedDungeon;
@@ -56,6 +58,7 @@ final class InventoryQuestItems {
             } else if (slimeKey) {
                 graphics.replaceSlimeKeyTilesByGoldenLeaf(rom);
             }
+            if (trade != loadedTrade) loadTradePalette(trade);
             loadedTrade = trade;
             loadedSlimeKey = slimeKey;
             loadedDungeon = dungeon;
@@ -101,20 +104,27 @@ final class InventoryQuestItems {
         }
 
         System.arraycopy(basePalettes, 0, palettes, 0, palettes.length);
+        if (overridesTradeColors) {
+            tradePalette[0] = palettes[5][0];
+            tradePalette[3] = palettes[5][3];
+            palettes[5] = tradePalette;
+        }
+        for (int row = 0; row < 2; row++) {
+            attributes[row * WIDTH + 4] = tradeAttribute;
+            attributes[row * WIDTH + 5] = tradeAttribute;
+        }
+    }
+
+    private void loadTradePalette(int trade) {
+        tradeAttribute = read(0x5AEE + trade);
         int colorIndex = read(0x5E0B + trade);
-        if (colorIndex != 0) {
+        overridesTradeColors = colorIndex != 0;
+        if (overridesTradeColors) {
             int pointer = 0x5DFB + colorIndex * 2;
             int source = read(pointer) | read(pointer + 1) << 8;
-            System.arraycopy(palettes[5], 0, tradePalette, 0, tradePalette.length);
             for (int i = 1; i <= 2; i++, source += 2) {
                 tradePalette[i] = RomBank.decodeRgb555(read(source) | read(source + 1) << 8);
             }
-            palettes[5] = tradePalette;
-        }
-        int palette = read(0x5AEE + trade);
-        for (int row = 0; row < 2; row++) {
-            attributes[row * WIDTH + 4] = palette;
-            attributes[row * WIDTH + 5] = palette;
         }
     }
 
