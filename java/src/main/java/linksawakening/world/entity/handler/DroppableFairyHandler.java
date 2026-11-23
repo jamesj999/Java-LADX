@@ -1,0 +1,45 @@
+package linksawakening.world.entity.handler;
+
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_DROPPABLE_FAIRY;
+
+import linksawakening.world.entity.EntityFrameExecution;
+import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.motion.FairyMotion;
+
+/** ROM handler stages for DroppableFairy. */
+final class DroppableFairyHandler {
+    static void install(EntityHandlerRegistry registry) {
+        registry.registerInitializer(ENTITY_DROPPABLE_FAIRY, (entity, random) -> initialize(registry, entity));
+        registry.registerTick(
+                ENTITY_DROPPABLE_FAIRY,
+                EntityTickStage.PHASE_3_AFTER_LASER,
+                7,
+                DroppableFairyHandler::phase3DroppableFairy);
+    }
+
+    private static boolean phase3DroppableFairy(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            FairyMotion.Update fairyUpdate = state.motion(FairyMotion.class, FairyMotion::new)
+                    .advance(
+                            slotState.entity(),
+                            frameInput.frame(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.randomByteSupplier(),
+                            state.slot().transitionCountdown(slotState.entity().slot()));
+            slotState.updated(fairyUpdate.entity());
+            state.slot().setTransitionCountdown(slotState.entity().slot(), fairyUpdate.transitionCountdown());
+        }
+        return true;
+    }
+
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity) {
+        registry.motion(FairyMotion.class, FairyMotion::new).initialize(entity.slot());
+    }
+}

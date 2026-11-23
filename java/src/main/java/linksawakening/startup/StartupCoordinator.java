@@ -2,12 +2,12 @@ package linksawakening.startup;
 
 import linksawakening.config.AppConfig;
 
+/** Coordinates the starting profile and opening motions associated with MarinEntityHandler and TarinEntityHandler. */
 public final class StartupCoordinator {
 
     public static final int NEW_GAME_START_ROOM_ID = 0x92;
 
-    private StartupCoordinator() {
-    }
+    private StartupCoordinator() {}
 
     public static boolean shouldStartIntroCutscene(AppConfig config) {
         return config.showTitleScreen() && config.playIntroStory();

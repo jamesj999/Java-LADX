@@ -1,69 +1,74 @@
 package linksawakening.cutscene;
 
-import linksawakening.dialog.DialogController;
-import linksawakening.scene.BackgroundScene;
-
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntConsumer;
+import linksawakening.dialog.DialogController;
+import linksawakening.rom.Rom;
+import linksawakening.scene.BackgroundScene;
 
+/** Owns the active IntroHandler presentation and its sound sink. */
 public final class CutsceneManager implements CutsceneContext {
 
     private final DialogController dialogController;
     private final Consumer<String> sceneLoader;
     private final CutsceneController controller;
-    private IntroSequence introSequence;
-    private IntroFrameSnapshot frameSnapshot;
+    private final IntroPlayback playback;
+    private IntConsumer noiseSound = id -> {};
+
     private String currentScene = "";
 
     public CutsceneManager(DialogController dialogController, Consumer<String> sceneLoader) {
         this.dialogController = Objects.requireNonNull(dialogController);
         this.sceneLoader = Objects.requireNonNull(sceneLoader);
         this.controller = new CutsceneController(this);
+        playback = new IntroPlayback(this::setScene);
+    }
+
+    /** Adds observation before the current intro noise sink without replacing its routing. */
+    public void observeIntroNoiseSound(IntConsumer observer) {
+        Objects.requireNonNull(observer);
+        IntConsumer original = noiseSound;
+        setIntroNoiseSound(id -> {
+            observer.accept(id);
+            original.accept(id);
+        });
+    }
+
+    public void setIntroNoiseSound(IntConsumer sink) {
+        noiseSound = Objects.requireNonNull(sink);
+        playback.setNoiseSound(noiseSound);
     }
 
     public void startIntro() {
-        introSequence = new IntroSequence();
-        frameSnapshot = introSequence.snapshot();
+        IntroSequence introSequence = new IntroSequence();
+        playback.start(introSequence, noiseSound);
         controller.start(CutsceneScript.of());
         setScene(introSequence.sceneId());
     }
 
-    public void startIntro(byte[] romData, Function<String, BackgroundScene> backgroundProvider) {
-        introSequence = new IntroSequence(romData, backgroundProvider);
-        frameSnapshot = introSequence.snapshot();
+    public void startIntro(Rom romData, Function<String, BackgroundScene> backgroundProvider) {
+        IntroSequence introSequence = new IntroSequence(romData, backgroundProvider);
+        playback.start(introSequence, noiseSound);
         controller.start(CutsceneScript.of());
         setScene(introSequence.sceneId());
     }
 
     public void tick() {
-        if (introSequence != null && introSequence.isActive()) {
-            String previousScene = introSequence.sceneId();
-            introSequence.tick();
-            frameSnapshot = introSequence.snapshot();
-            String nextScene = introSequence.sceneId();
-            if (!nextScene.equals(previousScene)) {
-                setScene(nextScene);
-            }
-            return;
-        }
+        if (playback.tick()) return;
         if (controller.isActive()) {
             controller.tick();
         }
     }
 
     public boolean isActive() {
-        return (introSequence != null && introSequence.isActive()) || controller.isActive();
+        return playback.active() || controller.isActive();
     }
 
     public boolean skipIntroToTitle() {
-        if (introSequence == null || !introSequence.isActive()) {
-            return false;
-        }
-        introSequence.skipToTitle();
-        frameSnapshot = introSequence.snapshot();
-        setScene(introSequence.sceneId());
-        return true;
+        return playback.skip();
     }
 
     public boolean isShowingTitleScene() {
@@ -71,27 +76,27 @@ public final class CutsceneManager implements CutsceneContext {
     }
 
     public int scrollX() {
-        return frameSnapshot != null ? frameSnapshot.scrollX() : 0;
+        return playback.frame().scrollX();
     }
 
     public int scrollY() {
-        return frameSnapshot != null ? frameSnapshot.scrollY() : 0;
+        return playback.frame().scrollY();
     }
 
     public int[] lineScrollX(int height) {
-        return frameSnapshot != null ? resizeLineScroll(frameSnapshot.lineScrollX(), height) : null;
+        return resizeLineScroll(playback.frame().lineScrollX(), height);
     }
 
-    public java.util.List<IntroSprite> sprites() {
-        return frameSnapshot != null ? frameSnapshot.sprites() : java.util.List.of();
+    public List<IntroSprite> sprites() {
+        return playback.frame().sprites();
     }
 
     public int titleRevealRows() {
-        return frameSnapshot != null ? frameSnapshot.titleRevealRows() : 7;
+        return playback.frame().titleRevealRows();
     }
 
     public IntroFrameSnapshot frameSnapshot() {
-        return frameSnapshot;
+        return playback.snapshotOrNull();
     }
 
     @Override

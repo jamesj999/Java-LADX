@@ -1,15 +1,17 @@
 package linksawakening.audio.music;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import linksawakening.rom.Rom;
+import org.junit.jupiter.api.Test;
+
+@linksawakening.testing.RequiresRom
 final class MusicCatalogTest {
     @Test
     void resolvesRepresentativeTracksFromBothMusicBanks() {
-        MusicCatalog catalog = MusicCatalog.fromRom(loadRom());
+        MusicCatalog catalog = MusicCatalog.fromRom(Rom.of(loadRom()));
 
         assertTrack(catalog.requireTrack(0x01), "MUSIC_TITLE_SCREEN", 0x1B, 0x4077);
         assertTrack(catalog.requireTrack(0x10), "MUSIC_OBTAIN_ITEM", 0x1B, 0x4077 + (0x0F * 2));
@@ -23,7 +25,7 @@ final class MusicCatalogTest {
 
     @Test
     void listsPlayableTracksInMusicIdOrder() {
-        MusicCatalog catalog = MusicCatalog.fromRom(loadRom());
+        MusicCatalog catalog = MusicCatalog.fromRom(Rom.of(loadRom()));
 
         assertEquals(0x70, catalog.tracks().size());
         assertEquals(0x01, catalog.tracks().get(0).id());
@@ -32,7 +34,7 @@ final class MusicCatalogTest {
 
     @Test
     void rejectsUnknownTrackIds() {
-        MusicCatalog catalog = MusicCatalog.fromRom(loadRom());
+        MusicCatalog catalog = MusicCatalog.fromRom(Rom.of(loadRom()));
 
         assertThrows(IllegalArgumentException.class, () -> catalog.requireTrack(0x00));
         assertThrows(IllegalArgumentException.class, () -> catalog.requireTrack(0x71));
@@ -47,7 +49,7 @@ final class MusicCatalogTest {
     }
 
     private static byte[] loadRom() {
-        try (var stream = MusicCatalogTest.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

@@ -1,9 +1,5 @@
 package linksawakening.entity;
 
-import linksawakening.rom.RomBank;
-import linksawakening.world.EntityRoomLoader;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -12,6 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomBank;
+import linksawakening.world.entity.EntityRoomLoader;
+import org.junit.jupiter.api.Test;
+
+@linksawakening.testing.RequiresRom
 final class EntitySpriteCatalogTest {
 
     @Test
@@ -25,10 +27,9 @@ final class EntitySpriteCatalogTest {
         write(rom, 0x20, 0x763B + 0x03 * 4, 0x90, 0x91, 0x92, 0xFF);
         write(rom, 0x20, 0x763B + 0x04 * 4, 0xA0, 0xA1, 0xA2, 0xA3);
 
-        EntitySpriteCatalog catalog = new EntitySpriteCatalog(rom);
+        EntitySpriteCatalog catalog = new EntitySpriteCatalog(Rom.of(rom));
 
-        EntitySpriteSelection overworld = catalog.load(
-            EntityRoomLoader.RoomTable.OVERWORLD, 0x05);
+        EntitySpriteSelection overworld = catalog.load(EntityRoomLoader.RoomTable.OVERWORLD, 0x05);
         assertEquals(0x02, overworld.groupIndex());
         assertTrue(overworld.hasStandardSheets());
         assertArrayEquals(new int[] {0xA4, 0xFF, 0x7C, 0xC8}, overworld.sheetValues());
@@ -37,13 +38,11 @@ final class EntitySpriteCatalogTest {
         assertEquals(0x5488, overworld.deathSpriteDefinition().address());
         assertEquals(0x54C8, overworld.powerRecoilDeathSpriteDefinition().address());
 
-        EntitySpriteSelection indoorsA = catalog.load(
-            EntityRoomLoader.RoomTable.INDOORS_A, 0x05);
+        EntitySpriteSelection indoorsA = catalog.load(EntityRoomLoader.RoomTable.INDOORS_A, 0x05);
         assertEquals(0x03, indoorsA.groupIndex());
         assertArrayEquals(new int[] {0x90, 0x91, 0x92, 0xFF}, indoorsA.sheetValues());
 
-        EntitySpriteSelection indoorsB = catalog.load(
-            EntityRoomLoader.RoomTable.INDOORS_B, 0x05);
+        EntitySpriteSelection indoorsB = catalog.load(EntityRoomLoader.RoomTable.INDOORS_B, 0x05);
         assertEquals(0x04, indoorsB.groupIndex());
         assertArrayEquals(new int[] {0xA0, 0xA1, 0xA2, 0xA3}, indoorsB.sheetValues());
     }
@@ -53,8 +52,8 @@ final class EntitySpriteCatalogTest {
         byte[] rom = syntheticRom();
         write(rom, 0x20, 0x70D3 + 0x00, 0x12);
 
-        EntitySpriteSelection selection = new EntitySpriteCatalog(rom)
-            .load(EntityRoomLoader.RoomTable.COLOR_DUNGEON, 0x00);
+        EntitySpriteSelection selection =
+                new EntitySpriteCatalog(Rom.of(rom)).load(EntityRoomLoader.RoomTable.COLOR_DUNGEON, 0x00);
 
         assertEquals(0x12, selection.groupIndex());
         assertFalse(selection.hasStandardSheets());
@@ -80,14 +79,13 @@ final class EntitySpriteCatalogTest {
         overworldRoomStatus[0xC9] = 0x20;
         overworldRoomStatus[0xFD] = 0x20;
 
-        EntitySpriteCatalog catalog = new EntitySpriteCatalog(rom);
+        EntitySpriteCatalog catalog = new EntitySpriteCatalog(Rom.of(rom));
 
-        EntitySpriteSelection siren = catalog.load(
-            EntityRoomLoader.RoomTable.OVERWORLD, 0x10, 0x00, overworldRoomStatus);
-        EntitySpriteSelection walrus = catalog.load(
-            EntityRoomLoader.RoomTable.OVERWORLD, 0x11, 0x00, overworldRoomStatus);
-        EntitySpriteSelection cameraShop = catalog.load(
-            EntityRoomLoader.RoomTable.INDOORS_B, 0xB5, 0x10, null);
+        EntitySpriteSelection siren =
+                catalog.load(EntityRoomLoader.RoomTable.OVERWORLD, 0x10, 0x00, overworldRoomStatus);
+        EntitySpriteSelection walrus =
+                catalog.load(EntityRoomLoader.RoomTable.OVERWORLD, 0x11, 0x00, overworldRoomStatus);
+        EntitySpriteSelection cameraShop = catalog.load(EntityRoomLoader.RoomTable.INDOORS_B, 0xB5, 0x10, null);
 
         assertEquals(0x24, siren.groupIndex());
         assertArrayEquals(new int[] {0x24, 0x25, 0x26, 0x27}, siren.sheetValues());
@@ -102,7 +100,7 @@ final class EntitySpriteCatalogTest {
         byte[] rom = syntheticRom();
         writePalette(rom, 0x21, 0x5518, 0x001F, 0x03E0, 0x7C00, 0x7FFF);
 
-        int[][] palettes = new EntitySpriteCatalog(rom).loadObjectPalettes();
+        int[][] palettes = new EntitySpriteCatalog(Rom.of(rom)).loadObjectPalettes();
 
         assertEquals(6, palettes.length);
         assertEquals(4, palettes[0].length);
@@ -118,10 +116,10 @@ final class EntitySpriteCatalogTest {
         write(rom, 0x21, 0x42B1, 0x00, 0x56);
         writePalette(rom, 0x21, 0x5548, 0x001F, 0x03E0, 0x7C00, 0x7FFF);
 
-        EntitySpriteSelection normalRoom = new EntitySpriteCatalog(rom)
-            .load(EntityRoomLoader.RoomTable.OVERWORLD, 0x00);
-        EntitySpriteSelection eaglesTower = new EntitySpriteCatalog(rom)
-            .load(EntityRoomLoader.RoomTable.OVERWORLD, 0x0E);
+        EntitySpriteSelection normalRoom =
+                new EntitySpriteCatalog(Rom.of(rom)).load(EntityRoomLoader.RoomTable.OVERWORLD, 0x00);
+        EntitySpriteSelection eaglesTower =
+                new EntitySpriteCatalog(Rom.of(rom)).load(EntityRoomLoader.RoomTable.OVERWORLD, 0x0E);
 
         assertEquals(8, normalRoom.objectPalettes().length);
         assertEquals(8, eaglesTower.objectPalettes().length);
@@ -131,8 +129,8 @@ final class EntitySpriteCatalogTest {
     @Test
     void shippedRoom92UsesTheOverworldGroupAndItsFourRomEntries() throws Exception {
         byte[] rom = loadRom();
-        EntitySpriteSelection selection = new EntitySpriteCatalog(rom)
-            .load(EntityRoomLoader.RoomTable.OVERWORLD, 0x92);
+        EntitySpriteSelection selection =
+                new EntitySpriteCatalog(Rom.of(rom)).load(EntityRoomLoader.RoomTable.OVERWORLD, 0x92);
 
         assertEquals(0x43, selection.groupIndex());
         assertArrayEquals(new int[] {0xA4, 0xE5, 0xE6, 0xDC}, selection.sheetValues());
@@ -140,8 +138,8 @@ final class EntitySpriteCatalogTest {
 
     @Test
     void shippedMarinHouseSupportsIndoorTarinDisplayList() throws Exception {
-        EntitySpriteDefinition tarin = new EntitySpriteHandlerCatalog(loadRom())
-            .forEntityType(0x3F, EntityRoomLoader.RoomTable.INDOORS_B, 0x10);
+        EntitySpriteDefinition tarin = new EntitySpriteHandlerCatalog(Rom.of(loadRom()))
+                .forEntityType(0x3F, EntityRoomLoader.RoomTable.INDOORS_B, 0x10);
 
         assertTrue(tarin.supported());
         assertEquals(EntitySpriteDefinition.Shape.PAIR, tarin.shape());
@@ -157,11 +155,10 @@ final class EntitySpriteCatalogTest {
         writePalette(rom, 0x21, 0x73F0, 0x001F, 0, 0, 0);
         writePalette(rom, 0x21, 0x74E0, 0x7C00, 0, 0, 0);
 
-        EntitySpriteCatalog catalog = new EntitySpriteCatalog(rom);
-        EntitySpriteSelection initial = catalog.load(
-            EntityRoomLoader.RoomTable.INDOORS_B, 0xA3, 0x10, null, false, 0);
-        EntitySpriteSelection transformed = catalog.load(
-            EntityRoomLoader.RoomTable.INDOORS_B, 0xA3, 0x10, null, false, 2);
+        EntitySpriteCatalog catalog = new EntitySpriteCatalog(Rom.of(rom));
+        EntitySpriteSelection initial = catalog.load(EntityRoomLoader.RoomTable.INDOORS_B, 0xA3, 0x10, null, false, 0);
+        EntitySpriteSelection transformed =
+                catalog.load(EntityRoomLoader.RoomTable.INDOORS_B, 0xA3, 0x10, null, false, 2);
 
         assertEquals(RomBank.decodeRgb555(0x001F), initial.objectPalettes()[6][0]);
         assertEquals(RomBank.decodeRgb555(0x7C00), transformed.objectPalettes()[6][0]);
@@ -169,8 +166,8 @@ final class EntitySpriteCatalogTest {
 
     @Test
     void shippedOutdoorTarinSupportsRaccoonAndHumanTransformationVariants() throws Exception {
-        EntitySpriteDefinition tarin = new EntitySpriteHandlerCatalog(loadRom())
-            .forEntityType(0x3F, EntityRoomLoader.RoomTable.OVERWORLD, 0x51);
+        EntitySpriteDefinition tarin = new EntitySpriteHandlerCatalog(Rom.of(loadRom()))
+                .forEntityType(0x3F, EntityRoomLoader.RoomTable.OVERWORLD, 0x51);
 
         assertEquals(12, tarin.variantCount());
         assertEquals(0x4912, tarin.address());
@@ -181,15 +178,14 @@ final class EntitySpriteCatalogTest {
 
     @Test
     void preservesFloatingOverlayMetadataWhenSpriteOverridesAreChanged() throws Exception {
-        EntitySpriteSelection selection = new EntitySpriteCatalog(loadRom())
-            .load(EntityRoomLoader.RoomTable.OVERWORLD, 0x00);
+        EntitySpriteSelection selection =
+                new EntitySpriteCatalog(Rom.of(loadRom())).load(EntityRoomLoader.RoomTable.OVERWORLD, 0x00);
 
         EntitySpriteDefinition overlay = selection.spriteOverlayFor(0x86);
         assertNotNull(overlay);
         assertSame(overlay, selection.spriteOverlayFor(0xE5));
 
-        EntitySpriteSelection changed = selection.withSpriteOverride(
-            0x6D, EntitySpriteDefinition.unsupported(0x6D));
+        EntitySpriteSelection changed = selection.withSpriteOverride(0x6D, EntitySpriteDefinition.unsupported(0x6D));
         assertSame(overlay, changed.spriteOverlayFor(0x86));
         assertSame(overlay, changed.spriteOverlayFor(0xE5));
     }
@@ -214,8 +210,7 @@ final class EntitySpriteCatalogTest {
     }
 
     private static byte[] loadRom() throws Exception {
-        try (var stream = EntitySpriteCatalogTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

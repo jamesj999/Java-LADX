@@ -1,0 +1,15 @@
+{
+  "checkpoint": 587,
+  "full_frame_differing_pixels": 316,
+  "north_shutter_differing_pixels": 0,
+  "west_shutter_differing_pixels": 0,
+  "java_link": [
+    17,
+    72
+  ],
+  "rom_link": [
+    17,
+    72
+  ],
+  "tests_passed": 2352
+}

@@ -1,57 +1,174 @@
 package linksawakening.gameplay;
 
-import linksawakening.state.PlayerState;
-import linksawakening.world.EntityProjectileEvent;
-import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import linksawakening.entity.Link;
+import linksawakening.equipment.ItemRegistry;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.RomTables;
+import linksawakening.state.PlayerState;
+import linksawakening.world.entity.event.EntityProjectileEvent;
+import org.junit.jupiter.api.Test;
+
+@linksawakening.testing.RequiresRom
 final class EnemyProjectileEventConsumerTest {
+
+    @Test
+    void acceptedProjectileHurtResetsOnlyAcornCounterAndRejectedHitDoesNotReset() {
+        PlayerState player = new PlayerState();
+        player.vitals().setHealth(16);
+        var counters = new AtomicReference<>(new linksawakening.world.entity.EnemyDropResolver.CounterState(11, 23));
+        var event = EntityProjectileEvent.builder(0, 0x0A, EntityProjectileEvent.Kind.LINK_DAMAGE)
+                .collisionValue(0xFF)
+                .linkDamage(8)
+                .soundChannel(EntityProjectileEvent.SoundChannel.WAVE)
+                .soundId(3)
+                .remove(false)
+                .swordPokeVfx(false)
+                .build();
+        Runnable reset =
+                () -> counters.updateAndGet(linksawakening.world.entity.EnemyDropResolver::resetGuardianAcornCounter);
+        EnemyProjectileEventConsumer.consume(List.of(event), player, null, new RecordingSoundSink(), reset);
+        assertEquals(0, counters.get().guardianAcornCounter());
+        assertEquals(23, counters.get().pieceOfPowerKillCount());
+        counters.set(new linksawakening.world.entity.EnemyDropResolver.CounterState(7, 23));
+        EnemyProjectileEventConsumer.consume(List.of(event), player, null, new RecordingSoundSink(), reset);
+        assertEquals(7, counters.get().guardianAcornCounter());
+    }
 
     @Test
     void appliesProjectileDamageThroughTheExistingHealthAndInvincibilityState() {
         PlayerState player = new PlayerState();
-        player.setHealth(16);
+        player.vitals().setHealth(16);
         RecordingSoundSink sounds = new RecordingSoundSink();
 
-        EntityProjectileEvent event = new EntityProjectileEvent(
-            0, 0x0A, EntityProjectileEvent.Kind.LINK_DAMAGE, 0xFF, 0x08,
-            EntityProjectileEvent.SoundChannel.WAVE, 0x03, false, false);
+        EntityProjectileEvent event = EntityProjectileEvent.builder(0, 0x0A, EntityProjectileEvent.Kind.LINK_DAMAGE)
+                .collisionValue(0xFF)
+                .linkDamage(0x08)
+                .soundChannel(EntityProjectileEvent.SoundChannel.WAVE)
+                .soundId(0x03)
+                .remove(false)
+                .swordPokeVfx(false)
+                .build();
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
 
-        assertEquals(16, player.health());
-        assertEquals(8, player.subtractHealthBuffer());
-        assertEquals(0x50, player.invincibilityCounter());
+        assertEquals(16, player.vitals().health());
+        assertEquals(8, player.vitals().subtractHealthBuffer());
+        assertEquals(0x50, player.vitals().invincibilityCounter());
         assertEquals(List.of(GameplaySoundEvent.LINK_HURT), sounds.events);
 
-        player.tickResourceBuffers(1);
-        assertEquals(15, player.health());
-        assertEquals(7, player.subtractHealthBuffer());
+        player.playerResources().tickResourceBuffers(1);
+        assertEquals(15, player.vitals().health());
+        assertEquals(7, player.vitals().subtractHealthBuffer());
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
-        assertEquals(15, player.health());
+        assertEquals(15, player.vitals().health());
         assertEquals(List.of(GameplaySoundEvent.LINK_HURT), sounds.events);
+    }
+
+    @Test
+    void appliesAcceptedProjectileRecoilToLinkExactlyOnce() throws IOException {
+        PlayerState player = new PlayerState();
+        player.vitals().setHealth(16);
+        Link link = new Link(
+                new InputState(),
+                new InputConfig(1, 2, 3, 4, 5, 6, 7),
+                loadRomTables(),
+                null,
+                null,
+                player,
+                new ItemRegistry());
+        RecordingSoundSink sounds = new RecordingSoundSink();
+        EntityProjectileEvent event = EntityProjectileEvent.builder(0, 0x0A, EntityProjectileEvent.Kind.LINK_DAMAGE)
+                .collisionValue(0xFF)
+                .linkDamage(0x08)
+                .soundChannel(EntityProjectileEvent.SoundChannel.WAVE)
+                .soundId(0x03)
+                .remove(false)
+                .swordPokeVfx(false)
+                .swordPokeX(0)
+                .swordPokeY(0)
+                .linkSpeedX(0xF0)
+                .linkSpeedY(0x14)
+                .linkIgnoreCollisionCountdown(0x10)
+                .build();
+
+        EnemyProjectileEventConsumer.consume(List.of(event), player, link, sounds);
+        link.motion().update();
+
+        assertEquals(0xF0, link.position().romSpeedX());
+        assertEquals(0x14, link.position().romSpeedY());
+        assertEquals(8, player.vitals().subtractHealthBuffer());
+    }
+
+    @Test
+    void appliesProtectedEnemyBombMotionWithoutApplyingAnotherHit() throws IOException {
+        PlayerState player = new PlayerState();
+        player.vitals().setHealth(16);
+        RomTables romTables = loadRomTables();
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setRoom(emptyRoomObjectsArea());
+        Link link = new Link(
+                new InputState(),
+                new InputConfig(1, 2, 3, 4, 5, 6, 7),
+                romTables,
+                collision,
+                null,
+                player,
+                new ItemRegistry());
+        RecordingSoundSink sounds = new RecordingSoundSink();
+        EntityProjectileEvent event = EntityProjectileEvent.builder(0, 0x02, EntityProjectileEvent.Kind.LINK_DAMAGE)
+                .collisionValue(0)
+                .linkDamage(0)
+                .soundChannel(EntityProjectileEvent.SoundChannel.NONE)
+                .soundId(-1)
+                .remove(false)
+                .swordPokeVfx(false)
+                .swordPokeX(0)
+                .swordPokeY(0)
+                .linkSpeedX(0x20)
+                .linkSpeedY(0xE0)
+                .linkIgnoreCollisionCountdown(0)
+                .build();
+
+        EnemyProjectileEventConsumer.consume(List.of(event), player, link, sounds);
+        link.motion().update();
+
+        assertEquals(0x20, link.position().romSpeedX());
+        assertEquals(0xE0, link.position().romSpeedY());
+        assertEquals(0, player.vitals().subtractHealthBuffer());
+        assertTrue(sounds.events.isEmpty());
     }
 
     @Test
     void shieldBlockPlaysTheShieldSoundWithoutChangingHealth() {
         PlayerState player = new PlayerState();
-        player.setHealth(16);
+        player.vitals().setHealth(16);
         RecordingSoundSink sounds = new RecordingSoundSink();
 
-        EntityProjectileEvent event = new EntityProjectileEvent(
-            0, 0x0A, EntityProjectileEvent.Kind.SHIELD_BLOCK, 0xFF, 0,
-            EntityProjectileEvent.SoundChannel.JINGLE, 0x16, false, false);
+        EntityProjectileEvent event = EntityProjectileEvent.builder(0, 0x0A, EntityProjectileEvent.Kind.SHIELD_BLOCK)
+                .collisionValue(0xFF)
+                .linkDamage(0)
+                .soundChannel(EntityProjectileEvent.SoundChannel.JINGLE)
+                .soundId(0x16)
+                .remove(false)
+                .swordPokeVfx(false)
+                .build();
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
 
-        assertEquals(16, player.health());
-        assertEquals(0, player.invincibilityCounter());
+        assertEquals(16, player.vitals().health());
+        assertEquals(0, player.vitals().invincibilityCounter());
         assertEquals(List.of(GameplaySoundEvent.SHIELD_TING), sounds.events);
     }
 
@@ -60,10 +177,16 @@ final class EnemyProjectileEventConsumerTest {
         PlayerState player = new PlayerState();
         RecordingSoundSink sounds = new RecordingSoundSink();
 
-        EntityProjectileEvent event = new EntityProjectileEvent(
-            0, 0x2B, EntityProjectileEvent.Kind.SHIELD_BLOCK, 0x02, 0,
-            EntityProjectileEvent.SoundChannel.JINGLE, 0x07, false, true,
-            0x40, 0x50);
+        EntityProjectileEvent event = EntityProjectileEvent.builder(0, 0x2B, EntityProjectileEvent.Kind.SHIELD_BLOCK)
+                .collisionValue(0x02)
+                .linkDamage(0)
+                .soundChannel(EntityProjectileEvent.SoundChannel.JINGLE)
+                .soundId(0x07)
+                .remove(false)
+                .swordPokeVfx(true)
+                .swordPokeX(0x40)
+                .swordPokeY(0x50)
+                .build();
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
 
@@ -73,54 +196,73 @@ final class EnemyProjectileEventConsumerTest {
     @Test
     void pairoddSwordHitPlaysTheRomBumpSoundWithoutDamagingLink() {
         PlayerState player = new PlayerState();
-        player.setHealth(16);
+        player.vitals().setHealth(16);
         RecordingSoundSink sounds = new RecordingSoundSink();
 
-        EntityProjectileEvent event = new EntityProjectileEvent(
-            0, 0x58, EntityProjectileEvent.Kind.SWORD_HIT, 0xFF, 0,
-            EntityProjectileEvent.SoundChannel.JINGLE, 0x09, true, true,
-            0x40, 0x50, 0, 0, 0x0C);
+        EntityProjectileEvent event = EntityProjectileEvent.builder(0, 0x58, EntityProjectileEvent.Kind.SWORD_HIT)
+                .collisionValue(0xFF)
+                .linkDamage(0)
+                .soundChannel(EntityProjectileEvent.SoundChannel.JINGLE)
+                .soundId(0x09)
+                .remove(true)
+                .swordPokeVfx(true)
+                .swordPokeX(0x40)
+                .swordPokeY(0x50)
+                .linkSpeedX(0)
+                .linkSpeedY(0)
+                .linkIgnoreCollisionCountdown(0x0C)
+                .build();
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
 
-        assertEquals(16, player.health());
+        assertEquals(16, player.vitals().health());
         assertEquals(List.of(GameplaySoundEvent.ENEMY_BUMP), sounds.events);
     }
 
     @Test
     void invincibilitySuppressesTheProjectileDamageSoundAndHealthChange() {
         PlayerState player = new PlayerState();
-        player.setHealth(16);
-        player.setInvincibilityCounter(3);
+        player.vitals().setHealth(16);
+        player.vitals().setInvincibilityCounter(3);
         RecordingSoundSink sounds = new RecordingSoundSink();
 
-        EntityProjectileEvent event = new EntityProjectileEvent(
-            0, 0x0C, EntityProjectileEvent.Kind.LINK_DAMAGE, 0, 0x08,
-            EntityProjectileEvent.SoundChannel.WAVE, 0x03, true, false);
+        EntityProjectileEvent event = EntityProjectileEvent.builder(0, 0x0C, EntityProjectileEvent.Kind.LINK_DAMAGE)
+                .collisionValue(0)
+                .linkDamage(0x08)
+                .soundChannel(EntityProjectileEvent.SoundChannel.WAVE)
+                .soundId(0x03)
+                .remove(true)
+                .swordPokeVfx(false)
+                .build();
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
 
-        assertEquals(16, player.health());
-        assertEquals(3, player.invincibilityCounter());
+        assertEquals(16, player.vitals().health());
+        assertEquals(3, player.vitals().invincibilityCounter());
         assertEquals(List.of(), sounds.events);
     }
 
     @Test
     void enemyBombCollisionResetsPegasusBootsBeforeApplyingNominalDamageModifiers() {
         PlayerState player = new PlayerState();
-        player.setActivePowerUp(PlayerState.ACTIVE_POWER_UP_GUARDIAN_ACORN);
-        player.setRunningWithPegasusBoots(true);
+        player.equipmentLevels().setActivePowerUp(linksawakening.state.PowerUp.GUARDIAN_ACORN.romValue());
+        player.equipmentLevels().setRunningWithPegasusBoots(true);
         RecordingSoundSink sounds = new RecordingSoundSink();
 
-        EntityProjectileEvent event = new EntityProjectileEvent(
-            0, 0x02, EntityProjectileEvent.Kind.LINK_DAMAGE, 0, 0x08,
-            EntityProjectileEvent.SoundChannel.WAVE, 0x03, false, false);
+        EntityProjectileEvent event = EntityProjectileEvent.builder(0, 0x02, EntityProjectileEvent.Kind.LINK_DAMAGE)
+                .collisionValue(0)
+                .linkDamage(0x08)
+                .soundChannel(EntityProjectileEvent.SoundChannel.WAVE)
+                .soundId(0x03)
+                .remove(false)
+                .swordPokeVfx(false)
+                .build();
 
         EnemyProjectileEventConsumer.consume(List.of(event), player, sounds);
 
-        assertEquals(4, player.subtractHealthBuffer());
-        assertEquals(0x50, player.invincibilityCounter());
-        assertFalse(player.runningWithPegasusBoots());
+        assertEquals(4, player.vitals().subtractHealthBuffer());
+        assertEquals(0x50, player.vitals().invincibilityCounter());
+        assertFalse(player.equipmentLevels().runningWithPegasusBoots());
         assertEquals(List.of(GameplaySoundEvent.LINK_HURT), sounds.events);
     }
 
@@ -131,5 +273,20 @@ final class EnemyProjectileEventConsumerTest {
         public void play(GameplaySoundEvent event) {
             events.add(event);
         }
+    }
+
+    private static RomTables loadRomTables() throws IOException {
+        try (var stream = linksawakening.testing.TestRom.open()) {
+            if (stream == null) {
+                throw new IOException("Missing ROM resource: rom/azle.gbc");
+            }
+            return RomTables.load(linksawakening.rom.Rom.unchecked(stream.readAllBytes()));
+        }
+    }
+
+    private static int[] emptyRoomObjectsArea() {
+        int[] roomObjectsArea = new int[0x100];
+        Arrays.fill(roomObjectsArea, 0xFF);
+        return roomObjectsArea;
     }
 }

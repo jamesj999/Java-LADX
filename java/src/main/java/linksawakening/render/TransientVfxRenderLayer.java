@@ -2,70 +2,64 @@ package linksawakening.render;
 
 import linksawakening.vfx.CutLeavesEffectRenderer;
 import linksawakening.vfx.TransientVfxSystem;
-import linksawakening.vfx.TransientVfxType;
-import linksawakening.world.ScrollController;
+import linksawakening.world.transition.ScrollController;
 
-public final class TransientVfxRenderLayer implements RenderLayer {
+/** TransientVfxRenderLayer supplies frame rendering inputs or composition.  Hardware analogue: transient OBJ effects. */
+final class TransientVfxRenderLayer implements HardwareRenderLayer {
     private static final int ATTR_FLIP_X = 0x20;
     private static final int ATTR_FLIP_Y = 0x40;
 
-    private final TransientVfxSystem transientVfxSystem;
-    private final CutLeavesEffectRenderer cutLeavesEffectRenderer;
-    private final ScrollController scrollController;
-    private final int[] palette;
-    private final int frameCounter;
+    private TransientVfxSystem transientVfxSystem;
+    private CutLeavesEffectRenderer cutLeavesEffectRenderer;
+    private ScrollController scrollController;
+    private int[] palette;
+    private int frameCounter;
 
-    public TransientVfxRenderLayer(TransientVfxSystem transientVfxSystem,
-                                   CutLeavesEffectRenderer cutLeavesEffectRenderer,
-                                   ScrollController scrollController,
-                                   int[] palette) {
-        this(transientVfxSystem, cutLeavesEffectRenderer, scrollController, palette, 0);
-    }
+    private VfxPoseCache poses;
 
-    public TransientVfxRenderLayer(TransientVfxSystem transientVfxSystem,
-                                   CutLeavesEffectRenderer cutLeavesEffectRenderer,
-                                   ScrollController scrollController,
-                                   int[] palette, int frameCounter) {
-        this.transientVfxSystem = transientVfxSystem;
-        this.cutLeavesEffectRenderer = cutLeavesEffectRenderer;
-        this.scrollController = scrollController;
-        this.palette = palette;
-        this.frameCounter = frameCounter & 0xFF;
-    }
+    /** Retained frame adapter; configure supplies its borrowed inputs before submission. */
+    TransientVfxRenderLayer() {}
 
     @Override
-    public void render(RenderContext context) {
+    public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
+        submitEffects(RenderContext.indexed(gpu, frame));
+    }
+
+    void configure(
+            TransientVfxSystem system,
+            CutLeavesEffectRenderer renderer,
+            ScrollController scroll,
+            int[] palette,
+            int counter) {
+        if (cutLeavesEffectRenderer != renderer) poses = new VfxPoseCache(renderer);
+        transientVfxSystem = system;
+        cutLeavesEffectRenderer = renderer;
+        scrollController = scroll;
+        this.palette = palette;
+        frameCounter = counter & 255;
+    }
+
+    private void submitEffects(RenderContext context) {
         if (scrollController.isActive()) {
             return;
         }
         int shakeX = -scrollController.screenShakeHorizontal();
-        for (TransientVfxSystem.Slot slot : transientVfxSystem.activeSlots()) {
-            var sprites = switch (slot.type()) {
-                case BUSH_LEAVES -> cutLeavesEffectRenderer.renderBushLeaves(
-                    slot.worldX(), slot.worldY(), slot.countdown());
-                case WATER_SPLASH -> cutLeavesEffectRenderer.renderWaterSplash(
-                    slot.worldX(), slot.worldY(), slot.countdown());
-                case POOF, CHEST_APPEARS, STAIRS_APPEARS -> cutLeavesEffectRenderer.renderPoof(
-                    slot.worldX(), slot.worldY(), slot.countdown());
-                case SWORD_POKE -> cutLeavesEffectRenderer.renderSwordPoke(
-                    slot.worldX(), slot.worldY(), slot.countdown());
-                case SMOKE -> cutLeavesEffectRenderer.renderSmoke(
-                    slot.worldX(), slot.worldY(), slot.countdown());
-                case LASER_BEAM -> cutLeavesEffectRenderer.renderLaserBeam(
-                    slot.worldX(), slot.worldY(), slot.countdown(), frameCounter,
-                    slot.slotIndex());
-                case MOVING_SPARKLE -> cutLeavesEffectRenderer.renderMovingSparkle(
-                    slot.worldX(), slot.worldY(), slot.countdown(), slot.variant());
-                case SWORD_BEAM -> cutLeavesEffectRenderer.renderSwordBeam(
-                    slot.worldX(), slot.worldY(), slot.countdown(), frameCounter,
-                    slot.slotIndex(), slot.variant());
-            };
-            for (CutLeavesEffectRenderer.SpritePlacement sprite : sprites) {
-                IndexedRenderer.drawSpriteTile(context.buffer(), sprite.tile(), sprite.x() + shakeX,
-                    sprite.y(),
-                    (sprite.attributes() & ATTR_FLIP_X) != 0,
-                    (sprite.attributes() & ATTR_FLIP_Y) != 0,
-                    palette);
+        if (transientVfxSystem.activeCount() == 0) return;
+        var slots = transientVfxSystem.liveSlots();
+        for (int slotIndex = 0; slotIndex < slots.size(); slotIndex++) {
+            var slot = slots.get(slotIndex);
+
+            var pose = poses.pose(slot, frameCounter);
+            for (int i = 0; i < pose.size(); i++) {
+                var sprite = pose.get(i);
+                OamDrawing.draw8(
+                        context,
+                        sprite.tile(),
+                        slot.worldX() + sprite.x() + shakeX,
+                        slot.worldY() + sprite.y(),
+                        (sprite.attributes() & ATTR_FLIP_X) != 0,
+                        (sprite.attributes() & ATTR_FLIP_Y) != 0,
+                        palette);
             }
         }
     }

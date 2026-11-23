@@ -1,0 +1,73 @@
+package linksawakening.app.presentation;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import linksawakening.app.AllocationSessions;
+import linksawakening.render.FrameScene;
+import linksawakening.render.GameFrameSceneBuilder;
+import linksawakening.testing.AllocationProbe;
+import linksawakening.testing.RequiresRom;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
+
+/** Covers frame-state assembly and scene construction, excluding GPU composition. */
+@RequiresRom
+class RenderStateAllocationTest {
+    private final TestReporter reporter;
+
+    RenderStateAllocationTest(TestReporter reporter) {
+        this.reporter = reporter;
+    }
+
+    private static volatile FrameScene observed;
+    private static volatile Object snapshot;
+
+    @Test
+    void reusableAssemblyAndSceneAllocateNothingAfterWarmup() throws Exception {
+        try (var session = AllocationSessions.active()) {
+            var assembler = session.flows().renderer();
+            var builder = new GameFrameSceneBuilder();
+            double assembly = AllocationProbe.bytesPerIteration(600, 120, () -> {
+                session.frameClock().advance();
+                snapshot = assembler.currentGameFrameState();
+            });
+            double scene = AllocationProbe.bytesPerIteration(600, 120, () -> {
+                session.frameClock().advance();
+                observed = builder.build(assembler.currentGameFrameState());
+            });
+            reporter.publishEntry("Reusable assembly / assembly+scene bytes: " + assembly + " / " + scene);
+            assertEquals(0.0, assembly);
+            assertEquals(0.0, scene);
+            assertTrue(observed.layerCount() > 0);
+        }
+    }
+
+    @Test
+    void assemblyAndSceneAllocation() throws Exception {
+        try (var session = AllocationSessions.active()) {
+            var assembler = session.flows().renderer();
+            var builder = new GameFrameSceneBuilder();
+            double bytes = AllocationProbe.bytesPerIteration(600, 120, () -> {
+                session.frameClock().advance();
+                observed = builder.build(assembler.currentGameFrameState());
+            });
+            reporter.publishEntry("Assembly + scene bytes/frame: " + bytes);
+            assertTrue(observed.layerCount() > 0);
+            double roomBytes = AllocationProbe.bytesPerIteration(
+                    600,
+                    120,
+                    () -> snapshot =
+                            session.services().world().roomSession().rooms().renderSnapshotOrNull());
+            double stateBytes =
+                    AllocationProbe.bytesPerIteration(600, 120, () -> snapshot = assembler.currentGameFrameState());
+            var frame = assembler.currentGameFrameState();
+            double sceneBytes = AllocationProbe.bytesPerIteration(600, 120, () -> observed = builder.build(frame));
+            reporter.publishEntry("Room snapshot / assembled state / scene-only bytes: " + roomBytes + " / "
+                    + stateBytes + " / " + sceneBytes);
+            assertTrue(stateBytes - roomBytes <= 100, "App frame-state overhead: " + (stateBytes - roomBytes));
+            // EA-off baseline 17,840; achieved 16,960. Includes world snapshot defensive copies.
+            assertTrue(bytes <= 21_200, "Assembly + scene bytes/frame: " + bytes);
+        }
+    }
+}

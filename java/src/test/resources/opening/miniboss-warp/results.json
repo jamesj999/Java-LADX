@@ -1,0 +1,51 @@
+{
+  "region": [
+    64,
+    48,
+    96,
+    80
+  ],
+  "comparison": "Best matching animation phase within eight consecutive 8-frame samples; fourfold symmetry yields two distinct images.",
+  "samples": [
+    {
+      "java_checkpoint": 602,
+      "rom_checkpoint": 603,
+      "different_rgb555_pixels": 0
+    },
+    {
+      "java_checkpoint": 603,
+      "rom_checkpoint": 602,
+      "different_rgb555_pixels": 0
+    },
+    {
+      "java_checkpoint": 604,
+      "rom_checkpoint": 603,
+      "different_rgb555_pixels": 0
+    },
+    {
+      "java_checkpoint": 605,
+      "rom_checkpoint": 602,
+      "different_rgb555_pixels": 0
+    },
+    {
+      "java_checkpoint": 606,
+      "rom_checkpoint": 603,
+      "different_rgb555_pixels": 0
+    },
+    {
+      "java_checkpoint": 607,
+      "rom_checkpoint": 602,
+      "different_rgb555_pixels": 0
+    },
+    {
+      "java_checkpoint": 608,
+      "rom_checkpoint": 603,
+      "different_rgb555_pixels": 0
+    },
+    {
+      "java_checkpoint": 609,
+      "rom_checkpoint": 602,
+      "different_rgb555_pixels": 0
+    }
+  ]
+}

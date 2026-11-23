@@ -1,0 +1,14 @@
+{
+  "checkpoint": 493,
+  "comparison": "RGB555",
+  "panel_bounds_inclusive": [
+    72,
+    24,
+    159,
+    135
+  ],
+  "panel_differing_pixels": 0,
+  "full_frame_differing_pixels": 277,
+  "checkpoints": 514,
+  "tests_passed": 2347
+}

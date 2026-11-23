@@ -1,0 +1,76 @@
+package linksawakening.app.screen;
+
+import java.util.Objects;
+import linksawakening.app.state.ScreenState;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.render.GameFrameState;
+import linksawakening.render.RenderScreen;
+import linksawakening.ui.FileSaveAction;
+
+/**
+ * Owns save-menu ticks and returns to the requested screen. One instance is retained for the owning session.
+ */
+public final class FileSaveScreen implements Screen {
+
+    private final Dependencies dependencies;
+
+    public FileSaveScreen(Dependencies dependencies) {
+        this.dependencies = Objects.requireNonNull(dependencies);
+    }
+
+    @Override
+    public void tick() {
+        var transition = dependencies.screens().menuTransition;
+        if (transition != null && !transition.transitionFinished()) {
+            transition.tick();
+            if (transition.transitionFinished() && transition.returningToRoom()) {
+                dependencies.screens().menuTransition = null;
+                dependencies.screens().fileSave().clear();
+                dependencies.navigator().show(ScreenKind.GAMEPLAY);
+            }
+            dependencies.completeInput().complete();
+            return;
+        }
+        FileSaveAction action =
+                dependencies.screens().fileSave().tick(dependencies.inputState(), dependencies.inputConfig());
+        if (action.type() == FileSaveAction.Type.RETURN_TO_GAME) {
+            transition.close();
+        } else if (action.type() == FileSaveAction.Type.SAVE_AND_QUIT) {
+            dependencies.actions().saveCurrentPlayerState();
+            dependencies.navigator().restartIntroAfterSave();
+        }
+        dependencies.completeInput().complete();
+    }
+
+    @Override
+    public void onKey(int key, int action) {}
+
+    @Override
+    public RenderScreen renderScreen() {
+        return RenderScreen.FILE_SAVE;
+    }
+
+    @Override
+    public GameFrameState renderState(GameFrameState state) {
+        var frame = dependencies.screens().fileSave().snapshotOrNull();
+        return state.withFileMenuFrame(frame);
+    }
+    /** Required screen collaborators, validated before the first tick. */
+    public record Dependencies(
+            ScreenState screens,
+            InputState inputState,
+            InputConfig inputConfig,
+            SaveActions actions,
+            ScreenNavigator navigator,
+            InputCompletion completeInput) {
+        public Dependencies {
+            Objects.requireNonNull(screens);
+            Objects.requireNonNull(inputState);
+            Objects.requireNonNull(inputConfig);
+            Objects.requireNonNull(actions);
+            Objects.requireNonNull(navigator);
+            Objects.requireNonNull(completeInput);
+        }
+    }
+}

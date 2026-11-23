@@ -1,12 +1,13 @@
 package linksawakening.gpu;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.io.InputStream;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomBank;
 import org.junit.jupiter.api.Test;
 
-import java.io.InputStream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
+@linksawakening.testing.RequiresRom
 final class GPUOcarinaTilesTest {
 
     private static final int ROM_BANK = 0x2C;
@@ -18,7 +19,7 @@ final class GPUOcarinaTilesTest {
         byte[] rom = loadRom();
         GPU gpu = new GPU();
 
-        gpu.loadOcarinaSymbolsTiles(rom);
+        gpu.loadOcarinaSymbolsTiles(Rom.of(rom));
 
         assertRomByte(gpu, rom, ROM_BANK, OCARINA_SYMBOLS_ADDRESS, 0x20);
         assertRomByte(gpu, rom, ROM_BANK, OCARINA_SYMBOLS_ADDRESS + 0x40, 0x24);
@@ -30,24 +31,22 @@ final class GPUOcarinaTilesTest {
         byte[] rom = loadRom();
         GPU gpu = new GPU();
 
-        gpu.loadOcarinaSymbolsTiles(rom);
-        gpu.loadSharedVfxTiles(rom);
+        gpu.loadOcarinaSymbolsTiles(Rom.of(rom));
+        gpu.loadSharedVfxTiles(Rom.of(rom));
 
         assertRomByte(gpu, rom, ROM_BANK, SHARED_VFX_ADDRESS, 0x20);
         assertRomByte(gpu, rom, ROM_BANK, SHARED_VFX_ADDRESS + 0x40, 0x24);
         assertRomByte(gpu, rom, ROM_BANK, SHARED_VFX_ADDRESS + 0x60, 0x26);
     }
 
-    private static void assertRomByte(GPU gpu, byte[] rom, int bank, int address,
-                                      int vramTile) {
+    private static void assertRomByte(GPU gpu, byte[] rom, int bank, int address, int vramTile) {
         int romOffset = RomBank.romOffset(bank, address);
-        assertEquals(Byte.toUnsignedInt(rom[romOffset]),
-            Byte.toUnsignedInt(gpu.readVRAM(vramTile * GPU.TILE_DATA_SIZE)));
+        assertEquals(
+                Byte.toUnsignedInt(rom[romOffset]), Byte.toUnsignedInt(gpu.readVRAM(vramTile * GPU.TILE_DATA_SIZE)));
     }
 
     private static byte[] loadRom() throws Exception {
-        try (InputStream stream = GPUOcarinaTilesTest.class.getClassLoader()
-                .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             return stream.readAllBytes();
         }
     }

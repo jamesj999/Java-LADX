@@ -1,11 +1,12 @@
 package linksawakening.render;
 
 import linksawakening.entity.Link;
-import linksawakening.world.ScrollController;
+import linksawakening.world.transition.ScrollController;
 
-public final class LinkRenderLayer implements RenderLayer {
-    private final Link link;
-    private final ScrollController scrollController;
+/** Submits Link OAM using interpolated scrolling coordinates and screen shake.  Hardware analogue: OBJ body and equipment entries. */
+final class LinkRenderLayer implements HardwareRenderLayer {
+    private Link link;
+    private ScrollController scrollController;
 
     public LinkRenderLayer(Link link, ScrollController scrollController) {
         this.link = link;
@@ -13,20 +14,34 @@ public final class LinkRenderLayer implements RenderLayer {
     }
 
     @Override
-    public void render(RenderContext context) {
+    public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
+        collectOam(frame);
+    }
+
+    void configure(Link link, ScrollController scrollController) {
+        this.link = link;
+        this.scrollController = scrollController;
+    }
+
+    private void collectOam(OamSink sink) {
         int shakeX = -scrollController.screenShakeHorizontal();
         if (!scrollController.isActive()) {
-            link.render(context.buffer(), shakeX, 0);
+            link.animation().submitOam(sink, shakeX, 0);
             return;
         }
 
         int startScreenX = scrollController.linkScreenX();
         int startScreenY = scrollController.linkScreenY();
-        int endScreenX = link.pixelX();
-        int endScreenY = link.pixelY();
-        int screenX = startScreenX + (endScreenX - startScreenX) * scrollController.offset() / scrollController.target();
-        int screenY = startScreenY + (endScreenY - startScreenY) * scrollController.offset() / scrollController.target();
-        link.render(context.buffer(), screenX - link.pixelX() + shakeX,
-            screenY - link.pixelY());
+        int endScreenX = link.position().pixelX();
+        int endScreenY = link.position().pixelY();
+        int screenX =
+                startScreenX + (endScreenX - startScreenX) * scrollController.offset() / scrollController.target();
+        int screenY =
+                startScreenY + (endScreenY - startScreenY) * scrollController.offset() / scrollController.target();
+        link.animation()
+                .submitOam(
+                        sink,
+                        screenX - link.position().pixelX() + shakeX,
+                        screenY - link.position().pixelY());
     }
 }

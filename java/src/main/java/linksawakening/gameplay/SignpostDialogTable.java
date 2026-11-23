@@ -1,11 +1,15 @@
 package linksawakening.gameplay;
 
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomBank;
+import linksawakening.rom.RomSymbols;
 
+/** ROM-backed room-to-dialog lookup, loaded once and retained by the gameplay dialog service. */
 public final class SignpostDialogTable {
 
-    private static final int SIGNPOST_DIALOG_TABLE_BANK = 0x14;
-    private static final int SIGNPOST_DIALOG_TABLE_ADDR = 0x5118;
+    private static final int SIGNPOST_DIALOG_TABLE_BANK = RomSymbols.SignpostDialogTable.bank();
+    private static final int SIGNPOST_DIALOG_TABLE_ADDR = RomSymbols.SignpostDialogTable.address();
     private static final int ROOM_COUNT = 0x100;
     private static final int DIALOG_083_LOW = 0x83;
     private static final int DIALOG_22D_LOW = 0x2D;
@@ -19,17 +23,17 @@ public final class SignpostDialogTable {
         this.dialogLowIds = dialogLowIds.clone();
     }
 
-    public static SignpostDialogTable loadFromRom(byte[] romData) {
+    public static SignpostDialogTable loadFromRom(Rom romData) {
         if (romData == null) {
             throw new IllegalArgumentException("ROM data is required");
         }
         int offset = RomBank.romOffset(SIGNPOST_DIALOG_TABLE_BANK, SIGNPOST_DIALOG_TABLE_ADDR);
-        if (offset < 0 || offset + ROOM_COUNT > romData.length) {
+        if (offset < 0 || offset + ROOM_COUNT > romData.size()) {
             throw new IllegalArgumentException("ROM data does not contain SignpostDialogTable");
         }
         int[] dialogLowIds = new int[ROOM_COUNT];
         for (int i = 0; i < ROOM_COUNT; i++) {
-            dialogLowIds[i] = Byte.toUnsignedInt(romData[offset + i]);
+            dialogLowIds[i] = romData.u8(RomAddress.fromOffset(offset + i));
         }
         return new SignpostDialogTable(dialogLowIds);
     }

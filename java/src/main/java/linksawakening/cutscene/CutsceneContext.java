@@ -1,5 +1,5 @@
 package linksawakening.cutscene;
-
+/** Contract for cutscene context. */
 public interface CutsceneContext {
 
     void setScene(String sceneId);

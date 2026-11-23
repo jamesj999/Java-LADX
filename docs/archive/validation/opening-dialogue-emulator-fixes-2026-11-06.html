@@ -1,0 +1,29 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Opening dialogue and shield verification</title>
+<style>body{font:14px/1.5 var(--font-sans,system-ui);color:var(--foreground);margin:0}article{display:flex;gap:16px;flex-wrap:wrap}figure{margin:0}img{width:240px;image-rendering:pixelated}section{margin:16px 0}table{border-collapse:collapse}td,th{text-align:left;padding:4px 16px 4px 0}code{overflow-wrap:anywhere}</style>
+<p><strong>512/512 original-ROM comparison frames match exactly at RGB555 precision.</strong></p>
+<p>Fixed dialogue placement, ROM palette colors, continuation arrows, and whole-sprite hiding under text boxes. References run the shipped ROM in headless PyBoy 2.8.1 using a fresh in-memory save and normal button input.</p>
+<table><tr><th>Checkpoint</th><th>Exact frames</th><th>Worst pixel difference</th></tr>
+<tr><td>Marin’s wake-up conversation</td><td>192/192</td><td>0/23040</td></tr>
+<tr><td>Tarin’s shield offer</td><td>192/192</td><td>0/23040</td></tr>
+<tr><td>Holding the shield</td><td>32/32</td><td>0/23040</td></tr>
+<tr><td>Shield received</td><td>96/96</td><td>0/23040</td></tr>
+</table><p>Each page or pose covers a complete 32-frame animation cycle. One representative frame per checkpoint is shown below.</p>
+<section><strong>Marin’s wake-up conversation</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>0a6aa38145735289935bac305e17976f9860f79ab3fc99448a1edd184846e4b1</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>5c3da61ca5447805d5a293e8e71b86e119829649a9db655f4c68833d56815365</code></small></figure>
+</article></section>
+<section><strong>Tarin’s shield offer</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>0275835ea742dd7b3738ca94186084d7be8c6a44b2bc39cda74c6f88a86a7a38</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>0ad6c6061572631d7c36d33e4b4b9ea2126b56afdebdab06fa6bfef47485e251</code></small></figure>
+</article></section>
+<section><strong>Holding the shield</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>d25f632ba081ab56a9d5afa7f7da0e76f4c25859a5de5a7234b08ebf28794835</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>8589df1594847c093ec7f5279286dd17952886fc3431a2a09318ab438f3cb285</code></small></figure>
+</article></section>
+<section><strong>Shield received</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>eb04c50ac60e34988215209e1aa34093aa50718bd8102caf76eafd94e87e8e72</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>97f1ace284caee189b14e41d890bd8a15cd78cf4fae47b9379ddc77b7bf11922</code></small></figure>
+</article></section>
+<p><strong>Scope:</strong> Java uses production room, Link, NPC, HUD and dialogue rendering with checkpoint scene/pose setup, one initial NPC clock synchronization and a fixed two-frame OAM display offset. No pixel masks or image alignment. This does not verify continuous Java input replay, dialogue transitions, the bed-exit jump, shield handoff timing, audio or desktop presentation.</p>
+<p>Earlier checks also pass: 400/400 opening-house frames; 704/704 menu frames; 3,712/3,712 intro frames outside the explicit random-rain mask (2,584 fully exact). Java: 2,298 tests, no failures, errors or skips.</p>
+<p>Reproduce: install <code>tools/intro/requirements.txt</code> into a virtual environment, then run <code>python tools/verify_opening.py</code>. Detailed generated reports are in <code>java/build/*-comparison/</code>.</p></html>

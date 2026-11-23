@@ -1,13 +1,15 @@
 package linksawakening.gpu;
 
-import linksawakening.entity.EntitySpriteCatalog;
-import linksawakening.entity.EntitySpriteSelection;
-import linksawakening.rom.RomBank;
-import linksawakening.world.EntityRoomLoader;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import linksawakening.entity.EntitySpriteCatalog;
+import linksawakening.entity.EntitySpriteSelection;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomBank;
+import linksawakening.world.entity.EntityRoomLoader;
+import org.junit.jupiter.api.Test;
+
+@linksawakening.testing.RequiresRom
 final class GPUEntityTilesTest {
 
     @Test
@@ -25,13 +27,12 @@ final class GPUEntityTilesTest {
         }
 
         GPU gpu = new GPU();
-        gpu.loadEntitySpriteSheets(rom, sheetValues);
+        gpu.loadEntitySpriteSheets(Rom.of(rom), sheetValues);
 
         for (int slot = 0; slot < 4; slot++) {
             int destination = (0x40 + slot * 0x10) * GPU.TILE_DATA_SIZE;
             assertEquals(0x10 + slot, Byte.toUnsignedInt(gpu.readVRAM(destination)));
-            assertEquals(0xE0 + slot,
-                Byte.toUnsignedInt(gpu.readVRAM(destination + 0xFF)));
+            assertEquals(0xE0 + slot, Byte.toUnsignedInt(gpu.readVRAM(destination + 0xFF)));
         }
     }
 
@@ -43,7 +44,7 @@ final class GPUEntityTilesTest {
         gpu.writeVRAM(destination, (byte) 0x5A);
         gpu.writeVRAM(destination + 0xFF, (byte) 0xA5);
 
-        gpu.loadEntitySpriteSheets(rom, new int[] {0x00, 0xFF, 0x00, 0x00});
+        gpu.loadEntitySpriteSheets(Rom.of(rom), new int[] {0x00, 0xFF, 0x00, 0x00});
 
         assertEquals(0x5A, Byte.toUnsignedInt(gpu.readVRAM(destination)));
         assertEquals(0xA5, Byte.toUnsignedInt(gpu.readVRAM(destination + 0xFF)));
@@ -65,10 +66,10 @@ final class GPUEntityTilesTest {
     @Test
     void shippedRoom92UsesAdjustedGbcNpcBanksAndSixteenTileDestinations() throws Exception {
         byte[] rom = loadRom();
-        EntitySpriteSelection selection = new EntitySpriteCatalog(rom)
-            .load(EntityRoomLoader.RoomTable.OVERWORLD, 0x92);
+        EntitySpriteSelection selection =
+                new EntitySpriteCatalog(Rom.of(rom)).load(EntityRoomLoader.RoomTable.OVERWORLD, 0x92);
         GPU gpu = new GPU();
-        gpu.loadEntitySpriteSheets(rom, selection.sheetValues());
+        gpu.loadEntitySpriteSheets(Rom.of(rom), selection.sheetValues());
 
         int[] npcBanks = {0x00, 0x31, 0x2E, 0x32};
         int[] sheetValues = selection.sheetValues();
@@ -77,13 +78,11 @@ final class GPUEntityTilesTest {
             if (sheet == 0xFF) {
                 continue;
             }
-            int sourceOffset = RomBank.romOffset(npcBanks[sheet >>> 6],
-                0x4000 + (sheet & 0x3F) * 0x100);
+            int sourceOffset = RomBank.romOffset(npcBanks[sheet >>> 6], 0x4000 + (sheet & 0x3F) * 0x100);
             int destination = (0x40 + slot * 0x10) * GPU.TILE_DATA_SIZE;
-            assertEquals(Byte.toUnsignedInt(rom[sourceOffset]),
-                Byte.toUnsignedInt(gpu.readVRAM(destination)));
-            assertEquals(Byte.toUnsignedInt(rom[sourceOffset + 0xFF]),
-                Byte.toUnsignedInt(gpu.readVRAM(destination + 0xFF)));
+            assertEquals(Byte.toUnsignedInt(rom[sourceOffset]), Byte.toUnsignedInt(gpu.readVRAM(destination)));
+            assertEquals(
+                    Byte.toUnsignedInt(rom[sourceOffset + 0xFF]), Byte.toUnsignedInt(gpu.readVRAM(destination + 0xFF)));
         }
     }
 
@@ -92,8 +91,7 @@ final class GPUEntityTilesTest {
     }
 
     private static byte[] loadRom() throws Exception {
-        try (var stream = GPUEntityTilesTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

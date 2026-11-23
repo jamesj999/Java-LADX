@@ -1,10 +1,13 @@
 package linksawakening.cutscene;
 
-import linksawakening.rom.RomBank;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomAddress;
+import linksawakening.rom.RomBank;
+import linksawakening.rom.RomSymbols;
 
 /**
  * Fixed data tables used by the opening sequence in bank 1 of the shipped ROM.
@@ -14,25 +17,25 @@ import java.util.Objects;
  * interpret a signed OAM offset as an unsigned tile value.</p>
  */
 public final class IntroRomData {
-    public static final int INTRO_BANK = 0x01;
-    public static final int INTRO_SHIP_TILES_ADDRESS = 0x7538;
-    public static final int INTRO_SHIP_EXTRA_TILES_ADDRESS = 0x7550;
-    public static final int SHIP_HEAVE_TABLE_ADDRESS = 0x7560;
-    public static final int INTRO_LIGHTNING_TILES_ADDRESS = 0x75CB;
-    public static final int LIGHTNING_ENTITY_POSITIONS_ADDRESS = 0x707B;
-    public static final int LIGHTNING_ENTITY_STATUSES_ADDRESS = 0x7081;
-    public static final int INTRO_MARIN_VARIANTS_ADDRESS = 0x764F;
-    public static final int TITLE_TILE_MAP_POINTERS_ADDRESS = 0x7264;
-    public static final int TITLE_ATTRIBUTE_MAP_POINTERS_ADDRESS = 0x732A;
-    public static final int INTRO_SPARKLE_VARIANTS_ADDRESS = 0x77BD;
-    public static final int TITLE_SPARKLE_X_POSITIONS_ADDRESS = 0x73C0;
-    public static final int TITLE_SPARKLE_Y_POSITIONS_ADDRESS = 0x73C8;
-    public static final int INTRO_VERTICAL_OFFSETS_ADDRESS = 0x7CF9;
-    public static final int INTRO_COLOR_MODIFIER_BANK = 0x20;
-    public static final int INTRO_COLOR_MODIFIER_ADDRESS = 0x6B9C;
-    public static final int DX_FADE_IN_PALETTE_ADDRESS = 0x79A0;
-    public static final int INERT_LINK_VARIANTS_ADDRESS = 0x7A27;
-    public static final int TITLE_POST_BEACH_TILEMAP_ADDRESS = 0x7AE4;
+    public static final int INTRO_BANK = RomSymbols.IntroSparkleSpriteVariants.bank();
+    public static final int INTRO_SHIP_TILES_ADDRESS = RomSymbols.IntroShipTiles.address();
+    public static final int INTRO_SHIP_EXTRA_TILES_ADDRESS = RomSymbols.Data_001_7550.address();
+    public static final int SHIP_HEAVE_TABLE_ADDRESS = RomSymbols.ShipHeaveTable.address();
+    public static final int INTRO_LIGHTNING_TILES_ADDRESS = RomSymbols.IntroLightningTiles.address();
+    public static final int LIGHTNING_ENTITY_POSITIONS_ADDRESS = RomSymbols.Data_001_707B.address();
+    public static final int LIGHTNING_ENTITY_STATUSES_ADDRESS = RomSymbols.Data_001_7081.address();
+    public static final int INTRO_MARIN_VARIANTS_ADDRESS = RomSymbols.IntroMarinSpriteVariants.address();
+    public static final int TITLE_TILE_MAP_POINTERS_ADDRESS = RomSymbols.TitleTileMap.address();
+    public static final int TITLE_ATTRIBUTE_MAP_POINTERS_ADDRESS = RomSymbols.TitleAttrMap.address();
+    public static final int INTRO_SPARKLE_VARIANTS_ADDRESS = RomSymbols.IntroSparkleSpriteVariants.address();
+    public static final int TITLE_SPARKLE_X_POSITIONS_ADDRESS = RomSymbols.Data_001_73C0.address();
+    public static final int TITLE_SPARKLE_Y_POSITIONS_ADDRESS = RomSymbols.Data_001_73C8.address();
+    public static final int INTRO_VERTICAL_OFFSETS_ADDRESS = RomSymbols.IntroBGVerticalOffsetTable.address();
+    public static final int INTRO_COLOR_MODIFIER_BANK = RomSymbols.IntroColorModifierTable.bank();
+    public static final int INTRO_COLOR_MODIFIER_ADDRESS = RomSymbols.IntroColorModifierTable.address();
+    public static final int DX_FADE_IN_PALETTE_ADDRESS = RomSymbols.DXFadeInPalette.address();
+    public static final int INERT_LINK_VARIANTS_ADDRESS = RomSymbols.InertLinkSpriteVariants.address();
+    public static final int TITLE_POST_BEACH_TILEMAP_ADDRESS = RomSymbols.TitleScreenPostBeachTilemap.address();
 
     private static final int OAM_ENTRY_SIZE = 4;
     private static final int TITLE_ROW_COUNT = 7;
@@ -40,10 +43,64 @@ public final class IntroRomData {
     private static final int POST_BEACH_TILEMAP_SIZE = 20 * 19;
     private static final int DX_FADE_PALETTE_ROW_COUNT = 16;
 
-    private final byte[] romData;
+    private final Rom romData;
+    private final Rom romView;
 
-    public IntroRomData(byte[] romData) {
-        this.romData = Objects.requireNonNull(romData, "romData").clone();
+    public IntroRomData(Rom romData) {
+        this.romData = Rom.unchecked(
+                Objects.requireNonNull(romData, "romData").bytes(RomAddress.fromOffset(0), romData.size()));
+        this.romView = romData;
+    }
+
+    /** ROM draw commands used by the scream and the beach mountain wrap correction. */
+    public void applyDrawCommands(int[] map, int address) {
+        int offset = checkedOffset("Intro draw commands", INTRO_BANK, address, 1);
+        while (((byte) romView.u8(RomAddress.fromOffset(offset)) & 255) != 0) {
+            int target = (((byte) romView.u8(RomAddress.fromOffset(offset++)) & 255) << 8)
+                    | ((byte) romView.u8(RomAddress.fromOffset(offset++)) & 255);
+            int command = (byte) romView.u8(RomAddress.fromOffset(offset++)) & 255;
+            int count = (command & 0x3f) + 1;
+            int stride = (command & 0x80) == 0 ? 1 : 32;
+            for (int i = 0; i < count; i++) {
+                // Horizontal draw commands wrap within the same 32-tile row.
+                int index = stride == 1
+                        ? ((target - 0x9800) & 0x3E0) | ((target + i) & 31)
+                        : (target - 0x9800 + i * stride) & 1023;
+                map[index] = (byte) romView.u8(RomAddress.fromOffset(offset)) & 255;
+                if ((command & 0x40) == 0) offset++;
+            }
+            if ((command & 0x40) != 0) offset++;
+        }
+    }
+
+    public byte[] tileBytes(int address, int count) {
+        int offset = checkedOffset("Intro animated tiles", 0x30, address, count);
+        return romData.bytes(RomAddress.fromOffset(offset), count);
+    }
+
+    public int animationFrameAddress(boolean beach, int frameCounter) {
+        int index = readUnsignedBytes("Wave phases", 0x7CF1, 8)[(frameCounter >>> 4) & 7];
+        return readUnsignedWord(checkedOffset("Wave pointers", 1, beach ? 0x7CE9 : 0x7CE1, 8) + index);
+    }
+
+    public List<OamEntry> dxTiles(boolean fullyVisible) {
+        return readOamEntries("DX sprites", fullyVisible ? 0x7870 : 0x7850, fullyVisible ? 10 : 18);
+    }
+
+    public int[] titleLineScroll(int phase, int baseY) {
+        int[] lines = new int[144];
+        Arrays.fill(lines, baseY);
+        if (phase >= 16) return lines;
+        int pointer = readUnsignedWord(checkedOffset("Title distortion pointers", 0x20, 0x5224, 34) + phase * 2);
+        int limit = (byte) romView.u8(
+                        RomAddress.fromOffset(checkedOffset("Title distortion limits", 0x20, 0x5246, 17) + phase))
+                & 255;
+        int offset = checkedOffset("Title distortion", 0x20, pointer, 64);
+        for (int y = 17; y < Math.max(73, 17 + limit); y++) {
+            lines[y] =
+                    (baseY + (y >= 16 + limit ? -56 : (byte) romView.u8(RomAddress.fromOffset(offset + y - 17)))) & 255;
+        }
+        return lines;
     }
 
     public List<OamEntry> shipTiles() {
@@ -100,41 +157,40 @@ public final class IntroRomData {
     }
 
     public int[] introColorModifiers() {
-        int offset = checkedOffset("IntroColorModifierTable", INTRO_COLOR_MODIFIER_BANK,
-            INTRO_COLOR_MODIFIER_ADDRESS, 8);
+        int offset =
+                checkedOffset("IntroColorModifierTable", INTRO_COLOR_MODIFIER_BANK, INTRO_COLOR_MODIFIER_ADDRESS, 8);
         return readUnsignedBytesAt(offset, 8);
     }
 
     public List<TitleRow> titleRows() {
         int pointerTableOffset = checkedOffset(
-            "TitleTileMap pointer table", INTRO_BANK, TITLE_TILE_MAP_POINTERS_ADDRESS, TITLE_ROW_COUNT * 2);
+                "TitleTileMap pointer table", INTRO_BANK, TITLE_TILE_MAP_POINTERS_ADDRESS, TITLE_ROW_COUNT * 2);
         int attributePointerTableOffset = checkedOffset(
-            "TitleAttrMap pointer table", INTRO_BANK, TITLE_ATTRIBUTE_MAP_POINTERS_ADDRESS, TITLE_ROW_COUNT * 2);
+                "TitleAttrMap pointer table", INTRO_BANK, TITLE_ATTRIBUTE_MAP_POINTERS_ADDRESS, TITLE_ROW_COUNT * 2);
         List<TitleRow> rows = new ArrayList<>(TITLE_ROW_COUNT);
         for (int row = 0; row < TITLE_ROW_COUNT; row++) {
             int tileAddress = readUnsignedWord(pointerTableOffset + row * 2);
             int attributeAddress = readUnsignedWord(attributePointerTableOffset + row * 2);
-            int tileOffset = checkedOffset("TitleTileMap row " + row, INTRO_BANK,
-                tileAddress, TITLE_ROW_RECORD_SIZE);
-            int attributeOffset = checkedOffset("TitleAttrMap row " + row, INTRO_BANK,
-                attributeAddress, TITLE_ROW_RECORD_SIZE);
+            int tileOffset = checkedOffset("TitleTileMap row " + row, INTRO_BANK, tileAddress, TITLE_ROW_RECORD_SIZE);
+            int attributeOffset =
+                    checkedOffset("TitleAttrMap row " + row, INTRO_BANK, attributeAddress, TITLE_ROW_RECORD_SIZE);
             rows.add(new TitleRow(
-                readBigEndianAddress(tileOffset),
-                readBigEndianAddress(attributeOffset),
-                readUnsignedBytesAt(tileOffset + 3, 16),
-                readUnsignedBytesAt(attributeOffset + 3, 16)));
+                    readBigEndianAddress(tileOffset),
+                    readBigEndianAddress(attributeOffset),
+                    readUnsignedBytesAt(tileOffset + 3, 16),
+                    readUnsignedBytesAt(attributeOffset + 3, 16)));
         }
         return List.copyOf(rows);
     }
 
     public int[] postBeachTilemap() {
-        return readUnsignedBytes("TitleScreenPostBeachTilemap", TITLE_POST_BEACH_TILEMAP_ADDRESS,
-            POST_BEACH_TILEMAP_SIZE);
+        return readUnsignedBytes(
+                "TitleScreenPostBeachTilemap", TITLE_POST_BEACH_TILEMAP_ADDRESS, POST_BEACH_TILEMAP_SIZE);
     }
 
     public PaletteBlock dxFadeInPalette() {
-        int offset = checkedOffset("DXFadeInPalette", INTRO_BANK, DX_FADE_IN_PALETTE_ADDRESS,
-            DX_FADE_PALETTE_ROW_COUNT * 4 * 2);
+        int offset = checkedOffset(
+                "DXFadeInPalette", INTRO_BANK, DX_FADE_IN_PALETTE_ADDRESS, DX_FADE_PALETTE_ROW_COUNT * 4 * 2);
         int[][] rows = new int[DX_FADE_PALETTE_ROW_COUNT][4];
         for (int row = 0; row < rows.length; row++) {
             for (int color = 0; color < rows[row].length; color++) {
@@ -151,10 +207,10 @@ public final class IntroRomData {
         for (int index = 0; index < count; index++) {
             int entryOffset = offset + index * OAM_ENTRY_SIZE;
             entries.add(new OamEntry(
-                signedByte(romData[entryOffset]),
-                signedByte(romData[entryOffset + 1]),
-                Byte.toUnsignedInt(romData[entryOffset + 2]),
-                Byte.toUnsignedInt(romData[entryOffset + 3])));
+                    signedByte((byte) romView.u8(RomAddress.fromOffset(entryOffset))),
+                    signedByte((byte) romView.u8(RomAddress.fromOffset(entryOffset + 1))),
+                    romView.u8(RomAddress.fromOffset(entryOffset + 2)),
+                    romView.u8(RomAddress.fromOffset(entryOffset + 3))));
         }
         return List.copyOf(entries);
     }
@@ -165,10 +221,10 @@ public final class IntroRomData {
         for (int index = 0; index < count; index++) {
             int entryOffset = offset + index * 4;
             pairs.add(new SpritePair(
-                Byte.toUnsignedInt(romData[entryOffset]),
-                Byte.toUnsignedInt(romData[entryOffset + 1]),
-                Byte.toUnsignedInt(romData[entryOffset + 2]),
-                Byte.toUnsignedInt(romData[entryOffset + 3])));
+                    romView.u8(RomAddress.fromOffset(entryOffset)),
+                    romView.u8(RomAddress.fromOffset(entryOffset + 1)),
+                    romView.u8(RomAddress.fromOffset(entryOffset + 2)),
+                    romView.u8(RomAddress.fromOffset(entryOffset + 3))));
         }
         return List.copyOf(pairs);
     }
@@ -181,44 +237,38 @@ public final class IntroRomData {
     private int[] readUnsignedBytesAt(int offset, int length) {
         int[] bytes = new int[length];
         for (int index = 0; index < length; index++) {
-            bytes[index] = Byte.toUnsignedInt(romData[offset + index]);
+            bytes[index] = romView.u8(RomAddress.fromOffset(offset + index));
         }
         return bytes;
     }
 
     private int checkedOffset(String label, int bank, int address, int length) {
         int offset = RomBank.romOffset(bank, address);
-        if (length < 0 || offset < 0 || offset > romData.length - length) {
+        if (length < 0 || offset < 0 || offset > romData.size() - length) {
             throw new IllegalArgumentException(String.format(
-                "%s truncated: bank $%02X address $%04X length %d (ROM length %d)",
-                label, bank, address, length, romData.length));
+                    "%s truncated: bank $%02X address $%04X length %d (ROM length %d)",
+                    label, bank, address, length, romData.size()));
         }
         return offset;
     }
 
     private int readUnsignedWord(int offset) {
-        return Byte.toUnsignedInt(romData[offset])
-            | (Byte.toUnsignedInt(romData[offset + 1]) << 8);
+        return romView.u8(RomAddress.fromOffset(offset)) | (romView.u8(RomAddress.fromOffset(offset + 1)) << 8);
     }
 
     private int readBigEndianAddress(int offset) {
-        return (Byte.toUnsignedInt(romData[offset]) << 8)
-            | Byte.toUnsignedInt(romData[offset + 1]);
+        return (romView.u8(RomAddress.fromOffset(offset)) << 8) | romView.u8(RomAddress.fromOffset(offset + 1));
     }
 
     private static int signedByte(byte value) {
         return value;
     }
-
-    public record OamEntry(int yOffset, int xOffset, int tileIndex, int attributes) {
-    }
-
-    public record SpritePair(int firstTileIndex, int firstAttributes,
-                             int secondTileIndex, int secondAttributes) {
-    }
-
-    public record TitleRow(int tileTargetAddress, int attributeTargetAddress,
-                           int[] tileBytes, int[] attributeBytes) {
+    /** Immutable oam entry values. */
+    public record OamEntry(int yOffset, int xOffset, int tileIndex, int attributes) {}
+    /** Immutable sprite pair values. */
+    public record SpritePair(int firstTileIndex, int firstAttributes, int secondTileIndex, int secondAttributes) {}
+    /** Immutable title row values. */
+    public record TitleRow(int tileTargetAddress, int attributeTargetAddress, int[] tileBytes, int[] attributeBytes) {
         public TitleRow {
             tileBytes = tileBytes.clone();
             attributeBytes = attributeBytes.clone();
@@ -234,7 +284,7 @@ public final class IntroRomData {
             return attributeBytes.clone();
         }
     }
-
+    /** Immutable palette block values. */
     public record PaletteBlock(int[][] rows) {
         public PaletteBlock {
             rows = copyRows(rows);

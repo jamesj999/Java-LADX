@@ -1,28 +1,71 @@
 package linksawakening.physics;
 
-import linksawakening.rom.RomBank;
-import linksawakening.rom.RomTables;
-import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Arrays;
+import linksawakening.rom.RomBank;
+import linksawakening.rom.RomTables;
+import org.junit.jupiter.api.Test;
 
 final class OverworldCollisionTest {
 
     private static final int ROOM_OBJECTS_BASE = 0x11;
     private static final int ROOM_OBJECT_ROW_STRIDE = 0x10;
-    private static final int SWITCH_BLOCK_CELL = ROOM_OBJECTS_BASE
-        + 2 * ROOM_OBJECT_ROW_STRIDE + 2;
+    private static final int SWITCH_BLOCK_CELL = ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 2;
+
+    @Test
+    void retainedGroundSampleSurvivesRoomMutationAndPhysicsTableChanges() {
+        byte[] rom = new byte[0x100000];
+        int offset = RomBank.romOffset(0x08, 0x4AD4);
+        rom[offset + 0x42] = 7;
+        rom[offset + 0x43] = 8;
+        rom[offset + 256 + 0x43] = 9;
+        var collision = new OverworldCollision(RomTables.load(linksawakening.rom.Rom.unchecked(rom)));
+        int[] room = new int[256];
+        room[0x44] = 0x42;
+        collision.setRoom(room);
+        var retained = collision.groundInteractionSample(0x40, 0x37);
+        room[0x44] = 0x43;
+        assertEquals(8, collision.groundInteractionSample(0x40, 0x37).physicsFlag());
+        collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
+        assertEquals(9, collision.groundInteractionSample(0x40, 0x37).physicsFlag());
+        assertEquals(new OverworldCollision.GroundInteractionSample(0x42, 7, 0x30, 0x30), retained);
+        collision.setRoom(null);
+        assertEquals(
+                new OverworldCollision.GroundInteractionSample(255, 0, 0, 0),
+                collision.groundInteractionSample(0x40, 0x37));
+    }
+
+    @Test
+    void objectIdsNeverOverrideTheSelectedRomPhysicsTable() {
+        byte[] rom = new byte[0x100000];
+        int physicsOffset = RomBank.romOffset(0x08, 0x4AD4);
+        int[] formerlyOverridden = {0x61, 0xBA, 0xC2, 0xC5, 0xC6, 0xCB, 0xE1, 0xE2, 0xE3};
+        for (int table = 0; table < 3; table++) {
+            for (int id : formerlyOverridden) {
+                rom[physicsOffset + table * 256 + id] = 1;
+            }
+        }
+        OverworldCollision collision = new OverworldCollision(RomTables.load(linksawakening.rom.Rom.unchecked(rom)));
+        int[] objects = new int[256];
+        collision.setRoom(objects);
+        for (int table = 0; table < 3; table++) {
+            collision.setPhysicsTable(table);
+            for (int id : formerlyOverridden) {
+                objects[ROOM_OBJECTS_BASE] = id;
+                assertTrue(collision.pointBlocked(8, 8), "table=" + table + " object=" + id);
+            }
+        }
+    }
 
     @Test
     void objectPhysicsLookupUsesThePaddedRoomCoordinateSample() {
         byte[] rom = new byte[0x100000];
         int physicsOffset = RomBank.romOffset(0x08, 0x4AD4);
         rom[physicsOffset + 0x42] = 0x01;
-        RomTables tables = RomTables.loadFromRom(rom);
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         OverworldCollision collision = new OverworldCollision(tables);
 
         int[] roomObjects = new int[0x100];
@@ -40,7 +83,7 @@ final class OverworldCollisionTest {
         byte[] rom = new byte[0x100000];
         int physicsOffset = RomBank.romOffset(0x08, 0x4AD4);
         rom[physicsOffset + 0x100 + 0x42] = 0x07;
-        RomTables tables = RomTables.loadFromRom(rom);
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         OverworldCollision collision = new OverworldCollision(tables);
         collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
 
@@ -69,12 +112,12 @@ final class OverworldCollisionTest {
         rom[shape8EOffset + 3] = 1;
         int endShapeOffset = shapesOffset + (0x8F - 0x7C) * 4;
         rom[endShapeOffset] = 1;
-        RomTables tables = RomTables.loadFromRom(rom);
-        assertEquals(1, tables.linkFineCollisionShape(0x8A, 0));
-        assertEquals(0, tables.linkFineCollisionShape(0x8A, 1));
-        assertEquals(1, tables.linkFineCollisionShape(0x8A, 2));
-        assertEquals(0, tables.linkFineCollisionShape(0x8A, 3));
-        assertEquals(1, tables.linkFineCollisionShape(0x8F, 0));
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
+        assertEquals(1, tables.collisionTables().linkFineCollisionShape(0x8A, 0));
+        assertEquals(0, tables.collisionTables().linkFineCollisionShape(0x8A, 1));
+        assertEquals(1, tables.collisionTables().linkFineCollisionShape(0x8A, 2));
+        assertEquals(0, tables.collisionTables().linkFineCollisionShape(0x8A, 3));
+        assertEquals(1, tables.collisionTables().linkFineCollisionShape(0x8F, 0));
         OverworldCollision collision = new OverworldCollision(tables);
         collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
         int[] roomObjects = emptyRoomObjectsArea();
@@ -97,7 +140,7 @@ final class OverworldCollisionTest {
         byte[] rom = new byte[0x100000];
         int physicsOffset = RomBank.romOffset(0x08, 0x4AD4);
         rom[physicsOffset + 0x100 + 0x42] = (byte) 0xF2;
-        RomTables tables = RomTables.loadFromRom(rom);
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         OverworldCollision collision = new OverworldCollision(tables);
         collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
 
@@ -116,7 +159,7 @@ final class OverworldCollisionTest {
         byte[] rom = new byte[0x100000];
         int physicsOffset = RomBank.romOffset(0x08, 0x4AD4);
         rom[physicsOffset + 0x100 + 0x42] = 0x07;
-        RomTables tables = RomTables.loadFromRom(rom);
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         OverworldCollision collision = new OverworldCollision(tables);
         collision.setPhysicsTable(RomTables.PHYSICS_TABLE_INDOORS1);
 
@@ -125,15 +168,15 @@ final class OverworldCollisionTest {
         roomObjects[0x44] = 0x42;
         collision.setRoom(roomObjects);
 
-        assertEquals(new OverworldCollision.GroundInteractionSample(
-            0x42, 0x07, 0x30, 0x30),
-            collision.groundInteractionSample(0x40, 0x37));
+        assertEquals(
+                new OverworldCollision.GroundInteractionSample(0x42, 0x07, 0x30, 0x30),
+                collision.groundInteractionSample(0x40, 0x37));
     }
 
     @Test
     void switchBlockPointCollisionUsesTheRomStateTable() {
         byte[] rom = romWithSwitchBlockPhysics();
-        RomTables tables = RomTables.loadFromRom(rom);
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         OverworldCollision collision = new OverworldCollision(tables);
         int[] roomObjects = emptyRoomObjectsArea();
         collision.setRoom(roomObjects);
@@ -152,7 +195,7 @@ final class OverworldCollisionTest {
     @Test
     void standingOnAMismatchedSwitchBlockTemporarilyPassesItsCollision() {
         byte[] rom = romWithSwitchBlockPhysics();
-        RomTables tables = RomTables.loadFromRom(rom);
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         OverworldCollision collision = new OverworldCollision(tables);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[SWITCH_BLOCK_CELL] = 0xDC;
@@ -174,7 +217,7 @@ final class OverworldCollisionTest {
         byte[] rom = romWithSwitchBlockPhysics();
         int physicsOffset = RomBank.romOffset(0x08, 0x4AD4);
         rom[physicsOffset + 0xDC] = 0x01;
-        RomTables tables = RomTables.loadFromRom(rom);
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         OverworldCollision collision = new OverworldCollision(tables);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[SWITCH_BLOCK_CELL] = 0xDC;
@@ -188,7 +231,7 @@ final class OverworldCollisionTest {
     @Test
     void changingRoomsClearsTheTransientStandingOverride() {
         byte[] rom = romWithSwitchBlockPhysics();
-        RomTables tables = RomTables.loadFromRom(rom);
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         OverworldCollision collision = new OverworldCollision(tables);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[SWITCH_BLOCK_CELL] = 0xDC;
@@ -207,7 +250,7 @@ final class OverworldCollisionTest {
         int physicsOffset = RomBank.romOffset(0x08, 0x4AD4);
         rom[physicsOffset + 0x04] = PhysicsFlags.NONE;
         rom[physicsOffset + 0x25] = PhysicsFlags.SOLID;
-        RomTables tables = RomTables.loadFromRom(rom);
+        RomTables tables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         OverworldCollision collision = new OverworldCollision(tables);
         int[] roomObjects = emptyRoomObjectsArea();
         roomObjects[SWITCH_BLOCK_CELL] = 0x04;

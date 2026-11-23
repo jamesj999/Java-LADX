@@ -1,21 +1,23 @@
 package linksawakening.audio.sfx;
 
-import linksawakening.audio.apu.GameBoyApu;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
+import static linksawakening.audio.TestPcm.renderPcm;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import linksawakening.audio.apu.GameBoyApu;
+import linksawakening.rom.Rom;
+import org.junit.jupiter.api.Test;
+
+@linksawakening.testing.RequiresRom
 final class SoundEffectPlayerTest {
     @Test
     void supportedEffectsExposeFullCatalogInCatalogOrder() throws IOException {
-        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(loadRom());
+        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(Rom.of(loadRom()));
 
         List<SoundEffect> supported = SoundEffectPlayer.supportedEffects(catalog);
 
@@ -29,18 +31,20 @@ final class SoundEffectPlayerTest {
     @Test
     void mappedSfxArePlayableFromRomTables() throws IOException {
         byte[] romData = loadRom();
-        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(romData);
+        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(Rom.of(romData));
         for (SoundEffect effect : catalog.effects()) {
             GameBoyApu apu = new GameBoyApu(48_000);
-            SoundEffectPlayer player = new SoundEffectPlayer(apu, romData, catalog);
+            SoundEffectPlayer player = new SoundEffectPlayer(apu, Rom.of(romData), catalog);
             assertTrue(player.supports(effect), effect.name());
-            assertDoesNotThrow(() -> {
-                player.play(effect);
-                for (int i = 0; i < 600 && player.isPlaying(); i++) {
-                    player.tick60Hz();
-                }
-                player.stop();
-            }, effect.name());
+            assertDoesNotThrow(
+                    () -> {
+                        player.play(effect);
+                        for (int i = 0; i < 600 && player.isPlaying(); i++) {
+                            player.tick60Hz();
+                        }
+                        player.stop();
+                    },
+                    effect.name());
         }
     }
 
@@ -48,9 +52,8 @@ final class SoundEffectPlayerTest {
     void formerlyUnimplementedMappedSfxNowStartsFromRom() {
         GameBoyApu apu = new GameBoyApu(48_000);
         SoundEffectPlayer player = new SoundEffectPlayer(apu);
-        SoundEffect treasure = player.catalog()
-                .find(SoundEffectNamespace.JINGLE, 0x01)
-                .orElseThrow();
+        SoundEffect treasure =
+                player.catalog().find(SoundEffectNamespace.JINGLE, 0x01).orElseThrow();
 
         assertTrue(player.supports(treasure));
         player.play(treasure);
@@ -66,9 +69,8 @@ final class SoundEffectPlayerTest {
     void triggeringNoiseEffectEnablesApuAndWritesInitialNoiseRegisters() {
         GameBoyApu apu = new GameBoyApu(48_000);
         SoundEffectPlayer player = new SoundEffectPlayer(apu);
-        SoundEffect swordSwing = player.catalog()
-                .find(SoundEffectNamespace.NOISE, 0x02)
-                .orElseThrow();
+        SoundEffect swordSwing =
+                player.catalog().find(SoundEffectNamespace.NOISE, 0x02).orElseThrow();
 
         player.play(swordSwing);
 
@@ -86,9 +88,8 @@ final class SoundEffectPlayerTest {
     void noiseSequenceAdvancesOnFrameTicksAndStopsAfterFinalStep() {
         GameBoyApu apu = new GameBoyApu(48_000);
         SoundEffectPlayer player = new SoundEffectPlayer(apu);
-        SoundEffect swordSwing = player.catalog()
-                .find(SoundEffectNamespace.NOISE, 0x02)
-                .orElseThrow();
+        SoundEffect swordSwing =
+                player.catalog().find(SoundEffectNamespace.NOISE, 0x02).orElseThrow();
 
         player.play(swordSwing);
         player.tick60Hz();
@@ -108,9 +109,8 @@ final class SoundEffectPlayerTest {
     void triggeringWaveEffectWritesWaveChannelRegisters() {
         GameBoyApu apu = new GameBoyApu(48_000);
         SoundEffectPlayer player = new SoundEffectPlayer(apu);
-        SoundEffect textPrint = player.catalog()
-                .find(SoundEffectNamespace.WAVE, 0x0F)
-                .orElseThrow();
+        SoundEffect textPrint =
+                player.catalog().find(SoundEffectNamespace.WAVE, 0x0F).orElseThrow();
 
         player.play(textPrint);
 
@@ -129,9 +129,8 @@ final class SoundEffectPlayerTest {
     void rupeeStartsWithInitialFullWriteThenAlternatesContinuationFrequencies() {
         GameBoyApu apu = new GameBoyApu(48_000);
         SoundEffectPlayer player = new SoundEffectPlayer(apu);
-        SoundEffect rupee = player.catalog()
-                .find(SoundEffectNamespace.WAVE, 0x05)
-                .orElseThrow();
+        SoundEffect rupee =
+                player.catalog().find(SoundEffectNamespace.WAVE, 0x05).orElseThrow();
 
         player.play(rupee);
 
@@ -157,15 +156,14 @@ final class SoundEffectPlayerTest {
     void rupeeLoadsItsWavePatternFromRomBeforeTriggeringChannel3() {
         GameBoyApu apu = new GameBoyApu(48_000);
         SoundEffectPlayer player = new SoundEffectPlayer(apu);
-        SoundEffect rupee = player.catalog()
-                .find(SoundEffectNamespace.WAVE, 0x05)
-                .orElseThrow();
+        SoundEffect rupee =
+                player.catalog().find(SoundEffectNamespace.WAVE, 0x05).orElseThrow();
 
         player.play(rupee);
 
         int[] expectedData01F639C = {
-                0x00, 0x22, 0x44, 0x66, 0x88, 0xAA, 0xCC, 0xCC,
-                0x00, 0x22, 0x44, 0x66, 0x88, 0xAA, 0xCC, 0xCC
+            0x00, 0x22, 0x44, 0x66, 0x88, 0xAA, 0xCC, 0xCC,
+            0x00, 0x22, 0x44, 0x66, 0x88, 0xAA, 0xCC, 0xCC
         };
         for (int i = 0; i < expectedData01F639C.length; i++) {
             assertEquals(expectedData01F639C[i], apu.readWaveRam(i), "wave RAM byte " + i);
@@ -176,12 +174,10 @@ final class SoundEffectPlayerTest {
     void lowHeartsAndTextPrintLoadTheirWavePatternFromRomBeforeTriggeringChannel3() {
         GameBoyApu apu = new GameBoyApu(48_000);
         SoundEffectPlayer player = new SoundEffectPlayer(apu);
-        SoundEffect lowHearts = player.catalog()
-                .find(SoundEffectNamespace.WAVE, 0x04)
-                .orElseThrow();
-        SoundEffect textPrint = player.catalog()
-                .find(SoundEffectNamespace.WAVE, 0x0F)
-                .orElseThrow();
+        SoundEffect lowHearts =
+                player.catalog().find(SoundEffectNamespace.WAVE, 0x04).orElseThrow();
+        SoundEffect textPrint =
+                player.catalog().find(SoundEffectNamespace.WAVE, 0x0F).orElseThrow();
 
         player.play(lowHearts);
         assertWavePattern63Cc(apu);
@@ -195,9 +191,8 @@ final class SoundEffectPlayerTest {
     void explosionContinuationUpdatesNoiseFrequencyWithoutRetriggering() {
         GameBoyApu apu = new GameBoyApu(48_000);
         SoundEffectPlayer player = new SoundEffectPlayer(apu);
-        SoundEffect explosion = player.catalog()
-                .find(SoundEffectNamespace.NOISE, 0x0C)
-                .orElseThrow();
+        SoundEffect explosion =
+                player.catalog().find(SoundEffectNamespace.NOISE, 0x0C).orElseThrow();
 
         player.play(explosion);
 
@@ -215,6 +210,7 @@ final class SoundEffectPlayerTest {
     @Test
     void stopDoesNotWriteChannelOffRegistersOverPotentialMusicState() {
         GameBoyApu apu = new GameBoyApu(48_000);
+        apu.writeRegister(GameBoyApu.NR52, 0x80);
         apu.writeRegister(GameBoyApu.NR30, 0x80);
         apu.writeRegister(GameBoyApu.NR42, 0x55);
         SoundEffectPlayer player = new SoundEffectPlayer(apu);
@@ -225,10 +221,62 @@ final class SoundEffectPlayerTest {
         assertEquals(0x55, apu.readRegister(GameBoyApu.NR42));
     }
 
+    @Test
+    void anotherNamespaceDoesNotAbandonAnActiveJingle() {
+        GameBoyApu apu = new GameBoyApu(48_000);
+        SoundEffectPlayer player = new SoundEffectPlayer(apu);
+        player.play(player.catalog().find(SoundEffectNamespace.JINGLE, 1).orElseThrow());
+        assertTrue(player.ownsChannel(1));
+        player.play(player.catalog().find(SoundEffectNamespace.NOISE, 2).orElseThrow());
+        assertTrue(player.ownsChannel(1));
+        assertTrue(player.ownsChannel(4));
+        for (int i = 0; i < 600 && player.isPlaying(); i++) {
+            renderPcm(apu, 800);
+            player.tick60Hz();
+        }
+        assertFalse(player.isPlaying());
+        for (int channel = 1; channel <= 4; channel++) assertFalse(player.ownsChannel(channel));
+        assertFalse(apu.isChannelActive(3));
+        short[] tail = renderPcm(apu, 1600);
+        for (short sample : tail) assertEquals(0, sample);
+    }
+
+    @Test
+    void waveCompletionReleasesChannelAndRequestsMusicWaveformRestore() {
+        GameBoyApu apu = new GameBoyApu(48_000);
+        SoundEffectPlayer player = new SoundEffectPlayer(apu);
+        player.play(player.catalog().find(SoundEffectNamespace.WAVE, 0x0F).orElseThrow());
+        assertTrue(player.ownsChannel(3));
+        for (int i = 0; i < 600 && player.isPlaying(); i++) {
+            renderPcm(apu, 800);
+            player.tick60Hz();
+        }
+        assertFalse(player.isPlaying());
+        assertFalse(player.ownsChannel(3));
+        assertFalse(apu.isChannelActive(3));
+        assertTrue(player.takeWaveRestoreRequest());
+        assertFalse(player.takeWaveRestoreRequest());
+    }
+
+    @Test
+    void explicitStopSilencesOnlySfxOwnedChannels() {
+        GameBoyApu apu = new GameBoyApu(48_000);
+        SoundEffectPlayer player = new SoundEffectPlayer(apu);
+        player.play(player.catalog().find(SoundEffectNamespace.JINGLE, 1).orElseThrow());
+        player.stop();
+        assertFalse(player.isPlaying());
+        assertEquals(0, apu.readRegister(GameBoyApu.NR30));
+        assertEquals(0x08, apu.readRegister(GameBoyApu.NR12));
+        assertEquals(0x08, apu.readRegister(GameBoyApu.NR22));
+        assertTrue(player.takeWaveRestoreRequest());
+        renderPcm(apu, 800); // Let the CGB output capacitors settle after the stop writes.
+        for (short sample : renderPcm(apu, 800)) assertEquals(0, sample);
+    }
+
     private static void assertWavePattern63Cc(GameBoyApu apu) {
         int[] expectedData01F63Cc = {
-                0xFF, 0xFF, 0xEE, 0xDD, 0xEE, 0xDD, 0xEE, 0xFF,
-                0xFF, 0xC9, 0x63, 0x21, 0x00, 0x00, 0x04, 0x8C
+            0xFF, 0xFF, 0xEE, 0xDD, 0xEE, 0xDD, 0xEE, 0xFF,
+            0xFF, 0xC9, 0x63, 0x21, 0x00, 0x00, 0x04, 0x8C
         };
         for (int i = 0; i < expectedData01F63Cc.length; i++) {
             assertEquals(expectedData01F63Cc[i], apu.readWaveRam(i), "wave RAM byte " + i);
@@ -236,8 +284,7 @@ final class SoundEffectPlayerTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (InputStream stream = SoundEffectPlayerTest.class.getClassLoader()
-                .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing ROM resource: rom/azle.gbc");
             }

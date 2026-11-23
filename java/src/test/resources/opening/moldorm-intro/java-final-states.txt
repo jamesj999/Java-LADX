@@ -1,0 +1,4 @@
+613 HeadlessState[frame=151, map=0, room=6, x=80, y=115, dialog=true, pageWait=false, text=BUZZZZZ! BUZZZZ!
+   OU, shield=1, health=16, sword=1, urchins=0, toadstool=false, powder=18, inventoryTick=100, tarinX=-1, tarinY=-1, forestCleared=true, tailKey=1, bgTick=147, smallKeys=0, compass=1, dungeonMap=1, nightmareKey=1, animation=4, direction=2, swordAnimation=0, z=0, velocityZ=0, speedX=0, speedY=0, loading=false] entities 59:ACTIVE@72,55
+614 HeadlessState[frame=211, map=0, room=6, x=80, y=115, dialog=true, pageWait=false, text=BUZZZZZ! BUZZZZ!
+   OUTZZZIDER!  , shield=1, health=16, sword=1, urchins=0, toadstool=false, powder=18, inventoryTick=100, tarinX=-1, tarinY=-1, forestCleared=true, tailKey=1, bgTick=147, smallKeys=0, compass=1, dungeonMap=1, nightmareKey=1, animation=4, direction=2, swordAnimation=0, z=0, velocityZ=0, speedX=0, speedY=0, loading=false] entities 59:ACTIVE@72,55

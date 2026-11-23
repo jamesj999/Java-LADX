@@ -1,44 +1,69 @@
 package linksawakening.audio.openal;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+/** Tracks native buffer ownership and frame counts without boxing during playback. */
 final class DialogPcmBufferQueue {
-
     private final int maxBuffers;
-    private final ArrayDeque<Integer> liveBuffers = new ArrayDeque<>();
+    private int[] ids;
+    private int[] frames;
+    private int size;
 
     DialogPcmBufferQueue(int maxBuffers) {
-        if (maxBuffers <= 0) {
-            throw new IllegalArgumentException("maxBuffers must be positive");
-        }
+        if (maxBuffers <= 0) throw new IllegalArgumentException("maxBuffers must be positive");
         this.maxBuffers = maxBuffers;
+        ids = new int[maxBuffers];
+        frames = new int[maxBuffers];
     }
 
     void trackQueued(int buffer) {
-        liveBuffers.addLast(buffer);
+        trackQueued(buffer, 0);
     }
 
-    List<Integer> buffersToDropBeforeQueueing() {
-        List<Integer> buffers = new ArrayList<>();
-        while (liveBuffers.size() >= maxBuffers) {
-            buffers.add(liveBuffers.removeFirst());
+    void trackQueued(int buffer, int count) {
+        if (size == ids.length) {
+            ids = Arrays.copyOf(ids, size * 2);
+            frames = Arrays.copyOf(frames, size * 2);
         }
-        return buffers;
+        ids[size] = buffer;
+        frames[size++] = count;
+    }
+
+    boolean isFull() {
+        return size >= maxBuffers;
+    }
+
+    int queuedFrames() {
+        int sum = 0;
+        for (int i = 0; i < size; i++) sum += frames[i];
+        return sum;
     }
 
     void markDeleted(int buffer) {
-        liveBuffers.remove(buffer);
+        for (int i = 0; i < size; i++)
+            if (ids[i] == buffer) {
+                System.arraycopy(ids, i + 1, ids, i, size - i - 1);
+                System.arraycopy(frames, i + 1, frames, i, size - i - 1);
+                size--;
+                return;
+            }
+    }
+
+    void clear() {
+        size = 0;
     }
 
     List<Integer> buffersToDeleteOnClose() {
-        List<Integer> buffers = new ArrayList<>(liveBuffers);
-        liveBuffers.clear();
-        return buffers;
+        List<Integer> result = new ArrayList<>(liveBuffers());
+        clear();
+        return result;
     }
 
     List<Integer> liveBuffers() {
-        return List.copyOf(liveBuffers);
+        List<Integer> result = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) result.add(ids[i]);
+        return List.copyOf(result);
     }
 }

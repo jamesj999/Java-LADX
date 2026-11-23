@@ -1,0 +1,104 @@
+package linksawakening.ui;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+import java.util.Arrays;
+import linksawakening.gpu.GPU;
+import linksawakening.rom.Rom;
+import linksawakening.state.PlayerState;
+import linksawakening.testing.TestRoms;
+import org.junit.jupiter.api.Test;
+
+@linksawakening.testing.RequiresRom
+final class InventoryInstrumentPanelTest {
+    @Test
+    void borrowedFramePaletteMatchesOwnedValuesWithoutChangingBase() throws Exception {
+        byte[] rom = rom();
+        var panel = new InventoryInstrumentPanel(Rom.of(rom));
+        var base = InventoryTilemapLoader.loadFromRom(TestRoms.partial(rom)).palettes();
+        int[] retainedBase = base[7].clone();
+        int[][] owned = panel.palettes(base, 0);
+        int[] retainedOwned = owned[7].clone();
+        for (int frame = 0; frame < 256; frame++) {
+            var borrowed = panel.framePalettes(base, frame);
+            var expected = panel.palettes(base, frame);
+            for (int row = 0; row < base.length; row++) assertArrayEquals(expected[row], borrowed[row]);
+        }
+        assertArrayEquals(retainedBase, base[7]);
+        assertArrayEquals(retainedOwned, owned[7]);
+    }
+
+    @Test
+    void romPositionsNumbersAndCollectionBitProduceTheTwoByTwoInstrumentLayout() throws Exception {
+        byte[] rom = rom();
+        var panel = new InventoryInstrumentPanel(Rom.of(rom));
+        int[] offsets = {0x0F, 0x51, 0xB1, 0xEF, 0xEC, 0xAA, 0x4A, 0x0C};
+        for (int i = 0; i < 8; i++) {
+            assertEquals(0x100 + offsets[i], panel.position(i));
+            assertArrayEquals(new int[] {0x7C, 0x7C, 0x7C, 0xB1 + i}, panel.tilemapForInstrument(i, 1));
+            int tile = 0xD0 + 2 * i;
+            assertArrayEquals(new int[] {tile, tile + 1, tile + 16, tile + 17}, panel.tilemapForInstrument(i, 2));
+        }
+        // Confirm layout values are read from the ROM, not duplicated literals.
+        rom[linksawakening.rom.RomBank.romOffset(1, 0x6BCF)] = 0x11;
+        rom[linksawakening.rom.RomBank.romOffset(1, 0x6BD7)] = (byte) 0xB9;
+        var changed = new InventoryInstrumentPanel(Rom.of(rom));
+        assertEquals(0x111, changed.position(0));
+        assertEquals(0xB9, changed.tilemapForInstrument(0, 0)[3]);
+    }
+
+    @Test
+    void paletteCyclesEveryEightTicksAndLeavesTheOtherPalettesUnchanged() throws Exception {
+        byte[] rom = rom();
+        var panel = new InventoryInstrumentPanel(Rom.of(rom));
+        var base = InventoryTilemapLoader.loadFromRom(TestRoms.partial(rom)).palettes();
+        assertEquals(linksawakening.rom.RomBank.decodeRgb555(0x2680), panel.palettes(base, 0)[7][1]);
+        assertArrayEquals(panel.palettes(base, 0)[7], panel.palettes(base, 7)[7]);
+        assertFalse(Arrays.equals(panel.palettes(base, 7)[7], panel.palettes(base, 8)[7]));
+        assertArrayEquals(panel.palettes(base, 0)[7], panel.palettes(base, 128)[7]);
+        assertArrayEquals(base[0], panel.palettes(base, 8)[0]);
+        assertEquals(
+                linksawakening.rom.RomBank.decodeRgb555(0x001F),
+                InventoryTilemapLoader.loadFromRom(TestRoms.partial(rom)).objectPalettes()[6][2]);
+    }
+
+    @Test
+    void liveMenuUsesProgressFlagsAndLeavesDungeonMinimapAreaAlone() throws Exception {
+        byte[] rom = rom();
+        GPU gpu = new GPU();
+        gpu.loadBaseTiles(Rom.of(rom));
+        var menu = new InventoryMenu(
+                InventoryTilemapLoader.loadFromRom(TestRoms.partial(rom)),
+                new PlayerState(),
+                linksawakening.gameplay.GameplaySoundSink.none(),
+                TestRoms.partial(rom));
+        menu.requestToggle();
+        for (int i = 0; i < 60; i++) menu.tick();
+        byte[] flags = new byte[8];
+        byte[] empty = new byte[160 * 144 * 4];
+        menu.setWorldContext(true, 0x0E, flags);
+        menu.render(empty, gpu);
+        flags[0] = 2;
+        byte[] owned = new byte[empty.length];
+        menu.render(owned, gpu);
+        assertArrayEquals(empty, owned, "Caller mutation is observed only when context is refreshed");
+        menu.setWorldContext(true, 0x0E, flags);
+        menu.render(owned, gpu);
+        assertFalse(Arrays.equals(empty, owned));
+        for (int map : new int[] {0, 7, 0xFF}) {
+            menu.setWorldContext(true, map, new byte[8]);
+            menu.render(empty, gpu);
+            menu.setWorldContext(true, map, flags);
+            menu.render(owned, gpu);
+            assertArrayEquals(empty, owned, "Instrument flags must not overwrite dungeon minimap " + map);
+        }
+    }
+
+    private static byte[] rom() throws Exception {
+        try (var in = linksawakening.testing.TestRom.open()) {
+            return in.readAllBytes();
+        }
+    }
+}

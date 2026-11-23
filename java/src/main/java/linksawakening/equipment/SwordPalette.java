@@ -1,8 +1,8 @@
 package linksawakening.equipment;
 
-import linksawakening.entity.EntitySpriteCatalog;
-
 import java.util.Arrays;
+import linksawakening.entity.EntitySpriteCatalog;
+import linksawakening.rom.Rom;
 
 /** ROM object palettes selected by the normal and fully charged sword. */
 public final class SwordPalette {
@@ -21,18 +21,8 @@ public final class SwordPalette {
     }
 
     /** Loads the normal and charged sword rows from the ROM object palette table. */
-    public static SwordPalette loadFromRom(byte[] romData) {
+    public static SwordPalette loadFromRom(Rom romData) {
         return new SwordPalette(new EntitySpriteCatalog(romData).loadObjectPalettes());
-    }
-
-    /** Returns the four RGB colors for the normal blade, including OBJ color zero. */
-    public int[] normal() {
-        return normal.clone();
-    }
-
-    /** Returns the four RGB colors for the fully charged blade, including OBJ color zero. */
-    public int[] charged() {
-        return charged.clone();
     }
 
     /** Compatibility source for isolated sword fixtures without a ROM. */
@@ -45,6 +35,16 @@ public final class SwordPalette {
             {0x00000000, 0x00201000, 0x00A89068, 0x00F8F8B8},
             {0, 0, 0, 0}
         });
+    }
+
+    /** Returns the four RGB colors for the normal blade, including OBJ color zero. */
+    public int[] normal() {
+        return normal.clone();
+    }
+
+    /** Returns the four RGB colors for the fully charged blade, including OBJ color zero. */
+    public int[] charged() {
+        return charged.clone();
     }
 
     private static int[] copyRow(int[] row, String description) {

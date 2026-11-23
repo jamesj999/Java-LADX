@@ -1,0 +1,232 @@
+package linksawakening.world.entity.handler;
+
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_HINOX;
+
+import java.util.Objects;
+import linksawakening.vfx.TransientVfxType;
+import linksawakening.world.entity.EntityFrameExecution;
+import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.event.DialogRequest;
+import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.event.HinoxLinkEffectRequest;
+import linksawakening.world.entity.event.LinkFallenPoseRequest;
+import linksawakening.world.entity.event.LinkMotionBlockRequest;
+import linksawakening.world.entity.event.TransientVfxRequest;
+import linksawakening.world.entity.motion.BossIntroMotion;
+import linksawakening.world.entity.motion.HinoxMotion;
+import linksawakening.world.entity.motion.HinoxMotion.HinoxFrame;
+
+/** ROM handler stages for Hinox. */
+final class HinoxHandler {
+    static void install(EntityHandlerRegistry registry) {
+        registry.registerInitializer(ENTITY_HINOX, (entity, random) -> initialize(registry, entity));
+        registry.registerTick(ENTITY_HINOX, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 2, HinoxHandler::phase4Hinox);
+    }
+
+    private static boolean phase4Hinox(EntityFrameExecution state) {
+        return state.scratch(HinoxHandlerFrameStep.class, HinoxHandlerFrameStep::new)
+                .execute();
+    }
+
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity) {
+        registry.motion(HinoxMotion.class, HinoxMotion::new).initialize(entity.slot());
+    }
+
+    private static final class HinoxHandlerFrameStep {
+        // Owning frame execution is stable for this cached scratch holder.
+        private final linksawakening.world.entity.EntityFrameExecution state;
+        // Absent before initialization or while this reusable execution scratch is inactive.
+        private linksawakening.world.entity.EntitySlotExecution slotState;
+        // Absent before initialization or while this reusable execution scratch is inactive.
+        private linksawakening.world.entity.EntityFrameInputLatch frameInput;
+        // Absent before initialization or while this reusable execution scratch is inactive.
+        private linksawakening.world.entity.EntityTimerGates timerGates;
+        // Absent before initialization or while this reusable execution scratch is inactive.
+        private linksawakening.world.entity.EntityPresentationFlags presentationFlags;
+
+        HinoxHandlerFrameStep(linksawakening.world.entity.EntityFrameExecution state) {
+            this.state = Objects.requireNonNull(state, "state");
+        }
+
+        boolean run() {
+            if (!advanceMotion()) return completedResult;
+            if (!applyLinkAndBombEffects()) return completedResult;
+            if (!emitPresentationEffects()) return completedResult;
+
+            return true;
+        }
+
+        private int slot;
+        // Absent before initialization or while this reusable execution scratch is inactive.
+        private linksawakening.world.entity.motion.BossIntroMotion.Update bossIntro;
+        // Absent before initialization or while this reusable execution scratch is inactive.
+        private linksawakening.world.entity.motion.HinoxMotion.Update hinoxUpdate;
+
+        private boolean completedResult;
+
+        private boolean advanceMotion() {
+            var resolvedHinoxMotion = state.motion(HinoxMotion.class, HinoxMotion::new);
+
+            slotState = state.slotFrame();
+            frameInput = state.inputs();
+            timerGates = state.gates();
+            presentationFlags = state.presentation();
+
+            if (!(slotState.status() == EntityStatus.ACTIVE
+                    && !slotState.wasInitializing()
+                    && timerGates.handlerLinkCollisionEnabled()
+                    && state.background().entityTimersInteractive()
+                    && state.lifecycle().transitionSequenceCounter() == 4
+                    && !frameInput.creditsGameplay())) {
+                completedResult = true;
+                return false;
+            }
+
+            slot = slotState.entity().slot();
+            bossIntro = state.motion(BossIntroMotion.class, BossIntroMotion::new)
+                    .advance(
+                            state.slotProperties().options1(slotState.entity().slot()),
+                            slotState.entity().type(),
+                            state.roomInspection().entityMapId(),
+                            state.lifecycle().transitionSequenceCounter());
+            if (bossIntro.musicTrack() >= 0) {
+                state.requestMusic(bossIntro.musicTrack());
+            }
+            if (bossIntro.dialogLowId() >= 0) {
+                state.emit(new DialogRequest(bossIntro.dialogTableId(), bossIntro.dialogLowId()));
+            }
+            hinoxUpdate = resolvedHinoxMotion.advance(new HinoxFrame(
+                    slotState.entity(),
+                    state.slot().transitionCountdown(slot),
+                    frameInput.frame(),
+                    frameInput.linkEntityX(),
+                    frameInput.linkEntityY(),
+                    frameInput.linkZ(),
+                    frameInput.projectileLinkState().motionState(),
+                    frameInput.randomByteSupplier(),
+                    frameInput.hinoxBackgroundInteraction(),
+                    resolvedHinoxMotion.collisionFlags(slot),
+                    state.slot().flashCountdown(slot)));
+            slotState.updated(hinoxUpdate.entity());
+            state.slot().setTransitionCountdown(slot, hinoxUpdate.transitionCountdown());
+            presentationFlags.preserveHinoxPresentation(true);
+            if (hinoxUpdate.linkMotionBlocked()) {
+                state.emit(new LinkMotionBlockRequest(slot, 0, 0, 1));
+                state.emit(new LinkFallenPoseRequest(slot));
+            }
+            return true;
+        }
+
+        private boolean applyLinkAndBombEffects() {
+
+            if (hinoxUpdate.heldLinkPositionWritten()) {
+                state.emit(new HinoxLinkEffectRequest(
+                        slot,
+                        hinoxUpdate.heldLinkX(),
+                        hinoxUpdate.heldLinkY(),
+                        hinoxUpdate.heldLinkZ(),
+                        hinoxUpdate.linkSpeedX(),
+                        hinoxUpdate.linkSpeedY(),
+                        hinoxUpdate.linkVelocityZ(),
+                        hinoxUpdate.linkAirborneState(),
+                        hinoxUpdate.linkDamage(),
+                        hinoxUpdate.linkMotionBlocked(),
+                        hinoxUpdate.applyHeldLinkPose()));
+            }
+            if (hinoxUpdate.bombSpawn() != null) {
+                HinoxMotion.BombSpawn spawn = hinoxUpdate.bombSpawn();
+                state.enemySpawns()
+                        .spawnEnemyBomb(
+                                spawn.x(),
+                                spawn.y(),
+                                spawn.z(),
+                                spawn.transitionCountdown(),
+                                spawn.speedX(),
+                                spawn.speedY(),
+                                spawn.speedZ());
+            }
+            if (!hinoxUpdate.heldLinkPositionWritten()
+                    && !hinoxUpdate.linkMotionBlocked()
+                    && (hinoxUpdate.linkSpeedX() != 0
+                            || hinoxUpdate.linkSpeedY() != 0
+                            || hinoxUpdate.linkVelocityZ() != 0
+                            || hinoxUpdate.linkDamage() != 0)) {
+                state.emit(new HinoxLinkEffectRequest(
+                        slot,
+                        hinoxUpdate.heldLinkX(),
+                        hinoxUpdate.heldLinkY(),
+                        hinoxUpdate.heldLinkZ(),
+                        hinoxUpdate.linkSpeedX(),
+                        hinoxUpdate.linkSpeedY(),
+                        hinoxUpdate.linkVelocityZ(),
+                        hinoxUpdate.linkAirborneState(),
+                        hinoxUpdate.linkDamage(),
+                        hinoxUpdate.linkMotionBlocked(),
+                        hinoxUpdate.applyHeldLinkPose()));
+            }
+            return true;
+        }
+
+        private boolean emitPresentationEffects() {
+
+            if (hinoxUpdate.dustRequested()) {
+                state.emit(new TransientVfxRequest(
+                        TransientVfxType.PEGASUS_DUST,
+                        slotState.updated().x(),
+                        (slotState.updated().y() + 0x0A) & 0xFF));
+            }
+            if (hinoxUpdate.jingleId() >= 0) {
+                state.emit(new EntityCombatEvent(
+                        slot,
+                        slotState.entity().type(),
+                        0,
+                        false,
+                        EntityCombatEvent.SoundChannel.JINGLE,
+                        hinoxUpdate.jingleId()));
+            }
+            if (hinoxUpdate.waveId() >= 0) {
+                state.emit(new EntityCombatEvent(
+                        slot,
+                        slotState.entity().type(),
+                        0,
+                        false,
+                        EntityCombatEvent.SoundChannel.WAVE,
+                        hinoxUpdate.waveId()));
+            }
+            return true;
+        }
+
+        private boolean inUse;
+
+        boolean execute() {
+            if (inUse) {
+                return new HinoxHandlerFrameStep(state).execute();
+            }
+            inUse = true;
+            slotState = null;
+            frameInput = null;
+            timerGates = null;
+            presentationFlags = null;
+            slot = 0;
+            bossIntro = null;
+            hinoxUpdate = null;
+            completedResult = false;
+
+            try {
+                return run();
+            } finally {
+                inUse = false;
+
+                this.slotState = null;
+                this.frameInput = null;
+                this.timerGates = null;
+                this.presentationFlags = null;
+                this.bossIntro = null;
+                this.hinoxUpdate = null;
+            }
+        }
+    }
+}

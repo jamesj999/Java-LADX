@@ -1,0 +1,15 @@
+package linksawakening.testing;
+
+import org.junit.jupiter.api.extension.ConditionEvaluationResult;
+import org.junit.jupiter.api.extension.ExecutionCondition;
+import org.junit.jupiter.api.extension.ExtensionContext;
+
+/** Skips explicitly marked integration tests when no user ROM is available. */
+public final class RomCondition implements ExecutionCondition {
+    @Override
+    public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
+        return TestRom.class.getResource("/rom/azle.gbc") == null
+                ? ConditionEvaluationResult.disabled("Requires user ROM: -Pla.rom=/path/azle.gbc or LA_ROM")
+                : ConditionEvaluationResult.enabled("User ROM available");
+    }
+}

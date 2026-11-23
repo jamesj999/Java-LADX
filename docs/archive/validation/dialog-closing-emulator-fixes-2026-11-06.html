@@ -1,0 +1,33 @@
+<!doctype html><html lang="en"><meta charset="utf-8">
+<title>Opening dialogue emulator comparison</title>
+<style>body{font:14px/1.5 var(--font-sans,system-ui);color:var(--foreground);margin:0}
+article{display:flex;gap:16px;flex-wrap:wrap}figure{margin:0}img{width:240px;image-rendering:pixelated}
+section{margin:16px 0}code{overflow-wrap:anywhere}</style>
+<p><strong>32/32 full frames match at RGB555 precision.</strong> Worst difference: 0/23040 pixels. No masks or image alignment.</p>
+<p>Scenario: marin-close. Production Java room, bed, Link, NPC, HUD and dialogue rendering. One initial NPC clock synchronization and a fixed two-frame OAM display offset. Java scene/pose setup is checkpoint-based, not a continuous input replay. The marin-timing scenario covers box opening and first-page letter reveal; marin-scroll adds one player page advance, both scroll steps and the next two printed lines. Marin-close covers closing row restoration and returning sprites. Other dialogue scenarios cover settled pages. Audio and desktop presentation remain outside these comparisons.</p>
+<p>PyBoy 2.8.1 CGB; fresh in-memory save; normal button input. ROM SHA256: <code>c95dd3d9cb798e86c28e3269554e458d434bf3277b96cadf5bc81cfacfb5ee60</code>.</p>
+<section><strong>Closing frame 11</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>42c161670767e0be33575e687c7bad45e7dee919b54bf4c0561d10b35fef05b7</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>559d9887630f114cc1dacf64a35584b724e865f856955019606f483a4ca92fa0</code></small></figure>
+</article></section>
+<section><strong>Closing frame 12</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>44caca7042c1ce6940fde31c88628b7ca31ab129a6548c1ba49c50355488582c</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>d16b031bc04697dedd04d465ce41f11a474825b7f6394c76853d72500cc3aa75</code></small></figure>
+</article></section>
+<section><strong>Closing frame 14</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>57ffdb5e716ea55b6c37273ed15086590a33c29198262b05cd37dd1bd240440a</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>029eed75fee4600ed8e2bb57a02e75e254f475aaf03d8642cae98e48e22b9048</code></small></figure>
+</article></section>
+<section><strong>Closing frame 15</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>20ea1c26c6368e115fb734ef75b4f5569027ecabd042bcc3a0f97ecf5809d6b8</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>4cfe14014765c3204a344bcf7a423bdee7f5de830793952b48e90eb98c7bb3eb</code></small></figure>
+</article></section>
+<section><strong>Closing frame 16</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>2b0b97711d273f1a531655c51c06a999055546f3817f85dcdd29cc68b6c3c82f</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>dd47e78fde2eba57218a1c6c9e9d2760dfaf70742a7bc78ae9e02f314afd5d05</code></small></figure>
+</article></section>
+<section><strong>Closing frame 18</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>2b0b97711d273f1a531655c51c06a999055546f3817f85dcdd29cc68b6c3c82f</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>dd47e78fde2eba57218a1c6c9e9d2760dfaf70742a7bc78ae9e02f314afd5d05</code></small></figure>
+</article></section>
+<p>Reproduce: install tools/intro/requirements.txt; run python tools/dialog/compare.py --capture --scenario marin-close; gradle -p java captureDialog -PdialogScenario=marin-close; python tools/dialog/compare.py --scenario marin-close.</p></html>

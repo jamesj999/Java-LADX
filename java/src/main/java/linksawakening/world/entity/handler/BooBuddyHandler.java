@@ -1,0 +1,89 @@
+package linksawakening.world.entity.handler;
+
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_BOO_BUDDY;
+import static linksawakening.world.entity.EntitySnapshots.withVariant;
+
+import linksawakening.world.entity.EntityFrameExecution;
+import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.motion.BooBuddyMotion;
+import linksawakening.world.entity.motion.EnemyRecoilMotion;
+
+/** ROM handler stages for BooBuddy. */
+final class BooBuddyHandler {
+    static void install(EntityHandlerRegistry registry) {
+        registry.registerInitializer(ENTITY_BOO_BUDDY, (entity, random) -> initialize(registry, entity));
+        registry.registerTick(
+                ENTITY_BOO_BUDDY, EntityTickStage.PHASE_1_BEFORE_BOSS_INTRO, 0, BooBuddyHandler::phase1BooBuddy);
+        registry.registerTick(
+                ENTITY_BOO_BUDDY, EntityTickStage.PHASE_3_AFTER_LASER, 6, BooBuddyHandler::phase3BooBuddy);
+    }
+
+    private static boolean phase1BooBuddy(EntityFrameExecution state) {
+        var resolvedBooBuddyMotion = state.motion(BooBuddyMotion.class, BooBuddyMotion::new);
+        var resolvedEnemyRecoilMotion = state.motion(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+
+        var slotState = state.slotFrame();
+        var timerGates = state.gates();
+
+        if (slotState.initialStatus() == EntityStatus.ACTIVE) {
+            int slot = slotState.entity().slot();
+            // Rendering precedes ReturnIfNonInteractive_06 and recoil.
+            slotState.entity(withVariant(slotState.entity(), resolvedBooBuddyMotion.selectedVariant(slot)));
+            state.replaceEntity(slotState.entity());
+            if (timerGates.projectileTimersInteractive()) {
+                resolvedBooBuddyMotion.tickTimers(slot);
+            }
+            if (!timerGates.handlerInteractive()) {
+                return false;
+            }
+            if (state.slot().ignoreHits(slot) != 0) {
+                // $06:64F7 consumes one ignore-hits tick, moves with recoil
+                // speeds, and pops the handler return address. OPTIONS1
+                // bit $20 skips background collision for Boo Buddy.
+                state.slot().decrementIgnoreHits(slot);
+                state.replaceEntity(resolvedBooBuddyMotion.advanceRecoil(
+                        slotState.entity(),
+                        resolvedEnemyRecoilMotion.recoilSpeedX(slot),
+                        resolvedEnemyRecoilMotion.recoilSpeedY(slot)));
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean phase3BooBuddy(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+
+        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+            BooBuddyMotion.Update booBuddyUpdate = state.motion(BooBuddyMotion.class, BooBuddyMotion::new)
+                    .advanceAfterTimers(
+                            slotState.entity(),
+                            frameInput.frame(),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            state.slot().transitionCountdown(slotState.entity().slot()),
+                            state.story().booBuddyTriggerCount(),
+                            frameInput.swordCollisionActive(),
+                            frameInput.randomByteSupplier());
+            slotState.updated(booBuddyUpdate.entity());
+            state.slot().setTransitionCountdown(slotState.entity().slot(), booBuddyUpdate.transitionCountdown());
+            if (booBuddyUpdate.healthOverride() >= 0) {
+                state.slot().setHealth(slotState.entity().slot(), booBuddyUpdate.healthOverride());
+            }
+            if (booBuddyUpdate.unloaded()) {
+                state.lifecycle()
+                        .disableEntityWithoutPersistence(slotState.entity().slot());
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity) {
+        registry.motion(BooBuddyMotion.class, BooBuddyMotion::new).initialize(entity.slot());
+    }
+}

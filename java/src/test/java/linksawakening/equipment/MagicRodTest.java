@@ -1,15 +1,14 @@
 package linksawakening.equipment;
 
-import linksawakening.gameplay.GameplaySoundEvent;
-import linksawakening.gameplay.GameplaySoundSink;
-import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
+import org.junit.jupiter.api.Test;
 
 final class MagicRodTest {
 
@@ -23,7 +22,7 @@ final class MagicRodTest {
 
         assertEquals(1, target.attackStepRequests);
         assertEquals(0, target.fireRequests);
-        assertEquals(MagicRod.ATTACK_STEP_MAGIC_ROD, rod.attackStepCountdownForTest());
+        assertEquals(MagicRod.ATTACK_STEP_MAGIC_ROD, EquipmentInspection.attackStepCountdown(rod));
         assertTrue(rod.blocksMotion());
         assertTrue(rod.locksFacing());
         assertEquals(List.of(), sounds.events);
@@ -38,13 +37,13 @@ final class MagicRodTest {
         rod.onPress();
         rod.tick(false, 0);
 
-        assertEquals(0x8D, rod.attackStepCountdownForTest());
+        assertEquals(0x8D, EquipmentInspection.attackStepCountdown(rod));
         assertEquals(0, target.fireRequests);
 
         rod.tick(false, 1);
 
         assertEquals(1, target.fireRequests);
-        assertEquals(0x8C, rod.attackStepCountdownForTest());
+        assertEquals(0x8C, EquipmentInspection.attackStepCountdown(rod));
         assertEquals(List.of(GameplaySoundEvent.MAGIC_ROD), sounds.events);
     }
 
@@ -84,8 +83,7 @@ final class MagicRodTest {
     void constructorRejectsNullDependencies() {
         RecordingTarget target = new RecordingTarget();
         assertThrows(NullPointerException.class, () -> new MagicRod(null, target));
-        assertThrows(NullPointerException.class,
-            () -> new MagicRod(GameplaySoundSink.none(), null));
+        assertThrows(NullPointerException.class, () -> new MagicRod(GameplaySoundSink.none(), null));
     }
 
     private static final class RecordingTarget implements MagicRod.LaunchTarget {

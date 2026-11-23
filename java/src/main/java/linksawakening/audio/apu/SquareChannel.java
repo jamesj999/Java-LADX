@@ -4,13 +4,15 @@ final class SquareChannel {
     private static final double SWEEP_CLOCK_HZ = 128.0;
     private static final double ENVELOPE_CLOCK_HZ = 64.0;
     private static final int[][] DUTY_PATTERNS = {
-            {0, 0, 0, 0, 0, 0, 0, 1},
-            {1, 0, 0, 0, 0, 0, 0, 1},
-            {1, 0, 0, 0, 0, 1, 1, 1},
-            {0, 1, 1, 1, 1, 1, 1, 0}
+        {0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 1, 1, 1},
+        {0, 1, 1, 1, 1, 1, 1, 0}
     };
 
     private final int sampleRate;
+    private final LengthCounter length;
+    private boolean sweepNegateUsed;
     private int sweepRegister;
     private int dutyRegister;
     private int envelopeRegister;
@@ -27,10 +29,13 @@ final class SquareChannel {
 
     SquareChannel(int sampleRate) {
         this.sampleRate = sampleRate;
+        length = new LengthCounter(64, sampleRate, true);
         reset();
     }
 
     void reset() {
+        length.reset();
+        sweepNegateUsed = false;
         sweepRegister = 0;
         dutyRegister = 0;
         envelopeRegister = 0;
@@ -47,16 +52,20 @@ final class SquareChannel {
     }
 
     void writeSweep(int value) {
+        if (sweepNegateUsed && (sweepRegister & 0x08) != 0 && (value & 0x08) == 0) {
+            active = false;
+        }
         sweepRegister = value & 0xFF;
     }
 
     void writeDuty(int value) {
         dutyRegister = value & 0xFF;
+        length.load(value);
     }
 
     void writeEnvelope(int value) {
         envelopeRegister = value & 0xFF;
-        volume = (envelopeRegister >>> 4) & 0x0F;
+        // The initial volume is reloaded by trigger, not by an NRx2 write.
         if ((envelopeRegister & 0xF8) == 0) {
             active = false;
         }
@@ -67,7 +76,9 @@ final class SquareChannel {
     }
 
     void writeFrequencyHigh(int value) {
+        boolean enablingLength = (frequencyHigh & 0x40) == 0 && (value & 0x40) != 0;
         frequencyHigh = value & 0xFF;
+        if (enablingLength && length.enableLength()) active = false;
         if ((frequencyHigh & 0x80) != 0) {
             trigger();
         }
@@ -78,12 +89,37 @@ final class SquareChannel {
     }
 
     void tick() {
+        if (length.tick((frequencyHigh & 0x40) != 0)) {
+            active = false;
+        }
         if (!active) {
             return;
         }
 
         tickSweep();
         tickEnvelope();
+    }
+
+    double render() {
+        if (!dacEnabled()) return 0.0;
+        if (!active) return 1.0; // Digital zero through an enabled DAC.
+
+        int duty = (dutyRegister >>> 6) & 0x03;
+        double steps = frequencyHertz() * 8.0 / sampleRate;
+        double remaining = steps;
+        double highTime = 0;
+        // Integrate every duty edge in this output interval rather than point sampling.
+        while (remaining > 0) {
+            double span = Math.min(remaining, 1.0 - (phase - Math.floor(phase)));
+            highTime += DUTY_PATTERNS[duty][(int) phase & 7] * span;
+            phase = (phase + span) % 8.0;
+            remaining -= span;
+        }
+        return 1.0 - (highTime / steps) * volume / 7.5;
+    }
+
+    boolean dacEnabled() {
+        return (envelopeRegister & 0xF8) != 0;
     }
 
     private void tickSweep() {
@@ -104,16 +140,15 @@ final class SquareChannel {
             return;
         }
 
-        if (sweepShift() == 0) {
-            return;
-        }
-
         int newFrequency = calculateSweepFrequency();
         if (newFrequency > 0x7FF) {
             active = false;
             return;
         }
 
+        if (sweepShift() == 0) {
+            return;
+        }
         sweepShadowFrequency = newFrequency;
         writeFrequency(newFrequency);
         if (calculateSweepFrequency() > 0x7FF) {
@@ -133,35 +168,16 @@ final class SquareChannel {
         }
 
         envelopeClockAccumulator -= envelopePeriod;
-        if ((envelopeRegister & 0x08) != 0) {
-            if (volume < 0x0F) {
-                volume++;
-            }
-        } else if (volume > 0) {
-            volume--;
-        }
-    }
-
-    double render() {
-        if (!active || volume == 0) {
-            return 0.0;
-        }
-
-        int duty = (dutyRegister >>> 6) & 0x03;
-        int dutyStep = (int) phase & 0x07;
-        int patternValue = DUTY_PATTERNS[duty][dutyStep];
-        double sample = patternValue == 0 ? -1.0 : 1.0;
-
-        phase += frequencyHertz() * 8.0 / sampleRate;
-        phase %= 8.0;
-
-        return sample * (volume / 15.0);
+        volume = EnvelopeStep.next(volume, envelopeRegister);
     }
 
     private void trigger() {
+        length.trigger((frequencyHigh & 0x40) != 0);
+        sweepNegateUsed = false;
         active = (envelopeRegister & 0xF8) != 0;
         volume = (envelopeRegister >>> 4) & 0x0F;
-        phase = 0.0;
+        // Trigger reloads the period timer, but does not reset the duty step.
+        phase = Math.floor(phase);
         sweepShadowFrequency = frequencyRegister();
         sweepTimer = sweepPeriodReload();
         sweepEnabled = sweepPeriod() != 0 || sweepShift() != 0;
@@ -193,6 +209,7 @@ final class SquareChannel {
     private int calculateSweepFrequency() {
         int delta = sweepShadowFrequency >>> sweepShift();
         if ((sweepRegister & 0x08) != 0) {
+            sweepNegateUsed = true;
             return sweepShadowFrequency - delta;
         }
         return sweepShadowFrequency + delta;

@@ -10,21 +10,27 @@ public final class MarinWakeUpMotion {
         3, 3, 3, 3, 3, 4, 3, 4, 3, 3, 3, 2, 2, 2, 2, 2,
         0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1
     };
-    private static final int[] MARIN_VARIANT_FOR_DIRECTION = { 6, 4, 2, 0 };
+    private static final int[] MARIN_VARIANT_FOR_DIRECTION = {6, 4, 2, 0};
 
-    private enum State { TOSSING, AWAKE, COMPLETE }
+    private static final Update[] BED_POSES = bedPoses();
+    private static final Update WAKE = new Update(true, WAKE_DIALOG, true, false, LINK_BED_X, LINK_BED_Y, 3);
+    private static final Update LEAVE = new Update(false, WAKE_DIALOG, false, true, LINK_BED_X, LINK_BED_Y, 3);
+    private static final Update FINISHED = new Update(false, WAKE_DIALOG, false, false, LINK_BED_X, LINK_BED_Y, 3);
+    private final MarinPresentation[] marinPoses = new MarinPresentation[8];
 
     private State state = State.TOSSING;
     private int slowTossingCountdown = 127;
     private boolean marinInitialized;
+    private int initialPositionOffset = 8;
     private int marinX;
     private int marinY;
     private int marinDirection = 1;
     private int marinInertia;
 
-    public static MarinWakeUpMotion postWake() {
+    public static MarinWakeUpMotion postWake(boolean hasShield) {
         MarinWakeUpMotion motion = new MarinWakeUpMotion();
         motion.state = State.COMPLETE;
+        motion.initialPositionOffset = hasShield ? 0 : 8;
         motion.slowTossingCountdown = 0;
         return motion;
     }
@@ -46,32 +52,30 @@ public final class MarinWakeUpMotion {
                 leaveBed = true;
             }
         }
-        int bedVariant = state == State.TOSSING
-            ? BED_ANIMATION[(slowTossingCountdown >>> 2) & 0x1F] : 3;
-        return new Update(openWakeDialog, WAKE_DIALOG, state != State.COMPLETE,
-            leaveBed, LINK_BED_X, LINK_BED_Y, bedVariant);
+        int bedVariant = state == State.TOSSING ? BED_ANIMATION[(slowTossingCountdown >>> 2) & 0x1F] : 3;
+        return openWakeDialog ? WAKE : leaveBed ? LEAVE : state == State.COMPLETE ? FINISHED : BED_POSES[bedVariant];
     }
 
-    public MarinPresentation tickMarinPresentation(int frameCounter, int sourceX, int sourceY,
-                                                    int linkX, int linkY) {
+    public MarinPresentation tickMarinPresentation(int frameCounter, int sourceX, int sourceY, int linkX, int linkY) {
         boolean initializedNow = false;
         if (!marinInitialized) {
             marinInitialized = true;
             initializedNow = true;
-            marinX = (sourceX - 8) & 0xFF;
-            marinY = (sourceY - 8) & 0xFF;
+            marinX = (sourceX - initialPositionOffset) & 0xFF;
+            marinY = (sourceY - initialPositionOffset) & 0xFF;
+            for (int direction = 0; direction < 4; direction++)
+                for (int step = 0; step < 2; step++)
+                    marinPoses[direction * 2 + step] = new MarinPresentation(
+                            marinX, marinY, direction, MARIN_VARIANT_FOR_DIRECTION[direction] | step);
         }
         if (initializedNow) {
-            return new MarinPresentation(marinX, marinY, marinDirection,
-                MARIN_VARIANT_FOR_DIRECTION[marinDirection]);
+            return marinPoses[marinDirection * 2];
         }
         if ((frameCounter & 0x1F) == 0) {
             marinDirection = directionToLink(marinX, marinY, linkX, linkY);
         }
         marinInertia = (marinInertia + 1) & 0xFF;
-        int variant = MARIN_VARIANT_FOR_DIRECTION[marinDirection]
-            | ((marinInertia >>> 4) & 0x01);
-        return new MarinPresentation(marinX, marinY, marinDirection, variant);
+        return marinPoses[marinDirection * 2 + ((marinInertia >>> 4) & 0x01)];
     }
 
     public boolean complete() {
@@ -82,15 +86,31 @@ public final class MarinWakeUpMotion {
         return FOLLOW_UP_DIALOG;
     }
 
-    public boolean canOpenFollowUpDialog(int marinX, int marinY, int linkX, int linkY,
-                                         int linkDirection, boolean linkAirborne,
-                                         boolean actionButtonHeld, boolean dialogActive) {
-        if (!complete() || linkAirborne || dialogActive || !actionButtonHeld
-            || ((linkY - marinY + 0x14) & 0xFF) >= 0x28
-            || ((linkX - marinX + 0x10) & 0xFF) >= 0x20) {
+    public boolean canOpenFollowUpDialog(
+            int marinX,
+            int marinY,
+            int linkX,
+            int linkY,
+            int linkDirection,
+            boolean linkAirborne,
+            boolean actionButtonHeld,
+            boolean dialogActive) {
+        if (!complete()
+                || linkAirborne
+                || dialogActive
+                || !actionButtonHeld
+                || ((linkY - marinY + 0x14) & 0xFF) >= 0x28
+                || ((linkX - marinX + 0x10) & 0xFF) >= 0x20) {
             return false;
         }
         return directionToLink(marinX, marinY, linkX, linkY) == (linkDirection ^ 0x01);
+    }
+
+    private static Update[] bedPoses() {
+        Update[] poses = new Update[5];
+        for (int i = 0; i < poses.length; i++)
+            poses[i] = new Update(false, WAKE_DIALOG, true, false, LINK_BED_X, LINK_BED_Y, i);
+        return poses;
     }
 
     private static int directionToLink(int entityX, int entityY, int linkX, int linkY) {
@@ -102,11 +122,20 @@ public final class MarinWakeUpMotion {
         return distanceX < 0 ? 1 : 0;
     }
 
-    public record Update(boolean openWakeDialog, int dialogLowId,
-                         boolean linkMotionBlocked, boolean leaveBed,
-                         int linkRomX, int linkRomY, int bedSpriteVariant) {
+    private enum State {
+        TOSSING,
+        AWAKE,
+        COMPLETE
     }
-
-    public record MarinPresentation(int romX, int romY, int romDirection, int spriteVariant) {
-    }
+    /** Immutable update values. */
+    public record Update(
+            boolean openWakeDialog,
+            int dialogLowId,
+            boolean linkMotionBlocked,
+            boolean leaveBed,
+            int linkRomX,
+            int linkRomY,
+            int bedSpriteVariant) {}
+    /** Immutable marin presentation values. */
+    public record MarinPresentation(int romX, int romY, int romDirection, int spriteVariant) {}
 }

@@ -1,20 +1,34 @@
 package linksawakening.cutscene;
 
-import linksawakening.dialog.DialogController;
-import linksawakening.scene.BackgroundScene;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import linksawakening.dialog.DialogController;
+import linksawakening.rom.Rom;
+import linksawakening.scene.BackgroundScene;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+@linksawakening.testing.RequiresRom
 final class CutsceneManagerTest {
+
+    @Test
+    void completedIntroContinuesTitleAnimationAfterScreenHandoff() {
+        CutsceneManager manager = new CutsceneManager(new DialogController(16), id -> {});
+        manager.startIntro();
+        for (int i = 0; i < 4000 && manager.isActive(); i++) manager.tick();
+        assertFalse(manager.isActive());
+        assertTrue(manager.isShowingTitleScene());
+        int frame = manager.frameSnapshot().frameCounter();
+        for (int i = 0; i < 16; i++) manager.tick();
+        assertEquals(frame + 16, manager.frameSnapshot().frameCounter());
+        assertFalse(manager.frameSnapshot().sprites().isEmpty());
+    }
 
     @Test
     void ownsIntroLifecycleSceneLoadingAndDialogContext() {
@@ -46,8 +60,7 @@ final class CutsceneManagerTest {
         assertTrue(manager.skipIntroToTitle());
         assertFalse(manager.isActive());
         assertTrue(manager.isShowingTitleScene());
-        assertEquals(List.of(IntroCutsceneScript.SCENE_SEA, IntroCutsceneScript.SCENE_TITLE),
-            loadedScenes);
+        assertEquals(List.of(IntroCutsceneScript.SCENE_SEA, IntroCutsceneScript.SCENE_TITLE), loadedScenes);
     }
 
     @Test
@@ -56,7 +69,7 @@ final class CutsceneManagerTest {
         List<String> loadedScenes = new ArrayList<>();
         CutsceneManager manager = new CutsceneManager(dialog, loadedScenes::add);
 
-        manager.startIntro(loadRom(), CutsceneManagerTest::backgroundFor);
+        manager.startIntro(Rom.of(loadRom()), CutsceneManagerTest::backgroundFor);
 
         assertEquals(IntroCutsceneScript.SCENE_SEA, manager.frameSnapshot().sceneId());
         assertEquals(0, manager.frameSnapshot().frameCounter());
@@ -73,8 +86,7 @@ final class CutsceneManagerTest {
     }
 
     private static byte[] loadRom() {
-        try (InputStream stream = CutsceneManagerTest.class.getClassLoader()
-            .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IllegalStateException("ROM resource missing");
             }

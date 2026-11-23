@@ -1,0 +1,11 @@
+<!doctype html><html><meta charset="utf-8"><style>body{font:16px var(--font-sans,system-ui);color:var(--foreground)}article{display:flex;gap:16px;flex-wrap:wrap}figure{margin:0}figcaption{margin-bottom:8px}img{width:240px;image-rendering:pixelated}p{line-height:1.5}</style>
+<h2>Tail Cave: shield flips and staircase</h2><p>Both fresh-game button-only replays complete 462 checkpoints, clear both Spiked Beetles, reveal the staircase and enter side-view room $19. Java ends with 12 health units and the ROM with 4. Combat timing, drops and positions differ; this is not a full parity pass.</p><p>The missing shield branch is $03:6F2A, reached only when sword collision is disabled at $03:6EA5. Shield rectangles follow $20:4B3A. Recovery writes state zero at $07:790D; the warning shake follows $07:791A–792A. Tests cover shield direction, ordinary contact recoil, recovery and the fresh-game route.</p>
+<h3>Both Beetles cleared</h3><p>The revealed stair tile matches at RGB555 precision. The full frame differs by 360 pixels.</p><article>
+<figure><figcaption>Java</figcaption><small>PNG SHA-256 <code>a899f4d7c73c3f02fffdeebc3464f13e3cc672dfa171ab8c4e97775982608df0</code></small></figure>
+<figure><figcaption>Original ROM / PyBoy</figcaption><small>PNG SHA-256 <code>22118d7b45299c4825b9ce15e4db4a2c2765d0552182b7a3a9f24e1e711274cb</code></small></figure>
+</article>
+<h3>Side-view passage — rendering defect found</h3><p>Both enter at Link (120,16). The full frame differs by 9,992 pixels: Java uses incorrect background graphics. This must be fixed before this passage is visually verified.</p><article>
+<figure><figcaption>Java</figcaption><small>PNG SHA-256 <code>31b242351bf3661d6a3325deeea6b6997b0645bdd9da182ced5320a80139e9fe</code></small></figure>
+<figure><figcaption>Original ROM / PyBoy</figcaption><small>PNG SHA-256 <code>0c1c2604f28eb1ad3362395c8afcb3cd0ca786afcf566bd11df48298bd6ed7ab</code></small></figure>
+</article>
+<p>Reproduce with tools/opening/tail-cave-beetle-route.tsv, Gradle captureOpeningRoute, tools/opening/capture.py and compare.py. Explicit ROM input overrides accommodate different enemy positions. No RAM writes or save-state injections follow bootstrap. Loading duration is not a parity requirement.</p></html>

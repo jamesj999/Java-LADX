@@ -1,0 +1,85 @@
+package linksawakening.audio;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import linksawakening.app.GameSession;
+import linksawakening.entity.Link;
+import linksawakening.entity.LinkCommand;
+import linksawakening.equipment.Sword;
+import linksawakening.testing.TestLinks;
+import linksawakening.world.entity.RomRandomByteSource;
+import org.junit.jupiter.api.Test;
+
+@linksawakening.testing.RequiresRom
+class SwordInteractionGateTest {
+    @Test
+    void exactTwoFreezesExistingSwordAndDropsBlockedPressWithoutBuffering() throws Exception {
+        var rng = new RomRandomByteSource();
+        int[] draws = {0};
+        var game = new GameSession(rng);
+        try {
+            game.initializeHeadlessNewGame();
+            game.openingState().wakeUp(null);
+            game.openingState().shield(null);
+            var d = game.diagnostics();
+            var player = d.playerState();
+            var link = d.link();
+            player.equipmentLevels().setSwordLevel(1);
+            player.inventory().setItemA(linksawakening.state.InventoryItem.SWORD.romValue());
+            player.inventory().setItemB(0);
+            d.roomSession().rooms().loadIndoor(2, 0x5A);
+            for (int slot = 0; slot < 16; slot++) d.roomSession().entityState().clearEntity(slot);
+            link.position().setRoomEntryRomPosition(72, 80);
+            rng.setObserver(draw -> draws[0]++);
+            Sword sword = d.equipmentController().activeSword();
+            game.headlessButton("a", true);
+            game.headlessFrame();
+            assertEquals(1, draws[0]);
+            assertEquals(Sword.STATE_DRAW, sword.state());
+            for (int i = 0; i < 8; i++) {
+                link.motion().writeRomInteractiveMotionBlock(2);
+                game.headlessFrame();
+                assertEquals(Sword.STATE_DRAW, sword.state());
+                assertEquals(0, link.motion().romInteractiveMotionBlockValue());
+            }
+            for (int i = 0; i < 3; i++) game.headlessFrame();
+            assertEquals(Sword.STATE_SWING_START, sword.state(), "Resume the saved timer, not a fresh swing");
+            game.headlessButton("a", false);
+            for (int i = 0; i < 24; i++) game.headlessFrame();
+            assertEquals(Sword.STATE_NONE, sword.state());
+            link.motion().writeRomInteractiveMotionBlock(2);
+            game.headlessButton("a", true);
+            game.headlessFrame();
+            assertEquals(1, draws[0]);
+            assertEquals(Sword.STATE_NONE, sword.state());
+            game.headlessFrame();
+            assertEquals(1, draws[0], "Blocked edge must not be replayed when held on resume");
+            game.headlessButton("a", false);
+            game.headlessFrame();
+            link.motion().writeRomInteractiveMotionBlock(3);
+            game.headlessButton("a", true);
+            game.headlessFrame();
+            assertEquals(2, draws[0]);
+            assertEquals(Sword.STATE_DRAW, sword.state(), "Raw 3 must not use the exact-2 item gate");
+        } finally {
+            game.close();
+        }
+    }
+
+    @Test
+    void rawWritesOverwriteAndSideViewKeepsItsOwnPolicy() {
+        Link link = TestLinks.link().build();
+        link.apply(new LinkCommand.MotionBlock(0, 0, 2));
+        link.apply(new LinkCommand.MotionBlock(0, 0, 3));
+        assertEquals(3, link.motion().romInteractiveMotionBlockValue());
+        assertFalse(link.sideView().romItemAnimationFrameBlocked());
+        link.apply(new LinkCommand.MotionBlock(0, 0, 2));
+        assertTrue(link.sideView().romItemAnimationFrameBlocked());
+        link.sideView().setSideScrolling(true);
+        assertFalse(link.sideView().romItemAnimationFrameBlocked());
+        assertThrows(IllegalArgumentException.class, () -> link.motion().writeRomInteractiveMotionBlock(256));
+    }
+}

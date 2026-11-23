@@ -1,0 +1,31 @@
+<!doctype html><html><meta charset="utf-8"><style>
+article{display:flex;gap:16px;flex-wrap:wrap}figure{margin:0}img{width:240px;image-rendering:pixelated}section{margin:20px 0}p{line-height:1.5}
+</style>
+<p><strong>Continuous opening route: 8/129 checkpoints match.</strong> Worst difference: 4597/23040 pixels at RGB555 precision.</p>
+<p>Both games wake Link, finish Marin’s conversation, hop out of bed, walk to Tarin, receive the shield, and exit into room A2. Extended routes use coordinate and room goals, releasing held input before waiting for transitions to finish. Java runs the desktop Main input, update and renderer; no scene or state injections follow bootstrap. The original is reached by normal file-menu input with fresh in-memory RAM.</p>
+<p>This is a diagnostic baseline, not a pixel-parity pass. Java starts at its new-game bootstrap; the emulator starts at the settled house after file-menu entry. Initial clocks are not synchronized. Faster loading is intentional; loading duration is not a parity requirement. Sprite, collision, input and display differences remain to investigate. No masks or screenshot alignment are applied.</p>
+<section><p>Cave entrance: 20 differing pixels</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>8eb916bfecab354bc711072ccba39b811ce410e42bb967f947fb5687224ac700</code></small></figure>
+<figure><figcaption>Java Main loop</figcaption><small>PNG SHA-256 <code>3b5e2e33bc6976719593f98dc2e6bc4636c8c974afa06f9fd8931c47efb0630d</code></small></figure>
+</article></section>
+<section><p>Rock puzzle: 359 differing pixels</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>608ee919d25ddf9230cd5345e9ab207c0027ad3e9e7fd632605fdba312eab880</code></small></figure>
+<figure><figcaption>Java Main loop</figcaption><small>PNG SHA-256 <code>a874a6f7c51f6d649ef73314ebbd90da0fcc39fa32be6273501c1288e98ce0e9</code></small></figure>
+</article></section>
+<section><p>Doorway approach: 176 differing pixels</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>e0cb55711bb14036dc9e746963a7471b57114d5642640c708fc4ef98496d977a</code></small></figure>
+<figure><figcaption>Java Main loop</figcaption><small>PNG SHA-256 <code>10b84e48eb5e8bdc9f8efebde0b45f8d17f0e21e410ebcc4249cff6c643f4554</code></small></figure>
+</article></section>
+<section><p>Cave exit: 83 differing pixels</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>b958d4945c2cdcd3465c29556e06dd765da92b75fb98c200812a1a317427d232</code></small></figure>
+<figure><figcaption>Java Main loop</figcaption><small>PNG SHA-256 <code>fec22d05e8ef5565257e39c49231b7f8bdbeb27988ed097b60e6b764dff41f0f</code></small></figure>
+</article></section>
+<section><p>Mushroom pickup: 184 differing pixels</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>27d4edbebd1933c3f7c030a29e7adb695211b560b4e0efb3ac83501835e044a9</code></small></figure>
+<figure><figcaption>Java Main loop</figcaption><small>PNG SHA-256 <code>57bf56bad944fba278c6ccbb95668068b8d42d09fd4acef8530444a34b5678cb</code></small></figure>
+</article></section>
+<section><p>Mushroom collected: 267 differing pixels</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>d6aa7a0a27f0d7d79a682de603ad9501aafe0c8c33e8ab6b8beff995fc1d715c</code></small></figure>
+<figure><figcaption>Java Main loop</figcaption><small>PNG SHA-256 <code>599e9ddbcb692f003833b909f8a1bb7098b604686b51632771aa4ec0ae07257d</code></small></figure>
+</article></section>
+<p>Reproduce with tools/opening/capture.py, Gradle captureOpeningRoute and tools/opening/compare.py. Select the same route/output for both runtimes; see docs/reconstruction-roadmap.md for the exact beach commands. Python dependencies: tools/intro/requirements.txt.</p></html>

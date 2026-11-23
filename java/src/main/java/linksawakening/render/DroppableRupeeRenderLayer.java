@@ -1,23 +1,38 @@
 package linksawakening.render;
 
-import linksawakening.world.DroppableRupeeSystem;
-import linksawakening.world.ScrollController;
+import linksawakening.world.room.DroppableRupeeSystem;
+import linksawakening.world.transition.ScrollController;
 
-public final class DroppableRupeeRenderLayer implements RenderLayer {
-    private final DroppableRupeeSystem droppableRupeeSystem;
-    private final ScrollController scrollController;
+/** Submits visible dropped rupee entries using their world and height offsets.  Hardware analogue: OBJ pickup entries. */
+final class DroppableRupeeRenderLayer implements HardwareRenderLayer {
+    private DroppableRupeeSystem droppableRupeeSystem;
+    private ScrollController scrollController;
+    private DroppableRupeeSystem paletteOwner;
+    private int[] palette;
 
-    public DroppableRupeeRenderLayer(DroppableRupeeSystem droppableRupeeSystem,
-                                     ScrollController scrollController) {
+    public DroppableRupeeRenderLayer(DroppableRupeeSystem droppableRupeeSystem, ScrollController scrollController) {
         this.droppableRupeeSystem = droppableRupeeSystem;
         this.scrollController = scrollController;
     }
 
     @Override
-    public void render(RenderContext context) {
-        if (!scrollController.isActive()) {
-            droppableRupeeSystem.render(context.buffer(), context.gpu(),
-                -scrollController.screenShakeHorizontal());
+    public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
+        if (scrollController.isActive()) return;
+        int tile = droppableRupeeSystem.spriteTileIndex();
+        if (paletteOwner != droppableRupeeSystem) {
+            palette = droppableRupeeSystem.spritePalette();
+            paletteOwner = droppableRupeeSystem;
         }
+        for (int i = 0; i < droppableRupeeSystem.capacity(); i++) {
+            if (!droppableRupeeSystem.slotActive(i) || !droppableRupeeSystem.slotVisible(i)) continue;
+            int x = droppableRupeeSystem.slotX(i) - 4 - scrollController.screenShakeHorizontal();
+            int y = droppableRupeeSystem.slotY(i) - (droppableRupeeSystem.slotZSubpixels(i) >> 4) - 16;
+            frame.append8x16(gpu.getTile(tile), gpu.getTile(tile + 1), x, y, false, false, palette, false);
+        }
+    }
+
+    void configure(DroppableRupeeSystem droppableRupeeSystem, ScrollController scrollController) {
+        this.droppableRupeeSystem = droppableRupeeSystem;
+        this.scrollController = scrollController;
     }
 }

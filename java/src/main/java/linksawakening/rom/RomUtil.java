@@ -5,64 +5,35 @@ import java.util.Map;
 
 public final class RomUtil {
 
-    public static final int BANK_SIZE = 0x4000;
+    public static final int BANK_SIZE = RomBank.BANK_SIZE;
     public static final int BG_MAP_ROW_WIDTH = 0x20;
 
-    private RomUtil() {
+    private RomUtil() {}
+
+    public static int[][] loadPalettesFromRom(Rom rom, RomAddress address, int paletteCount) {
+        return RomBank.loadPalettes(rom, address, paletteCount);
     }
 
-    public static int romOffset(int bank, int address) {
-        if (bank < 0) {
-            throw new IllegalArgumentException("Bank cannot be negative");
-        }
-        if (bank == 0) {
-            return address;
-        }
-        return bank * BANK_SIZE + (address - BANK_SIZE);
-    }
-
-    public static int decodeRgb555(int color) {
-        int red = (color & 0x1F) * 255 / 31;
-        int green = ((color >> 5) & 0x1F) * 255 / 31;
-        int blue = ((color >> 10) & 0x1F) * 255 / 31;
-        return (red << 16) | (green << 8) | blue;
-    }
-
-    public static int[][] loadPalettesFromRom(byte[] romData, int bank, int address, int paletteCount) {
-        int[][] palettes = new int[paletteCount][4];
-        int offset = romOffset(bank, address);
-
-        for (int paletteIndex = 0; paletteIndex < paletteCount; paletteIndex++) {
-            for (int colorIndex = 0; colorIndex < 4; colorIndex++) {
-                int low = Byte.toUnsignedInt(romData[offset++]);
-                int high = Byte.toUnsignedInt(romData[offset++]);
-                palettes[paletteIndex][colorIndex] = decodeRgb555(low | (high << 8));
-            }
-        }
-
-        return palettes;
-    }
-
-    public static int[] decodeBackgroundFromRom(byte[] romData, int bank, int address, int tilemapWidth, int filler) {
-        int offset = romOffset(bank, address);
+    public static int[] decodeBackgroundFromRom(Rom rom, RomAddress address, int tilemapWidth, int filler) {
+        int offset = address.offset();
         Map<Integer, Integer> bytesByAddress = new HashMap<>();
 
-        while (offset < romData.length) {
-            int high = Byte.toUnsignedInt(romData[offset]);
+        while (offset < rom.size()) {
+            int high = rom.u8(RomAddress.fromOffset(offset));
             if (high == 0) {
                 break;
             }
 
-            int targetAddress = (high << 8) | Byte.toUnsignedInt(romData[offset + 1]);
-            int options = Byte.toUnsignedInt(romData[offset + 2]);
+            int targetAddress = (high << 8) | rom.u8(RomAddress.fromOffset(offset + 1));
+            int options = rom.u8(RomAddress.fromOffset(offset + 2));
             int amount = (options & 0x3F) + 1;
             boolean repeat = (options & 0x40) != 0;
             boolean vertical = (options & 0x80) != 0;
             offset += 3;
 
-            int repeatedValue = repeat ? Byte.toUnsignedInt(romData[offset]) : 0;
+            int repeatedValue = repeat ? rom.u8(RomAddress.fromOffset(offset)) : 0;
             for (int i = 0; i < amount; i++) {
-                int value = repeat ? repeatedValue : Byte.toUnsignedInt(romData[offset + i]);
+                int value = repeat ? repeatedValue : rom.u8(RomAddress.fromOffset(offset + i));
                 bytesByAddress.put(targetAddress, value);
                 targetAddress += vertical ? BG_MAP_ROW_WIDTH : 1;
             }

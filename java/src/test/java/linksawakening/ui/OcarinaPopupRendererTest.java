@@ -1,21 +1,22 @@
 package linksawakening.ui;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.io.InputStream;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
 import linksawakening.render.IndexedRenderer;
+import linksawakening.rom.Rom;
 import linksawakening.state.PlayerState;
 import org.junit.jupiter.api.Test;
 
-import java.io.InputStream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
+@linksawakening.testing.RequiresRom
 final class OcarinaPopupRendererTest {
 
     @Test
     void loaderKeepsTheRomOamFramesAndInventoryObjectPalettes() throws Exception {
         byte[] rom = loadRom();
-        InventoryTilemapLoader loader = InventoryTilemapLoader.loadFromRom(rom);
+        InventoryTilemapLoader loader = InventoryTilemapLoader.loadFromRom(Rom.of(rom));
 
         int popupOffset = linksawakening.rom.RomBank.romOffset(0x20, 0x604B);
         int[] popup = loader.ocarinaPopupOam();
@@ -28,13 +29,13 @@ final class OcarinaPopupRendererTest {
     @Test
     void frameZeroUsesTheRomOamCoordinatesAndObjectPalette() throws Exception {
         byte[] rom = loadRom();
-        InventoryTilemapLoader loader = InventoryTilemapLoader.loadFromRom(rom);
+        InventoryTilemapLoader loader = InventoryTilemapLoader.loadFromRom(Rom.of(rom));
         GPU gpu = new GPU();
-        gpu.loadOcarinaSymbolsTiles(rom);
+        gpu.loadOcarinaSymbolsTiles(Rom.of(rom));
         writeSolidTile(gpu, 0x22, 1);
 
         PlayerState player = new PlayerState();
-        player.setOcarinaSongFlags(0x07);
+        player.progression().setOcarinaSongFlags(0x07);
         OcarinaSongMenu menu = new OcarinaSongMenu(player, linksawakening.gameplay.GameplaySoundSink.none());
         menu.requestOpen();
         for (int frame = 0; frame < 16; frame++) {
@@ -43,13 +44,11 @@ final class OcarinaPopupRendererTest {
 
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         IndexedRenderer.clear(buffer);
-        new OcarinaPopupRenderer(loader.ocarinaPopupOam()).render(
-            buffer, gpu, loader.objectPalettes(), menu);
+        new OcarinaPopupRenderer(loader.ocarinaPopupOam()).render(buffer, gpu, loader.objectPalettes(), menu);
 
         // Data_020_604B's first entry is [Y=$F8, X=$F0, tile=$22,
         // attr=$01], followed by the ROM's $30/$60 OAM origin adjustment.
-        assertPixel(buffer, 0x50 - 0x08, 0x28 - 0x10,
-            loader.objectPalettes()[1][1]);
+        assertPixel(buffer, 0x50 - 0x08, 0x28 - 0x10, loader.objectPalettes()[1][1]);
     }
 
     private static void writeSolidTile(GPU gpu, int tileIndex, int colorIndex) {
@@ -71,8 +70,7 @@ final class OcarinaPopupRendererTest {
     }
 
     private static byte[] loadRom() throws Exception {
-        try (InputStream stream = OcarinaPopupRendererTest.class.getClassLoader()
-                .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             return stream.readAllBytes();
         }
     }

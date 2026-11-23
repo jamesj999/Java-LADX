@@ -1,19 +1,20 @@
 package linksawakening.audio.sfx;
 
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import linksawakening.rom.Rom;
+import org.junit.jupiter.api.Test;
+
+@linksawakening.testing.RequiresRom
 final class SoundEffectCatalogTest {
     @Test
     void fromRomCatalogIncludesAllNamedEffects() throws IOException {
-        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(loadRom());
+        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(Rom.of(loadRom()));
         List<SoundEffect> effects = catalog.effects();
 
         assertEquals(164, effects.size());
@@ -31,17 +32,23 @@ final class SoundEffectCatalogTest {
 
     @Test
     void fromRomCatalogCoversAllSfxIds() throws IOException {
-        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(loadRom());
+        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(Rom.of(loadRom()));
 
-        assertEquals(65, catalog.effects().stream()
-                .filter(effect -> effect.namespace() == SoundEffectNamespace.JINGLE)
-                .count());
-        assertEquals(35, catalog.effects().stream()
-                .filter(effect -> effect.namespace() == SoundEffectNamespace.WAVE)
-                .count());
-        assertEquals(64, catalog.effects().stream()
-                .filter(effect -> effect.namespace() == SoundEffectNamespace.NOISE)
-                .count());
+        assertEquals(
+                65,
+                catalog.effects().stream()
+                        .filter(effect -> effect.namespace() == SoundEffectNamespace.JINGLE)
+                        .count());
+        assertEquals(
+                35,
+                catalog.effects().stream()
+                        .filter(effect -> effect.namespace() == SoundEffectNamespace.WAVE)
+                        .count());
+        assertEquals(
+                64,
+                catalog.effects().stream()
+                        .filter(effect -> effect.namespace() == SoundEffectNamespace.NOISE)
+                        .count());
 
         // JINGLE 0x01 = id 1, index 0: begin ptr 1F:4100, continue ptr 1F:4182
         assertMapped(catalog, SoundEffectNamespace.JINGLE, 0x01, "1F:4100", "1F:4182");
@@ -56,10 +63,11 @@ final class SoundEffectCatalogTest {
     @Test
     void fromRomBuildsSourceFromRomPointerAddresses() throws IOException {
         byte[] romData = loadRom();
-        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(romData);
+        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(Rom.of(romData));
 
         // JINGLE 0x15 = id 21, index 20: begin ptr 1F:4128, continue ptr 1F:41AA
-        SoundEffect dialogBreak = catalog.find(SoundEffectNamespace.JINGLE, 0x15).orElseThrow();
+        SoundEffect dialogBreak =
+                catalog.find(SoundEffectNamespace.JINGLE, 0x15).orElseThrow();
         assertTrue(dialogBreak.source().contains("1F:4128"), dialogBreak.source());
         assertTrue(dialogBreak.source().contains("1F:41AA"), dialogBreak.source());
         assertTrue(dialogBreak.source().contains("1F:4701"), dialogBreak.source());
@@ -79,11 +87,7 @@ final class SoundEffectCatalogTest {
         assertTrue(explosion.source().contains("1F:6482"), explosion.source());
     }
 
-    private static void assertEffect(
-            SoundEffectCatalog catalog,
-            SoundEffectNamespace namespace,
-            int id,
-            String name) {
+    private static void assertEffect(SoundEffectCatalog catalog, SoundEffectNamespace namespace, int id, String name) {
         SoundEffect effect = catalog.find(namespace, id).orElseThrow();
 
         assertEquals(namespace, effect.namespace());
@@ -93,11 +97,7 @@ final class SoundEffectCatalogTest {
     }
 
     private static void assertMapped(
-            SoundEffectCatalog catalog,
-            SoundEffectNamespace namespace,
-            int id,
-            String beginPtr,
-            String continuePtr) {
+            SoundEffectCatalog catalog, SoundEffectNamespace namespace, int id, String beginPtr, String continuePtr) {
         SoundEffect effect = catalog.find(namespace, id).orElseThrow();
 
         assertTrue(effect.source().contains("begin=" + beginPtr), effect.source());
@@ -105,8 +105,7 @@ final class SoundEffectCatalogTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (InputStream stream = SoundEffectCatalogTest.class.getClassLoader()
-                .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing ROM resource: rom/azle.gbc");
             }

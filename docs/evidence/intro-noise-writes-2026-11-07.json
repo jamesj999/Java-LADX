@@ -1,0 +1,106 @@
+{
+  "frames": 1600,
+  "origin": 88,
+  "registers": [
+    "NR42",
+    "NR43",
+    "NR44"
+  ],
+  "compared": 102,
+  "values_and_order_matched": 102,
+  "relative_driver_tick_delta_min": 0,
+  "relative_driver_tick_delta_max": 0,
+  "frame_label_outliers": [
+    {
+      "engine": {
+        "frame": 1065,
+        "register": 34,
+        "value": 110
+      },
+      "emulator": {
+        "frame": 1155,
+        "cycles": 157258520,
+        "bank": 31,
+        "pc": 31378,
+        "register": 34,
+        "value": 110,
+        "audio_tick": 1081,
+        "intro_frame": 1067
+      }
+    },
+    {
+      "engine": {
+        "frame": 1065,
+        "register": 35,
+        "value": 0
+      },
+      "emulator": {
+        "frame": 1155,
+        "cycles": 157258556,
+        "bank": 31,
+        "pc": 31378,
+        "register": 35,
+        "value": 0,
+        "audio_tick": 1081,
+        "intro_frame": 1067
+      }
+    },
+    {
+      "engine": {
+        "frame": 1393,
+        "register": 33,
+        "value": 103
+      },
+      "emulator": {
+        "frame": 1483,
+        "cycles": 202987116,
+        "bank": 31,
+        "pc": 31378,
+        "register": 33,
+        "value": 103,
+        "audio_tick": 1411,
+        "intro_frame": 1395
+      }
+    },
+    {
+      "engine": {
+        "frame": 1393,
+        "register": 34,
+        "value": 3
+      },
+      "emulator": {
+        "frame": 1483,
+        "cycles": 202987152,
+        "bank": 31,
+        "pc": 31378,
+        "register": 34,
+        "value": 3,
+        "audio_tick": 1411,
+        "intro_frame": 1395
+      }
+    },
+    {
+      "engine": {
+        "frame": 1393,
+        "register": 35,
+        "value": 128
+      },
+      "emulator": {
+        "frame": 1483,
+        "cycles": 202987188,
+        "bank": 31,
+        "pc": 31378,
+        "register": 35,
+        "value": 128,
+        "audio_tick": 1411,
+        "intro_frame": 1395
+      }
+    }
+  ],
+  "limits": [
+    "Cycle values are diagnostic PyBoy CPU cycles, not audio sample timestamps.",
+    "Hooks cover verified E0/E2 instructions in annotated audio source; this is not a general memory bus tracer.",
+    "Per-effect driver tick comparison starts at the paired initial NR42 write.",
+    "No sample-phase, envelope-clock-phase or analog mixer equivalence is established."
+  ]
+}

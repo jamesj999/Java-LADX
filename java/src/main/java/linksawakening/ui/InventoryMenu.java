@@ -1,50 +1,61 @@
 package linksawakening.ui;
 
+import java.util.Arrays;
+import java.util.Objects;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.Framebuffer;
 import linksawakening.gpu.GPU;
+import linksawakening.rom.Rom;
+import linksawakening.state.InventoryItem;
 import linksawakening.state.PlayerState;
 
-import java.util.Objects;
-
-/**
- * Port of the DMG inventory-slide mechanic from the LADX disassembly
- * (see bank1.asm:InitializeInventoryBar and bank2.asm:jr_002_61C6).
- *
- * The GB Window layer holds a single 20x18 inventory tilemap. Its Y origin
- * (wWindowY) slides between $00 (fully open, covering the screen) and $80
- * (fully closed, leaving only the top 2 rows visible as the status bar).
- * Each slide step advances wWindowY by wSubscreenScrollIncrement (+/-8).
- *
- * <p>While the menu is fully open, the cursor navigates the 10-slot subscreen
- * (bank20.asm:moveInventoryCursor): left/right step by 1, up/down step by 2,
- * giving a 2-column x 5-row grid. A/B press swaps the cursor's subscreen slot
- * with the corresponding button slot.
- */
+/** DX inventory UI; InventoryTransition owns the ROM fade/load/interactive states. */
 public final class InventoryMenu {
-
-    private static final int WINDOW_Y_OPEN = 0x00;
-    private static final int WINDOW_Y_CLOSED = 0x80;
-    private static final int SCROLL_STEP = 0x08;
-    private static final int CLOSED_INCREMENT = +SCROLL_STEP;
 
     // Subscreen grid: 2 cols x 5 rows. Even slot index = left column,
     // odd = right column. Up/down moves by 2 slots (next row, same col);
     // left/right moves by 1 (other column, same row).
     private static final int SUBSCREEN_COLS = 2;
+    private final InventoryDungeonPanel.Presentation dungeonPresentation =
+            new InventoryDungeonPanel.Presentation(0, 0, 0, null);
+
+    private final TilemapRenderer.Region tileRegion = new TilemapRenderer.Region(0, 0, 0, 0);
 
     private final InventoryTilemapLoader tilemapLoader;
+    private final int[] frameTiles = new int[InventoryTilemapLoader.WIDTH * InventoryTilemapLoader.HEIGHT];
+    private final int[] frameAttributes = new int[InventoryTilemapLoader.WIDTH * InventoryTilemapLoader.HEIGHT];
     private final PlayerState playerState;
     private final GameplaySoundSink soundSink;
     private final OcarinaSongMenu ocarinaSongMenu;
     private final OcarinaPopupRenderer ocarinaPopupRenderer;
-    private final byte[] romData;
+    private final InventoryGraphics.TileTransfers tileTransfers;
     private boolean ocarinaTilesLoaded;
+    private final InventoryGraphics.Instruments instrumentPanel;
+    private final InventoryGraphics.Dungeon dungeonPanel;
+    private int dungeonMapId, dungeonPosition = -1, dungeonFrame;
+    private boolean dungeonCollapsed;
+    private byte[] dungeonItems = new byte[5], dungeonRooms = new byte[64];
+    private byte[] instrumentFlags = new byte[8];
+    private boolean showInstruments = true;
+    private int instrumentPaletteFrame;
 
-    private int windowY = WINDOW_Y_CLOSED;
-    private int subscreenScrollIncrement = CLOSED_INCREMENT;
-    private boolean inventoryAppearing = false;
+    private static final int STATUS_HIDDEN_Y = 0x90;
+    private static final int STATUS_SHOWN_Y = 0x78;
+    private static final int STATUS_STEP = 4;
+
+    private enum StatusMotion {
+        HIDDEN,
+        HELD,
+        RETURNING
+    }
+
+    private final InventoryStatusRenderer statusRenderer;
+    private final InventoryQuestItems questItems;
+    private StatusMotion statusMotion = StatusMotion.HIDDEN;
+    private int statusPanelY = STATUS_HIDDEN_Y;
+
+    private final InventoryTransition transition = new InventoryTransition();
     private int cursorSlot = 0;
     // Mirrors wInventoryCursorFrameCounter (bank20.asm:62A2). Bit 4 drives
     // the cursor blink (on for 16 frames, off for 16). Reset on any dpad
@@ -52,35 +63,46 @@ public final class InventoryMenu {
     private int cursorFrameCounter = 0;
 
     public InventoryMenu(InventoryTilemapLoader tilemapLoader, PlayerState playerState) {
-        this(tilemapLoader, playerState, GameplaySoundSink.none(), null);
+        this(tilemapLoader, playerState, GameplaySoundSink.none(), InventoryGraphics.overlayOnly());
+    }
+
+    public InventoryMenu(InventoryTilemapLoader tilemapLoader, PlayerState playerState, GameplaySoundSink soundSink) {
+        this(tilemapLoader, playerState, soundSink, InventoryGraphics.overlayOnly());
     }
 
     public InventoryMenu(
-            InventoryTilemapLoader tilemapLoader,
-            PlayerState playerState,
-            GameplaySoundSink soundSink) {
-        this(tilemapLoader, playerState, soundSink, null);
+            InventoryTilemapLoader tilemapLoader, PlayerState playerState, GameplaySoundSink soundSink, Rom romData) {
+        this(
+                tilemapLoader,
+                playerState,
+                soundSink,
+                romData == null ? InventoryGraphics.overlayOnly() : InventoryGraphics.fromRom(romData));
     }
 
     public InventoryMenu(
             InventoryTilemapLoader tilemapLoader,
             PlayerState playerState,
             GameplaySoundSink soundSink,
-            byte[] romData) {
-        this.tilemapLoader = tilemapLoader;
-        this.playerState = playerState;
+            InventoryGraphics graphics) {
+        this.tilemapLoader = Objects.requireNonNull(tilemapLoader, "tilemapLoader");
+        this.playerState = Objects.requireNonNull(playerState, "playerState");
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
-        this.ocarinaSongMenu = new OcarinaSongMenu(playerState, this.soundSink);
-        this.ocarinaPopupRenderer = new OcarinaPopupRenderer(tilemapLoader.ocarinaPopupOam());
-        this.romData = romData;
+        Objects.requireNonNull(graphics, "graphics");
+        ocarinaSongMenu = new OcarinaSongMenu(playerState, this.soundSink);
+        ocarinaPopupRenderer = new OcarinaPopupRenderer(tilemapLoader.ocarinaPopupOam());
+        tileTransfers = graphics.transfers();
+        instrumentPanel = graphics.instruments();
+        dungeonPanel = graphics.dungeon();
+        statusRenderer = graphics.status();
+        questItems = graphics.quest();
     }
 
     /**
      * Called when the player presses the menu button. Ignored while the menu
-     * is mid-slide, matching the disassembly guard on wInventoryAppearing.
+     * is fading/loading. DX accepts menu input only in subtype $08 ($20:63C4).
      */
     public void requestToggle() {
-        if (inventoryAppearing) {
+        if (isTransitioning() || isStatusPanelActive()) {
             return;
         }
         if (ocarinaSongMenu.isVisible()) {
@@ -90,61 +112,83 @@ public final class InventoryMenu {
             ocarinaSongMenu.requestClose(true);
             return;
         }
-        toggleInventorySlide();
+        toggleInventory();
     }
 
-    private void toggleInventorySlide() {
-        if (inventoryAppearing) {
-            return;
-        }
-        boolean opening = isFullyClosed();
-        subscreenScrollIncrement = -subscreenScrollIncrement;
-        inventoryAppearing = true;
-        soundSink.play(opening ? GameplaySoundEvent.INVENTORY_OPEN : GameplaySoundEvent.INVENTORY_CLOSE);
-    }
-
-    /**
-     * Advances the slide by one frame. Called every tick before rendering.
-     */
     public void tick() {
-        if (ocarinaSongMenu.tick()
-                && ocarinaSongMenu.consumeCloseInventoryRequest()
-                && isFullyOpen()) {
-            toggleInventorySlide();
+        tick(false);
+    }
+
+    void tick(boolean selectHeld) {
+        if (isFullyOpen() && ocarinaSongMenu.tick() && ocarinaSongMenu.consumeCloseInventoryRequest()) {
+            toggleInventory();
         }
-        if (inventoryAppearing) {
-            windowY += subscreenScrollIncrement;
-            if (windowY <= WINDOW_Y_OPEN) {
-                windowY = WINDOW_Y_OPEN;
-                inventoryAppearing = false;
-            } else if (windowY >= WINDOW_Y_CLOSED) {
-                windowY = WINDOW_Y_CLOSED;
-                inventoryAppearing = false;
+        boolean wasInteractive = isFullyOpen();
+        transition.tick();
+        if (wasInteractive) {
+            instrumentPaletteFrame = (instrumentPaletteFrame + 1) & 127;
+            if (!isStatusPanelActive()) cursorFrameCounter = (cursorFrameCounter + 1) & 0xFF;
+        }
+        switch (statusMotion) {
+            case HIDDEN -> {}
+            case HELD -> {
+                if (selectHeld) statusPanelY = Math.max(STATUS_SHOWN_Y, statusPanelY - STATUS_STEP);
+                else statusMotion = StatusMotion.RETURNING;
+            }
+            case RETURNING -> {
+                statusPanelY += STATUS_STEP;
+                if (statusPanelY >= STATUS_HIDDEN_Y) {
+                    statusPanelY = STATUS_HIDDEN_Y;
+                    statusMotion = StatusMotion.HIDDEN;
+                }
             }
         }
-        if (isFullyOpen()) {
-            cursorFrameCounter = (cursorFrameCounter + 1) & 0xFF;
+    }
+
+    void requestStatusPanel() {
+        if (isFullyOpen() && !isStatusPanelActive() && !ocarinaSongMenu.isVisible()) {
+            statusMotion = StatusMotion.HELD;
         }
+    }
+
+    public boolean isStatusPanelActive() {
+        return statusMotion != StatusMotion.HIDDEN;
+    }
+
+    int statusPanelY() {
+        return statusPanelY;
     }
 
     public boolean isFullyClosed() {
-        return windowY == WINDOW_Y_CLOSED && !inventoryAppearing;
+        return !transition.blocksWorld();
     }
 
     public boolean isFullyOpen() {
-        return windowY == WINDOW_Y_OPEN && !inventoryAppearing;
+        return transition.interactive();
     }
 
     public boolean shouldBlockOverworldInput() {
-        return inventoryAppearing || windowY != WINDOW_Y_CLOSED;
+        return transition.blocksWorld();
     }
 
     public int windowY() {
-        return windowY;
+        return transition.windowY();
+    }
+
+    public int displayedWindowY() {
+        return transition.displayedWindowY();
     }
 
     public boolean isTransitioning() {
-        return inventoryAppearing;
+        return shouldBlockOverworldInput() && !isFullyOpen();
+    }
+
+    public boolean inventoryAppearing() {
+        return transition.appearing();
+    }
+
+    public InventoryTransition transition() {
+        return transition;
     }
 
     public int cursorSlot() {
@@ -165,11 +209,11 @@ public final class InventoryMenu {
 
     /**
      * Move the cursor one step. {@code dx} and {@code dy} should each be -1,
-     * 0, or +1 (pass only one non-zero value per call — diagonals keep the
-     * current slot, matching the original's OR-reducing table lookup).
+     * 0, or +1. The ROM applies horizontal then vertical clamping and emits
+     * one cursor jingle only if the final slot differs from the initial slot.
      */
     public void moveCursor(int dx, int dy) {
-        if (!isFullyOpen()) {
+        if (!isFullyOpen() || isStatusPanelActive()) {
             return;
         }
         if (ocarinaSongMenu.isVisible()) {
@@ -178,17 +222,15 @@ public final class InventoryMenu {
             }
             return;
         }
-        int next = cursorSlot;
-        if (dx != 0 && dy == 0) {
-            next += dx;
-        } else if (dy != 0 && dx == 0) {
-            next += dy * SUBSCREEN_COLS;
-        }
-        if (next >= 0 && next < PlayerState.SUBSCREEN_SLOT_COUNT && next != cursorSlot) {
+        // moveInventoryCursor, $20:5F1B-5F56 applies each axis before
+        // comparing the final selection once at $20:5F85-5F91.
+        int next = Math.max(0, Math.min(PlayerState.SUBSCREEN_SLOT_COUNT - 1, cursorSlot + dx));
+        next = Math.max(0, Math.min(PlayerState.SUBSCREEN_SLOT_COUNT - 1, next + dy * SUBSCREEN_COLS));
+        if (next != cursorSlot) {
             cursorSlot = next;
             soundSink.play(GameplaySoundEvent.MENU_MOVE);
-            if (playerState.subscreenItem(cursorSlot) == PlayerState.INVENTORY_OCARINA
-                    && playerState.ocarinaSongFlags() != 0) {
+            if (playerState.inventory().subscreenItem(cursorSlot) == InventoryItem.OCARINA.romValue()
+                    && playerState.progression().ocarinaSongFlags() != 0) {
                 ocarinaSongMenu.requestOpen();
             }
         }
@@ -196,66 +238,226 @@ public final class InventoryMenu {
     }
 
     public void pressA() {
-        if (!isFullyOpen()) {
+        if (!isFullyOpen() || isStatusPanelActive()) {
             return;
         }
-        int selectedItem = playerState.subscreenItem(cursorSlot);
-        playerState.swapItemAWithSubscreen(cursorSlot);
+        if (ocarinaSongMenu.isVisible() && !ocarinaSongMenu.isReady()) return;
+        int selectedItem = playerState.inventory().subscreenItem(cursorSlot);
+        playerState.inventory().swapItemAWithSubscreen(cursorSlot);
         soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
         openOcarinaIfSelected(selectedItem);
     }
 
     public void pressB() {
-        if (!isFullyOpen()) {
+        if (!isFullyOpen() || isStatusPanelActive()) {
             return;
         }
-        int selectedItem = playerState.subscreenItem(cursorSlot);
-        playerState.swapItemBWithSubscreen(cursorSlot);
+        if (ocarinaSongMenu.isVisible() && !ocarinaSongMenu.isReady()) return;
+        int selectedItem = playerState.inventory().subscreenItem(cursorSlot);
+        playerState.inventory().swapItemBWithSubscreen(cursorSlot);
         soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
         openOcarinaIfSelected(selectedItem);
     }
 
-    private void openOcarinaIfSelected(int selectedItem) {
-        if (selectedItem == PlayerState.INVENTORY_OCARINA
-                && playerState.ocarinaSongFlags() != 0) {
-            ocarinaSongMenu.requestOpen();
-        }
+    public int instrumentPaletteTick() {
+        return instrumentPaletteFrame;
+    }
+
+    public void setWorldContext(boolean indoor, int mapId, byte[] dungeonProgress) {
+        if (dungeonProgress.length != 8) throw new IllegalArgumentException("Eight instrument flags required");
+        // $02:6183-$619E: dungeons 0..7 and Color Dungeon use a minimap.
+        showInstruments = !indoor || (mapId >= 8 && mapId != 0xFF);
+        if (!Arrays.equals(instrumentFlags, dungeonProgress)) instrumentFlags = dungeonProgress.clone();
+        dungeonMapId = mapId;
+        dungeonCollapsed = (dungeonProgress[6] & 4) != 0;
+    }
+
+    public void setDungeonContext(byte[] items, byte[] rooms, int position, int frame) {
+        if (!Arrays.equals(dungeonItems, items)) dungeonItems = items.clone();
+        if (!Arrays.equals(dungeonRooms, rooms)) dungeonRooms = rooms.clone();
+        dungeonPosition = position;
+        dungeonFrame = frame;
     }
 
     public void render(byte[] displayBuffer, GPU gpu) {
-        int[] tilemap = tilemapLoader.copyBaseTilemap();
-        int[] attrmap = tilemapLoader.copyAttrmap();
-        HudOverlay.apply(tilemap, playerState);
-        boolean cursorVisible = isFullyOpen() && (cursorFrameCounter & 0x10) == 0;
+        render(displayBuffer, gpu, null);
+    }
+
+    public void render(byte[] displayBuffer, GPU gpu, int[][] roomPalettes) {
+        tileTransfers.powder(gpu, playerState.ammunition().hasToadstool());
+        tilemapLoader.copyInto(frameTiles, frameAttributes);
+        int[] tilemap = frameTiles;
+        int[] attrmap = frameAttributes;
+        HudOverlay.apply(tilemap, attrmap, playerState);
+        boolean cursorVisible = isFullyOpen() && !isStatusPanelActive() && (cursorFrameCounter & 0x10) == 0;
         InventorySubscreenOverlay.apply(tilemap, attrmap, playerState, cursorSlot, cursorVisible);
 
-        int offsetY = windowY;
+        if (!showInstruments && windowY() == 0)
+            dungeonPanel.apply(tilemap, attrmap, dungeonMapId, dungeonCollapsed, dungeonItems, dungeonRooms);
+        int offsetY = displayedWindowY();
         if (offsetY >= Framebuffer.HEIGHT) {
             return;
         }
 
+        int[][] inventoryPalettes = tilemapLoader.palettes();
+        if (showInstruments && windowY() == 0) {
+            inventoryPalettes = instrumentPanel.framePalettes(inventoryPalettes, instrumentPaletteFrame);
+        }
         TilemapRenderer.render(
-            displayBuffer,
-            gpu,
-            tilemap,
-            attrmap,
-            tilemapLoader.palettes(),
-            InventoryTilemapLoader.WIDTH,
-            InventoryTilemapLoader.HEIGHT,
-            0,
-            offsetY
-        );
+                displayBuffer,
+                gpu,
+                tilemap,
+                attrmap,
+                windowY() == 128 ? Objects.requireNonNullElse(roomPalettes, inventoryPalettes) : inventoryPalettes,
+                tileRegion.set(InventoryTilemapLoader.WIDTH, InventoryTilemapLoader.HEIGHT, 0, offsetY));
+
+        if (showInstruments && windowY() == 0) {
+            instrumentPanel.render(displayBuffer, attrmap, inventoryPalettes, instrumentFlags, offsetY);
+        }
+
+        if (!showInstruments && windowY() == 0)
+            dungeonPanel.render(
+                    displayBuffer,
+                    tilemap,
+                    attrmap,
+                    inventoryPalettes,
+                    offsetY,
+                    dungeonPresentation.set(
+                            dungeonMapId, dungeonPosition, dungeonFrame, tilemapLoader.objectPalettes()));
+
+        if (questItems != null && windowY() == 0) {
+            questItems.prepare(
+                    tilemap,
+                    attrmap,
+                    inventoryPalettes,
+                    playerState.progression(),
+                    showInstruments ? null : dungeonItems);
+            questItems.render(displayBuffer, offsetY);
+        }
+
+        if (isStatusPanelActive() && statusRenderer != null) {
+            statusRenderer.render(displayBuffer, statusPanelY - 16, playerState, tilemapLoader.objectPalettes());
+        } else if (isFullyOpen() && !isStatusPanelActive()) {
+            instrumentPanel.renderNavigation(displayBuffer, tilemapLoader.objectPalettes(), instrumentPaletteFrame);
+        }
 
         if (ocarinaSongMenu.isVisible()) {
-            if (romData != null && !ocarinaTilesLoaded) {
-                gpu.loadOcarinaSymbolsTiles(romData);
+            if (!ocarinaTilesLoaded) {
+                tileTransfers.ocarina(gpu);
                 ocarinaTilesLoaded = true;
             }
-            ocarinaPopupRenderer.render(displayBuffer, gpu, tilemapLoader.objectPalettes(),
-                ocarinaSongMenu);
-        } else if (ocarinaTilesLoaded && romData != null) {
-            gpu.loadSharedVfxTiles(romData);
+            ocarinaPopupRenderer.render(displayBuffer, gpu, tilemapLoader.objectPalettes(), ocarinaSongMenu);
+        } else if (ocarinaTilesLoaded) {
+            tileTransfers.sharedEffects(gpu);
             ocarinaTilesLoaded = false;
         }
     }
+
+    public boolean canSubmitClosedWindow() {
+        return isFullyClosed() && !ocarinaSongMenu.isVisible();
+    }
+
+    /** Read-only snapshot of the closed inventory's HUD window. */
+    public ClosedWindow closedWindow(int[][] roomPalettes) {
+        if (!canSubmitClosedWindow()) throw new IllegalStateException("Inventory window is open");
+        int[] tiles = tilemapLoader.copyBaseTilemap();
+        int[] attributes = tilemapLoader.copyAttrmap();
+        HudOverlay.apply(tiles, attributes, playerState);
+        InventorySubscreenOverlay.apply(tiles, attributes, playerState, cursorSlot, false);
+        return new ClosedWindow(
+                tiles,
+                attributes,
+                Objects.requireNonNullElse(roomPalettes, tilemapLoader.palettes()),
+                displayedWindowY());
+    }
+
+    public void submit(linksawakening.render.HardwareFrame frameModel, GPU gpu, int[][] roomPalettes) {
+        tileTransfers.powder(gpu, playerState.ammunition().hasToadstool());
+        tilemapLoader.copyInto(frameTiles, frameAttributes);
+        int[] tilemap = frameTiles;
+        int[] attrmap = frameAttributes;
+        HudOverlay.apply(tilemap, attrmap, playerState);
+        boolean cursorVisible = isFullyOpen() && !isStatusPanelActive() && (cursorFrameCounter & 0x10) == 0;
+        InventorySubscreenOverlay.apply(tilemap, attrmap, playerState, cursorSlot, cursorVisible);
+
+        if (!showInstruments && windowY() == 0)
+            dungeonPanel.apply(tilemap, attrmap, dungeonMapId, dungeonCollapsed, dungeonItems, dungeonRooms);
+        int offsetY = displayedWindowY();
+        if (offsetY >= Framebuffer.HEIGHT) {
+            return;
+        }
+
+        int[][] inventoryPalettes = tilemapLoader.palettes();
+        if (showInstruments && windowY() == 0) {
+            inventoryPalettes = instrumentPanel.framePalettes(inventoryPalettes, instrumentPaletteFrame);
+        }
+        TilemapRenderer.submit(
+                frameModel,
+                gpu,
+                tilemap,
+                attrmap,
+                windowY() == 128 ? Objects.requireNonNullElse(roomPalettes, inventoryPalettes) : inventoryPalettes,
+                tileRegion.set(InventoryTilemapLoader.WIDTH, InventoryTilemapLoader.HEIGHT, 0, offsetY));
+
+        if (showInstruments && windowY() == 0) {
+            instrumentPanel.submit(frameModel, attrmap, inventoryPalettes, instrumentFlags, offsetY);
+        }
+
+        if (!showInstruments && windowY() == 0)
+            dungeonPanel.submit(
+                    frameModel,
+                    tilemap,
+                    attrmap,
+                    inventoryPalettes,
+                    offsetY,
+                    dungeonPresentation.set(
+                            dungeonMapId, dungeonPosition, dungeonFrame, tilemapLoader.objectPalettes()));
+
+        if (questItems != null && windowY() == 0) {
+            questItems.prepare(
+                    tilemap,
+                    attrmap,
+                    inventoryPalettes,
+                    playerState.progression(),
+                    showInstruments ? null : dungeonItems);
+            questItems.submit(frameModel, offsetY);
+        }
+
+        if (isStatusPanelActive() && statusRenderer != null) {
+            statusRenderer.submit(frameModel, statusPanelY - 16, playerState, tilemapLoader.objectPalettes());
+        } else if (isFullyOpen() && !isStatusPanelActive()) {
+            instrumentPanel.submitNavigation(frameModel, tilemapLoader.objectPalettes(), instrumentPaletteFrame);
+        }
+
+        if (ocarinaSongMenu.isVisible()) {
+            if (!ocarinaTilesLoaded) {
+                tileTransfers.ocarina(gpu);
+                ocarinaTilesLoaded = true;
+            }
+            ocarinaPopupRenderer.submit(frameModel, gpu, tilemapLoader.objectPalettes(), ocarinaSongMenu);
+        } else if (ocarinaTilesLoaded) {
+            tileTransfers.sharedEffects(gpu);
+            ocarinaTilesLoaded = false;
+        }
+    }
+
+    private void toggleInventory() {
+        if (isFullyClosed()) {
+            instrumentPaletteFrame = 0;
+            transition.open(!showInstruments);
+            soundSink.play(GameplaySoundEvent.INVENTORY_OPEN); // $02:6176.
+        } else if (isFullyOpen()) {
+            transition.close();
+            soundSink.play(GameplaySoundEvent.INVENTORY_CLOSE); // CloseInventory $20:6441.
+        }
+    }
+
+    private void openOcarinaIfSelected(int selectedItem) {
+        if (selectedItem == InventoryItem.OCARINA.romValue()
+                && playerState.progression().ocarinaSongFlags() != 0) {
+            ocarinaSongMenu.requestOpen();
+        }
+    }
+    /** Immutable closed window values. */
+    public record ClosedWindow(int[] tiles, int[] attributes, int[][] palettes, int y) {}
 }

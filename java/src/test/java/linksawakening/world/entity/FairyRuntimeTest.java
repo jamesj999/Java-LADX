@@ -1,0 +1,133 @@
+package linksawakening.world.entity;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.IntSupplier;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
+import org.junit.jupiter.api.Test;
+
+@linksawakening.testing.RequiresRom
+final class FairyRuntimeTest {
+
+    @Test
+    void decodesTheRomDroppableFairyPair() throws IOException {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
+
+        var definition = catalog.forEntityType(0x2F, EntityRoomLoader.RoomTable.OVERWORLD);
+
+        assertTrue(definition.supported());
+        assertEquals(EntitySpriteDefinition.Shape.PAIR, definition.shape());
+        assertEquals(0x03, definition.bank());
+        assertEquals(0x6157, definition.address());
+        assertEquals(2, definition.variantCount());
+        assertEquals(0x20, definition.variant(0).first().tile());
+        assertEquals(0x21, definition.variant(0).first().attributes());
+        assertEquals(0x20, definition.variant(0).second().tile());
+        assertEquals(0x01, definition.variant(0).second().attributes());
+    }
+
+    @Test
+    void runsTheFairyHandlerWithItsRomPhysicsAndOptions() throws IOException {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
+        var definition = catalog.forEntityType(0x2F, EntityRoomLoader.RoomTable.OVERWORLD);
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x2F)
+                        .at(0x40, 0x40)
+                        .spriteDefinition(definition)
+                        .z(0x10)
+                        .build()))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .build();
+
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x50, 0x40, sequence(0x0F, 0x00)));
+
+        assertEquals(
+                EntityStatus.ACTIVE,
+                runtime.inspection().snapshot().slots().get(0).status());
+        assertEquals(0xB1, runtime.enemies().physicsFlags(0));
+        assertEquals(0x13, runtime.execution().slotProperties().options1(0));
+        assertEquals(0x30, runtime.enemies().transitionCountdown(0));
+        assertEquals(0x07, new EntityRoomInspectionQueries(runtime.inspection()).fairySpeedX(0));
+        assertEquals(0xF8, new EntityRoomInspectionQueries(runtime.inspection()).fairySpeedY(0));
+        assertTrue(runtime.inspection()
+                .snapshot()
+                .slots()
+                .get(0)
+                .spriteDefinition()
+                .supported());
+    }
+
+    @Test
+    void enemyDeathSpawnsTheFairyWithoutBouncingDropPhysics() throws IOException {
+        byte[] rom = loadRom();
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
+        RomEnemyCombatTables tables = new RomEnemyCombatTables(linksawakening.world.entity.EntityRomTestData.view(rom));
+        RoomEntity source = new RoomEntityBuilder()
+                .slot(15)
+                .sourceLoadOrder(0)
+                .type(0x09)
+                .at(0x44, 0x58)
+                .status(EntityStatus.DYING)
+                .spriteDefinition(catalog.forEntityType(0x09, EntityRoomLoader.RoomTable.OVERWORLD, -1))
+                .z(0x10)
+                .build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(source))
+                .indoorRoom(false)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(tables)
+                .build();
+        runtime.configuration()
+                .setEnemyDropResolver(new EnemyDropResolver(linksawakening.world.entity.EntityRomTestData.view(rom)));
+        EntityRuntimeFixture.debug(runtime).setDroppedItemForTest(15, 0x2F);
+
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0, 0, () -> 0));
+        assertEquals(0x2F, runtime.inspection().snapshot().slots().get(14).type());
+
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 0, 0, () -> 0));
+
+        RoomEntity fairy = runtime.inspection().snapshot().slots().get(14);
+        assertEquals(0x10, fairy.z());
+        assertEquals(0xB1, runtime.enemies().physicsFlags(14));
+        assertEquals(0x13, runtime.execution().slotProperties().options1(14));
+        assertEquals(0, runtime.inspection().dropSpeedZ(14));
+    }
+
+    private static IntSupplier sequence(int... values) {
+        return new IntSupplier() {
+            private int index;
+
+            @Override
+            public int getAsInt() {
+                return values[Math.min(index++, values.length - 1)];
+            }
+        };
+    }
+
+    private static RoomEntitySnapshot snapshot(RoomEntity entity) {
+        List<RoomEntity> slots = new ArrayList<>();
+        while (slots.size() < EntityRoomLoader.MAX_ENTITIES) {
+            slots.add(RoomEntity.disabled(slots.size()));
+        }
+        slots.set(entity.slot(), entity);
+        return new RoomEntitySnapshot(slots);
+    }
+
+    private static byte[] loadRom() throws IOException {
+        try (var stream = linksawakening.testing.TestRom.open()) {
+            if (stream == null) {
+                throw new IOException("Missing ROM resource: rom/azle.gbc");
+            }
+            return stream.readAllBytes();
+        }
+    }
+}

@@ -1,0 +1,100 @@
+package linksawakening.app.screen;
+
+import linksawakening.app.flow.SessionNavigator;
+import linksawakening.app.state.SaveState;
+import linksawakening.app.state.ScreenState;
+import linksawakening.cutscene.CutsceneManager;
+import linksawakening.dialog.DialogController;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.render.GameFrameState;
+import linksawakening.save.SaveRamStore;
+import linksawakening.save.SaveSlotState;
+
+/** ROM-free screen instances for boundary/type assertions. Unexpected lifecycle work fails. */
+public final class ScreenTestFixtures {
+    private ScreenTestFixtures() {}
+
+    public static TitleScreen title() {
+        return new TitleScreen(new TitleScreen.Dependencies(
+                new CutsceneManager(new DialogController(16), scene -> {}),
+                new InputState(),
+                new SessionNavigator(new ScreenState())));
+    }
+
+    public static GameplayScreen gameplay() {
+        return new GameplayScreen(new GameplayScreenDriver() {
+            @Override
+            public boolean interceptFrameInput() {
+                throw new AssertionError("Unexpected input");
+            }
+
+            @Override
+            public void onKey(int key, int action) {
+                throw new AssertionError("Unexpected key");
+            }
+
+            @Override
+            public void tick() {
+                throw new AssertionError("Unexpected tick");
+            }
+
+            @Override
+            public GameFrameState renderState(GameFrameState state) {
+                return state;
+            }
+        });
+    }
+
+    public static FileMenuScreen fileMenu() {
+        var actions = new SaveActions() {
+            @Override
+            public void startNewGame() {
+                throw new AssertionError("Unexpected new game");
+            }
+
+            @Override
+            public void startSavedGame(SaveSlotState saved) {
+                throw new AssertionError("Unexpected load");
+            }
+
+            @Override
+            public void saveCurrentPlayerState() {
+                throw new AssertionError("Unexpected save");
+            }
+
+            @Override
+            public void startFileSave() {
+                throw new AssertionError("Unexpected menu");
+            }
+
+            @Override
+            public void finishGameOver(int option) {
+                throw new AssertionError("Unexpected game over");
+            }
+
+            @Override
+            public void createFile(int slot, int[] name) {
+                throw new AssertionError("Unexpected file creation");
+            }
+
+            @Override
+            public void persistFileMenuMutation(Runnable mutation) {
+                throw new AssertionError("Unexpected mutation");
+            }
+        };
+        return new FileMenuScreen(new FileMenuScreen.Dependencies(
+                new ScreenState(),
+                new InputState(),
+                AppConfigInput.config(),
+                new SaveState(SaveRamStore.inMemory()),
+                actions,
+                () -> {}));
+    }
+
+    private static final class AppConfigInput {
+        static InputConfig config() {
+            return linksawakening.config.AppConfig.defaults().inputConfig();
+        }
+    }
+}

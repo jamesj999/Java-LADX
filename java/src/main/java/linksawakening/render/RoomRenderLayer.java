@@ -1,40 +1,63 @@
 package linksawakening.render;
 
-import linksawakening.world.RoomRenderSnapshot;
-import linksawakening.world.ScrollController;
-import linksawakening.world.TransitionController;
+import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
+import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
 
-import static linksawakening.world.RoomConstants.ROOM_PIXEL_HEIGHT;
-import static linksawakening.world.RoomConstants.ROOM_PIXEL_WIDTH;
+import linksawakening.world.room.RoomRenderSnapshot;
+import linksawakening.world.room.RoomRenderView;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
 
-public final class RoomRenderLayer implements RenderLayer {
-    private final RoomRenderSnapshot currentRoom;
-    private final ScrollController scrollController;
-    private final TransitionController transitionController;
+/** Submits current and previous room backgrounds with scrolling and fade offsets.  Hardware analogue: scrolling BG tilemap planes. */
+final class RoomRenderLayer implements HardwareRenderLayer {
+    private RoomRenderView currentSnapshot;
+    private final RoomInputs currentInputs = new RoomInputs();
+    private int[] tileIds, tileAttrs;
+    private int[][] roomPalettes;
+    private ScrollController scrollController;
+    private TransitionController transitionController;
+    private RoomRenderSnapshot previousSnapshot;
+    private int[] previousTiles, previousAttributes;
+    private int[][] previousPalettes;
+    private final RoomOffsets reusableOffsets = new RoomOffsets(0, 0, 0, 0);
 
-    public RoomRenderLayer(RoomRenderSnapshot currentRoom,
-                           ScrollController scrollController,
-                           TransitionController transitionController) {
-        this.currentRoom = currentRoom;
+    public RoomRenderLayer(
+            RoomRenderView currentRoom, ScrollController scrollController, TransitionController transitionController) {
+        currentSnapshot = currentRoom;
         this.scrollController = scrollController;
         this.transitionController = transitionController;
     }
 
+    RoomRenderLayer() {}
+
+    // Identity distinguishes cache generations or explicit sentinels; equal payloads must not coalesce.
+    @SuppressWarnings("ReferenceEquality")
     @Override
-    public void render(RenderContext context) {
+    public void submit(HardwareFrame frame, linksawakening.gpu.GPU gpu) {
+        if (currentSnapshot != null) {
+            currentInputs.capture(currentSnapshot);
+            tileIds = currentInputs.tiles;
+            tileAttrs = currentInputs.attributes;
+            roomPalettes = currentInputs.palettes;
+            currentSnapshot = null;
+        }
         int shakeX = -scrollController.screenShakeHorizontal();
         int shakeY = -scrollController.screenShakeVertical();
         if (!scrollController.isActive()) {
-            int[][] palettes = transitionController.applyFade(currentRoom.palettes());
+            int[][] palettes = transitionController.applyManboFade(roomPalettes);
             int[] waveOffsets = transitionController.manboWaveOffsets(ROOM_PIXEL_HEIGHT);
             if (waveOffsets == null) {
-                IndexedRenderer.renderRoom(context.buffer(), context.gpu(), currentRoom.tileIds(),
-                    currentRoom.tileAttrs(), palettes, shakeX, shakeY);
+                HardwareBackgroundRenderer.renderRoom(frame, gpu, tileIds, tileAttrs, palettes, shakeX, shakeY);
             } else {
-                IndexedRenderer.renderRoomLineScroll(context.buffer(), context.gpu(),
-                    currentRoom.tileIds(), currentRoom.tileAttrs(), palettes, waveOffsets,
-                    scrollController.screenShakeHorizontal(),
-                    scrollController.screenShakeVertical());
+                HardwareBackgroundRenderer.renderRoomLineScroll(
+                        frame,
+                        gpu,
+                        tileIds,
+                        tileAttrs,
+                        palettes,
+                        waveOffsets,
+                        scrollController.screenShakeHorizontal(),
+                        scrollController.screenShakeVertical());
             }
             return;
         }
@@ -42,13 +65,33 @@ public final class RoomRenderLayer implements RenderLayer {
         RoomOffsets offsets = roomOffsets();
         RoomRenderSnapshot previousRoom = scrollController.previousRoom();
         if (previousRoom != null) {
-            IndexedRenderer.renderRoom(context.buffer(), context.gpu(), previousRoom.tileIds(),
-                previousRoom.tileAttrs(), previousRoom.palettes(),
-                offsets.previousX() + shakeX, offsets.previousY() + shakeY);
+            if (previousRoom != previousSnapshot) {
+                previousSnapshot = previousRoom;
+                previousTiles = previousRoom.tileIds();
+                previousAttributes = previousRoom.tileAttrs();
+                previousPalettes = previousRoom.palettes();
+            }
+            HardwareBackgroundRenderer.renderRoom(
+                    frame,
+                    gpu,
+                    previousTiles,
+                    previousAttributes,
+                    previousPalettes,
+                    offsets.previousX() + shakeX,
+                    offsets.previousY() + shakeY);
         }
-        IndexedRenderer.renderRoom(context.buffer(), context.gpu(), currentRoom.tileIds(),
-            currentRoom.tileAttrs(), currentRoom.palettes(),
-            offsets.currentX() + shakeX, offsets.currentY() + shakeY);
+        HardwareBackgroundRenderer.renderRoom(
+                frame, gpu, tileIds, tileAttrs, roomPalettes, offsets.currentX() + shakeX, offsets.currentY() + shakeY);
+    }
+
+    void configure(
+            int[] tiles, int[] attrs, int[][] palettes, ScrollController scroll, TransitionController transition) {
+        currentSnapshot = null;
+        tileIds = tiles;
+        tileAttrs = attrs;
+        roomPalettes = palettes;
+        scrollController = scroll;
+        transitionController = transition;
     }
 
     private RoomOffsets roomOffsets() {
@@ -58,28 +101,56 @@ public final class RoomRenderLayer implements RenderLayer {
         int currentY = 0;
 
         switch (scrollController.direction()) {
-            case ScrollController.LEFT:
+            case ScrollController.LEFT -> {
                 previousX = scrollController.offset();
                 currentX = -ROOM_PIXEL_WIDTH + scrollController.offset();
-                break;
-            case ScrollController.RIGHT:
+            }
+            case ScrollController.RIGHT -> {
                 previousX = -scrollController.offset();
                 currentX = ROOM_PIXEL_WIDTH - scrollController.offset();
-                break;
-            case ScrollController.UP:
+            }
+            case ScrollController.UP -> {
                 previousY = scrollController.offset();
                 currentY = -ROOM_PIXEL_HEIGHT + scrollController.offset();
-                break;
-            case ScrollController.DOWN:
+            }
+            case ScrollController.DOWN -> {
                 previousY = -scrollController.offset();
                 currentY = ROOM_PIXEL_HEIGHT - scrollController.offset();
-                break;
-            default:
-                break;
+            }
+            default -> {}
         }
-        return new RoomOffsets(previousX, previousY, currentX, currentY);
+        return reusableOffsets.set(previousX, previousY, currentX, currentY);
     }
 
-    private record RoomOffsets(int previousX, int previousY, int currentX, int currentY) {
+    private static final class RoomOffsets {
+        private int px, py, cx, cy;
+
+        RoomOffsets(int px, int py, int cx, int cy) {
+            set(px, py, cx, cy);
+        }
+
+        RoomOffsets set(int px, int py, int cx, int cy) {
+            this.px = px;
+            this.py = py;
+            this.cx = cx;
+            this.cy = cy;
+            return this;
+        }
+
+        int previousX() {
+            return px;
+        }
+
+        int previousY() {
+            return py;
+        }
+
+        int currentX() {
+            return cx;
+        }
+
+        int currentY() {
+            return cy;
+        }
     }
 }

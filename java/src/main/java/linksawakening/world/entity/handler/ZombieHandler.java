@@ -1,0 +1,83 @@
+package linksawakening.world.entity.handler;
+
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_ZOMBIE;
+import static linksawakening.world.entity.EntitySnapshots.withVariant;
+
+import linksawakening.world.entity.EntityFrameExecution;
+import linksawakening.world.entity.EntityHandlerRegistry;
+import linksawakening.world.entity.EntityPresentationFlags;
+import linksawakening.world.entity.EntitySlotExecution;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.EntityTickStage;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBackgroundInteraction;
+import linksawakening.world.entity.motion.ZombieMotion;
+import linksawakening.world.entity.motion.ZombieMotion.ZombieFrame;
+
+/** ROM handler stages for Zombie. */
+final class ZombieHandler {
+    static void install(EntityHandlerRegistry registry) {
+        registry.registerInitializer(ENTITY_ZOMBIE, (entity, random) -> initialize(registry, entity));
+        registry.registerTick(
+                ENTITY_ZOMBIE,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
+                0,
+                frame -> phase2Zombie(frame.slotFrame(), frame.presentation()));
+        registry.registerTick(ENTITY_ZOMBIE, EntityTickStage.PHASE_4_BEFORE_FOLLOWER, 11, ZombieHandler::phase4Zombie);
+    }
+
+    private static boolean phase2Zombie(EntitySlotExecution slotState, EntityPresentationFlags presentationFlags) {
+        if (slotState.wasInitializing()) {
+            // The room-loaded Zombie is only a hidden spawn marker; its
+            // bank-$18 handler never renders the parent entity.
+            slotState.updated(withVariant(slotState.entity(), -1));
+            presentationFlags.preserveZombiePresentation(true);
+        }
+        return true;
+    }
+
+    private static boolean phase4Zombie(EntityFrameExecution state) {
+        var slotState = state.slotFrame();
+        var frameInput = state.inputs();
+        var timerGates = state.gates();
+        var presentationFlags = state.presentation();
+
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
+                && !frameInput.creditsGameplay()
+                && timerGates.handlerLinkCollisionEnabled()) {
+            int slot = slotState.entity().slot();
+            RoomEntityBackgroundInteraction zombieBackgroundInteraction = frameInput.hinoxBackgroundInteraction();
+
+            ZombieMotion.Update zombieUpdate = state.motion(ZombieMotion.class, ZombieMotion::new)
+                    .advance(new ZombieFrame(
+                            slotState.updated(),
+                            frameInput.frame(),
+                            state.slot().transitionCountdown(slot),
+                            state.slot().physicsFlags(slot),
+                            frameInput.linkEntityX(),
+                            frameInput.linkEntityY(),
+                            frameInput.randomByteSupplier(),
+                            state.background().objectQuery(),
+                            zombieBackgroundInteraction,
+                            state.slot().ignoreHits(slot)));
+            slotState.updated(zombieUpdate.entity());
+            state.slot().setTransitionCountdown(slot, zombieUpdate.transitionCountdown());
+            state.slot().setPhysicsFlags(slot, zombieUpdate.physicsFlags());
+            slotState.applyGenericGroundInteraction(zombieUpdate.appliesBackgroundInteraction());
+            if (zombieUpdate.spawnRequest() != null) {
+                state.enemySpawns().spawnZombieChild(zombieUpdate.spawnRequest());
+            }
+            if (zombieUpdate.unloadRequested()) {
+                state.lifecycle().clearEntity(slot);
+                return false;
+            }
+            presentationFlags.preserveZombiePresentation(true);
+        }
+        return true;
+    }
+
+    private static void initialize(EntityHandlerRegistry registry, RoomEntity entity) {
+        registry.motion(ZombieMotion.class, ZombieMotion::new).initialize(entity.slot());
+    }
+}

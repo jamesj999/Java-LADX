@@ -1,10 +1,10 @@
 package linksawakening.ui;
 
+import java.util.Objects;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
+import linksawakening.state.OcarinaSong;
 import linksawakening.state.PlayerState;
-
-import java.util.Objects;
 
 /**
  * State machine for the Ocarina song popup in {@code func_020_6111}.
@@ -14,16 +14,11 @@ import java.util.Objects;
  * {@code $01}.  Horizontal movement therefore keeps wrapping until it lands
  * on a song whose bit is present in {@link PlayerState#ocarinaSongFlags()}.</p>
  */
+// Selection direction is a signed menu step, not a cardinal facing.
 public final class OcarinaSongMenu {
 
     public static final int SONG_COUNT = 3;
     public static final int OPEN_CLOSE_FRAMES = 0x10;
-
-    private static final int[] SONG_FLAGS = {
-        PlayerState.BALLAD_OF_THE_WIND_FISH_FLAG,
-        PlayerState.MANBO_MAMBO_FLAG,
-        PlayerState.FROGS_SONG_OF_THE_SOUL_FLAG
-    };
 
     private final PlayerState playerState;
     private final GameplaySoundSink soundSink;
@@ -42,7 +37,7 @@ public final class OcarinaSongMenu {
 
     /** Requests the ROM's 16-frame opening animation. */
     public boolean requestOpen() {
-        if (playerState.ocarinaSongFlags() == 0 || isVisible()) {
+        if (playerState.progression().ocarinaSongFlags() == 0 || isVisible()) {
             return false;
         }
         open = true;
@@ -71,8 +66,7 @@ public final class OcarinaSongMenu {
     public boolean tick() {
         if (closingFrames != 0) {
             closingFrames--;
-            animationFrame = Math.min(3,
-                (OPEN_CLOSE_FRAMES - closingFrames) * 4 / OPEN_CLOSE_FRAMES);
+            animationFrame = Math.min(3, (OPEN_CLOSE_FRAMES - closingFrames) * 4 / OPEN_CLOSE_FRAMES);
             if (closingFrames == 0) {
                 closeInventoryRequestReady = closeInventoryAfterClosed;
                 closeInventoryAfterClosed = false;
@@ -84,8 +78,7 @@ public final class OcarinaSongMenu {
 
         if (openingFrames != 0) {
             openingFrames--;
-            animationFrame = Math.min(3,
-                openingFrames * 4 / OPEN_CLOSE_FRAMES);
+            animationFrame = Math.min(3, openingFrames * 4 / OPEN_CLOSE_FRAMES);
         }
         return false;
     }
@@ -109,7 +102,7 @@ public final class OcarinaSongMenu {
     }
 
     public int selectedSongIndex() {
-        return playerState.selectedSongIndex();
+        return playerState.progression().selectedSongIndex();
     }
 
     public boolean consumeCloseInventoryRequest() {
@@ -124,11 +117,11 @@ public final class OcarinaSongMenu {
             return false;
         }
         int step = direction < 0 ? -1 : 1;
-        int candidate = playerState.selectedSongIndex();
+        int candidate = playerState.progression().selectedSongIndex();
         for (int attempts = 0; attempts < SONG_COUNT; attempts++) {
             candidate = Math.floorMod(candidate + step, SONG_COUNT);
             if (isSongAvailable(candidate)) {
-                playerState.setSelectedSongIndex(candidate);
+                playerState.progression().setSelectedSongIndex(candidate);
                 soundSink.play(GameplaySoundEvent.MENU_VALIDATE);
                 return true;
             }
@@ -140,13 +133,7 @@ public final class OcarinaSongMenu {
         if (songIndex < 0 || songIndex >= SONG_COUNT) {
             return false;
         }
-        return (playerState.ocarinaSongFlags() & SONG_FLAGS[songIndex]) != 0;
-    }
-
-    public static int songFlagForIndex(int songIndex) {
-        if (songIndex < 0 || songIndex >= SONG_COUNT) {
-            throw new IllegalArgumentException("Song index out of range: " + songIndex);
-        }
-        return SONG_FLAGS[songIndex];
+        return OcarinaSong.fromSelectionIndex(songIndex)
+                .isSet(playerState.progression().ocarinaSongFlags());
     }
 }

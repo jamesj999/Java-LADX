@@ -1,16 +1,15 @@
 package linksawakening.render;
 
-import linksawakening.gpu.Framebuffer;
-import linksawakening.gpu.GPU;
-import linksawakening.world.RoomConstants;
-import linksawakening.world.RoomRenderSnapshot;
-import linksawakening.world.ScrollController;
-import linksawakening.world.TransitionController;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import linksawakening.gpu.Framebuffer;
+import linksawakening.gpu.GPU;
+import linksawakening.world.room.RoomConstants;
+import linksawakening.world.room.RoomRenderSnapshot;
+import linksawakening.world.transition.ScrollController;
+import linksawakening.world.transition.TransitionController;
+import org.junit.jupiter.api.Test;
 
 final class RoomRenderLayerTest {
 
@@ -20,9 +19,7 @@ final class RoomRenderLayerTest {
         byte[] buffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
         int previousColor = 0x112233;
         int currentColor = 0x445566;
-        int[][] palettes = {
-            { 0, previousColor, currentColor, 0 }
-        };
+        int[][] palettes = {{0, previousColor, currentColor, 0}};
         writeSolidTile(gpu, 0x80, 1);
         writeSolidTile(gpu, 0x81, 2);
 
@@ -33,7 +30,7 @@ final class RoomRenderLayerTest {
         scrollController.tick(8);
 
         new RoomRenderLayer(currentRoom, scrollController, new TransitionController())
-            .render(new RenderContext(buffer, gpu));
+                .render(new RenderContext(buffer, gpu));
 
         assertEquals(currentColor, pixelColor(buffer, 0, 0));
         assertEquals(previousColor, pixelColor(buffer, 8, 0));
@@ -59,7 +56,7 @@ final class RoomRenderLayerTest {
     private static int pixelColor(byte[] buffer, int x, int y) {
         int index = (y * Framebuffer.WIDTH + x) * 4;
         return (Byte.toUnsignedInt(buffer[index]) << 16)
-            | (Byte.toUnsignedInt(buffer[index + 1]) << 8)
-            | Byte.toUnsignedInt(buffer[index + 2]);
+                | (Byte.toUnsignedInt(buffer[index + 1]) << 8)
+                | Byte.toUnsignedInt(buffer[index + 2]);
     }
 }

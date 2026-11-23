@@ -14,6 +14,7 @@ import linksawakening.state.PlayerState;
  * we have no OAM layer yet, we render the same tiles through the BG
  * attrmap's flipX bit instead.
  */
+// Item IDs remain raw saved bytes so unknown inventory values preserve the ROM/UI fallback.
 public final class InventorySubscreenOverlay {
 
     private static final int WIDTH = InventoryTilemapLoader.WIDTH;
@@ -39,22 +40,16 @@ public final class InventorySubscreenOverlay {
     // Column offset from the icon's column to where the closing bracket sits,
     // leaving room for the 2-tile "L-N" level indicator when present.
     private static final int BRACKET_RIGHT_OFFSET = 3;
-    private static final int LEVEL_DASH_TILE = 0xBA;
-    private static final int DIGIT_TILE_BASE = 0xB0;
-    private static final int DEFAULT_ITEM_LEVEL = 1;
 
     private static final int[][] ITEM_TILES = buildItemTiles();
-    private static final int[][] ITEM_PALETTE_INDEXES = buildItemPaletteIndexes();
 
-    private InventorySubscreenOverlay() {
-    }
+    private InventorySubscreenOverlay() {}
 
-    public static void apply(int[] tilemap, int[] attrmap, PlayerState player,
-                             int cursorSlot, boolean cursorVisible) {
+    public static void apply(int[] tilemap, int[] attrmap, PlayerState player, int cursorSlot, boolean cursorVisible) {
         for (int slot = 0; slot < PlayerState.SUBSCREEN_SLOT_COUNT; slot++) {
             int col = slotColumn(slot);
             int row = slotRow(slot);
-            drawItem(tilemap, attrmap, col, row, player.subscreenItem(slot));
+            drawItem(tilemap, attrmap, col, row, player.inventory().subscreenItem(slot), player);
         }
         if (cursorVisible) {
             int col = slotColumn(cursorSlot);
@@ -71,26 +66,25 @@ public final class InventorySubscreenOverlay {
         return FIRST_ROW + (slot / 2) * ROW_STRIDE;
     }
 
-    private static void drawItem(int[] tilemap, int[] attrmap, int col, int row, int itemId) {
+    private static void drawItem(int[] tilemap, int[] attrmap, int col, int row, int itemId, PlayerState player) {
         int itemIndex = itemId >= 0 && itemId < ITEM_TILES.length ? itemId : 0;
         int[] tiles = ITEM_TILES[itemIndex];
-        int[] paletteIndexes = ITEM_PALETTE_INDEXES[itemIndex];
-        writeTile(tilemap, col, row,     tiles[0]); // top-left icon
+        int paletteIndexes = InventoryItemPalettes.palettePair(itemId, player);
+        writeTile(tilemap, col, row, tiles[0]); // top-left icon
         writeTile(tilemap, col, row + 1, tiles[3]); // bottom-left icon (with L-glyph)
-        writeAttr(attrmap, col, row,     paletteIndexes[0]);
-        writeAttr(attrmap, col, row + 1, paletteIndexes[1]);
-        if (tiles[4] == LEVEL_DASH_TILE) {
-            writeTile(tilemap, col + 1, row + 1, LEVEL_DASH_TILE);
-            writeTile(tilemap, col + 2, row + 1, DIGIT_TILE_BASE + DEFAULT_ITEM_LEVEL);
-        }
+        writeAttr(attrmap, col, row, paletteIndexes >>> 8);
+        writeAttr(attrmap, col, row + 1, paletteIndexes & 255);
+        long numbers = InventoryItemNumbers.tilePair(itemId, player);
+        writeTile(tilemap, col + 1, row + 1, (int) (numbers >> 32));
+        writeTile(tilemap, col + 2, row + 1, (int) numbers);
     }
 
     private static void drawCursor(int[] tilemap, int[] attrmap, int col, int row) {
         int leftCol = col - 1;
         int rightCol = col + BRACKET_RIGHT_OFFSET;
-        writeTile(tilemap, leftCol,  row,     BRACKET_TILE_TOP);
-        writeTile(tilemap, leftCol,  row + 1, BRACKET_TILE_BOTTOM);
-        writeTile(tilemap, rightCol, row,     BRACKET_TILE_TOP);
+        writeTile(tilemap, leftCol, row, BRACKET_TILE_TOP);
+        writeTile(tilemap, leftCol, row + 1, BRACKET_TILE_BOTTOM);
+        writeTile(tilemap, rightCol, row, BRACKET_TILE_TOP);
         writeTile(tilemap, rightCol, row + 1, BRACKET_TILE_BOTTOM);
         // Plain `]` on the right keeps its base attrmap; flip the left pair
         // so the same tile reads as `[`.
@@ -147,25 +141,6 @@ public final class InventorySubscreenOverlay {
             {0x96, 0x7F, 0x7F, 0x97, 0x7F, 0x7F}, // SHOVEL
             {0x8E, 0x7F, 0x7F, 0x8F, 0x7F, 0x7F}, // MAGIC_POWDER
             {0xA4, 0x7F, 0x7F, 0xA5, 0x7F, 0x7F}, // BOOMERANG
-        };
-    }
-
-    private static int[][] buildItemPaletteIndexes() {
-        return new int[][] {
-            {0x01, 0x01}, // EMPTY
-            {0x01, 0x01}, // SWORD
-            {0x01, 0x01}, // BOMBS
-            {0x01, 0x01}, // POWER_BRACELET
-            {0x01, 0x01}, // SHIELD
-            {0x03, 0x03}, // BOW
-            {0x01, 0x02}, // HOOKSHOT
-            {0x02, 0x01}, // MAGIC_ROD
-            {0x03, 0x03}, // PEGASUS_BOOTS
-            {0x02, 0x02}, // OCARINA
-            {0x03, 0x03}, // ROCS_FEATHER
-            {0x03, 0x01}, // SHOVEL
-            {0x03, 0x03}, // MAGIC_POWDER
-            {0x02, 0x02}, // BOOMERANG
         };
     }
 }

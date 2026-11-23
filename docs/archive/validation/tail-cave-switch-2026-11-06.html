@@ -1,0 +1,18 @@
+<!doctype html><html><meta charset="utf-8"><title>Tail Cave switch and Gel verification</title><style>body{font:16px system-ui;color:var(--foreground)}article{display:flex;gap:24px;flex-wrap:wrap}figure{margin:0}img{width:320px;image-rendering:pixelated}p{max-width:900px;line-height:1.5}</style><h1>Tail Cave: second Small Key</h1><p>339 normal-input checkpoints from a fresh game complete in Java and the original ROM in headless PyBoy. Both collect the Compass and two Small Keys. No room-state or inventory injections are used. Faster loading is accepted; combat inputs include explicit timing variants.</p><p>Fixed Gel contact to attach without damage or recoil, orbit with the source Y counter shift, restrict movement to every fourth world frame and block new item use. Existing sword swings finish. Source: bank3.asm $6D3D, entities/06_zol.asm, bank2.asm $4464 and home/check_items_to_use.asm $11C3.</p><p>This is diagnostic evidence, not full pixel or combat parity. Earlier health and rupee differences remain. Full-route exact frames: 8/339. Full-frame comparisons use RGB555 without masks or alignment.</p>
+<h2>Switch room entry</h2><p>221 differing pixels / 23040</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>50ca1576c40fea40b6d9b9c2e7052e72f1f6d3f9a30028988438fce820434dc7</code></small></figure>
+<figure><figcaption>Java</figcaption><small>PNG SHA-256 <code>7a3188767d6eaa71a9792fea6bc76c10ff307b18e6f82cc73cd2cce43ddb4abe</code></small></figure>
+</article>
+<h2>Enemies cleared from west ledge</h2><p>324 differing pixels / 23040</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>84931d0e2a31b7e86f889b037767182fb2710e7a46f6d3c0325bb3b1a4efce17</code></small></figure>
+<figure><figcaption>Java</figcaption><small>PNG SHA-256 <code>890b10451d430453fb1d606967b816cb4887a67c74d11492dc8537ff7fbd4bf3</code></small></figure>
+</article>
+<h2>Floor switch activated</h2><p>176 differing pixels / 23040</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>ab5bc1eb46efe047e0197ba4f5bfa2b1d156e076ddb8b6e142bea27263228a39</code></small></figure>
+<figure><figcaption>Java</figcaption><small>PNG SHA-256 <code>2d31edcb6719364089a353bef9301193160704b54fd4715e42e47b9ff475eea5</code></small></figure>
+</article>
+<h2>Second Small Key</h2><p>314 differing pixels / 23040</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>8ea8dfb83e6180f7d50ac01eb0cf7dc45ec584b52211242cd6897fe610a594a3</code></small></figure>
+<figure><figcaption>Java</figcaption><small>PNG SHA-256 <code>3e77a8a0f5cbb11a4652507675bcf98042eeeb4518a28bfac720bf45e90f2a63</code></small></figure>
+</article>
+<p>Reproduce with tools/opening/tail-cave-switch-route.tsv, capture.py, Gradle captureOpeningRoute, and compare.py.</p></html>

@@ -1,0 +1,242 @@
+package linksawakening.world.entity.motion;
+
+import java.util.function.IntSupplier;
+import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntitySnapshots;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBackgroundCollision;
+
+/** Bank-$07 PeaHatEntityHandler's rest, takeoff, and flying states. */
+public final class PeaHatMotion {
+    // PeaHatYSpeeds and PeaHatXSpeeds, including their signed-byte ROM values.
+    // PeaHatYSpeeds is four bytes immediately followed by PeaHatXSpeeds in ROM;
+    // the original indexed lookup can therefore read the first twelve X bytes
+    // when privateState4 is 4..15.
+    private static final int[] SPEED_Y_BY_PHASE = {
+        0x00, 0x05, 0x0A, 0x0D, 0x0E, 0x0D, 0x0A, 0x05,
+        0x00, 0xFB, 0xF6, 0xF3, 0xF2, 0xF3, 0xF6, 0xFB
+    };
+    private static final int[] SPEED_X_BY_PHASE = {
+        0x0E, 0x0D, 0x0A, 0x05, 0x00, 0xFB, 0xF6, 0xF3,
+        0xF2, 0xF3, 0xF6, 0xFB, 0x00, 0x05, 0x0A, 0x0D
+    };
+
+    private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState1Table: step added to rotor-animation inertia while taking off or landing.
+    // ROM wEntitiesPrivateState1Table.
+    private final int[] rotorAnimationStep = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState2Table.
+    private final int[] orbitStep = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState3Table.
+    private final int[] orbitTurnTicks = new int[EntityRoomLoader.MAX_ENTITIES];
+    // ROM wEntitiesPrivateState4Table.
+    private final int[] orbitPhase = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] inertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+
+    public void initialize(int slot) {
+        state[slot] = 0;
+        slowTransitionCountdown[slot] = 0;
+        rotorAnimationStep[slot] = 0;
+        orbitStep[slot] = 0;
+        orbitTurnTicks[slot] = 0;
+        orbitPhase[slot] = 0;
+        inertia[slot] = 0;
+        speedX[slot] = 0;
+        speedY[slot] = 0;
+        speedXAccumulator[slot] = 0;
+        speedYAccumulator[slot] = 0;
+        initialized[slot] = true;
+    }
+
+    public RoomEntity advance(
+            RoomEntity entity,
+            int frameCounter,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundCollision backgroundCollision) {
+        backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
+        int slot = entity.slot();
+        if (!initialized[slot]) {
+            initialize(slot);
+        }
+        int frame = frameCounter & 0xFF;
+        if ((frame & 0x03) == 0 && slowTransitionCountdown[slot] > 0) {
+            slowTransitionCountdown[slot]--;
+        }
+
+        int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
+        int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
+        int z = entity.z();
+        int variant = entity.spriteVariant();
+
+        {
+            if (x != entity.x() && backgroundCollision.blocks(entity, directionForX(speedX[slot]), x, y)) {
+                x = entity.x();
+            }
+            if (y != entity.y() && backgroundCollision.blocks(entity, directionForY(speedY[slot]), x, y)) {
+                y = entity.y();
+            }
+        }
+
+        switch (state[slot]) {
+            case 0 -> {
+                if (z != 0 && (frame & 0x07) == 0) {
+                    z = (z - 1) & 0xFF;
+                }
+                if ((frame & 0x07) == 0) {
+                    speedX[slot] = approachZero(speedX[slot]);
+                    speedY[slot] = approachZero(speedY[slot]);
+                }
+                if (slowTransitionCountdown[slot] == 0) {
+                    state[slot] = 1;
+                }
+                if (rotorAnimationStep[slot] != 0 && (frame & 0x1F) == 0) {
+                    rotorAnimationStep[slot]--;
+                }
+                variant = animate(slot);
+            }
+            case 1 -> {
+                if (rotorAnimationStep[slot] < 0x08) {
+                    if ((frame & 0x0F) == 0) {
+                        rotorAnimationStep[slot]++;
+                    }
+                    variant = animate(slot);
+                } else {
+                    slowTransitionCountdown[slot] = 0x80 + (randomByteSupplier.getAsInt() & 0x1F);
+                    state[slot] = 2;
+                }
+            }
+            case 2 -> {
+                variant = animate(slot);
+                if (z != 0x10) {
+                    if ((frame & 0x07) == 0) {
+                        z = (z + 1) & 0xFF;
+                    }
+                } else {
+                    if (slowTransitionCountdown[slot] == 0) {
+                        slowTransitionCountdown[slot] = 0x60;
+                        state[slot] = 0;
+                    }
+                    updateFlyingSpeed(slot, randomByteSupplier);
+                }
+            }
+            default -> throw new IllegalStateException("Invalid PeaHat state: " + state[slot]);
+        }
+
+        return EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), z, -1, false);
+    }
+
+    public void clear(int slot) {
+        initialize(slot);
+        initialized[slot] = false;
+    }
+
+    public boolean isGrounded(RoomEntity entity) {
+        return state[entity.slot()] == 0 && entity.z() == 0;
+    }
+
+    public int state(int slot) {
+        return state[slot];
+    }
+
+    public int slowTransitionCountdown(int slot) {
+        return slowTransitionCountdown[slot];
+    }
+
+    public int rotorAnimationStep(int slot) {
+        return rotorAnimationStep[slot];
+    }
+
+    public int orbitPhase(int slot) {
+        return orbitPhase[slot];
+    }
+
+    public int orbitStep(int slot) {
+        return orbitStep[slot];
+    }
+
+    public int orbitTurnTicks(int slot) {
+        return orbitTurnTicks[slot];
+    }
+
+    public int speedX(int slot) {
+        return speedX[slot];
+    }
+
+    public int speedY(int slot) {
+        return speedY[slot];
+    }
+
+    private int animate(int slot) {
+        int sum = rotorAnimationStep[slot] + inertia[slot];
+        int value = sum & 0xFF;
+        boolean carry = sum > 0xFF;
+        inertia[slot] = value;
+        for (int count = 0; count < 5; count++) {
+            boolean nextCarry = (value & 0x01) != 0;
+            value = (value >>> 1) | (carry ? 0x80 : 0);
+            carry = nextCarry;
+        }
+        return value & 0x01;
+    }
+
+    private void updateFlyingSpeed(int slot, IntSupplier randomByteSupplier) {
+        orbitTurnTicks[slot] = (orbitTurnTicks[slot] + 1) & 0xFF;
+        if (orbitTurnTicks[slot] < 0x18) {
+            return;
+        }
+        orbitTurnTicks[slot] = 0;
+        orbitPhase[slot] = (orbitStep[slot] + orbitPhase[slot]) & 0x0F;
+        speedY[slot] = signedShiftRight(SPEED_Y_BY_PHASE[orbitPhase[slot]], 1);
+        speedX[slot] = signedShiftRight(SPEED_X_BY_PHASE[orbitPhase[slot]], 1);
+        if ((randomByteSupplier.getAsInt() & 0x07) != 0) {
+            return;
+        }
+        orbitStep[slot] = ((randomByteSupplier.getAsInt() & 0x02) - 1) & 0xFF;
+    }
+
+    private static int approachZero(int speed) {
+        int signedSpeed = (speed & 0x80) != 0 ? speed - 0x100 : speed;
+        if (signedSpeed < 0) {
+            return (speed + 1) & 0xFF;
+        }
+        if (signedSpeed > 0) {
+            return (speed - 1) & 0xFF;
+        }
+        return 0;
+    }
+
+    private static int signedShiftRight(int value, int amount) {
+        int signedValue = (value & 0x80) != 0 ? value - 0x100 : value;
+        return (signedValue >> amount) & 0xFF;
+    }
+
+    private static int directionForX(int speed) {
+        return (speed & 0x80) != 0 ? 1 : 0;
+    }
+
+    private static int directionForY(int speed) {
+        return (speed & 0x80) != 0 ? 2 : 3;
+    }
+
+    private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
+        speed &= 0xFF;
+        if (speed == 0) {
+            return position & 0xFF;
+        }
+
+        int fractionalSum = accumulator[slot] + ((speed << 4) & 0xF0);
+        accumulator[slot] = fractionalSum & 0xFF;
+        int signedSpeed = speed < 0x80 ? speed : speed - 0x100;
+        int delta = signedSpeed >> 4;
+        if (fractionalSum > 0xFF) {
+            delta++;
+        }
+        return (position + delta) & 0xFF;
+    }
+}

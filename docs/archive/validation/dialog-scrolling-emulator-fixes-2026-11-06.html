@@ -1,0 +1,33 @@
+<!doctype html><html lang="en"><meta charset="utf-8">
+<title>Opening dialogue emulator comparison</title>
+<style>body{font:14px/1.5 var(--font-sans,system-ui);color:var(--foreground);margin:0}
+article{display:flex;gap:16px;flex-wrap:wrap}figure{margin:0}img{width:240px;image-rendering:pixelated}
+section{margin:16px 0}code{overflow-wrap:anywhere}</style>
+<p><strong>220/220 full frames match at RGB555 precision.</strong> Worst difference: 0/23040 pixels. No masks or image alignment.</p>
+<p>Scenario: marin-scroll. Production Java room, bed, Link, NPC, HUD and dialogue rendering. One initial NPC clock synchronization and a fixed two-frame OAM display offset. Java scene/pose setup is checkpoint-based, not a continuous input replay. The marin-timing scenario covers box opening and first-page letter reveal; marin-scroll adds one player page advance, both scroll steps and the next two printed lines. Other dialogue scenarios cover settled pages. Closing, audio and desktop presentation remain outside these comparisons.</p>
+<p>PyBoy 2.8.1 CGB; fresh in-memory save; normal button input. ROM SHA256: <code>c95dd3d9cb798e86c28e3269554e458d434bf3277b96cadf5bc81cfacfb5ee60</code>.</p>
+<section><strong>Scroll frame 102</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>c5617ad729881c2cf307d349147926520aa38f165e798ec3bf87b71859d706c1</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>bcc6f39e2b6f707293c1995cbfa1e5eb01612169d685c0107251207818b9c772</code></small></figure>
+</article></section>
+<section><strong>Scroll frame 103</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>b725207c7ffb43ad2b6aedc897916d0249131044a6db8637393c876570d8d8cf</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>be23359860f47cb4cbbbc76522aa1854796d9e49e312e318c8ab6570199cdb47</code></small></figure>
+</article></section>
+<section><strong>Scroll frame 112</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>30e7a88dbf10b81627463e5f83483190f2cf1a1457f220a84e277fd2c47b26ae</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>f58961e8ad43ab1911669efb56383a1971aa8071f1ba9acda9911029345e8a07</code></small></figure>
+</article></section>
+<section><strong>Scroll frame 144</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>f8def3c474cc595f18f366e66bbecdda488b608a68f3c42965dd29d564866dda</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>d2a05217c67f22d34b83b40b73b2f50b9a71c0d5589049aaf13a2e2151320975</code></small></figure>
+</article></section>
+<section><strong>Scroll frame 154</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>9311dda0410e48352dd7cf3d64893ec021418e48e5d05521f749330471566d46</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>db6d46f75c049ffa7f98cdbb646baa0749271757fb367f971196f8c31c756def</code></small></figure>
+</article></section>
+<section><strong>Scroll frame 190</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>0f6d6bed43ceef903ba004697afc95a261dd1177bee60b215e7e8fb4783d2f10</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>65563e7f99c189ccf3c1d694c56bc12eacc50da6425cc6ce7a930b24943a413e</code></small></figure>
+</article></section>
+<p>Reproduce: install tools/intro/requirements.txt; run python tools/dialog/compare.py --capture --scenario marin-scroll; gradle -p java captureDialog -PdialogScenario=marin-scroll; python tools/dialog/compare.py --scenario marin-scroll.</p></html>

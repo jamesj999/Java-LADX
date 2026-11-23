@@ -1,14 +1,15 @@
 package linksawakening.ui;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 import linksawakening.cutscene.IntroSprite;
+import linksawakening.gameplay.GameplaySoundEvent;
+import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.input.InputConfig;
 import linksawakening.input.InputState;
 import linksawakening.scene.BackgroundScene;
 import linksawakening.scene.BackgroundSceneCatalog;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Function;
 
 /**
  * State and ROM-backed presentation for the in-game save choice.
@@ -22,14 +23,23 @@ public final class FileSaveController {
     private static final int SAVE_ARROW_TILE = 0xBE;
     private static final int SAVE_ARROW_OAM_X = 0x24;
     private static final int[] SAVE_OPTION_OAM_Y = {0x48, 0x58};
+    private final FileMenuFrameSnapshot.Builder snapshotBuilder = new FileMenuFrameSnapshot.Builder();
 
-    private final Function<String, BackgroundScene> sceneProvider;
-    private BackgroundScene scene;
+    private final BackgroundScene scene;
+    private final GameplaySoundSink sounds;
     private int selectedOption;
     private FileMenuFrameSnapshot snapshot;
 
     public FileSaveController(Function<String, BackgroundScene> sceneProvider) {
-        this.sceneProvider = Objects.requireNonNull(sceneProvider, "sceneProvider");
+        this(sceneProvider, GameplaySoundSink.none());
+    }
+
+    public FileSaveController(Function<String, BackgroundScene> sceneProvider, GameplaySoundSink sounds) {
+        this.sounds = Objects.requireNonNull(sounds);
+        Objects.requireNonNull(sceneProvider, "sceneProvider");
+        scene = Objects.requireNonNull(
+                sceneProvider.apply(BackgroundSceneCatalog.FILE_SAVE_SCENE),
+                "sceneProvider returned null for " + BackgroundSceneCatalog.FILE_SAVE_SCENE);
         refreshSnapshot();
     }
 
@@ -41,43 +51,39 @@ public final class FileSaveController {
         Objects.requireNonNull(inputState, "inputState");
         Objects.requireNonNull(inputConfig, "inputConfig");
 
-        if (inputState.wasPressed(inputConfig.upKey())
-            || inputState.wasPressed(inputConfig.downKey())) {
+        if (inputState.wasPressed(inputConfig.upKey()) || inputState.wasPressed(inputConfig.downKey())) {
+            sounds.play(GameplaySoundEvent.MENU_MOVE);
             selectedOption = (selectedOption + 1) % OPTION_COUNT;
         }
 
         FileSaveAction action = FileSaveAction.none();
         if (inputState.wasPressed(inputConfig.aKey())
-            || inputState.wasPressed(inputConfig.bKey())
-            || inputState.wasPressed(inputConfig.menuOpenKey())) {
-            action = new FileSaveAction(selectedOption == 0
-                ? FileSaveAction.Type.RETURN_TO_GAME
-                : FileSaveAction.Type.SAVE_AND_QUIT);
+                || inputState.wasPressed(inputConfig.bKey())
+                || inputState.wasPressed(inputConfig.menuOpenKey())) {
+            sounds.play(GameplaySoundEvent.MENU_VALIDATE);
+            action = new FileSaveAction(
+                    selectedOption == 0 ? FileSaveAction.Type.RETURN_TO_GAME : FileSaveAction.Type.SAVE_AND_QUIT);
         }
         refreshSnapshot();
         return action;
     }
 
     private void refreshSnapshot() {
-        if (scene == null) {
-            scene = Objects.requireNonNull(
-                sceneProvider.apply(BackgroundSceneCatalog.FILE_SAVE_SCENE),
-                "sceneProvider returned null for " + BackgroundSceneCatalog.FILE_SAVE_SCENE);
-        }
         int oamY = SAVE_OPTION_OAM_Y[selectedOption];
-        snapshot = new FileMenuFrameSnapshot(
-            BackgroundSceneCatalog.FILE_SAVE_SCENE,
-            selectedOption,
-            false,
-            false,
-            0,
-            0,
-            new int[5],
-            scene.tilemap(),
-            scene.attrmap(),
-            scene.palettes(),
-            scene.objectPalettes(),
-            List.of(new IntroSprite(SAVE_ARROW_TILE,
-                SAVE_ARROW_OAM_X - 8, oamY - 8, 0, false, false)));
+        snapshot = snapshotBuilder
+                .sceneId(BackgroundSceneCatalog.FILE_SAVE_SCENE)
+                .selectedSlot(selectedOption)
+                .commandRowArrowShifted(false)
+                .creation(false)
+                .selectedCharacter(0)
+                .namePosition(0)
+                .nameBytes(new int[5])
+                .tilemap(scene.tilemap())
+                .attrmap(scene.attrmap())
+                .bgPalettes(scene.palettes())
+                .objectPalettes(scene.objectPalettes())
+                .sprites(
+                        List.of(new IntroSprite(SAVE_ARROW_TILE, SAVE_ARROW_OAM_X - 8, oamY - 16, 0, false, false, 16)))
+                .build();
     }
 }

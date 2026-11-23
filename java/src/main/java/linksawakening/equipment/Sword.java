@@ -1,48 +1,20 @@
 package linksawakening.equipment;
 
-import linksawakening.entity.Link;
+import java.util.Objects;
+import java.util.function.IntSupplier;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
-import linksawakening.gpu.Framebuffer;
-import linksawakening.gpu.Tile;
 import linksawakening.rom.RomTables;
+import linksawakening.rom.SwordTables;
+import linksawakening.state.Direction;
+import linksawakening.world.entity.RomRandomByteSource;
 
-import java.util.Objects;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.IntSupplier;
+/** Swing, charge and movement gates from CheckItemsToUse and UpdateLinkAnimation. */
+public final class Sword implements EquipmentItem {
 
-/**
- * Port of the sword swing + charge logic from the LADX disassembly (see
- * {@code check_items_to_use.asm}, {@code bank2.asm:UpdateLinkAnimation},
- * and {@code bank0.asm:ApplyLinkMotionState}).
- *
- * <p>The swing runs NONE -> DRAW -> SWING_START -> SWING_MIDDLE, and if the
- * button is still held at the end, settles into HOLDING where a
- * charge meter builds up (matches {@code wSwordCharge} /
- * {@code MAX_SWORD_CHARGE = $28}). At max charge the blade flashes between
- * its normal palette and a brighter "charged" palette every 4 frames,
- * mirroring the attribute-bit-4 toggle gated by bit 2 of the frame counter
- * in {@code bank0.asm:17BF-17C5} (and the GBC palette-4 branch in
- * {@code func_020_4AB3}).
- *
- * <p>The blade position, per-frame orientation, and sprite-tile selection
- * all come from ROM tables loaded into {@link RomTables}: the same
- * {@code LinkDirectionToSwordDirection}, {@code LinkDirectionTo_wC13A/139/13B},
- * and {@code Data_020_4A93/4AA3} the original uses.
- */
-public final class Sword implements EquippedItem {
-
-    /** Optional bridge to the room-owned ROM sword-beam entity. */
-    public interface BeamTarget {
-        boolean fireSwordBeam();
-    }
-
-    /** The ROM's wC140..wC143 rectangle for enemy collision. */
-    public record CollisionBox(boolean active, int x, int width, int y, int height) {
-        public static CollisionBox inactive() {
-            return new CollisionBox(false, 0, 0, 0, 0);
-        }
-    }
+    private static final int DRAW_FRAMES = 4;
+    private static final int SWING_START_FRAMES = 3;
+    private static final int SWING_MIDDLE_FRAMES = 8;
 
     public static final int STATE_NONE = 0;
     public static final int STATE_DRAW = 1;
@@ -50,39 +22,11 @@ public final class Sword implements EquippedItem {
     public static final int STATE_SWING_MIDDLE = 3;
     public static final int STATE_SWING_END = 4;
     public static final int STATE_HOLDING = 5;
+    public static final int MAX_CHARGE = 40;
+    private final SwordSpin spin;
 
-    private static final int DRAW_FRAMES = 4;
-    private static final int SWING_START_FRAMES = 3;
-    private static final int SWING_MIDDLE_FRAMES = 8;
-    private static final int SPIN_ATTACK_FRAMES = 0x20;
-    public static final int MAX_CHARGE = 40; // MAX_SWORD_CHARGE ($28) in the ROM
-    private static final int ATTR_FLIP_X = 0x20;
-    private static final int ATTR_FLIP_Y = 0x40;
-    // bank2.asm:46C9-46E8. Indexed as (base hLinkDirection << 3) + spin sector.
-    private static final int[][] SPIN_ANIMATION_STATE_BY_BASE_DIRECTION = {
-        { STATE_SWING_MIDDLE, STATE_SWING_START, STATE_SWING_MIDDLE, STATE_SWING_START,
-          STATE_SWING_MIDDLE, STATE_SWING_START, STATE_SWING_MIDDLE, STATE_SWING_END },
-        { STATE_SWING_MIDDLE, STATE_SWING_END, STATE_SWING_MIDDLE, STATE_SWING_START,
-          STATE_SWING_MIDDLE, STATE_SWING_END, STATE_SWING_MIDDLE, STATE_SWING_END },
-        { STATE_SWING_MIDDLE, STATE_SWING_START, STATE_SWING_MIDDLE, STATE_SWING_END,
-          STATE_SWING_MIDDLE, STATE_SWING_END, STATE_SWING_MIDDLE, STATE_SWING_END },
-        { STATE_SWING_MIDDLE, STATE_SWING_END, STATE_SWING_MIDDLE, STATE_SWING_END,
-          STATE_SWING_MIDDLE, STATE_SWING_START, STATE_SWING_MIDDLE, STATE_SWING_END },
-    };
-    // bank2.asm:46E9-4708. Indexed as (base hLinkDirection << 3) + spin sector.
-    private static final int[][] SPIN_ABSOLUTE_DIRECTION_BY_BASE_DIRECTION = {
-        { Link.DIRECTION_RIGHT, Link.DIRECTION_UP, Link.DIRECTION_UP, Link.DIRECTION_LEFT,
-          Link.DIRECTION_LEFT, Link.DIRECTION_DOWN, Link.DIRECTION_DOWN, Link.DIRECTION_RIGHT },
-        { Link.DIRECTION_LEFT, Link.DIRECTION_UP, Link.DIRECTION_UP, Link.DIRECTION_RIGHT,
-          Link.DIRECTION_RIGHT, Link.DIRECTION_DOWN, Link.DIRECTION_DOWN, Link.DIRECTION_LEFT },
-        { Link.DIRECTION_UP, Link.DIRECTION_RIGHT, Link.DIRECTION_RIGHT, Link.DIRECTION_DOWN,
-          Link.DIRECTION_DOWN, Link.DIRECTION_LEFT, Link.DIRECTION_LEFT, Link.DIRECTION_UP },
-        { Link.DIRECTION_DOWN, Link.DIRECTION_LEFT, Link.DIRECTION_LEFT, Link.DIRECTION_UP,
-          Link.DIRECTION_UP, Link.DIRECTION_RIGHT, Link.DIRECTION_RIGHT, Link.DIRECTION_DOWN },
-    };
-
-    private final RomTables romTables;
-    private final SwordSpriteSheet spriteSheet;
+    private final SwordTables swordTables;
+    private final SwordRenderer renderer;
     private final GameplaySoundSink soundSink;
     private final IntSupplier randomByteSupplier;
     private final SwordPalette swordPalette;
@@ -90,19 +34,22 @@ public final class Sword implements EquippedItem {
 
     private int state = STATE_NONE;
     private int timer;
+    private boolean animationMotionBlocked;
+    private boolean motionBlockedBeforeAnimation;
+    private int facingLockCountdown;
+    private boolean facingLockedBeforeAnimation;
+    private boolean suppressesJumpAnimation;
     private int charge;
     private int frameCounter;
-    private int spinFramesRemaining;
-    private int spinFrameCounter;
-    private int spinSector;
-    private int spinBaseDirection = Link.DIRECTION_DOWN;
-    private int lastKnownDirection = Link.DIRECTION_DOWN;
-    private boolean spinAttackQueued;
-    private int queuedSpinDelayFrames;
+    private int lastKnownDirection = Direction.DOWN.javaIndex();
 
     public Sword(RomTables romTables, SwordSpriteSheet spriteSheet) {
-        this(romTables, spriteSheet, GameplaySoundSink.none(),
-                () -> ThreadLocalRandom.current().nextInt(0x100), SwordPalette.compatibility(),
+        this(
+                romTables,
+                spriteSheet,
+                GameplaySoundSink.none(),
+                new RomRandomByteSource(),
+                SwordPalette.compatibility(),
                 () -> false);
     }
 
@@ -130,17 +77,44 @@ public final class Sword implements EquippedItem {
             IntSupplier randomByteSupplier,
             SwordPalette swordPalette,
             BeamTarget beamTarget) {
-        this.romTables = romTables;
-        this.spriteSheet = spriteSheet;
+        this(
+                new Assets(
+                        romTables == null ? SwordTables.animationOnly() : romTables.swordTables(),
+                        Objects.requireNonNullElseGet(spriteSheet, SwordSpriteSheet::invisible)),
+                soundSink,
+                randomByteSupplier,
+                swordPalette,
+                beamTarget);
+    }
+
+    public Sword(Assets assets) {
+        this(assets, GameplaySoundSink.none(), new RomRandomByteSource(), SwordPalette.compatibility(), () -> false);
+    }
+
+    public Sword(Assets assets, GameplaySoundSink soundSink, IntSupplier randomByteSupplier) {
+        this(assets, soundSink, randomByteSupplier, SwordPalette.compatibility(), () -> false);
+    }
+
+    public Sword(
+            Assets assets,
+            GameplaySoundSink soundSink,
+            IntSupplier randomByteSupplier,
+            SwordPalette swordPalette,
+            BeamTarget beamTarget) {
+        Objects.requireNonNull(assets, "assets");
+        this.swordTables = assets.tables();
+        this.renderer = new SwordRenderer(swordTables, assets.sprites());
         this.soundSink = Objects.requireNonNull(soundSink, "soundSink");
         this.randomByteSupplier = Objects.requireNonNull(randomByteSupplier, "randomByteSupplier");
         this.swordPalette = Objects.requireNonNull(swordPalette, "swordPalette");
         this.beamTarget = Objects.requireNonNull(beamTarget, "beamTarget");
+
+        spin = new SwordSpin(swordTables);
     }
 
     public int state() {
         if (spinAttackActive()) {
-            return spinAnimationState();
+            return spin.animationState();
         }
         return state;
     }
@@ -173,13 +147,19 @@ public final class Sword implements EquippedItem {
     public void onRelease() {
         if (state == STATE_HOLDING) {
             if (charge >= MAX_CHARGE) {
-                spinBaseDirection = lastKnownDirection;
-                spinAttackQueued = true;
-                queuedSpinDelayFrames = 1;
+                spin.queue(lastKnownDirection);
                 soundSink.play(GameplaySoundEvent.SPIN_ATTACK);
             } else {
                 state = STATE_NONE;
             }
+            charge = 0;
+        }
+    }
+
+    /** CheckItemsToUse cannot renew a held sword while a Gel is attached. */
+    public void releaseHoldWithoutSpin() {
+        if (state == STATE_HOLDING) {
+            state = STATE_NONE;
             charge = 0;
         }
     }
@@ -192,39 +172,37 @@ public final class Sword implements EquippedItem {
     @Override
     public void tick(boolean buttonHeld, int frameCounter) {
         this.frameCounter = frameCounter & 0xFF;
-        if (spinAttackQueued) {
-            if (queuedSpinDelayFrames > 0) {
-                queuedSpinDelayFrames--;
-                return;
-            }
-            spinAttackQueued = false;
-            spinFramesRemaining = SPIN_ATTACK_FRAMES;
-            // The ROM also decrements on hFrameCounter % 4 == 0. Without a
-            // shared frame counter here, start on the 25-frame visible cadence.
-            spinFrameCounter = 1;
-            advanceSpinAttackAnimation();
-            return;
-        }
-        if (spinAttackActive()) {
-            advanceSpinAttackAnimation();
+        // XY movement ($02:43C8) consumes the previous animation's flag.
+        // UpdateLinkAnimation sets it before advancing even the final swing state.
+        suppressesJumpAnimation = state != STATE_NONE;
+        facingLockedBeforeAnimation = facingLockCountdown != 0;
+        if (facingLockCountdown > 0) facingLockCountdown--;
+        if (state != STATE_NONE) facingLockCountdown = 4; // wC16E, $02:47F3
+        motionBlockedBeforeAnimation = animationMotionBlocked;
+        animationMotionBlocked = blocksMotion();
+        if (spin.queued() || spin.active()) {
+            state = spin.advance(state);
             return;
         }
         switch (state) {
-            case STATE_NONE:
+            case STATE_NONE -> {
                 return;
-            case STATE_DRAW:
+            }
+            case STATE_DRAW -> {
                 if (--timer <= 0) {
                     state = STATE_SWING_START;
                     timer = SWING_START_FRAMES;
                 }
                 return;
-            case STATE_SWING_START:
+            }
+            case STATE_SWING_START -> {
                 if (--timer <= 0) {
                     state = STATE_SWING_MIDDLE;
                     timer = SWING_MIDDLE_FRAMES;
                 }
                 return;
-            case STATE_SWING_MIDDLE:
+            }
+            case STATE_SWING_MIDDLE -> {
                 if (--timer <= 0) {
                     state = buttonHeld ? STATE_HOLDING : STATE_NONE;
                     if (state == STATE_NONE) {
@@ -232,13 +210,15 @@ public final class Sword implements EquippedItem {
                     }
                 }
                 return;
-            case STATE_SWING_END:
+            }
+            case STATE_SWING_END -> {
                 state = buttonHeld ? STATE_HOLDING : STATE_NONE;
                 if (state == STATE_NONE) {
                     charge = 0;
                 }
                 return;
-            case STATE_HOLDING:
+            }
+            case STATE_HOLDING -> {
                 if (charge < MAX_CHARGE) {
                     charge++;
                     if (charge == MAX_CHARGE) {
@@ -246,8 +226,8 @@ public final class Sword implements EquippedItem {
                     }
                 }
                 return;
-            default:
-                state = STATE_NONE;
+            }
+            default -> state = STATE_NONE;
         }
     }
 
@@ -256,9 +236,23 @@ public final class Sword implements EquippedItem {
         return spinAttackActive() || (state != STATE_NONE && state != STATE_HOLDING);
     }
 
+    /** $02:47AD checks the sword state before advancing its animation. */
+    public boolean suppressesJumpAnimation() {
+        return suppressesJumpAnimation;
+    }
+
+    public boolean locksTopDownFacing() {
+        return spin.queued() || spinAttackActive() || facingLockedBeforeAnimation;
+    }
+
+    /** Movement phase preceding this tick's UpdateLinkAnimation. */
+    public boolean blocksTopDownMotion() {
+        return spinAttackActive() || motionBlockedBeforeAnimation;
+    }
+
     @Override
     public boolean locksFacing() {
-        return spinAttackQueued || spinAttackActive() || state != STATE_NONE;
+        return spin.queued() || spinAttackActive() || state != STATE_NONE;
     }
 
     @Override
@@ -267,9 +261,10 @@ public final class Sword implements EquippedItem {
         if (state == STATE_NONE && !spinAttackActive()) {
             return -1;
         }
-        int effectiveDirection = effectiveDirection(direction);
+        int effectiveDirection = spin.effectiveDirection(direction);
         int lookupState = effectiveLinkAnimationState();
-        int value = romTables.swordDirectionAnimState(toRomDirection(effectiveDirection), lookupState);
+        int value = swordTables.swordDirectionAnimState(
+                Direction.fromJavaOrDown(effectiveDirection).romIndex(), lookupState);
         if (value == 0xFF) {
             return -1;
         }
@@ -277,72 +272,84 @@ public final class Sword implements EquippedItem {
     }
 
     @Override
-    public void render(byte[] displayBuffer, int linkPixelX, int linkPixelY,
-                       int direction, int offsetX, int offsetY) {
+    public void render(byte[] buffer, int x, int y, int direction, int offsetX, int offsetY) {
         lastKnownDirection = direction;
-        if (state == STATE_NONE && !spinAttackActive()) {
-            return;
-        }
-        int effectiveDirection = effectiveDirection(direction);
-        int romDir = toRomDirection(effectiveDirection);
-        int lookupState = effectiveBladeRenderState();
-        int swordDir = romTables.swordDirectionFor(romDir, lookupState);
-        int bladeX = linkPixelX + romTables.swordBladeXOffset(romDir, lookupState) + offsetX;
-        int bladeY = linkPixelY + romTables.swordBladeYOffset(romDir, lookupState) + offsetY;
+        if (state == STATE_NONE && !spinAttackActive()) return;
+        renderer.render(
+                buffer,
+                x,
+                y,
+                spin.effectiveDirection(direction),
+                effectiveBladeRenderState(),
+                chargedFlashActive() ? swordPalette.charged() : swordPalette.normal(),
+                offsetX,
+                offsetY);
+    }
 
-        int[] palette = chargedFlashActive() ? swordPalette.charged() : swordPalette.normal();
-
-        // Two 8x16 stacked sprites side by side, matching func_020_4AB3.
-        // Tile $FF for the left half means only the right half is drawn
-        // (the vertical blade cases).
-        int tile0 = romTables.swordSpriteTile(swordDir, 0);
-        int tile1 = romTables.swordSpriteTile(swordDir, 1);
-        int attr0 = romTables.swordSpriteAttr(swordDir, 0);
-        int attr1 = romTables.swordSpriteAttr(swordDir, 1);
-        if (tile0 != 0xFF) {
-            draw8x16(displayBuffer, tile0, bladeX, bladeY, attr0, palette);
-        }
-        if (tile1 != 0xFF) {
-            draw8x16(displayBuffer, tile1, bladeX + 8, bladeY, attr1, palette);
-        }
+    @Override
+    public void submitOam(linksawakening.render.OamSink sink, int x, int y, int direction, int offsetX, int offsetY) {
+        if (state == STATE_NONE && !spinAttackActive()) return;
+        renderer.submitOam(
+                sink,
+                x,
+                y,
+                spin.effectiveDirection(direction),
+                effectiveBladeRenderState(),
+                chargedFlashActive() ? swordPalette.charged() : swordPalette.normal(),
+                offsetX,
+                offsetY);
     }
 
     public int attackDirection(int linkDirection) {
         lastKnownDirection = linkDirection;
-        return effectiveDirection(linkDirection);
+        return spin.effectiveDirection(linkDirection);
     }
 
     public int staticCollisionMapIndex(int linkDirection) {
         lastKnownDirection = linkDirection;
         if (!spinAttackActive()) {
-            return toRomDirection(linkDirection);
+            return Direction.fromJavaOrDown(linkDirection).romIndex();
         }
-        int effectiveDirection = effectiveDirection(linkDirection);
-        int romDirection = toRomDirection(effectiveDirection);
-        int swordDirection = romTables.swordDirectionFor(romDirection, spinAnimationState());
+        int effectiveDirection = spin.effectiveDirection(linkDirection);
+        int romDirection = Direction.fromJavaOrDown(effectiveDirection).romIndex();
+        int swordDirection = swordTables.swordDirectionFor(romDirection, spin.animationState());
         return 4 + (swordDirection & 0x07);
     }
 
     public boolean spinAttackActive() {
-        return spinFramesRemaining > 0;
+        return spin.active();
+    }
+    /** Starts the ROM forced sword-spin state (wIsUsingSpinAttack=$20). */
+    public void startSwordAcquisitionSpin(int baseDirection) {
+        spin.startAcquisition(baseDirection);
+        state = STATE_NONE;
+        charge = 0;
     }
 
-    /**
-     * Mirrors the ROM's ResetSpinAttack helper (bank0.asm:$0CAF).  Entity
-     * collisions use it to cancel a charged or active spin before Link's next
-     * motion update.
-     */
+    /** The room-load WRAM clear also discards any pre-death sword animation. */
+    public void resetAfterGameOver() {
+        resetSpinAttack();
+        state = STATE_NONE;
+        timer = 0;
+        animationMotionBlocked = false;
+        motionBlockedBeforeAnimation = false;
+        facingLockCountdown = 0;
+        facingLockedBeforeAnimation = false;
+        suppressesJumpAnimation = false;
+    }
+
+    public void cancelAttack() {
+        resetSpinAttack();
+        state = STATE_NONE;
+        timer = 0;
+    }
+
     public void resetSpinAttack() {
-        boolean wasActive = spinAttackActive();
-        spinAttackQueued = false;
-        queuedSpinDelayFrames = 0;
+        boolean wasActive = spin.active();
+        spin.clearQueue();
         charge = 0;
-        spinFramesRemaining = 0;
-        spinFrameCounter = 0;
-        spinSector = 0;
-        if (wasActive) {
-            state = STATE_NONE;
-        }
+        spin.clearAnimation();
+        if (wasActive) state = STATE_NONE;
     }
 
     /**
@@ -350,26 +357,42 @@ public final class Sword implements EquippedItem {
      * in bank2.asm. The rectangle is independent from the visual blade OAM
      * bounds and is therefore kept as a separate ROM-table lookup.
      */
-    public CollisionBox enemyCollisionBox(int linkEntityX, int linkEntityY, int linkDirection) {
+    @Override
+    public Sword.CollisionBox enemyCollisionBox(int linkEntityX, int linkEntityY, int linkDirection) {
+        return enemyCollisionBox(linkEntityX, linkEntityY, linkDirection, false);
+    }
+
+    /** Bank 02:42F4 keeps the held blade collision active while running with Pegasus Boots. */
+    public Sword.CollisionBox enemyCollisionBox(
+            int linkEntityX, int linkEntityY, int linkDirection, boolean runningWithPegasusBoots) {
         lastKnownDirection = linkDirection;
-        if (!staticCollisionActive() || romTables == null) {
-            return CollisionBox.inactive();
+        if ((!staticCollisionActive() && !(runningWithPegasusBoots && state == STATE_HOLDING))
+                || !swordTables.bladeCollisionEnabled()) {
+            return Sword.CollisionBox.inactive();
         }
         if (spinAttackActive()) {
-            return new CollisionBox(true, linkEntityX + 0x08, 0x18,
-                linkEntityY + 0x08, 0x18);
+            return new Sword.CollisionBox(true, linkEntityX + 0x08, 0x18, linkEntityY + 0x08, 0x18);
         }
 
-        int romDirection = toRomDirection(linkDirection);
-        if (!romTables.swordEnemyCollisionEnabled(romDirection, state)) {
-            return CollisionBox.inactive();
+        int romDirection = Direction.fromJavaOrDown(linkDirection).romIndex();
+        if (!swordTables.swordEnemyCollisionEnabled(romDirection, state)) {
+            return Sword.CollisionBox.inactive();
         }
-        return new CollisionBox(
-            true,
-            linkEntityX + romTables.swordCollisionXOriginOffset(romDirection, state),
-            romTables.swordCollisionWidth(romDirection, state),
-            linkEntityY + romTables.swordCollisionYOriginOffset(romDirection, state),
-            romTables.swordCollisionHeight(romDirection, state));
+        return new Sword.CollisionBox(
+                true,
+                linkEntityX + swordTables.swordCollisionXOriginOffset(romDirection, state),
+                swordTables.swordCollisionWidth(romDirection, state),
+                linkEntityY + swordTables.swordCollisionYOriginOffset(romDirection, state),
+                swordTables.swordCollisionHeight(romDirection, state));
+    }
+
+    private static GameplaySoundEvent swordSwingSound(int randomByte) {
+        return switch (randomByte & 0x03) {
+            case 0 -> GameplaySoundEvent.SWORD_SWING_A;
+            case 1 -> GameplaySoundEvent.SWORD_SWING_B;
+            case 2 -> GameplaySoundEvent.SWORD_SWING_C;
+            default -> GameplaySoundEvent.SWORD_SWING_D;
+        };
     }
 
     // Flash is driven by bit 2 of the global frame counter during HOLDING at
@@ -380,7 +403,7 @@ public final class Sword implements EquippedItem {
 
     private int effectiveLinkAnimationState() {
         if (spinAttackActive()) {
-            return spinAnimationState();
+            return spin.animationState();
         }
         // HOLDING maps to HIDDEN (0xFF) in the ROM for hLinkAnimationState,
         // meaning "keep the previous frame". Since the previous frame was
@@ -390,123 +413,33 @@ public final class Sword implements EquippedItem {
 
     private int effectiveBladeRenderState() {
         if (spinAttackActive()) {
-            return spinAnimationState();
+            return spin.animationState();
         }
         return state;
     }
 
-    private int effectiveDirection(int direction) {
-        if (!spinAttackActive()) {
-            return direction;
-        }
-        return SPIN_ABSOLUTE_DIRECTION_BY_BASE_DIRECTION[toSpinDirectionIndex(spinBaseDirection)][spinSector()];
-    }
-
-    private int spinAnimationState() {
-        return SPIN_ANIMATION_STATE_BY_BASE_DIRECTION[toSpinDirectionIndex(spinBaseDirection)][spinSector()];
-    }
-
-    private int spinSector() {
-        return Math.min(7, Math.max(0, spinSector));
-    }
-
-    private void advanceSpinAttackAnimation() {
-        spinFramesRemaining--;
-        if (spinFramesRemaining <= 0) {
-            endSpinAttack();
-            return;
+    /** Immutable blade data, with explicit invisible assets for action-only actors. */
+    public record Assets(SwordTables tables, SwordSpriteSheet sprites) {
+        public Assets {
+            Objects.requireNonNull(tables, "tables");
+            Objects.requireNonNull(sprites, "sprites");
         }
 
-        spinSector = spinFramesRemaining >> 2;
-        state = spinAnimationState();
-
-        if ((spinFrameCounter & 0x03) == 0) {
-            spinFramesRemaining--;
-            if (spinFramesRemaining <= 0) {
-                endSpinAttack();
-                return;
-            }
-        }
-        spinFrameCounter++;
-    }
-
-    private void endSpinAttack() {
-        spinFramesRemaining = 0;
-        spinFrameCounter = 0;
-        spinSector = 0;
-        state = STATE_NONE;
-    }
-
-    private static int toSpinDirectionIndex(int javaDirection) {
-        switch (javaDirection) {
-            case Link.DIRECTION_RIGHT: return 0;
-            case Link.DIRECTION_LEFT:  return 1;
-            case Link.DIRECTION_UP:    return 2;
-            case Link.DIRECTION_DOWN:  return 3;
-            default: return 3;
+        public static Assets animationOnly() {
+            return new Assets(SwordTables.animationOnly(), SwordSpriteSheet.invisible());
         }
     }
 
-    private void draw8x16(byte[] buffer, int tileIndex, int screenX, int screenY,
-                          int attrs, int[] palette) {
-        boolean flipX = (attrs & ATTR_FLIP_X) != 0;
-        boolean flipY = (attrs & ATTR_FLIP_Y) != 0;
-        // GB 8x16 sprite mode: tile T and tile T+1 stacked. flipY swaps
-        // which tile is on top and flips each vertically.
-        Tile top = spriteSheet.tile(flipY ? tileIndex + 1 : tileIndex);
-        Tile bottom = spriteSheet.tile(flipY ? tileIndex : tileIndex + 1);
-        drawTile(buffer, top,    screenX, screenY,     flipX, flipY, palette);
-        drawTile(buffer, bottom, screenX, screenY + 8, flipX, flipY, palette);
+    /** Optional bridge to the room-owned ROM sword-beam entity. */
+    public interface BeamTarget {
+        boolean fireSwordBeam();
     }
 
-    private static void drawTile(byte[] buffer, Tile tile, int screenX, int screenY,
-                                 boolean flipX, boolean flipY, int[] palette) {
-        if (tile == null) {
-            return;
-        }
-        for (int ty = 0; ty < 8; ty++) {
-            for (int tx = 0; tx < 8; tx++) {
-                int px = screenX + tx;
-                int py = screenY + ty;
-                if (px < 0 || px >= Framebuffer.WIDTH || py < 0 || py >= Framebuffer.HEIGHT) {
-                    continue;
-                }
-                int sx = flipX ? 7 - tx : tx;
-                int sy = flipY ? 7 - ty : ty;
-                int colorIndex = tile.getPixel(sx, sy);
-                if (colorIndex == 0) {
-                    continue;
-                }
-                int color = palette[colorIndex];
-                int offset = (py * Framebuffer.WIDTH + px) * 4;
-                buffer[offset] = (byte) ((color >> 16) & 0xFF);
-                buffer[offset + 1] = (byte) ((color >> 8) & 0xFF);
-                buffer[offset + 2] = (byte) (color & 0xFF);
-                buffer[offset + 3] = (byte) 0xFF;
-            }
-        }
-    }
-
-    private static int toRomDirection(int javaDirection) {
-        switch (javaDirection) {
-            case Link.DIRECTION_RIGHT: return 0;
-            case Link.DIRECTION_LEFT:  return 1;
-            case Link.DIRECTION_UP:    return 2;
-            case Link.DIRECTION_DOWN:  return 3;
-            default: return 3;
-        }
-    }
-
-    private static GameplaySoundEvent swordSwingSound(int randomByte) {
-        switch (randomByte & 0x03) {
-            case 0:
-                return GameplaySoundEvent.SWORD_SWING_A;
-            case 1:
-                return GameplaySoundEvent.SWORD_SWING_B;
-            case 2:
-                return GameplaySoundEvent.SWORD_SWING_C;
-            default:
-                return GameplaySoundEvent.SWORD_SWING_D;
+    /** The ROM's wC140..wC143 rectangle for enemy collision. */
+    public record CollisionBox(boolean active, int x, int width, int y, int height)
+            implements EquipmentItem.CollisionBox {
+        public static CollisionBox inactive() {
+            return new CollisionBox(false, 0, 0, 0, 0);
         }
     }
 }

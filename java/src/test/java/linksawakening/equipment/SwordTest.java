@@ -1,5 +1,10 @@
 package linksawakening.equipment;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -7,26 +12,37 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import linksawakening.entity.Link;
+import java.util.function.IntSupplier;
 import linksawakening.gameplay.GameplaySoundEvent;
 import linksawakening.gameplay.GameplaySoundSink;
 import linksawakening.gpu.Framebuffer;
+import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+@linksawakening.testing.RequiresRom
 final class SwordTest {
 
     private static final int STATE_DRAW = 1; // SWORD_ANIMATION_STATE_DRAW in the ROM
 
     @Test
+    void movementLockUsesPreviousAnimationIncludingTheFinalSwingFrame() {
+        Sword sword = new Sword(Sword.Assets.animationOnly());
+        sword.onPress();
+        for (int frame = 1; frame <= 20; frame++) {
+            sword.tick(false);
+            assertEquals(frame >= 2 && frame <= 16, sword.blocksTopDownMotion(), "movement frame " + frame);
+            assertEquals(frame >= 2 && frame <= 19, sword.locksTopDownFacing(), "facing frame " + frame);
+            if (frame >= 15) assertEquals(Sword.STATE_NONE, sword.state());
+        }
+    }
+
+    @Test
     void startingSlashPlaysOneOfTheRomSwordSwingNoiseEffects() {
         RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
         SequenceIntSupplier randomBytes = new SequenceIntSupplier(0, 1, 2, 3);
-        Sword sword = new Sword(null, null, soundSink, randomBytes);
+        Sword sword = new Sword(Sword.Assets.animationOnly(), soundSink, randomBytes);
 
         sword.onPress();
 
@@ -45,17 +61,19 @@ final class SwordTest {
         }
         sword.onPress();
 
-        assertEquals(List.of(
-                GameplaySoundEvent.SWORD_SWING_A,
-                GameplaySoundEvent.SWORD_SWING_B,
-                GameplaySoundEvent.SWORD_SWING_C,
-                GameplaySoundEvent.SWORD_SWING_D), soundSink.events);
+        assertEquals(
+                List.of(
+                        GameplaySoundEvent.SWORD_SWING_A,
+                        GameplaySoundEvent.SWORD_SWING_B,
+                        GameplaySoundEvent.SWORD_SWING_C,
+                        GameplaySoundEvent.SWORD_SWING_D),
+                soundSink.events);
     }
 
     @Test
     void pressingSwordWhileSwingingDoesNotReplaySwingSound() {
         RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
-        Sword sword = new Sword(null, null, soundSink, new SequenceIntSupplier(0));
+        Sword sword = new Sword(Sword.Assets.animationOnly(), soundSink, new SequenceIntSupplier(0));
 
         sword.onPress();
         sword.onPress();
@@ -67,8 +85,12 @@ final class SwordTest {
     void acceptedSwordPressOffersTheOptionalLevelTwoBeamSpawn() {
         RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
         RecordingBeamTarget beamTarget = new RecordingBeamTarget();
-        Sword sword = new Sword(null, null, soundSink, new SequenceIntSupplier(0),
-            SwordPalette.compatibility(), beamTarget);
+        Sword sword = new Sword(
+                Sword.Assets.animationOnly(),
+                soundSink,
+                new SequenceIntSupplier(0),
+                SwordPalette.compatibility(),
+                beamTarget);
 
         sword.onPress();
 
@@ -79,7 +101,7 @@ final class SwordTest {
     @Test
     void reachingMaximumChargePlaysChargingSwordJingleOnce() {
         RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
-        Sword sword = new Sword(null, null, soundSink, new SequenceIntSupplier(0));
+        Sword sword = new Sword(Sword.Assets.animationOnly(), soundSink, new SequenceIntSupplier(0));
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -90,15 +112,14 @@ final class SwordTest {
         }
         sword.tick(true);
 
-        assertEquals(List.of(
-                GameplaySoundEvent.SWORD_SWING_A,
-                GameplaySoundEvent.SWORD_FULLY_CHARGED), soundSink.events);
+        assertEquals(
+                List.of(GameplaySoundEvent.SWORD_SWING_A, GameplaySoundEvent.SWORD_FULLY_CHARGED), soundSink.events);
     }
 
     @Test
     void releasingFullyChargedSwordPlaysSpinAttackNoise() {
         RecordingGameplaySoundSink soundSink = new RecordingGameplaySoundSink();
-        Sword sword = new Sword(null, null, soundSink, new SequenceIntSupplier(0));
+        Sword sword = new Sword(Sword.Assets.animationOnly(), soundSink, new SequenceIntSupplier(0));
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -110,15 +131,17 @@ final class SwordTest {
 
         sword.onRelease();
 
-        assertEquals(List.of(
-                GameplaySoundEvent.SWORD_SWING_A,
-                GameplaySoundEvent.SWORD_FULLY_CHARGED,
-                GameplaySoundEvent.SPIN_ATTACK), soundSink.events);
+        assertEquals(
+                List.of(
+                        GameplaySoundEvent.SWORD_SWING_A,
+                        GameplaySoundEvent.SWORD_FULLY_CHARGED,
+                        GameplaySoundEvent.SPIN_ATTACK),
+                soundSink.events);
     }
 
     @Test
     void tapSlashDoesNotExposeAnExtraSwingEndFrame() {
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
 
         sword.onPress();
 
@@ -129,20 +152,28 @@ final class SwordTest {
         } while (sword.state() != Sword.STATE_NONE);
 
         assertEquals(
-            List.of(
-                STATE_DRAW, STATE_DRAW, STATE_DRAW,
-                Sword.STATE_SWING_START, Sword.STATE_SWING_START, Sword.STATE_SWING_START,
-                Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE,
-                Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE,
-                Sword.STATE_NONE
-            ),
-            observed
-        );
+                List.of(
+                        STATE_DRAW,
+                        STATE_DRAW,
+                        STATE_DRAW,
+                        Sword.STATE_SWING_START,
+                        Sword.STATE_SWING_START,
+                        Sword.STATE_SWING_START,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_NONE),
+                observed);
     }
 
     @Test
     void heldSlashTransitionsStraightIntoHolding() {
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
 
         sword.onPress();
 
@@ -153,20 +184,28 @@ final class SwordTest {
         }
 
         assertEquals(
-            List.of(
-                STATE_DRAW, STATE_DRAW, STATE_DRAW,
-                Sword.STATE_SWING_START, Sword.STATE_SWING_START, Sword.STATE_SWING_START,
-                Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE,
-                Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE, Sword.STATE_SWING_MIDDLE,
-                Sword.STATE_HOLDING
-            ),
-            observed
-        );
+                List.of(
+                        STATE_DRAW,
+                        STATE_DRAW,
+                        STATE_DRAW,
+                        Sword.STATE_SWING_START,
+                        Sword.STATE_SWING_START,
+                        Sword.STATE_SWING_START,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_HOLDING),
+                observed);
     }
 
     @Test
     void holdingSwordDoesNotEnableStaticCollision() {
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -179,7 +218,7 @@ final class SwordTest {
 
     @Test
     void releasingFullyChargedSwordStartsSpinAttackInsteadOfEndingImmediately() {
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -202,7 +241,7 @@ final class SwordTest {
 
     @Test
     void resetSpinAttackCancelsQueuedAndActiveRomSpinState() {
-        Sword sword = fullyChargedSwordFacing(Link.DIRECTION_RIGHT);
+        Sword sword = fullyChargedSwordFacing(Direction.RIGHT.javaIndex());
 
         sword.onRelease();
         sword.tick(false);
@@ -217,8 +256,19 @@ final class SwordTest {
     }
 
     @Test
+    void swordAcquisitionStartsTheRomForcedSpinWithoutChargeOrInput() {
+        Sword sword = new Sword(Sword.Assets.animationOnly());
+
+        sword.startSwordAcquisitionSpin(Direction.DOWN.javaIndex());
+
+        assertTrue(sword.spinAttackActive());
+        assertEquals(0, sword.charge());
+        assertTrue(sword.staticCollisionActive());
+    }
+
+    @Test
     void resetSpinAttackPreservesAnOrdinaryHeldSwordPose() {
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -235,7 +285,7 @@ final class SwordTest {
 
     @Test
     void fullyChargedReleaseKeepsSwordExtendedForReleaseFrame() {
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -254,7 +304,9 @@ final class SwordTest {
     @Test
     void fullyChargedReleaseFrameRendersSameSwordPoseAsHolding() throws Exception {
         byte[] romData = loadRom();
-        Sword sword = new Sword(RomTables.loadFromRom(romData), SwordSpriteSheet.loadFromRom(romData));
+        Sword sword = new Sword(
+                RomTables.load(linksawakening.rom.Rom.unchecked(romData)),
+                SwordSpriteSheet.loadFromRom(Rom.of(romData)));
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -265,13 +317,13 @@ final class SwordTest {
         }
 
         byte[] holdingBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
-        sword.render(holdingBuffer, 40, 48, Link.DIRECTION_RIGHT, 0, 0);
+        sword.render(holdingBuffer, 40, 48, Direction.RIGHT.javaIndex(), 0, 0);
 
         sword.onRelease();
         sword.tick(false);
 
         byte[] releaseBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
-        sword.render(releaseBuffer, 40, 48, Link.DIRECTION_RIGHT, 0, 0);
+        sword.render(releaseBuffer, 40, 48, Direction.RIGHT.javaIndex(), 0, 0);
 
         assertEquals(Arrays.toString(alphaMask(holdingBuffer)), Arrays.toString(alphaMask(releaseBuffer)));
     }
@@ -279,9 +331,13 @@ final class SwordTest {
     @Test
     void romSwordPalettesChangeColorsWithoutChangingBladeGeometry() throws Exception {
         byte[] romData = loadRom();
-        SwordPalette palette = SwordPalette.loadFromRom(romData);
-        Sword sword = new Sword(RomTables.loadFromRom(romData), SwordSpriteSheet.loadFromRom(romData),
-            GameplaySoundSink.none(), () -> 0, palette);
+        SwordPalette palette = SwordPalette.loadFromRom(Rom.of(romData));
+        Sword sword = new Sword(
+                RomTables.load(linksawakening.rom.Rom.unchecked(romData)),
+                SwordSpriteSheet.loadFromRom(Rom.of(romData)),
+                GameplaySoundSink.none(),
+                () -> 0,
+                palette);
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -293,23 +349,22 @@ final class SwordTest {
 
         sword.tick(true, 0);
         byte[] normalBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
-        sword.render(normalBuffer, 40, 48, Link.DIRECTION_RIGHT, 0, 0);
+        sword.render(normalBuffer, 40, 48, Direction.RIGHT.javaIndex(), 0, 0);
 
         sword.tick(true, 4);
         byte[] chargedBuffer = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
-        sword.render(chargedBuffer, 40, 48, Link.DIRECTION_RIGHT, 0, 0);
+        sword.render(chargedBuffer, 40, 48, Direction.RIGHT.javaIndex(), 0, 0);
 
         assertTrue(containsOpaqueColor(normalBuffer, palette.normal()[2]));
         assertTrue(containsOpaqueColor(chargedBuffer, palette.charged()[2]));
-        assertEquals(Arrays.toString(alphaMask(normalBuffer)),
-            Arrays.toString(alphaMask(chargedBuffer)));
+        assertEquals(Arrays.toString(alphaMask(normalBuffer)), Arrays.toString(alphaMask(chargedBuffer)));
     }
 
     @Test
     void holdingSwordRendersUsingRomHoldingEntry() throws Exception {
         byte[] romData = loadRom();
-        RomTables romTables = RomTables.loadFromRom(romData);
-        SwordSpriteSheet spriteSheet = SwordSpriteSheet.loadFromRom(romData);
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(romData));
+        SwordSpriteSheet spriteSheet = SwordSpriteSheet.loadFromRom(Rom.of(romData));
         Sword sword = new Sword(romTables, spriteSheet);
 
         sword.onPress();
@@ -318,24 +373,40 @@ final class SwordTest {
         }
 
         byte[] actual = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
-        sword.render(actual, 40, 48, Link.DIRECTION_RIGHT, 0, 0);
+        sword.render(actual, 40, 48, Direction.RIGHT.javaIndex(), 0, 0);
 
         byte[] expected = new byte[Framebuffer.WIDTH * Framebuffer.HEIGHT * 4];
-        drawExpectedSwordPose(expected, romTables, spriteSheet, 40, 48, Link.DIRECTION_RIGHT, Sword.STATE_HOLDING);
+        drawExpectedSwordPose(
+                expected, romTables, spriteSheet, 40, 48, Direction.RIGHT.javaIndex(), Sword.STATE_HOLDING);
 
         assertEquals(Arrays.toString(alphaMask(expected)), Arrays.toString(alphaMask(actual)));
     }
 
     @Test
+    void heldSwordRetainsEnemyCollisionWhileRunningWithPegasusBoots() throws Exception {
+        var tables = RomTables.load(linksawakening.rom.Rom.of(loadRom()));
+        Sword sword = new Sword(new Sword.Assets(tables.swordTables(), SwordSpriteSheet.invisible()));
+        sword.onPress();
+        for (int i = 0; i < 32 && sword.state() != Sword.STATE_HOLDING; i++) sword.tick(true);
+        assertEquals(Sword.STATE_HOLDING, sword.state());
+        assertFalse(sword.enemyCollisionBox(80, 96, Direction.UP.javaIndex()).active());
+        var box = sword.enemyCollisionBox(80, 96, Direction.UP.javaIndex(), true);
+        assertTrue(box.active());
+        assertEquals(80 + tables.swordTables().swordCollisionXOriginOffset(2, Sword.STATE_HOLDING), box.x());
+        assertEquals(96 + tables.swordTables().swordCollisionYOriginOffset(2, Sword.STATE_HOLDING), box.y());
+    }
+
+    @Test
     void enemyCollisionBoxUsesTheRomNormalSwingTables() throws Exception {
-        Sword sword = new Sword(RomTables.loadFromRom(loadRom()), null);
+        Sword sword = new Sword(new Sword.Assets(
+                RomTables.load(linksawakening.rom.Rom.of(loadRom())).swordTables(), SwordSpriteSheet.invisible()));
         sword.onPress();
         for (int frame = 0; frame < 4; frame++) {
             sword.tick(false);
         }
 
         assertEquals(Sword.STATE_SWING_START, sword.state());
-        Sword.CollisionBox box = sword.enemyCollisionBox(100, 100, Link.DIRECTION_RIGHT);
+        Sword.CollisionBox box = sword.enemyCollisionBox(100, 100, Direction.RIGHT.javaIndex());
 
         assertTrue(box.active());
         // Direction RIGHT, SWING_START (bank2 tables at $45BE-$461D):
@@ -349,7 +420,7 @@ final class SwordTest {
 
     @Test
     void fullyChargedReleaseStartsOnRomFirstSpinFrameOnFollowingFrame() {
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
 
         sword.onPress();
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -368,11 +439,12 @@ final class SwordTest {
 
     @Test
     void spinAttackCollisionWalksEveryRomSwordDirection() throws Exception {
-        Sword sword = new Sword(RomTables.loadFromRom(loadRom()), null);
+        Sword sword = new Sword(new Sword.Assets(
+                RomTables.load(linksawakening.rom.Rom.of(loadRom())).swordTables(), SwordSpriteSheet.invisible()));
         Set<Integer> collisionIndices = new HashSet<>();
 
         sword.onPress();
-        sword.attackDirection(Link.DIRECTION_RIGHT);
+        sword.attackDirection(Direction.RIGHT.javaIndex());
         while (sword.state() != Sword.STATE_HOLDING) {
             sword.tick(true);
         }
@@ -385,7 +457,7 @@ final class SwordTest {
             sword.tick(false);
         }
         while (sword.spinAttackActive()) {
-            collisionIndices.add(sword.staticCollisionMapIndex(Link.DIRECTION_UP));
+            collisionIndices.add(sword.staticCollisionMapIndex(Direction.UP.javaIndex()));
             sword.tick(false);
         }
 
@@ -394,7 +466,7 @@ final class SwordTest {
 
     @Test
     void downFacingSpinAttackUsesRomSectorOrder() {
-        Sword sword = fullyChargedSwordFacing(Link.DIRECTION_DOWN);
+        Sword sword = fullyChargedSwordFacing(Direction.DOWN.javaIndex());
 
         sword.onRelease();
         while (!sword.spinAttackActive()) {
@@ -407,7 +479,7 @@ final class SwordTest {
         int lastDirection = -1;
         while (sword.spinAttackActive()) {
             int state = sword.state();
-            int direction = sword.attackDirection(Link.DIRECTION_DOWN);
+            int direction = sword.attackDirection(Direction.DOWN.javaIndex());
             if (state != lastState || direction != lastDirection) {
                 states.add(state);
                 directions.add(direction);
@@ -418,36 +490,32 @@ final class SwordTest {
         }
 
         assertEquals(
-            List.of(
-                Sword.STATE_SWING_END,
-                Sword.STATE_SWING_MIDDLE,
-                Sword.STATE_SWING_START,
-                Sword.STATE_SWING_MIDDLE,
-                Sword.STATE_SWING_END,
-                Sword.STATE_SWING_MIDDLE,
-                Sword.STATE_SWING_END,
-                Sword.STATE_SWING_MIDDLE
-            ),
-            states
-        );
+                List.of(
+                        Sword.STATE_SWING_END,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_START,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_END,
+                        Sword.STATE_SWING_MIDDLE,
+                        Sword.STATE_SWING_END,
+                        Sword.STATE_SWING_MIDDLE),
+                states);
         assertEquals(
-            List.of(
-                Link.DIRECTION_DOWN,
-                Link.DIRECTION_RIGHT,
-                Link.DIRECTION_RIGHT,
-                Link.DIRECTION_UP,
-                Link.DIRECTION_UP,
-                Link.DIRECTION_LEFT,
-                Link.DIRECTION_LEFT,
-                Link.DIRECTION_DOWN
-            ),
-            directions
-        );
+                List.of(
+                        Direction.DOWN.javaIndex(),
+                        Direction.RIGHT.javaIndex(),
+                        Direction.RIGHT.javaIndex(),
+                        Direction.UP.javaIndex(),
+                        Direction.UP.javaIndex(),
+                        Direction.LEFT.javaIndex(),
+                        Direction.LEFT.javaIndex(),
+                        Direction.DOWN.javaIndex()),
+                directions);
     }
 
     @Test
     void spinAttackDurationMatchesRomCountdownCadence() {
-        Sword sword = fullyChargedSwordFacing(Link.DIRECTION_RIGHT);
+        Sword sword = fullyChargedSwordFacing(Direction.RIGHT.javaIndex());
 
         sword.onRelease();
         while (!sword.spinAttackActive()) {
@@ -464,7 +532,7 @@ final class SwordTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (InputStream in = SwordTest.class.getResourceAsStream("/rom/azle.gbc")) {
+        try (InputStream in = linksawakening.testing.TestRom.open()) {
             if (in == null) {
                 throw new IOException("Missing ROM resource /rom/azle.gbc");
             }
@@ -478,9 +546,9 @@ final class SwordTest {
         int blue = color & 0xFF;
         for (int offset = 0; offset < rgbaBuffer.length; offset += 4) {
             if (Byte.toUnsignedInt(rgbaBuffer[offset + 3]) == 0xFF
-                && Byte.toUnsignedInt(rgbaBuffer[offset]) == red
-                && Byte.toUnsignedInt(rgbaBuffer[offset + 1]) == green
-                && Byte.toUnsignedInt(rgbaBuffer[offset + 2]) == blue) {
+                    && Byte.toUnsignedInt(rgbaBuffer[offset]) == red
+                    && Byte.toUnsignedInt(rgbaBuffer[offset + 1]) == green
+                    && Byte.toUnsignedInt(rgbaBuffer[offset + 2]) == blue) {
                 return true;
             }
         }
@@ -495,16 +563,22 @@ final class SwordTest {
         return out;
     }
 
-    private static void drawExpectedSwordPose(byte[] buffer, RomTables romTables, SwordSpriteSheet spriteSheet,
-                                              int linkPixelX, int linkPixelY, int javaDirection, int swordState) {
+    private static void drawExpectedSwordPose(
+            byte[] buffer,
+            RomTables romTables,
+            SwordSpriteSheet spriteSheet,
+            int linkPixelX,
+            int linkPixelY,
+            int javaDirection,
+            int swordState) {
         int romDirection = toRomDirection(javaDirection);
-        int swordDir = romTables.swordDirectionFor(romDirection, swordState);
-        int bladeX = linkPixelX + romTables.swordBladeXOffset(romDirection, swordState);
-        int bladeY = linkPixelY + romTables.swordBladeYOffset(romDirection, swordState);
-        int tile0 = romTables.swordSpriteTile(swordDir, 0);
-        int tile1 = romTables.swordSpriteTile(swordDir, 1);
-        int attr0 = romTables.swordSpriteAttr(swordDir, 0);
-        int attr1 = romTables.swordSpriteAttr(swordDir, 1);
+        int swordDir = romTables.swordTables().swordDirectionFor(romDirection, swordState);
+        int bladeX = linkPixelX + romTables.swordTables().swordBladeXOffset(romDirection, swordState);
+        int bladeY = linkPixelY + romTables.swordTables().swordBladeYOffset(romDirection, swordState);
+        int tile0 = romTables.swordTables().swordSpriteTile(swordDir, 0);
+        int tile1 = romTables.swordTables().swordSpriteTile(swordDir, 1);
+        int attr0 = romTables.swordTables().swordSpriteAttr(swordDir, 0);
+        int attr1 = romTables.swordTables().swordSpriteAttr(swordDir, 1);
         if (tile0 != 0xFF) {
             draw8x16Alpha(buffer, spriteSheet, tile0, bladeX, bladeY, attr0);
         }
@@ -513,16 +587,16 @@ final class SwordTest {
         }
     }
 
-    private static void draw8x16Alpha(byte[] buffer, SwordSpriteSheet spriteSheet,
-                                      int tileIndex, int screenX, int screenY, int attrs) {
+    private static void draw8x16Alpha(
+            byte[] buffer, SwordSpriteSheet spriteSheet, int tileIndex, int screenX, int screenY, int attrs) {
         boolean flipX = (attrs & 0x20) != 0;
         boolean flipY = (attrs & 0x40) != 0;
         drawTileAlpha(buffer, spriteSheet.tile(flipY ? tileIndex + 1 : tileIndex), screenX, screenY, flipX, flipY);
         drawTileAlpha(buffer, spriteSheet.tile(flipY ? tileIndex : tileIndex + 1), screenX, screenY + 8, flipX, flipY);
     }
 
-    private static void drawTileAlpha(byte[] buffer, linksawakening.gpu.Tile tile,
-                                      int screenX, int screenY, boolean flipX, boolean flipY) {
+    private static void drawTileAlpha(
+            byte[] buffer, linksawakening.gpu.Tile tile, int screenX, int screenY, boolean flipX, boolean flipY) {
         for (int ty = 0; ty < 8; ty++) {
             for (int tx = 0; tx < 8; tx++) {
                 int px = screenX + tx;
@@ -541,17 +615,17 @@ final class SwordTest {
     }
 
     private static int toRomDirection(int javaDirection) {
-        switch (javaDirection) {
-            case Link.DIRECTION_RIGHT: return 0;
-            case Link.DIRECTION_LEFT:  return 1;
-            case Link.DIRECTION_UP:    return 2;
-            case Link.DIRECTION_DOWN:  return 3;
-            default: return 3;
-        }
+        return switch (Direction.fromJavaOrUnknown(javaDirection)) {
+            case RIGHT -> 0;
+            case LEFT -> 1;
+            case UP -> 2;
+            case DOWN -> 3;
+            default -> 3;
+        };
     }
 
     private static Sword fullyChargedSwordFacing(int direction) {
-        Sword sword = new Sword(null, null);
+        Sword sword = new Sword(Sword.Assets.animationOnly());
         sword.onPress();
         sword.attackDirection(direction);
         while (sword.state() != Sword.STATE_HOLDING) {
@@ -573,7 +647,7 @@ final class SwordTest {
         }
     }
 
-    private static final class SequenceIntSupplier implements java.util.function.IntSupplier {
+    private static final class SequenceIntSupplier implements IntSupplier {
         private final int[] values;
         private int index;
 

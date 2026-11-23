@@ -1,0 +1,14 @@
+<!doctype html><html><meta charset="utf-8"><title>Recoil and power-up regression</title><style>body{font:16px system-ui;color:var(--foreground)}article{display:flex;gap:20px;flex-wrap:wrap}figure{margin:0}img{width:300px;image-rendering:pixelated}p{line-height:1.5;max-width:900px}</style><h1>Recoil and power-up regression</h1><p>345 normal-input checkpoints complete from a fresh game in Java and the original ROM in headless PyBoy. Both finish with the Compass and two Small Keys. The Java run also collects and dismisses a Piece of Power, then resumes sword combat.</p><p>Recoil preserves speed for its countdown, stops at walls and cannot trigger an ordinary room transition while active. Power-ups use a finite pickup presentation, dialogue and release instead of becoming permanently carried objects.</p><p>This is progression evidence, not combat or visual parity: final health is Java 4/24, ROM 24/24. Enemy phases, drops and explicit combat input variants differ. Loading speed is not a parity requirement. Full-frame RGB555 comparisons use no masks or alignment; 8 of 345 frames match exactly.</p>
+<h2>Compass chest</h2><p>234 differing pixels / 23040</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>818ea28c5e05e85b4fe5d01f24d4389c197d11ff62662c591d96524e46857d42</code></small></figure>
+<figure><figcaption>Java</figcaption><small>PNG SHA-256 <code>d82a47db4349f13b8e38092937f66c3bff9c0ea49723d92c70bd2b0ca416f583</code></small></figure>
+</article>
+<h2>After the Java power-up pickup</h2><p>393 differing pixels / 23040</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>b28cc1f158c18fa2a2410801363a49603e60a703bc721841a973d327b471978e</code></small></figure>
+<figure><figcaption>Java</figcaption><small>PNG SHA-256 <code>9d9ab8964495b9c0fe7a768333b08495c6d9fa6344411d2091c051252e6e6c36</code></small></figure>
+</article>
+<h2>Second Small Key</h2><p>376 differing pixels / 23040</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>60942c783c6405f8c39d0c182c7e5f99b8119d7a3b74b75cf6601e8e7fb995f3</code></small></figure>
+<figure><figcaption>Java</figcaption><small>PNG SHA-256 <code>c78602fb03dcef9c54550a2b9177e387c767fe69b4deae6ee0b73050c234dd72</code></small></figure>
+</article>
+<p>Reproduce using tools/opening/tail-cave-recoil-route.tsv with capture.py and Gradle captureOpeningRoute; compare.py computes the full-frame metrics. Pickup animation frame parity remains to be checked with a matched power-up acquisition in both runtimes.</p></html>

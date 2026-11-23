@@ -1,0 +1,92 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Intro emulator comparison — 2026-10-15</title>
+<style>body{background:#181a20;color:#eceef3;font:16px/1.5 system-ui;max-width:1080px;margin:40px auto;padding:0 20px}h1,h2{line-height:1.2}a{color:#91c9ff}table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #444;padding:10px;text-align:left}.frames{display:flex;gap:16px;flex-wrap:wrap}.frames figure{margin:0}.frames img{width:320px;height:288px;image-rendering:pixelated}section{margin:36px 0;padding:20px;background:#242730}code{font-size:13px}p{max-width:950px}.fail{color:#ffb799}</style>
+<h1>Intro comparison: <span class="fail">does not match</span></h1>
+<p>2026-10-15 · Original ROM played from boot through the title in PyBoy 2.8.1 (CGB mode, built-in boot ROM, no button input). Java frames rendered with the current checkout’s IntroSequence, GPU and GameFrameSceneBuilder, using the same ROM and the existing DumpIntroFramesHarness rendering approach.</p>
+<p>13 reproducible random samples, stratified across six intro phases, seed <code>20261015</code>. All 13 differ. This is a visual validation result; no gameplay source was changed.</p>
+<h2>Confirmed differences</h2><ul>
+<li>Storm: wave bands scroll differently, with different rain and lightning placement/phase.</li>
+<li>Link close-up: initial background art matches closely, but the scream frame leaves Link’s mouth closed. The ROM’s IntroLinkScream queues a tilemap patch; Java changes its substate without applying that patch.</li>
+<li>Beach fade: the original is still white at the sampled point; Java already shows the fully colored beach. The ROM enters the countdown with 0xFF, while Java uses 0xA0 and does not implement the corresponding fade palette progression.</li>
+<li>Beach: background parallax, wave placement, and Marin/Link poses differ. Java derives Marin’s sprite variant from the state number; the original selects animated variants within each state.</li>
+<li>Beach-to-title: Java skips the original upward camera movement and streamed background updates driven by InertLinkState2Handler.</li>
+<li>Title: Java’s scene is displaced upward, with wrapped logo fragments at the bottom.</li></ul>
+<h2>Timing evidence</h2><p>Frames below are relative to first entry into the opening sea state (emulator absolute frame 88; Java frame 0). Original state boundaries are read from WRAM wGameplaySubtype. They can lead the visible display by a frame; tile-loading transitions also consume frames.</p>
+<table><tr><th>Boundary</th><th>Original</th><th>Java</th></tr>
+<tr><td>Link close-up starts</td><td>897</td><td>896</td></tr>
+<tr><td>Return to ship</td><td>1060</td><td>1056</td></tr>
+<tr><td>Beach fade state</td><td>1152</td><td>1143</td></tr>
+<tr><td>Marin beach sequence starts</td><td>1409</td><td>1303</td></tr>
+<tr><td>Title row reveal starts</td><td>3396</td><td>2674</td></tr>
+<tr><td>Title state / Java TITLE_DX</td><td>3429</td><td>2682</td></tr></table>
+<p>The title row reveal is 722 frames early (about 12.1 seconds at Game Boy frame rate), even after excluding emulator boot time.</p>
+<h2>Comparison method and limits</h2><p>Each pair uses the same elapsed offset from the corresponding phase entry. Phases are realigned separately so earlier timing drift does not invalidate later comparisons. This does not synchronize the RNG or interrupt phase, and later beach substates may diverge. Percentages measure observed full-frame differences, including timing and random effects; they are not isolated artwork error rates. RGB values are reduced to five bits per channel before comparison to remove RGB555 expansion differences. White pixels in the difference image indicate a mismatch.</p>
+<p>The Java harness exercises the production CPU framebuffer path, not a captured desktop/OpenGL window. Audio and full GPU presentation were not assessed. No claim of exhaustive pixel accuracy is made from sampling.</p>
+<p>ROM SHA-256: <code>c95dd3d9cb798e86c28e3269554e458d434bf3277b96cadf5bc81cfacfb5ee60</code>. Original capture: 3600 frames; Java capture: 3500 frames. Raw captures, metadata, capture scripts, and sample selection are in <code>java/build/intro-comparison/</code> (build output; a clean build can remove them). This report embeds its images and survives independently.</p>
+<p>Verification: <code>gradle -p java test --tests 'linksawakening.cutscene.*' --tests linksawakening.render.IntroFrameRegressionTest --tests linksawakening.gpu.GPUIntroTilesTest</code> — 26 tests passed, zero failures/errors/skips. These tests do not establish emulator parity.</p>
+<h2>Sampled frames</h2>
+<section><h2>Storm +215 frames</h2><p>20.23% of RGB555 pixels differ.</p><div class="frames">
+<figure><figcaption>Original • frame 303</figcaption><small>PNG SHA-256 <code>ede77e75551074c746b954642070360ba7d881cebeb302f79730c233879b4d09</code></small></figure>
+<figure><figcaption>Java • frame 215</figcaption><small>PNG SHA-256 <code>246f9dbcbc4507e8ac2df58827755fcb68ea1366be9a5b40490035922acabd53</code></small></figure>
+<figure><figcaption>Difference</figcaption><small>PNG SHA-256 <code>a34bb5bfcccafcc7b75533eed632fd2de64abdf8f5f869e45d43dbe4eca09a2e</code></small></figure>
+</div></section>
+<section><h2>Storm +228 frames</h2><p>25.17% of RGB555 pixels differ.</p><div class="frames">
+<figure><figcaption>Original • frame 316</figcaption><small>PNG SHA-256 <code>54a41c5dd4b491c1d6b93abbf186e45ad1e445aeeebdfc2152bfb43d42ff600f</code></small></figure>
+<figure><figcaption>Java • frame 228</figcaption><small>PNG SHA-256 <code>c5e69c8a9df36d3de376ec19786f8bf81eda4580c76d52fcaf6ce9865d3c8571</code></small></figure>
+<figure><figcaption>Difference</figcaption><small>PNG SHA-256 <code>4af0ea1e0280cf663c879c942aadd20c24610599bccf7e5cd0d0d8e865d745aa</code></small></figure>
+</div></section>
+<section><h2>Storm +462 frames</h2><p>42.57% of RGB555 pixels differ.</p><div class="frames">
+<figure><figcaption>Original • frame 550</figcaption><small>PNG SHA-256 <code>2ac9d98dc3b60d056ae8030538b8d214e6d1317d3043457adb810f9f980efb1d</code></small></figure>
+<figure><figcaption>Java • frame 462</figcaption><small>PNG SHA-256 <code>93777dd650ef51bd69da5bf82ce088061e11ed1f0476a7b5efbbf44891b40607</code></small></figure>
+<figure><figcaption>Difference</figcaption><small>PNG SHA-256 <code>65c09bbdd4007c07a0891d3f64ff833101d24a99fff80cd8f7e01252b5145c12</code></small></figure>
+</div></section>
+<section><h2>Link close-up +14 frames</h2><p>0.42% of RGB555 pixels differ.</p><div class="frames">
+<figure><figcaption>Original • frame 999</figcaption><small>PNG SHA-256 <code>6af4bc72cb366ce78dc8c2246272813accf655e089ec9f12a569329c376f04a3</code></small></figure>
+<figure><figcaption>Java • frame 910</figcaption><small>PNG SHA-256 <code>35fc4d228597abce5ed37ac0267ccb3600d6a2e3c3a8189481b3a509ec58a859</code></small></figure>
+<figure><figcaption>Difference</figcaption><small>PNG SHA-256 <code>e01695f77c2507a107e0944ecf3581bebf03237a18028452abd236bf6f2d7d26</code></small></figure>
+</div></section>
+<section><h2>Link close-up +135 frames</h2><p>2.58% of RGB555 pixels differ.</p><div class="frames">
+<figure><figcaption>Original • frame 1120</figcaption><small>PNG SHA-256 <code>50c16ce012c41147d477353d3a3644ec784eeaf1fc81b57c0c68262037551514</code></small></figure>
+<figure><figcaption>Java • frame 1031</figcaption><small>PNG SHA-256 <code>fdd0c39012456fa544ca5ed8fad27c65ca2509276f6f6e888c491c1506cc94dd</code></small></figure>
+<figure><figcaption>Difference</figcaption><small>PNG SHA-256 <code>b0168e4b175c9c70cb2216a48a8587b9cdca9cf4a66c3c9d78ac13ea92aea7b6</code></small></figure>
+</div></section>
+<section><h2>Ship fade +15 frames</h2><p>21.84% of RGB555 pixels differ.</p><div class="frames">
+<figure><figcaption>Original • frame 1163</figcaption><small>PNG SHA-256 <code>34887ea3b0b47d75ce1ab2ba32e5cc56e0f250232561559eaa9d9ee1c3176c54</code></small></figure>
+<figure><figcaption>Java • frame 1071</figcaption><small>PNG SHA-256 <code>82e21d2acd8e0f6f0890135af9feb15ed0ec0d617ce03705f7127ef4bffb6f3d</code></small></figure>
+<figure><figcaption>Difference</figcaption><small>PNG SHA-256 <code>4507883b904c71d4720e0aaf76b906bc87904bd5537ad19423bd524ffd868d7a</code></small></figure>
+</div></section>
+<section><h2>Ship fade +17 frames</h2><p>21.86% of RGB555 pixels differ.</p><div class="frames">
+<figure><figcaption>Original • frame 1165</figcaption><small>PNG SHA-256 <code>9e52b4d902cf825f35e2c3628b7591b38d67c3aeee6ac7872f5de7cbd4f6d8da</code></small></figure>
+<figure><figcaption>Java • frame 1073</figcaption><small>PNG SHA-256 <code>38c83ce109820273549a348a410556ecf5893817882c28ee603dccb2cc96ddf7</code></small></figure>
+<figure><figcaption>Difference</figcaption><small>PNG SHA-256 <code>ffbc8bad730fa7008805cab6ee829efbb1f73bccc2c7cd9421e7f9b13c0a835d</code></small></figure>
+</div></section>
+<section><h2>Beach fade +61 frames</h2><p>96.74% of RGB555 pixels differ.</p><div class="frames">
+<figure><figcaption>Original • frame 1301</figcaption><small>PNG SHA-256 <code>02f08ecf6a86e56956bc06cb6a86a563b99d33d066f6410141c0082e292bf304</code></small></figure>
+<figure><figcaption>Java • frame 1204</figcaption><small>PNG SHA-256 <code>6ab18a7a4ff9aba85274108f79a10c4a4c7a528b8c0e918f307f020ddc126fa8</code></small></figure>
+<figure><figcaption>Difference</figcaption><small>PNG SHA-256 <code>dc9389f10eaa6ea886bc3e39c086c97967b317416497ed999e882bc5918aeb8b</code></small></figure>
+</div></section>
+<section><h2>Beach +816 frames</h2><p>19.14% of RGB555 pixels differ.</p><div class="frames">
+<figure><figcaption>Original • frame 2313</figcaption><small>PNG SHA-256 <code>af880400f9234f013fccbd4eb8f7c62063f2aebd8d8dc862363375812a0758f8</code></small></figure>
+<figure><figcaption>Java • frame 2119</figcaption><small>PNG SHA-256 <code>c5234d1e0d5f5961bf699f222864331304db67836b4cede7d0f66b79cd22d952</code></small></figure>
+<figure><figcaption>Difference</figcaption><small>PNG SHA-256 <code>1554c1626bfc8207fae99b9b9dc3994c792cc39be917730c7a9c722917ab841d</code></small></figure>
+</div></section>
+<section><h2>Beach +822 frames</h2><p>19.24% of RGB555 pixels differ.</p><div class="frames">
+<figure><figcaption>Original • frame 2319</figcaption><small>PNG SHA-256 <code>af880400f9234f013fccbd4eb8f7c62063f2aebd8d8dc862363375812a0758f8</code></small></figure>
+<figure><figcaption>Java • frame 2125</figcaption><small>PNG SHA-256 <code>f66f97c6122a59c0bb3b9dafd56e405f2337f5228812b1df50bd700a7ae85bd3</code></small></figure>
+<figure><figcaption>Difference</figcaption><small>PNG SHA-256 <code>8d729df45f1788c72c7bc407a43d3751ef9e88c121f32bb00d0e744aa1b79bb1</code></small></figure>
+</div></section>
+<section><h2>Beach +877 frames</h2><p>34.78% of RGB555 pixels differ.</p><div class="frames">
+<figure><figcaption>Original • frame 2374</figcaption><small>PNG SHA-256 <code>203c368c0d921d8a9aa5211c600b6c4c8c4b8b012de392de0e18e760d7185c2f</code></small></figure>
+<figure><figcaption>Java • frame 2180</figcaption><small>PNG SHA-256 <code>a7810fbc2fc8b722805f17c7085288cfffbfa19ce97501f69f14f94ed1f83f74</code></small></figure>
+<figure><figcaption>Difference</figcaption><small>PNG SHA-256 <code>12dd9db54f734d8d66278b05391a8aa82f7509493344bfafc95b774f3d11d17a</code></small></figure>
+</div></section>
+<section><h2>Beach +1087 frames</h2><p>24.03% of RGB555 pixels differ.</p><div class="frames">
+<figure><figcaption>Original • frame 2584</figcaption><small>PNG SHA-256 <code>0b1ae301f98111492f50a526b7a193faf553888c2694a0c98d351f300eb613aa</code></small></figure>
+<figure><figcaption>Java • frame 2390</figcaption><small>PNG SHA-256 <code>32797355f98ce0ea37cb9162196d4bf4a6ca631d1309ef98f07a784bcec3c4dd</code></small></figure>
+<figure><figcaption>Difference</figcaption><small>PNG SHA-256 <code>960128798fd09767f00c54b4fb2b152625e42c5ccc6a04f50debd805ea225c65</code></small></figure>
+</div></section>
+<section><h2>Title +65 frames</h2><p>43.22% of RGB555 pixels differ.</p><div class="frames">
+<figure><figcaption>Original • frame 3582</figcaption><small>PNG SHA-256 <code>e99a95e2943dbd79f35dc6b5372103440a87ea38e88349b1f171dce3fa1839e4</code></small></figure>
+<figure><figcaption>Java • frame 2747</figcaption><small>PNG SHA-256 <code>b4e7958437ba39f10e3b3c857b222f77a63baba87a391d301bd6b7037ab50c65</code></small></figure>
+<figure><figcaption>Difference</figcaption><small>PNG SHA-256 <code>3fe2a7eab6ad196b4f40ba9e16e7341ddf39681fd673f1e76e98849de6b8d918</code></small></figure>
+</div></section>
+</html>

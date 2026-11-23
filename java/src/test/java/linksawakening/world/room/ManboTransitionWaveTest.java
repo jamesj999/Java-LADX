@@ -1,0 +1,37 @@
+package linksawakening.world.room;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomBank;
+import linksawakening.testing.TestRoms;
+import linksawakening.world.transition.ManboTransitionWave;
+import org.junit.jupiter.api.Test;
+
+@linksawakening.testing.RequiresRom
+final class ManboTransitionWaveTest {
+
+    @Test
+    void followsTheRomPhaseTableAndOddFrameComplement() {
+        byte[] rom = loadRom();
+        ManboTransitionWave wave = new ManboTransitionWave((rom == null ? (Rom) null : TestRoms.partial(rom)));
+
+        assertEquals(1, wave.offsetFor(0x20, 0));
+        assertEquals(-1, wave.offsetFor(0x21, 0));
+        assertEquals(0, wave.offsetFor(0x20, 0x17));
+
+        int reversedSource = RomBank.romOffset(0x14, 0x4EE8 + 0xC9);
+        assertEquals(rom[reversedSource], wave.offsetFor(0x20, 0, true));
+    }
+
+    private static byte[] loadRom() {
+        try (var stream = linksawakening.testing.TestRom.open()) {
+            if (stream == null) {
+                throw new IllegalStateException("ROM resource missing");
+            }
+            return stream.readAllBytes();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to load ROM", e);
+        }
+    }
+}

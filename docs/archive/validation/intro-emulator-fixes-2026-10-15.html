@@ -1,0 +1,254 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Intro emulator validation</title>
+<style>body{font:16px/1.5 system-ui;background:#191c24;color:#edf0f7;max-width:1050px;margin:32px auto;padding:0 20px}section{padding:20px;margin:20px 0;background:#262c38}img{width:320px;height:288px;image-rendering:pixelated}figure{margin:0}article{display:flex;gap:20px;flex-wrap:wrap}code{font-size:13px}</style>
+<h1>Intro emulator validation — after fixes</h1><h2>Changes and test results — 2026-10-15</h2>
+<p>Implemented ROM-driven wave tile uploads and scanline scrolling, the scream tilemap patch, staged palette fades, Marin/Link sprite variants and OAM priority, the beach-to-title camera pan and streamed map rows, title distortion and DX fade sprites. Corrected draw-command row wrapping, palette/OAM display latency, and LCD-off loading frames. Title animation continues after the intro hands control to the title screen. File menus ignore retained intro tile uploads and scanlines.</p>
+<p>Runtime graphics remain ROM-backed. Emulator screenshots are validation outputs only. The runtime does not read emulator frames or this report.</p>
+<p>Added 25 full-frame SHA-256 regression fixtures derived from the emulator, including loading boundaries, fades, beach movement, the pan, distortion and DX reveal. All 94 targeted cutscene/rendering/menu-handoff tests pass. <code>git diff --check</code> passes.</p>
+<p>The full-suite run completed 2,252 tests with 8 failures: two config expectation failures in MainTest/AppConfigTest, and six BowWowPauseTest movement expectations. Those failures concern configuration and BowWow files outside the intro changes. They were not changed in this task.</p>
+<p>Reproduce: install <code>tools/intro/requirements.txt</code> into a Python virtual environment, run <code>gradle -p java captureIntro</code>, then <code>python tools/intro/compare.py --all</code>. Raw captures and per-frame metrics are written to <code>java/build/intro-comparison/</code>. The comparison returns a failure status if pixels outside the precise rain silhouettes differ.</p>
+
+<p>38/60 frames match every RGB555 pixel; 60/60 match outside the actual rain pixels. Seed: 20261015.</p>
+<p>Exhaustive run: 2584/3712 frames match completely; 3712/3712 match outside rain.</p>
+<p>ROM: <code>c95dd3d9cb798e86c28e3269554e458d434bf3277b96cadf5bc81cfacfb5ee60</code>. PyBoy 2.8.1 in CGB mode, built-in boot ROM, no input. Original sea origin: emulator frame 88. All pairs use this single origin; later phases are never realigned.</p>
+<p>Java uses IntroSequence → GameFrameSceneBuilder → production framebuffer. RGB channels are reduced to 5 bits to remove expansion differences. Rain placement depends on the Game Boy scanline counter during RNG calls; the reconstruction does not emulate instruction timing. Both full-frame differences and differences outside the exact nontransparent rain pixels are reported. No other pixels are excluded. Audio and desktop presentation are not tested here.</p>
+<section><h2>Sea · Java frame 18</h2><p>339/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 106</figcaption><small>PNG SHA-256 <code>d828d8f137373ec800bbf46ba4808cf4f5e7b2b960cd4cf5057e9ea7c76e58a2</code></small></figure>
+<figure><figcaption>Java · frame 18</figcaption><small>PNG SHA-256 <code>abd9252c58b4777aca598467e0af760bd722df9fe1b1b6a38ed33e7a94eb1a09</code></small></figure>
+</article></section>
+<section><h2>Sea · Java frame 211</h2><p>309/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 299</figcaption><small>PNG SHA-256 <code>ade2627fa1068dfc5704c2a05330a3be3a14963e771f1c0f060a58f08f6ee168</code></small></figure>
+<figure><figcaption>Java · frame 211</figcaption><small>PNG SHA-256 <code>83795a362685434301af83cb384a8e88d832530c717578fb10790cbfea20e206</code></small></figure>
+</article></section>
+<section><h2>Sea · Java frame 224</h2><p>355/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 312</figcaption><small>PNG SHA-256 <code>c04d26e0779262a45d6e150bccf84b96ad2f618f2446ea32ab5b3188ad47f4f2</code></small></figure>
+<figure><figcaption>Java · frame 224</figcaption><small>PNG SHA-256 <code>d3b9175f87aba06a79f8bda2e2f5156931d7b50481e34de27a4ec0549663c846</code></small></figure>
+</article></section>
+<section><h2>Sea · Java frame 458</h2><p>339/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 546</figcaption><small>PNG SHA-256 <code>3e0b47c461c96c81a94ba1e47d3dcdb3b1d9cbb8e04ccfea72f5da733954a29b</code></small></figure>
+<figure><figcaption>Java · frame 458</figcaption><small>PNG SHA-256 <code>ca16a4f76e1c64412eb0644ec16c81527c2574400f5ef44a925ccea948189622</code></small></figure>
+</article></section>
+<section><h2>Sea · Java frame 500</h2><p>335/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 588</figcaption><small>PNG SHA-256 <code>622b42bf8be60a50c9932f8ac4436d147e267d18aa99e8ad69e009f5f81a0e3b</code></small></figure>
+<figure><figcaption>Java · frame 500</figcaption><small>PNG SHA-256 <code>2cd261587d50532387adb9b248cd97d862edb6285f31891c3908bd585ab1f974</code></small></figure>
+</article></section>
+<section><h2>Sea · Java frame 847</h2><p>313/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 935</figcaption><small>PNG SHA-256 <code>ef54656903ee9c637824269e293392d0b9b446f6ab7731f85b67ea35c1266c10</code></small></figure>
+<figure><figcaption>Java · frame 847</figcaption><small>PNG SHA-256 <code>3156b814853a22b6b2b9e49b9824d696f2baf412d4ce5199adfa61cda5e17b3c</code></small></figure>
+</article></section>
+<section><h2>Link close-up · Java frame 908</h2><p>483/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 996</figcaption><small>PNG SHA-256 <code>952a3dbc225957f7a9db0d61af1518a32ec16f8bfc91af85f68600c2430fa018</code></small></figure>
+<figure><figcaption>Java · frame 908</figcaption><small>PNG SHA-256 <code>67cac7b15f73545dc4f7731aebfc62f1a27e894ecd9d0b2545df53aba28ba33c</code></small></figure>
+</article></section>
+<section><h2>Link close-up · Java frame 911</h2><p>471/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 999</figcaption><small>PNG SHA-256 <code>6af4bc72cb366ce78dc8c2246272813accf655e089ec9f12a569329c376f04a3</code></small></figure>
+<figure><figcaption>Java · frame 911</figcaption><small>PNG SHA-256 <code>29c4b6dd714f66f4e0c44db39f2332c1364f7aba3affda68343716362fc11632</code></small></figure>
+</article></section>
+<section><h2>Link close-up · Java frame 950</h2><p>440/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1038</figcaption><small>PNG SHA-256 <code>b12c751c94084d7ae5f8c587bff6f7dcf45ea56596954f37b9cda794508ab170</code></small></figure>
+<figure><figcaption>Java · frame 950</figcaption><small>PNG SHA-256 <code>bc039f2fabd84408ef23e246bc3e2941199d4bcbd6f1bedc19c243143d782313</code></small></figure>
+</article></section>
+<section><h2>Link close-up · Java frame 1009</h2><p>474/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1097</figcaption><small>PNG SHA-256 <code>ae4d952d05b06cd31c1ea214f9de51b35f0b58ee448a2d74d38e10256bf56c3c</code></small></figure>
+<figure><figcaption>Java · frame 1009</figcaption><small>PNG SHA-256 <code>2898bfb459d367d0c2b406323d347dbb64c044c2ff7fa91345accfd2834b1c7e</code></small></figure>
+</article></section>
+<section><h2>Link close-up · Java frame 1035</h2><p>452/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1123</figcaption><small>PNG SHA-256 <code>e6e4c43f1843bb4923719c2f4c425d3a84078d00774407bfe08fadc1f0ac8e49</code></small></figure>
+<figure><figcaption>Java · frame 1035</figcaption><small>PNG SHA-256 <code>b697c3c2a2cb598e053971d591827cfaa7f9bbd39846fa7d97eb18a6c8d4b937</code></small></figure>
+</article></section>
+<section><h2>Link close-up · Java frame 1057</h2><p>532/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1145</figcaption><small>PNG SHA-256 <code>3c5a09e06b4adaebf0cf98f7fe94e3938d1d674574b9a756db5ed3d289d096f0</code></small></figure>
+<figure><figcaption>Java · frame 1057</figcaption><small>PNG SHA-256 <code>99ebe205bfebe4e4cd074514d6182900b66c8996beed16bed7a16fb376da90ca</code></small></figure>
+</article></section>
+<section><h2>Ship fade · Java frame 1091</h2><p>335/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1179</figcaption><small>PNG SHA-256 <code>129a6eac0d697672f9ff32d9fe46d30f2cddc2a2ef05c69b0a6b36b755ddee02</code></small></figure>
+<figure><figcaption>Java · frame 1091</figcaption><small>PNG SHA-256 <code>3020cf9cdac3883d863f3a6683df89720a0306d365bdb555362c03a8632f952c</code></small></figure>
+</article></section>
+<section><h2>Ship fade · Java frame 1112</h2><p>328/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1200</figcaption><small>PNG SHA-256 <code>a0f3dc212bb8af1eb7b1f554bd61fa3f8ed3db9ab4d569e982fe659e47272e92</code></small></figure>
+<figure><figcaption>Java · frame 1112</figcaption><small>PNG SHA-256 <code>88b0ae63f6a8e53deb7ee744f85ba135aee60ade4b109fdba6ab96da9105eb5c</code></small></figure>
+</article></section>
+<section><h2>Ship fade · Java frame 1125</h2><p>314/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1213</figcaption><small>PNG SHA-256 <code>1e3069ffd7d8e7bd6114cfd43516b7643ca5935e1a77d2e86bd2fe12e9fba045</code></small></figure>
+<figure><figcaption>Java · frame 1125</figcaption><small>PNG SHA-256 <code>aac30f4cdee18f1911e7dff25e691308c57bb823539bdbfbe6487143467799ab</code></small></figure>
+</article></section>
+<section><h2>Ship fade · Java frame 1135</h2><p>49/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1223</figcaption><small>PNG SHA-256 <code>8965750bb461b4bd097a6ab52e1e789165d1ced4c1124d00bad77c966a09ad35</code></small></figure>
+<figure><figcaption>Java · frame 1135</figcaption><small>PNG SHA-256 <code>925cde8dbb7f25d86b64889aa5ffca324dcb5f01b3072e2fc6f065b3db13ac6f</code></small></figure>
+</article></section>
+<section><h2>Ship fade · Java frame 1142</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1230</figcaption><small>PNG SHA-256 <code>43cd2e436a944fe2c97e3453c1380960813270e2a89f78f8c4a56af53357f724</code></small></figure>
+<figure><figcaption>Java · frame 1142</figcaption><small>PNG SHA-256 <code>61ea3182d34298875b538a83a8fb5782797ad3e37ea228548bcbb6cda059949d</code></small></figure>
+</article></section>
+<section><h2>Ship fade · Java frame 1145</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1233</figcaption><small>PNG SHA-256 <code>ced76147a35edaccbc341f4d0f3ed1d41c90be82d13a2c2bb4954e8b2d3896f5</code></small></figure>
+<figure><figcaption>Java · frame 1145</figcaption><small>PNG SHA-256 <code>f989579cdec82e82599854034c7380be27ae7fa14405c2c29aa6eaf3a5370361</code></small></figure>
+</article></section>
+<section><h2>Beach fade · Java frame 1169</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1257</figcaption><small>PNG SHA-256 <code>02f08ecf6a86e56956bc06cb6a86a563b99d33d066f6410141c0082e292bf304</code></small></figure>
+<figure><figcaption>Java · frame 1169</figcaption><small>PNG SHA-256 <code>5eb368ac16c3715786fccba479f60e98e05514b89fa4b6591af3ea8d68d6a218</code></small></figure>
+</article></section>
+<section><h2>Beach fade · Java frame 1214</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1302</figcaption><small>PNG SHA-256 <code>02f08ecf6a86e56956bc06cb6a86a563b99d33d066f6410141c0082e292bf304</code></small></figure>
+<figure><figcaption>Java · frame 1214</figcaption><small>PNG SHA-256 <code>5eb368ac16c3715786fccba479f60e98e05514b89fa4b6591af3ea8d68d6a218</code></small></figure>
+</article></section>
+<section><h2>Beach fade · Java frame 1330</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1418</figcaption><small>PNG SHA-256 <code>02f08ecf6a86e56956bc06cb6a86a563b99d33d066f6410141c0082e292bf304</code></small></figure>
+<figure><figcaption>Java · frame 1330</figcaption><small>PNG SHA-256 <code>5eb368ac16c3715786fccba479f60e98e05514b89fa4b6591af3ea8d68d6a218</code></small></figure>
+</article></section>
+<section><h2>Beach fade · Java frame 1373</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1461</figcaption><small>PNG SHA-256 <code>6eb4733fd150d1dbcb4123534a009873ba2318af0497dda08c80b17dfd3c3baf</code></small></figure>
+<figure><figcaption>Java · frame 1373</figcaption><small>PNG SHA-256 <code>50919ec9205d12add4b8c48fbbecdfc9cfc0dfce6449c778ea246e6b762f4f9b</code></small></figure>
+</article></section>
+<section><h2>Beach fade · Java frame 1387</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1475</figcaption><small>PNG SHA-256 <code>869fcc25ff63cae25874836aad91586a2a581ebf0adc5c6863da029ea26c8d67</code></small></figure>
+<figure><figcaption>Java · frame 1387</figcaption><small>PNG SHA-256 <code>66ab834ae8a88540a6845b8320e3c0719bb0ef63b0946b23c3bed2615ed764ac</code></small></figure>
+</article></section>
+<section><h2>Beach fade · Java frame 1408</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1496</figcaption><small>PNG SHA-256 <code>e46dd0897acf23a902b87166db31b7937c489b173c0e71bad733190f86c022fe</code></small></figure>
+<figure><figcaption>Java · frame 1408</figcaption><small>PNG SHA-256 <code>c5e88791663ee2f55db08f664ed656ac989979a1993048ca59a0f83b7a76ca94</code></small></figure>
+</article></section>
+<section><h2>Beach · Java frame 1535</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1623</figcaption><small>PNG SHA-256 <code>6cbbfdbdf0cf06a7f9cae266adb49f1821bff2b0bc15af7fbf2dc2b8557fb64f</code></small></figure>
+<figure><figcaption>Java · frame 1535</figcaption><small>PNG SHA-256 <code>e3a5ed0ab0560479aa114f93fb65c9831daca01c949b81bfb3b844739dc74ccd</code></small></figure>
+</article></section>
+<section><h2>Beach · Java frame 1546</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1634</figcaption><small>PNG SHA-256 <code>c7a95ea51fc27379f72c2041b2d03552538eb094b69927fde825ff2317dc0a9d</code></small></figure>
+<figure><figcaption>Java · frame 1546</figcaption><small>PNG SHA-256 <code>d9683746701d05a9f6486c915c807eead5629963c1e3226cff08e23a45f85c29</code></small></figure>
+</article></section>
+<section><h2>Beach · Java frame 1778</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1866</figcaption><small>PNG SHA-256 <code>47e19c82265a3c84f79ab4fc3c404a4072600cfcec6524261fbe9879c10529f6</code></small></figure>
+<figure><figcaption>Java · frame 1778</figcaption><small>PNG SHA-256 <code>62f433361f6f0945cf582e01fa1f29599d66502820e6d526905409263b7cd28e</code></small></figure>
+</article></section>
+<section><h2>Beach · Java frame 1965</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 2053</figcaption><small>PNG SHA-256 <code>02d88b062a5eade8c07267e4b3eee39fa04ced203c5f17618137dfbf62f28ba9</code></small></figure>
+<figure><figcaption>Java · frame 1965</figcaption><small>PNG SHA-256 <code>b0893e7aa4691956aea8da4da31a350fdbcbfc95ebcedad5c30855a0f400d3ea</code></small></figure>
+</article></section>
+<section><h2>Beach · Java frame 2129</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 2217</figcaption><small>PNG SHA-256 <code>9eb69d0272133df5e4ba9fc064b91f688b4a808c59f2386bd9119d8cee46b086</code></small></figure>
+<figure><figcaption>Java · frame 2129</figcaption><small>PNG SHA-256 <code>d0d6a2b85fe2c6e195f9eb076e7049861239d936889ae4b023dfacb1650db73d</code></small></figure>
+</article></section>
+<section><h2>Beach · Java frame 2540</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 2628</figcaption><small>PNG SHA-256 <code>298470f7a88cdebbf465b1bbde41c7eff638c10747998d7b47a4e7ae02eb0b93</code></small></figure>
+<figure><figcaption>Java · frame 2540</figcaption><small>PNG SHA-256 <code>6463546ea844f02d6af52b6c7d1dc9e68bffbb111e8ff89b3dcdc40393daed12</code></small></figure>
+</article></section>
+<section><h2>Upward pan · Java frame 2749</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 2837</figcaption><small>PNG SHA-256 <code>67c7fc8164bf23e0045be4561b97a60d1edeeba88ac7a918cf9da375e8207dbd</code></small></figure>
+<figure><figcaption>Java · frame 2749</figcaption><small>PNG SHA-256 <code>ebb2d5a199429ad3ef362148c8a30358eb9ae5813a9cacfedb6d61bd6927dec5</code></small></figure>
+</article></section>
+<section><h2>Upward pan · Java frame 2905</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 2993</figcaption><small>PNG SHA-256 <code>3770f3992f8bf51e5b1f62f4b41b75e666fff88b259d8dff2ee452f39356d9cf</code></small></figure>
+<figure><figcaption>Java · frame 2905</figcaption><small>PNG SHA-256 <code>26bf7ffa2a98c053b63abba3ae2f65bdaa33c65e0ff043b139036c39d9bfbbeb</code></small></figure>
+</article></section>
+<section><h2>Upward pan · Java frame 2968</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 3056</figcaption><small>PNG SHA-256 <code>ac7d0e8e444f3fcb097285e74e3cc709ba732ae3048640e3719692a4374cb46b</code></small></figure>
+<figure><figcaption>Java · frame 2968</figcaption><small>PNG SHA-256 <code>c5f8a10012026764753877feccdae10f4ee1e2b026858c66f0e0cea77ebad141</code></small></figure>
+</article></section>
+<section><h2>Upward pan · Java frame 3001</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 3089</figcaption><small>PNG SHA-256 <code>702030d216fe760fa69b6922033909fd1ef3225952b69966a4134cfa8f4c9a63</code></small></figure>
+<figure><figcaption>Java · frame 3001</figcaption><small>PNG SHA-256 <code>714e57467236193b7cecbb2a4add8362423d60a95c88d6da54a5c951d1cf5ebd</code></small></figure>
+</article></section>
+<section><h2>Upward pan · Java frame 3125</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 3213</figcaption><small>PNG SHA-256 <code>aceec9d55119b9ea51165a9e7b93b6b718020619e64bb3100e32f6dd6b0f6bea</code></small></figure>
+<figure><figcaption>Java · frame 3125</figcaption><small>PNG SHA-256 <code>a05f62b861bdca15aec77cd54e7e3609fd3d7be00143e998ff2cb1f174975c14</code></small></figure>
+</article></section>
+<section><h2>Upward pan · Java frame 3358</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 3446</figcaption><small>PNG SHA-256 <code>132f1e7b43e9cd455e32e3f7bb64c3958d341aac367c6fe83a1a8eb45efef0a5</code></small></figure>
+<figure><figcaption>Java · frame 3358</figcaption><small>PNG SHA-256 <code>ef679690581bf507ca81038e3c6a8ae45834efa4591c7cc62b190fa0daa57eb0</code></small></figure>
+</article></section>
+<section><h2>Title reveal · Java frame 3397</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 3485</figcaption><small>PNG SHA-256 <code>6c0880026b180ded9e1b6ab87589d54a86e7eafc0c3c781104eade4ecd1fe7b2</code></small></figure>
+<figure><figcaption>Java · frame 3397</figcaption><small>PNG SHA-256 <code>0b46f85be357000a7a1ad2920d77422280af73f01617d44544e138f312695bcc</code></small></figure>
+</article></section>
+<section><h2>Title reveal · Java frame 3399</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 3487</figcaption><small>PNG SHA-256 <code>c4d2a7e9f87742cca8d3f8d304dbeeda6e6ba07e0a46155953e8a98931756840</code></small></figure>
+<figure><figcaption>Java · frame 3399</figcaption><small>PNG SHA-256 <code>4286f7ea9d40b8478a582f6ca27d77c354cf024ab97674a7db5d40a4d941a67f</code></small></figure>
+</article></section>
+<section><h2>Title reveal · Java frame 3419</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 3507</figcaption><small>PNG SHA-256 <code>fd8c26b521a1234d8c234b86a9d9f9794faabdb6790c708cc62619c897456fa8</code></small></figure>
+<figure><figcaption>Java · frame 3419</figcaption><small>PNG SHA-256 <code>04dec9101e8438b990f136354b33490015defdf664d0b9f5d9bf7201b7787c41</code></small></figure>
+</article></section>
+<section><h2>Title reveal · Java frame 3422</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 3510</figcaption><small>PNG SHA-256 <code>a3ed56a5859fdcf72757f94ca3967a10657ef39b730cb61b596051587fb1a952</code></small></figure>
+<figure><figcaption>Java · frame 3422</figcaption><small>PNG SHA-256 <code>cc888b886d1e1b7bc084df1bc83186b596976632706d7a47cfe227912d6b66c0</code></small></figure>
+</article></section>
+<section><h2>Title reveal · Java frame 3423</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 3511</figcaption><small>PNG SHA-256 <code>a3ed56a5859fdcf72757f94ca3967a10657ef39b730cb61b596051587fb1a952</code></small></figure>
+<figure><figcaption>Java · frame 3423</figcaption><small>PNG SHA-256 <code>cc888b886d1e1b7bc084df1bc83186b596976632706d7a47cfe227912d6b66c0</code></small></figure>
+</article></section>
+<section><h2>Title reveal · Java frame 3425</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 3513</figcaption><small>PNG SHA-256 <code>59c6b064e0031ffdcc3cdfc96c86dc83e4e0f571ba72affc6de65f22796b759c</code></small></figure>
+<figure><figcaption>Java · frame 3425</figcaption><small>PNG SHA-256 <code>3379488bbfa436ed88e6f6808948d9cbcf55ee3e298a780c142a8e59b0ece546</code></small></figure>
+</article></section>
+<section><h2>Title DX · Java frame 3433</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 3521</figcaption><small>PNG SHA-256 <code>4ffb4718abd9cd55ffae80a84e05fa96c9b953a3011e94ded357258f3c475fca</code></small></figure>
+<figure><figcaption>Java · frame 3433</figcaption><small>PNG SHA-256 <code>6e66a6766b603bfba67d109405e392469c73e98a02a3ec42dc5c9eed01b9606b</code></small></figure>
+</article></section>
+<section><h2>Title DX · Java frame 3472</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 3560</figcaption><small>PNG SHA-256 <code>4ffb4718abd9cd55ffae80a84e05fa96c9b953a3011e94ded357258f3c475fca</code></small></figure>
+<figure><figcaption>Java · frame 3472</figcaption><small>PNG SHA-256 <code>6e66a6766b603bfba67d109405e392469c73e98a02a3ec42dc5c9eed01b9606b</code></small></figure>
+</article></section>
+<section><h2>Title DX · Java frame 3538</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 3626</figcaption><small>PNG SHA-256 <code>c7c34d352bddcac33d69fe70d7e62315e3db030ad9b98e32c9436f0473465982</code></small></figure>
+<figure><figcaption>Java · frame 3538</figcaption><small>PNG SHA-256 <code>e43f7048af233e1542c17a2dc1f6b6477c5b34dfca1d459f9eb247ccd0658839</code></small></figure>
+</article></section>
+<section><h2>Title DX · Java frame 3542</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 3630</figcaption><small>PNG SHA-256 <code>c7c34d352bddcac33d69fe70d7e62315e3db030ad9b98e32c9436f0473465982</code></small></figure>
+<figure><figcaption>Java · frame 3542</figcaption><small>PNG SHA-256 <code>e43f7048af233e1542c17a2dc1f6b6477c5b34dfca1d459f9eb247ccd0658839</code></small></figure>
+</article></section>
+<section><h2>Title DX · Java frame 3567</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 3655</figcaption><small>PNG SHA-256 <code>57756fea02ebfec38ff7ff8a2bcf0237a18925b2cfe72a156b76e11d0f9ecf64</code></small></figure>
+<figure><figcaption>Java · frame 3567</figcaption><small>PNG SHA-256 <code>04ff2a2c3e30169ea89dd06763c1372bc4d00f4d0d472e762fe7d5eb818cbc04</code></small></figure>
+</article></section>
+<section><h2>Title DX · Java frame 3656</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 3744</figcaption><small>PNG SHA-256 <code>8f7d06887e93b906aa9e5aa08cf2024ad3178b128bf487cef5fcd6691398a6ba</code></small></figure>
+<figure><figcaption>Java · frame 3656</figcaption><small>PNG SHA-256 <code>0ffd814f8d5a6ef416c4a143df89d8646dfb88d278c2cc73aee9cd33a311f14e</code></small></figure>
+</article></section>
+<section><h2>Original sample · Java frame 215</h2><p>337/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 303</figcaption><small>PNG SHA-256 <code>ede77e75551074c746b954642070360ba7d881cebeb302f79730c233879b4d09</code></small></figure>
+<figure><figcaption>Java · frame 215</figcaption><small>PNG SHA-256 <code>4f6376592f14d33ef706500abab8d5c9fa1b9eea45df5d77080f8c9277b04ffc</code></small></figure>
+</article></section>
+<section><h2>Original sample · Java frame 228</h2><p>345/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 316</figcaption><small>PNG SHA-256 <code>54a41c5dd4b491c1d6b93abbf186e45ad1e445aeeebdfc2152bfb43d42ff600f</code></small></figure>
+<figure><figcaption>Java · frame 228</figcaption><small>PNG SHA-256 <code>5ec10bb51bbf27b6ef795ec697237c13e84e06f927408538233c912cb3d23347</code></small></figure>
+</article></section>
+<section><h2>Original sample · Java frame 462</h2><p>368/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 550</figcaption><small>PNG SHA-256 <code>2ac9d98dc3b60d056ae8030538b8d214e6d1317d3043457adb810f9f980efb1d</code></small></figure>
+<figure><figcaption>Java · frame 462</figcaption><small>PNG SHA-256 <code>b4cc7031598549a75fa84ca1146e5de8bef1701ca6808feadd08d55d47c70047</code></small></figure>
+</article></section>
+<section><h2>Original sample · Java frame 1032</h2><p>423/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1120</figcaption><small>PNG SHA-256 <code>50c16ce012c41147d477353d3a3644ec784eeaf1fc81b57c0c68262037551514</code></small></figure>
+<figure><figcaption>Java · frame 1032</figcaption><small>PNG SHA-256 <code>07e0003f4ad55ea388a8c74cdba8b9ebeb408e245cb20d9732a9397196e066b6</code></small></figure>
+</article></section>
+<section><h2>Original sample · Java frame 1075</h2><p>332/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1163</figcaption><small>PNG SHA-256 <code>34887ea3b0b47d75ce1ab2ba32e5cc56e0f250232561559eaa9d9ee1c3176c54</code></small></figure>
+<figure><figcaption>Java · frame 1075</figcaption><small>PNG SHA-256 <code>8adde7e6564d5177b984ea765313c146d2c7814a3128d7019a9821c37b3c3f57</code></small></figure>
+</article></section>
+<section><h2>Original sample · Java frame 1077</h2><p>368/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1165</figcaption><small>PNG SHA-256 <code>9e52b4d902cf825f35e2c3628b7591b38d67c3aeee6ac7872f5de7cbd4f6d8da</code></small></figure>
+<figure><figcaption>Java · frame 1077</figcaption><small>PNG SHA-256 <code>b6ce7e845d2c82c8a70c2aeb2e948145b0956f41c8688d46777f8138f04c47ca</code></small></figure>
+</article></section>
+<section><h2>Original sample · Java frame 1213</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 1301</figcaption><small>PNG SHA-256 <code>02f08ecf6a86e56956bc06cb6a86a563b99d33d066f6410141c0082e292bf304</code></small></figure>
+<figure><figcaption>Java · frame 1213</figcaption><small>PNG SHA-256 <code>5eb368ac16c3715786fccba479f60e98e05514b89fa4b6591af3ea8d68d6a218</code></small></figure>
+</article></section>
+<section><h2>Original sample · Java frame 2225</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 2313</figcaption><small>PNG SHA-256 <code>af880400f9234f013fccbd4eb8f7c62063f2aebd8d8dc862363375812a0758f8</code></small></figure>
+<figure><figcaption>Java · frame 2225</figcaption><small>PNG SHA-256 <code>b7c93ce4cf8eb21858d76cdfa01313017aa7e96667b6f59fb813d763246c63c1</code></small></figure>
+</article></section>
+<section><h2>Original sample · Java frame 2231</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 2319</figcaption><small>PNG SHA-256 <code>af880400f9234f013fccbd4eb8f7c62063f2aebd8d8dc862363375812a0758f8</code></small></figure>
+<figure><figcaption>Java · frame 2231</figcaption><small>PNG SHA-256 <code>b7c93ce4cf8eb21858d76cdfa01313017aa7e96667b6f59fb813d763246c63c1</code></small></figure>
+</article></section>
+<section><h2>Original sample · Java frame 2286</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 2374</figcaption><small>PNG SHA-256 <code>203c368c0d921d8a9aa5211c600b6c4c8c4b8b012de392de0e18e760d7185c2f</code></small></figure>
+<figure><figcaption>Java · frame 2286</figcaption><small>PNG SHA-256 <code>12c3dbd6622ec2f207f863479d514b7133ef04e21fe3502b0578a9806d76893b</code></small></figure>
+</article></section>
+<section><h2>Original sample · Java frame 2496</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 2584</figcaption><small>PNG SHA-256 <code>0b1ae301f98111492f50a526b7a193faf553888c2694a0c98d351f300eb613aa</code></small></figure>
+<figure><figcaption>Java · frame 2496</figcaption><small>PNG SHA-256 <code>0b8924e01989a628052769e13a553ef44ba00a42dc40a05fa59207ea5253341a</code></small></figure>
+</article></section>
+<section><h2>Original sample · Java frame 3494</h2><p>0/23040 differing pixels; 0 outside rain.</p><article>
+<figure><figcaption>Original · frame 3582</figcaption><small>PNG SHA-256 <code>e99a95e2943dbd79f35dc6b5372103440a87ea38e88349b1f171dce3fa1839e4</code></small></figure>
+<figure><figcaption>Java · frame 3494</figcaption><small>PNG SHA-256 <code>a21cb9f9eebb985dea1f97d98330c4eae1021d4031e78f1d2998f64f3a1d0d9d</code></small></figure>
+</article></section>
+</html>

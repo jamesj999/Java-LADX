@@ -1,0 +1,503 @@
+package linksawakening.world.entity;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.testing.TestRoms;
+import linksawakening.world.entity.motion.ThrownEntityMotion;
+import org.junit.jupiter.api.Test;
+
+@linksawakening.testing.RequiresRom
+final class BombLiftThrowRuntimeTest {
+
+    @Test
+    void placedBombSettlesOnTheFloorInsteadOfWrappingItsHeight() throws IOException {
+        RoomEntityRuntime runtime = bombRuntime();
+        int slot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
+        RoomEntity settled = null;
+        for (int frame = 0; frame < 32; frame++) {
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x10, 0x20, () -> 0));
+            RoomEntity bomb = runtime.inspection().snapshot().slots().get(slot);
+            assertTrue(bomb.z() < 0x80, "Bomb fell through floor on frame " + frame);
+            if (frame == 16) {
+                settled = bomb;
+            }
+        }
+        RoomEntity bomb = runtime.inspection().snapshot().slots().get(slot);
+        assertEquals(0, bomb.z());
+        assertEquals(settled.x(), bomb.x());
+        assertEquals(settled.y(), bomb.y());
+        assertTrue(runtime.inspection().bombActive());
+    }
+
+    @Test
+    void liftingRestoresTheNormalRomBombAfterAWarningSnapshot() throws IOException {
+        RoomEntityRuntime runtime = bombRuntime();
+        int slot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
+        EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(slot, 0x19);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
+
+        RoomEntity warning = runtime.inspection().snapshot().slots().get(slot);
+        assertEquals(0x5484, warning.spriteDefinition().address());
+        EntityRuntimeFixture.debug(runtime).setEnemyFlashCountdownForTest(slot, 0x20);
+
+        assertTrue(runtime.commands().beginLift(slot, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+
+        RoomEntity lifted = runtime.inspection().snapshot().slots().get(slot);
+        assertEquals(slot, lifted.slot());
+        assertEquals(0x02, lifted.type());
+        assertEquals(EntityStatus.LIFTED, lifted.status());
+        assertNormalBombDefinition(lifted);
+        assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(slot));
+        assertTrue(runtime.inspection().bombActive());
+    }
+
+    @Test
+    void liftedBombConsumesItsSharedTimerWithoutRunningFusePresentation() throws IOException {
+        RoomEntityRuntime runtime = bombRuntime();
+        int slot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
+        EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(slot, 0x19);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
+        assertTrue(runtime.commands().beginLift(slot, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+
+        for (int frame = 1; frame < 8; frame++) {
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x40, 0x50, () -> 0));
+            RoomEntity lifted = runtime.inspection().snapshot().slots().get(slot);
+            assertEquals(EntityStatus.LIFTED, lifted.status());
+            assertNormalBombDefinition(lifted);
+            assertTrue(runtime.enemies().transitionCountdown(slot) < 0x18);
+            assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
+        }
+    }
+
+    @Test
+    void equippedBombButtonWaitsForTheSourceBombPrivateCountdown() throws IOException {
+        RoomEntityRuntime runtime = bombRuntime();
+        int slot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
+        runtime.configuration().setBombButtonHeld(true);
+
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
+
+        RoomEntity active = runtime.inspection().snapshot().slots().get(slot);
+        assertEquals(EntityStatus.ACTIVE, active.status());
+        assertNormalBombDefinition(active);
+        assertEquals(0xD2, runtime.enemies().physicsFlags(slot));
+        assertEquals(1, runtime.inspection().snapshot().loadedEntities().size());
+    }
+
+    @Test
+    void bombButtonCannotLiftWarningOrExplosionPresentations() throws IOException {
+        RoomEntityRuntime warningRuntime = bombRuntime();
+        int warningSlot = warningRuntime.spawns().spawnBomb(0x40, 0x50, 0, 0);
+        EntityRuntimeFixture.debug(warningRuntime).setBombTransitionCountdownForTest(warningSlot, 0x22);
+        warningRuntime.configuration().setBombButtonHeld(true);
+        warningRuntime.tick(EntityTestFrames.frame(warningRuntime, 0, 0x40, 0x50, () -> 0));
+        assertEquals(
+                EntityStatus.ACTIVE,
+                warningRuntime.inspection().snapshot().slots().get(warningSlot).status());
+        assertEquals(
+                0x5484,
+                warningRuntime
+                        .inspection()
+                        .snapshot()
+                        .slots()
+                        .get(warningSlot)
+                        .spriteDefinition()
+                        .address());
+
+        RoomEntityRuntime explosionRuntime = bombRuntime();
+        int explosionSlot = explosionRuntime.spawns().spawnBomb(0x40, 0x50, 0, 0);
+        EntityRuntimeFixture.debug(explosionRuntime).setBombTransitionCountdownForTest(explosionSlot, 0x18);
+        explosionRuntime.configuration().setBombButtonHeld(true);
+        explosionRuntime.tick(EntityTestFrames.frame(explosionRuntime, 0, 0x40, 0x50, () -> 0));
+        assertEquals(
+                EntityStatus.ACTIVE,
+                explosionRuntime
+                        .inspection()
+                        .snapshot()
+                        .slots()
+                        .get(explosionSlot)
+                        .status());
+        assertEquals(
+                0x6530,
+                explosionRuntime
+                        .inspection()
+                        .snapshot()
+                        .slots()
+                        .get(explosionSlot)
+                        .spriteDefinition()
+                        .address());
+    }
+
+    @Test
+    void warningBombDoesNotAdvancePlacedMotionBeforeSmallExplosionPresentation() throws IOException {
+        RoomEntityRuntime runtime = bombRuntime();
+        int slot = runtime.spawns().spawnBomb(0x40, 0x50, 0, ThrownEntityMotion.ROM_DIRECTION_RIGHT);
+        EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(slot, 0x22);
+        AtomicInteger wallQueries = new AtomicInteger();
+
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0, (entity, direction, nextX, nextY) -> {
+            wallQueries.incrementAndGet();
+            return false;
+        }));
+
+        RoomEntity warning = runtime.inspection().snapshot().slots().get(slot);
+        assertEquals(EntityStatus.ACTIVE, warning.status());
+        assertEquals(0x48, warning.x());
+        assertEquals(0x50, warning.y());
+        assertEquals(0x01, warning.z());
+        assertEquals(0, wallQueries.get());
+        assertEquals(0x5484, warning.spriteDefinition().address());
+    }
+
+    @Test
+    void finalExplosionPresentationCannotBeRevivedByTheLiftStateBridge() throws IOException {
+        RoomEntityRuntime runtime = bombRuntime();
+        int slot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
+        EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(slot, 0x01);
+        RoomEntity beforeExplosion = runtime.inspection().snapshot().slots().get(slot);
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0));
+
+        assertFalse(runtime.commands().beginLift(slot, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+        RoomEntity afterExplosion = runtime.inspection().snapshot().slots().get(slot);
+        assertEquals(EntityStatus.ACTIVE, afterExplosion.status());
+        assertEquals(beforeExplosion.x(), afterExplosion.x());
+        assertEquals(beforeExplosion.y(), afterExplosion.y());
+        assertEquals(beforeExplosion.z(), afterExplosion.z());
+        assertFalse(runtime.inspection().bombActive());
+    }
+
+    @Test
+    void throwingBombResetsFuseAndKeepsTheRomBombTrajectoryInOneSlot() throws IOException {
+        RoomEntityRuntime runtime = bombRuntime();
+        int slot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
+        fullyLift(runtime, slot);
+
+        assertTrue(runtime.commands().throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+        RoomEntity thrown = runtime.inspection().snapshot().slots().get(slot);
+        assertEquals(slot, thrown.slot());
+        assertEquals(0x02, thrown.type());
+        assertEquals(EntityStatus.THROWN, thrown.status());
+        assertEquals(ThrownEntityMotion.ROM_DIRECTION_RIGHT, runtime.commands().thrownDirection(slot));
+        assertEquals(0xA0, runtime.enemies().transitionCountdown(slot));
+        assertTrue(runtime.inspection().bombActive());
+
+        int xBeforeMotion = thrown.x();
+        int zBeforeMotion = thrown.z();
+        runtime.tick(EntityTestFrames.frame(runtime, 100, thrown.x(), thrown.y(), () -> 0));
+        RoomEntity afterMotion = runtime.inspection().snapshot().slots().get(slot);
+        assertEquals(EntityStatus.THROWN, afterMotion.status());
+        assertEquals((xBeforeMotion + 1) & 0xFF, afterMotion.x());
+        assertEquals((zBeforeMotion + 1) & 0xFF, afterMotion.z());
+        assertNormalBombDefinition(afterMotion);
+    }
+
+    @Test
+    void thrownBombIgnoresBombButtonAndKeepsTheRomThrowMotion() throws IOException {
+        RoomEntityRuntime runtime = bombRuntime();
+        int slot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
+        fullyLift(runtime, slot);
+        assertTrue(runtime.commands().throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+
+        RoomEntity thrown = runtime.inspection().snapshot().slots().get(slot);
+        runtime.configuration().setBombButtonHeld(true);
+        runtime.tick(EntityTestFrames.frame(runtime, 100, thrown.x(), thrown.y(), () -> 0));
+
+        RoomEntity afterMotion = runtime.inspection().snapshot().slots().get(slot);
+        assertEquals(slot, afterMotion.slot());
+        assertEquals(EntityStatus.THROWN, afterMotion.status());
+        assertEquals((thrown.x() + 1) & 0xFF, afterMotion.x());
+        assertEquals((thrown.z() + 1) & 0xFF, afterMotion.z());
+        assertNormalBombDefinition(afterMotion);
+    }
+
+    @Test
+    void stunnedBombIgnoresBombButtonBeforeThePowerBraceletCheck() throws IOException {
+        RoomEntityRuntime runtime = bombRuntime();
+        int slot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
+        fullyLift(runtime, slot);
+        assertTrue(runtime.commands().throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+        EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(slot, 0xA0);
+
+        RoomEntityBackgroundCollision alwaysBlocked = (entity, direction, nextX, nextY) -> true;
+        int frame = 0;
+        while (runtime.inspection().snapshot().slots().get(slot).status() != EntityStatus.STUNNED && frame < 12) {
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 0, 0, () -> 0, alwaysBlocked));
+        }
+        assertEquals(
+                EntityStatus.STUNNED,
+                runtime.inspection().snapshot().slots().get(slot).status());
+
+        RoomEntity stunned = runtime.inspection().snapshot().slots().get(slot);
+        runtime.configuration().setBombButtonHeld(true);
+        runtime.tick(EntityTestFrames.frame(runtime, frame, stunned.x(), stunned.y(), () -> 0, alwaysBlocked));
+
+        RoomEntity afterButton = runtime.inspection().snapshot().slots().get(slot);
+        assertEquals(slot, afterButton.slot());
+        assertEquals(EntityStatus.STUNNED, afterButton.status());
+        assertNormalBombDefinition(afterButton);
+    }
+
+    @Test
+    void stunnedBombLiftUsesPowerBraceletAfterThePostActiveTail() throws IOException {
+        RoomEntityRuntime runtime = bombRuntime();
+        int slot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
+        fullyLift(runtime, slot);
+        assertTrue(runtime.commands().throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+        EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(slot, 0xA0);
+
+        RoomEntityBackgroundCollision alwaysBlocked = (entity, direction, nextX, nextY) -> true;
+        int frame = 0;
+        while (runtime.inspection().snapshot().slots().get(slot).status() != EntityStatus.STUNNED && frame < 12) {
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 0, 0, () -> 0, alwaysBlocked));
+        }
+        assertEquals(
+                EntityStatus.STUNNED,
+                runtime.inspection().snapshot().slots().get(slot).status());
+
+        RoomEntity stunned = runtime.inspection().snapshot().slots().get(slot);
+        int expectedLiftedX = (stunned.x() + 0x10) & 0xFF;
+        EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(slot, 0x02);
+        AtomicInteger wallQueries = new AtomicInteger();
+        List<EntityStatus> observedStatuses = new ArrayList<>();
+        runtime.configuration().setPowerBraceletButtonHeld(true);
+        runtime.tick(EntityTestFrames.frame(
+                runtime,
+                frame,
+                stunned.x(),
+                stunned.y(),
+                () -> 0,
+                (entity, direction, nextX, nextY) -> {
+                    wallQueries.incrementAndGet();
+                    observedStatuses.add(entity.status());
+                    return true;
+                },
+                null,
+                0,
+                3,
+                0));
+
+        RoomEntity lifted = runtime.inspection().snapshot().slots().get(slot);
+        // The thrown motion is already stopped when EntityBecomeStunned runs, so the
+        // source bounce has no wall probe here. The runtime tick prepass accounts for
+        // the one source countdown decrement when no recoil motion is active.
+        assertEquals(0, wallQueries.get());
+        assertEquals(List.of(), observedStatuses);
+        assertEquals(0x01, runtime.enemies().enemyIgnoreHitsCountdown(slot));
+        assertEquals(slot, lifted.slot());
+        assertEquals(EntityStatus.LIFTED, lifted.status());
+        assertEquals(expectedLiftedX, lifted.x());
+        assertEquals(stunned.y(), lifted.y());
+        assertEquals(0, lifted.z());
+        assertNormalBombDefinition(lifted);
+    }
+
+    @Test
+    void stunnedBombPostActiveTailPersistsReturnedRecoilStateWithoutALift() throws IOException {
+        RoomEntityRuntime runtime = bombRuntime();
+        int slot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
+        fullyLift(runtime, slot);
+        assertTrue(runtime.commands().throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+        EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(slot, 0xA0);
+
+        RoomEntityBackgroundCollision alwaysBlocked = (entity, direction, nextX, nextY) -> true;
+        int frame = 0;
+        while (runtime.inspection().snapshot().slots().get(slot).status() != EntityStatus.STUNNED && frame < 12) {
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 0, 0, () -> 0, alwaysBlocked));
+        }
+        assertEquals(
+                EntityStatus.STUNNED,
+                runtime.inspection().snapshot().slots().get(slot).status());
+
+        RoomEntity stunned = runtime.inspection().snapshot().slots().get(slot);
+        EntityRuntimeFixture.debug(runtime).configureEnemyRecoilForTest(slot, stunned.x() + 0x10, stunned.y(), 0x10);
+        EntityRuntimeFixture.debug(runtime).setEnemyIgnoreHitsCountdownForTest(slot, 0x02);
+        runtime.tick(EntityTestFrames.frame(
+                runtime,
+                frame,
+                stunned.x(),
+                stunned.y(),
+                () -> 0,
+                (entity, direction, nextX, nextY) -> false,
+                null,
+                0,
+                3,
+                0));
+
+        RoomEntity recoiled = runtime.inspection().snapshot().slots().get(slot);
+        assertEquals((stunned.x() - 1) & 0xFF, recoiled.x());
+        assertEquals((stunned.y() - 1) & 0xFF, recoiled.y());
+        assertEquals(0x01, runtime.enemies().enemyIgnoreHitsCountdown(slot));
+        assertEquals(slot, recoiled.slot());
+        assertEquals(EntityStatus.STUNNED, recoiled.status());
+        assertNormalBombDefinition(recoiled);
+    }
+
+    @Test
+    void placedBombAppliesConversionOffsetsAndFallsWithoutHorizontalDrift() throws IOException {
+        RoomEntityRuntime runtime = bombRuntime();
+        int slot = runtime.spawns().spawnBomb(0x40, 0x50, 0, ThrownEntityMotion.ROM_DIRECTION_RIGHT);
+        AtomicInteger wallQueries = new AtomicInteger();
+
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0, (entity, direction, nextX, nextY) -> {
+            wallQueries.incrementAndGet();
+            assertEquals(ThrownEntityMotion.ROM_DIRECTION_RIGHT, direction);
+            return true;
+        }));
+
+        RoomEntity afterPlacement = runtime.inspection().snapshot().slots().get(slot);
+        assertEquals(0, wallQueries.get());
+        assertEquals(0x48, afterPlacement.x());
+        assertEquals(0x50, afterPlacement.y());
+        assertEquals(0x01, afterPlacement.z());
+        assertEquals(EntityStatus.ACTIVE, afterPlacement.status());
+
+        runtime.tick(
+                EntityTestFrames.frame(runtime, 1, 0x40, 0x50, () -> 0, (entity, direction, nextX, nextY) -> false));
+
+        RoomEntity afterSecondFrame = runtime.inspection().snapshot().slots().get(slot);
+        assertEquals(0x48, afterSecondFrame.x());
+        assertEquals(0x50, afterSecondFrame.y());
+        assertEquals(0x00, afterSecondFrame.z());
+        assertEquals(EntityStatus.ACTIVE, afterSecondFrame.status());
+    }
+
+    @Test
+    void preexistingStaticBombWithUnsupportedDirectionDoesNotStartMotion() {
+        List<RoomEntity> slots = new ArrayList<>();
+        slots.add(new RoomEntityBuilder()
+                .type(0x02)
+                .at(0x40, 0x50)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(0x02))
+                .spriteVariant(-1)
+                .build());
+        for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            slots.add(RoomEntity.disabled(slot));
+        }
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots)).build();
+        EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(0, 0xA0);
+
+        assertDoesNotThrow(() -> runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0)));
+
+        RoomEntity staticBomb = runtime.inspection().snapshot().slots().get(0);
+        assertEquals(EntityStatus.ACTIVE, staticBomb.status());
+        assertEquals(0x40, staticBomb.x());
+        assertEquals(0x50, staticBomb.y());
+    }
+
+    @Test
+    void thrownThenStunnedBombRunsFuseBeforeMotionAndUnloadsAfterExplosion() throws IOException {
+        RoomEntityRuntime runtime = bombRuntime();
+        int slot = runtime.spawns().spawnBomb(0x40, 0x50, 0, 0);
+        fullyLift(runtime, slot);
+        assertTrue(runtime.commands().throwLiftedEntity(ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+        EntityRuntimeFixture.debug(runtime).setBombTransitionCountdownForTest(slot, 0x19);
+
+        RoomEntityBackgroundCollision alwaysBlocked = (entity, direction, nextX, nextY) -> true;
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x40, 0x50, () -> 0, alwaysBlocked));
+        RoomEntity warningWhileThrown = runtime.inspection().snapshot().slots().get(slot);
+        assertEquals(EntityStatus.THROWN, warningWhileThrown.status());
+        assertEquals(0x5484, warningWhileThrown.spriteDefinition().address());
+
+        int stunnedFrame = 1;
+        while (runtime.inspection().snapshot().slots().get(slot).status() != EntityStatus.STUNNED
+                && stunnedFrame < 12) {
+            runtime.tick(EntityTestFrames.frame(runtime, stunnedFrame++, 0x40, 0x50, () -> 0, alwaysBlocked));
+        }
+        RoomEntity explosionWhileStunned =
+                runtime.inspection().snapshot().slots().get(slot);
+        assertEquals(EntityStatus.STUNNED, explosionWhileStunned.status());
+        assertEquals(0x6530, explosionWhileStunned.spriteDefinition().address());
+        assertEquals(3, explosionWhileStunned.spriteVariant());
+
+        for (int frame = 2;
+                frame < 40 && runtime.inspection().snapshot().slots().get(slot).loaded();
+                frame++) {
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 0x40, 0x50, () -> 0, alwaysBlocked));
+        }
+
+        assertEquals(
+                EntityStatus.DISABLED,
+                runtime.inspection().snapshot().slots().get(slot).status());
+        assertFalse(runtime.inspection().bombActive());
+    }
+
+    @Test
+    void genericPowerBraceletLiftStillRequiresTheExistingGrabbablePath() {
+        EntitySpriteDefinition definition = new EntitySpriteDefinition(
+                0x05,
+                0x03,
+                0x5B65,
+                EntitySpriteDefinition.Shape.PAIR,
+                0,
+                List.of(new EntitySpriteDefinition.Variant(
+                        new EntitySpriteDefinition.OamAttribute(0x14, 0x02),
+                        new EntitySpriteDefinition.OamAttribute(0x14, 0x22))));
+        List<RoomEntity> slots = new ArrayList<>();
+        slots.add(new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(0x05)
+                .at(0x20, 0x30)
+                .status(EntityStatus.STUNNED)
+                .spriteDefinition(definition)
+                .build());
+        for (int slot = 1; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            slots.add(RoomEntity.disabled(slot));
+        }
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots)).build();
+        runtime.configuration().setPowerBraceletButtonHeld(true);
+
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 0x20, 0x30, () -> 0));
+
+        assertEquals(
+                EntityStatus.LIFTED,
+                runtime.inspection().snapshot().slots().get(0).status());
+    }
+
+    private static void fullyLift(RoomEntityRuntime runtime, int slot) {
+        assertTrue(runtime.commands().beginLift(slot, ThrownEntityMotion.ROM_DIRECTION_RIGHT));
+        int frame = 0;
+        while (runtime.inspection().liftedEntityState().carryState() != 0x01 && frame < 64) {
+            runtime.tick(EntityTestFrames.frame(runtime, frame++, 0x40, 0x50, () -> 0));
+        }
+        assertEquals(0x01, runtime.inspection().liftedEntityState().carryState());
+    }
+
+    private static RoomEntityRuntime bombRuntime() throws IOException {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(loadRom()));
+        List<RoomEntity> slots = new ArrayList<>();
+        for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            slots.add(RoomEntity.disabled(slot));
+        }
+        return new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
+                .indoorRoom(false)
+                .randomByteSupplier(null)
+                .spriteHandlers(catalog)
+                .build();
+    }
+
+    private static void assertNormalBombDefinition(RoomEntity entity) {
+        assertEquals(
+                EntitySpriteDefinition.Shape.SINGLE, entity.spriteDefinition().shape());
+        assertEquals(0x03, entity.spriteDefinition().bank());
+        assertEquals(0x652E, entity.spriteDefinition().address());
+        assertEquals(0, entity.spriteVariant());
+    }
+
+    private static byte[] loadRom() throws IOException {
+        try (var stream = linksawakening.testing.TestRom.open()) {
+            if (stream == null) {
+                throw new IOException("Missing ROM resource: rom/azle.gbc");
+            }
+            return stream.readAllBytes();
+        }
+    }
+}

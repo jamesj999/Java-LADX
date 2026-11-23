@@ -1,0 +1,91 @@
+<!doctype html><meta charset="utf-8"><title>File menu comparison</title><style>body{font:16px system-ui;background:#181a20;color:white;margin:32px}article{display:flex;gap:20px}img{width:320px;image-rendering:pixelated}section{margin:30px 0}</style><h1>File menu screenshot comparison</h1><p>2026-10-15. Corrected the menu tilemap bank ($08, rather than the bank-$20 pointer table), palette block ($21:75B6), 8×16 OAM sprite dimensions and coordinates, copy-menu cursor placement, confirmation arrows and name blinking. Partial erase/copy attribute commands now preserve selection-screen colors. Saved-file heart containers and three BCD death digits are read from the real save summaries. Name writes now cover exactly five tiles. Runtime graphics, palettes, digits and confirmation text remain ROM-backed.</p><p>Validation: 80 targeted Java tests passed, with no failures, errors or skipped tests. Screenshot captures cover 22 settled file-selection, name-entry, erase and copy states, including all three populated slots. The comparison script exits nonzero for any differing pixel. The shared save-screen catalog bank/palette correction is unit-tested but the in-game save screen is not included in these captures.</p>
+<p><strong>704/704 original screenshots match; 22/22 complete ordered animation cycles match.</strong></p><p>Reproduce: install tools/intro/requirements.txt, run python tools/menu/compare.py --capture, gradle -p java captureMenu, then python tools/menu/compare.py.</p>
+<p>Original: PyBoy CGB, built-in boot ROM, ROM SHA256 c95dd3d9cb798e86c28e3269554e458d434bf3277b96cadf5bc81cfacfb5ee60. Java: production FileMenuController, GPU and GameFrameSceneBuilder framebuffer. Each settled state is sampled for 32 frames and compared against the Java animation cycle at RGB555 precision, without masks. A single cyclic phase offset aligns each 32-frame sequence, preserving animation cadence; transition timing, sound and desktop presentation are not tested. Synthetic saved slot: ABCDE, 10 hearts, 123 deaths; other slots empty. Additional full-save fixtures: LINK (14 hearts, 999 deaths) and TEST (3 hearts, 007 deaths). The entire ordered animation cycle is checked. Original menu states reached by button input; only save-summary WRAM is seeded before menu preparation. No user saves are changed.</p>
+<section><h2>empty</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>b4427899935a966aeed0a9edd6b18b5f9ad8f7b3c2a1200a978e584e3de96f6c</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>9130ff94a1f366da78cc000710a1711bec236578b2c8f21cdeb5f72f500634e6</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>slot2</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>ee4459e51f61613d76f700725b8fb6ff7774e575aae26262c1be32373fd3d9ab</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>38a244ecf13fd305eef70078b5c79833ab14122d7f4df4aa55a2e43167e7977b</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>slot3</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>c7202e8563940d7d67b53410d9483f2d512f7a7827ab32e3399496bc58a818cc</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>033713485be79a37a6aefb7a107d3f8c291f38cb0b9f6e7e6c440d4cbd4a0a18</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>new</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>a9a7a8b0c216692f25d508a6689cd8d2112288eb861a0c3850f3e3790f5d6d42</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>edfb9b2cd446044a5435ff2943569da207a5f4d6cfc48d34e6bf9369019006ed</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>name</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>d0f7deaee4ebca7e4e06b755e2e72beb0a2b09961dbbe3a87d767dcf96d8cf23</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>35e73568b980729f4f40299476627734fb165c92ac3888f15962f58182737ffc</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>saved</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>5507132d9d5fcd1670164bc9895f9265094dcf57e70f1a673b539b0b82e08230</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>2c71d272be5549a13b56be7d216fa0f9e6b2426ddd21771a3ea1786998f706a8</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>erase_command</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>74bb5c34191b378982aa9ba30ded90714322c9fc3a1fcc7c15162e3d6fbb91ec</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>61a3e9627af30d4ebbce31fdaadee8cbbd3b42b2c564801c69a0949ceb98ca31</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>copy_command</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>c5b3ee7269bcfbaa3cebdbc79104854f2f6f354a1382902cfacb0523c7c4b656</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>740776c01b36ff3617a8813e21bc43c2fb80363232df9c541831febd96469720</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>erase</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>2f15bf78bae473794b1bf91a84dd5716780012f7df7c34095046b5692c32576b</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>5ba70a9e14b79c5e91ab58335fc7a29ff7e20e9576a84240919baa89fc09f2fb</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>erase_confirm</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>5e6143519b86e4977519ea6b57a0b7d5d79e5270c97c630828b46bd3fc893296</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>8d7430d9d25eb6ab54fd19156fef35f6d9da1e6a4085569145b1ecbe0fd25308</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>erase_ok</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>8c4617fd6e01173499aaa3c402ad80729c22182e3b4b18a572ec4486b74e7bfc</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>709820468afe7d311dcbdebc35682b47c60296cd7542b21a7325a95a10577682</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>copy</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>e4b878e6cf4b25cbb7ccff5a9b95e79705fa57b8c9fb8588c97f3a04f263b2d5</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>1eed3dd92698919fe40ecf0ab8d92e6fde9001911fdc4d48d039caab14880adc</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>copy_target</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>8ad978defd314db038e36d3807f62b49d7e86c71a10dd05fba21f4768c051791</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>7a8221f8881279b2cd9573f74597ab46ed4a3d12b05ee10833665fde2490bc62</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>copy_target2</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>07344d44fb9c4d7860810b1f287f9ebd855ce081c5e19156fdb5bd7a4e972476</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>f55baa2a90143e8ba7f40b682ca055c128fcdb5c7d292f1e5717bf69c64acc2a</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>copy_confirm</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>0bfc39d4d45875ed6891afb56732679ef5943948f7bc35841d33bc5609adb4ef</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>04c27101ced7d84156e1fc1d57363f56b093b5cb56c38ff7f4a14b8ac43d0262</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>copy_ok</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>8223bd32dd8234a5a190a930731be5fe4aee2cb7d8ce8d8f2fcc6bfe64bb3f31</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>050141a26cb4ca75172adf9ff4dfcaf676afe275e66254751356a2da87d7ef4d</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>all_saved</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>e15d0d58e4b5a20803d7cd01dc63d02ccd2cab98e1bfed2f4cde0a78a1d162e3</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>8d5ab32bc22f2df55ebfbd8543677264df147bfa9a015177d4575aa76aeb8e4b</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>erase_second</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>4fb652655a86fbc4f246476eefb9d56d2449ace026d1184884715ea538a8b836</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>f248beec4cee57e3fc6818261aaab068ed08d553673e7220da44ab80c03163d4</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>erase_second_confirm</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>7e9e40d1c3b9778c1fec8b483aab26e48ca1888d2750cfe1aab30592bf438ad0</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>0238ed8eaed34623573627e49dfa55b0802756b821eee19ab8788b556c458948</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>copy_overwrite</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>4cd2b26471c65b5d7bd110adef2ca713b85a8d4443c62c8873dd67224a50a814</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>927ba493ee30c10b3bbed4539582adbd47074b0a4a9e076c7a3828f0398d51f5</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>new_slot3</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>cdf7c63b3ed85b9b324a4851af9e5b26a585e9012b9e0a0f34ee0fedcd619984</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>067983e1d983755627b7af42c2d95c9f1fb5846f9beb0b9d671223e452a45098</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>
+<section><h2>copy_return</h2><p>32/32 frames match with one fixed cycle alignment; worst difference 0/23040 pixels.</p><article>
+<div>original<br><small>PNG SHA-256 <code>0a98f927fb5e490ac9be9c50bc2002c79edd36565798405dd20ae49c96bff8de</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>aa2956a81f1dda9fd5030640388ca0aaa013b4ee0a0a96e725d7f450534eb56d</code></small></div>
+<div>Difference<br><small>PNG SHA-256 <code>fbe0283d609b1d32ef114c0c5cd27b7d091ac6034985a4218f1c4088c4d90c96</code></small></div></article></section>

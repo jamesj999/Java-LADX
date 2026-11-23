@@ -1,0 +1,39 @@
+<!doctype html><html><meta charset="utf-8"><style>
+article{display:flex;gap:16px;flex-wrap:wrap}figure{margin:0}img{width:240px;image-rendering:pixelated}section{margin:20px 0}p{line-height:1.5}
+</style>
+<p><strong>Continuous opening route: 8/100 checkpoints match.</strong> Worst difference: 4597/23040 pixels at RGB555 precision.</p>
+<p>Both games wake Link, finish Marin’s conversation, hop out of bed, walk to Tarin, receive the shield, and exit into room A2. Extended routes use coordinate and room goals, releasing held input before waiting for transitions to finish. Java runs the desktop Main input, update and renderer; no scene or state injections follow bootstrap. The original is reached by normal file-menu input with fresh in-memory RAM.</p>
+<p>This is a diagnostic baseline, not a pixel-parity pass. Java starts at its new-game bootstrap; the emulator starts at the settled house after file-menu entry. Initial clocks are not synchronized. Faster loading is intentional; loading duration is not a parity requirement. Sprite, collision, input and display differences remain to investigate. No masks or screenshot alignment are applied.</p>
+<section><p>Shield received: 0 differing pixels</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>fb4a514d9947beca05c229df36cb3a4be35484df7a318f3ffbbb734409fd0aea</code></small></figure>
+<figure><figcaption>Java Main loop</figcaption><small>PNG SHA-256 <code>8c71f71a03bd21b209de8d5ce04c2c50f4890d1fd391f5a20bc0f9bef62e6d58</code></small></figure>
+</article></section>
+<section><p>Owl conversation: 154 differing pixels</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>3a365d3e18f965dce959eabd90b4e3cc44912b9df88b20aa8a990f5661787362</code></small></figure>
+<figure><figcaption>Java Main loop</figcaption><small>PNG SHA-256 <code>77e6d3daf533257a18aa3ebc365205dcdcb475707bbfb4c4a77c472aba61a8f9</code></small></figure>
+</article></section>
+<section><p>Sword pickup: 2944 differing pixels</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>054edd6c927118984ac0de80a4a1f9f3a76038ddcca99d98c4bbd37397c29b68</code></small></figure>
+<figure><figcaption>Java Main loop</figcaption><small>PNG SHA-256 <code>390fb55cc43036674a1f95c6a14a19258b3a7fa902f4dc5f62006afac69a048d</code></small></figure>
+</article></section>
+<section><p>Sword equipped: 3447 differing pixels</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>6e8d5f5380e88d943e1f3085944fbca8696ecc2d54d9848db6fe91b7883ef469</code></small></figure>
+<figure><figcaption>Java Main loop</figcaption><small>PNG SHA-256 <code>a25459f15da1d2dac26fe7c043427510a010a3645d1448ac68455d7542e421f2</code></small></figure>
+</article></section>
+<section><p>Return stairway: 238 differing pixels</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>b7309346b4ea3fbc732544a31a8316ae91e92bca5482074ec68e5980fa8ca5ed</code></small></figure>
+<figure><figcaption>Java Main loop</figcaption><small>PNG SHA-256 <code>b51583252a3c6277a8e28b96974a1a53ed37914c7f69060c323cf2ddf959eb9f</code></small></figure>
+</article></section>
+<section><p>Bush cutting: 412 differing pixels</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>f908dd862ce8220a1400eb4f7e79afee043474ab1b05a2212b9e2d998d41322a</code></small></figure>
+<figure><figcaption>Java Main loop</figcaption><small>PNG SHA-256 <code>c1ebc0df144bd75e1c4c4f88ef2c4946769de0cdbf681311993db40f890e50b5</code></small></figure>
+</article></section>
+<section><p>Village return: 508 differing pixels</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>5577df50bcc71250a8ff34d932bd19d30adffc66161272909ebf57a3fa2474b0</code></small></figure>
+<figure><figcaption>Java Main loop</figcaption><small>PNG SHA-256 <code>68e26012e133fe8f8eebbb6b5df4e67d6db856711d7a35725a4c1748c8971471</code></small></figure>
+</article></section>
+<section><p>Forest owl: 406 differing pixels</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>ffd71347c47782470706e382a55127a07b2c46038f21338a1e964c4ad8d94b56</code></small></figure>
+<figure><figcaption>Java Main loop</figcaption><small>PNG SHA-256 <code>8eff868aed6fb0623193767e3027379f32f671f23a061b1b49002928922a52d3</code></small></figure>
+</article></section>
+<p>Reproduce with tools/opening/capture.py, Gradle captureOpeningRoute and tools/opening/compare.py. Select the same route/output for both runtimes; see docs/reconstruction-roadmap.md for the exact beach commands. Python dependencies: tools/intro/requirements.txt.</p></html>

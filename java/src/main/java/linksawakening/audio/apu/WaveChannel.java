@@ -2,6 +2,7 @@ package linksawakening.audio.apu;
 
 final class WaveChannel {
     private final int sampleRate;
+    private final LengthCounter length;
     private final int[] waveRam = new int[16];
     private int dacRegister;
     private int outputLevelRegister;
@@ -12,6 +13,7 @@ final class WaveChannel {
 
     WaveChannel(int sampleRate) {
         this.sampleRate = sampleRate;
+        length = new LengthCounter(256, sampleRate);
         reset();
     }
 
@@ -19,12 +21,22 @@ final class WaveChannel {
         for (int i = 0; i < waveRam.length; i++) {
             waveRam[i] = 0;
         }
+        powerOff();
+    }
+
+    // NR52 power-off resets the channel but leaves wave RAM intact.
+    void powerOff() {
+        length.reset();
         dacRegister = 0;
         outputLevelRegister = 0;
         frequencyLow = 0;
         frequencyHigh = 0;
         active = false;
         position = 0.0;
+    }
+
+    void writeLength(int value) {
+        length.load(value);
     }
 
     void writeDac(int value) {
@@ -68,24 +80,34 @@ final class WaveChannel {
     }
 
     void tick() {
+        if (length.tick((frequencyHigh & 0x40) != 0)) {
+            active = false;
+        }
     }
 
     double render() {
-        if (!active) {
-            return 0.0;
+        if (!dacEnabled()) return 0.0;
+        if (!active) return 1.0;
+        int level = (outputLevelRegister >>> 5) & 3;
+        double steps = frequencyHertz() * 32.0 / sampleRate;
+        double remaining = steps;
+        double digitalSum = 0;
+        while (remaining > 0) {
+            double span = Math.min(remaining, 1.0 - (position - Math.floor(position)));
+            int digital = level == 0 ? 0 : sampleAt((int) position & 31) >>> (level - 1);
+            digitalSum += digital * span;
+            position = (position + span) % 32.0;
+            remaining -= span;
         }
+        return 1.0 - digitalSum / steps / 7.5;
+    }
 
-        int sample = sampleAt((int) position & 0x1F);
-        double centered = (sample - 7.5) / 7.5;
-        double scaled = centered * outputScale();
-
-        position += frequencyHertz() * 32.0 / sampleRate;
-        position %= 32.0;
-
-        return scaled;
+    boolean dacEnabled() {
+        return (dacRegister & 0x80) != 0;
     }
 
     private void trigger() {
+        length.trigger();
         active = (dacRegister & 0x80) != 0;
         position = 0.0;
     }
@@ -96,16 +118,6 @@ final class WaveChannel {
             return (value >>> 4) & 0x0F;
         }
         return value & 0x0F;
-    }
-
-    private double outputScale() {
-        return switch ((outputLevelRegister >>> 5) & 0x03) {
-            case 0 -> 0.0;
-            case 1 -> 1.0;
-            case 2 -> 0.5;
-            case 3 -> 0.25;
-            default -> throw new IllegalStateException("Unexpected wave output level");
-        };
     }
 
     private double frequencyHertz() {

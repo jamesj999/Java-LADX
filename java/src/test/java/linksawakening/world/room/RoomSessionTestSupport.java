@@ -1,0 +1,179 @@
+package linksawakening.world.room;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+import linksawakening.entity.EntitySpriteDefinition;
+import linksawakening.entity.EntitySpriteHandlerCatalog;
+import linksawakening.gpu.GPU;
+import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.Rom;
+import linksawakening.rom.RomTables;
+import linksawakening.state.Direction;
+import linksawakening.testing.TestRoms;
+import linksawakening.vfx.TransientVfxSystem;
+import linksawakening.world.entity.EnemyDropResolver;
+import linksawakening.world.entity.EntityRoomLoader;
+import linksawakening.world.entity.EntityStatus;
+import linksawakening.world.entity.EntityTestFrames;
+import linksawakening.world.entity.RomEnemyCombatTables;
+import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBuilder;
+import linksawakening.world.entity.RoomEntityRuntime;
+import linksawakening.world.entity.RoomEntityRuntimeBuilder;
+import linksawakening.world.entity.RoomEntitySnapshot;
+import linksawakening.world.entity.event.EntityCombatEvent;
+
+final class RoomSessionTestSupport {
+    static int[] torchTiles(RoomSession session, int location) {
+        int index = (location >>> 4) * 2 * RoomConstants.ROOM_TILE_WIDTH + (location & 0x0F) * 2;
+        int[] tiles = session.rooms().activeRoomOrNull().tileIds();
+        int[] attributes = session.rooms().activeRoomOrNull().tileAttrs();
+        int lower = index + RoomConstants.ROOM_TILE_WIDTH;
+        return new int[] {
+            tiles[index],
+            tiles[index + 1],
+            tiles[lower],
+            tiles[lower + 1],
+            attributes[index],
+            attributes[index + 1],
+            attributes[lower],
+            attributes[lower + 1]
+        };
+    }
+
+    static RoomSession newSession() {
+        return newSession(room -> {});
+    }
+
+    static void tickInteractive(RoomSession session, int frame, RoomEntity witch) {
+        session.entities().tickEntitiesWithProjectileEvents(frame, witch.x(), 0x56, 0, 0, 1, false);
+    }
+
+    static void tickInteractive(RoomSession session, int frame, int linkEntityX, int linkEntityY) {
+        session.entities()
+                .tickEntitiesWithProjectileEvents(
+                        frame, linkEntityX, linkEntityY, 0, 0, Direction.DOWN.javaIndex(), false);
+    }
+
+    static RoomSession newSession(RoomLoadListener roomLoadListener) {
+        return newSession(new TransientVfxSystem(16), roomLoadListener);
+    }
+
+    static RoomSession newSession(TransientVfxSystem transientVfxSystem) {
+        return newSession(transientVfxSystem, room -> {});
+    }
+
+    static RoomSession newSession(TransientVfxSystem transientVfxSystem, RoomLoadListener roomLoadListener) {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.load(TestRoms.partial(rom));
+        return new RoomSession(new RoomSessionConfig(
+                (rom == null ? (Rom) null : TestRoms.partial(rom)),
+                new GPU(),
+                new RoomLoader((rom == null ? (Rom) null : TestRoms.partial(rom))),
+                new OverworldTilesetTable((rom == null ? (Rom) null : TestRoms.partial(rom))),
+                new OverworldCollision(romTables),
+                new RoomSessionConfig.Presentation(transientVfxSystem, null, roomLoadListener),
+                new linksawakening.world.entity.RomRandomByteSource()));
+    }
+
+    static byte[] loadRom() {
+        try (var stream = linksawakening.testing.TestRom.open()) {
+            if (stream == null) {
+                throw new IllegalStateException("ROM resource missing");
+            }
+            return stream.readAllBytes();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to load ROM", e);
+        }
+    }
+
+    static byte[] pattern(int length, int start) {
+        byte[] values = new byte[length];
+        for (int index = 0; index < values.length; index++) {
+            values[index] = (byte) (start + index);
+        }
+        return values;
+    }
+
+    static void fillActiveObjects(RoomSession session, int objectId) {
+        int[] roomObjects = session.rooms().activeRoomOrNull().roomObjectsArea();
+        for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
+            for (int column = 0; column < RoomConstants.OBJECTS_PER_ROW; column++) {
+                roomObjects[RoomConstants.ROOM_OBJECTS_BASE + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column] =
+                        objectId;
+            }
+        }
+    }
+
+    static RoomEntity syntheticEntity(int type) {
+        return new RoomEntityBuilder()
+                .slot(0)
+                .sourceLoadOrder(0)
+                .type(type)
+                .at(0x20, 0x30)
+                .status(EntityStatus.ACTIVE)
+                .spriteDefinition(EntitySpriteDefinition.unsupported(type))
+                .spriteVariant(-1)
+                .entityFlipAttribute(0)
+                .spriteTileOffset(0)
+                .z(0)
+                .deathSpriteVariant(-1)
+                .powerRecoilDeath(false)
+                .build();
+    }
+
+    static RoomEntityRuntime runtimeWithKillOrder(byte[] rom, int... killOrder) {
+        EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));
+        List<RoomEntity> slots = new ArrayList<>();
+        for (int slot = 0; slot < EntityRoomLoader.MAX_ENTITIES; slot++) {
+            slots.add(RoomEntity.disabled(slot));
+        }
+        int[] entitySlots = {15, 14, 13};
+        int[] entityX = {0x20, 0x70, 0xC0};
+        for (int sourceOrder = 0; sourceOrder < entitySlots.length; sourceOrder++) {
+            int slot = entitySlots[sourceOrder];
+            slots.set(
+                    slot,
+                    new RoomEntityBuilder()
+                            .slot(slot)
+                            .sourceLoadOrder(sourceOrder)
+                            .type(0x0B)
+                            .at(entityX[sourceOrder], 0x50)
+                            .status(EntityStatus.ACTIVE)
+                            .spriteDefinition(catalog.forEntityType(0x0B, EntityRoomLoader.RoomTable.INDOORS_A))
+                            .spriteVariant(0)
+                            .entityFlipAttribute(0)
+                            .spriteTileOffset(0)
+                            .z(0)
+                            .deathSpriteVariant(-1)
+                            .powerRecoilDeath(false)
+                            .build());
+        }
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(slots))
+                .indoorRoom(true)
+                .randomByteSupplier(() -> 0)
+                .spriteHandlers(catalog)
+                .enemyCombatTables(new RomEnemyCombatTables(rom == null ? null : TestRoms.partial(rom)))
+                .build();
+        runtime.configuration().setEnemyDropResolver(new EnemyDropResolver(rom == null ? null : TestRoms.partial(rom)));
+        int frame = 0;
+        for (int sourceOrder : killOrder) {
+            int slot = entitySlots[sourceOrder];
+            RoomEntity target = runtime.inspection().snapshot().slots().get(slot);
+            linksawakening.world.entity.EntityRuntimeTestAccess.setEnemyHealthForTest(runtime, slot, 1);
+            List<EntityCombatEvent> hit = runtime.combat()
+                    .resolveCombat(new linksawakening.world.entity.EntitySwordContactFrame(
+                            frame++, 0, 0, false, true, true, target.x() - 8, 0x10, target.y() - 8, 0x10));
+            assertTrue(hit.stream().anyMatch(event -> event.slot() == slot && event.swordHit()));
+            int deathDeadline = frame + 0x80;
+            while (runtime.inspection().snapshot().slots().get(slot).loaded() && frame < deathDeadline) {
+                runtime.tick(EntityTestFrames.frame(runtime, frame++, 0, 0, () -> 0));
+            }
+            assertFalse(runtime.inspection().snapshot().slots().get(slot).loaded());
+        }
+        return runtime;
+    }
+}

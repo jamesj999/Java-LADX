@@ -1,21 +1,39 @@
 package linksawakening.gameplay;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.io.IOException;
+import java.io.InputStream;
 import linksawakening.audio.sfx.SoundEffect;
 import linksawakening.audio.sfx.SoundEffectCatalog;
 import linksawakening.audio.sfx.SoundEffectNamespace;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
+@linksawakening.testing.RequiresRom
 final class GameplaySoundEffectMapTest {
+
+    @Test
+    void mapsCrackedFloorToRumble2() throws IOException {
+        var map = GameplaySoundEffectMap.fromCatalog(
+                SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom())));
+        var effect = map.resolve(GameplaySoundEvent.CRACKED_FLOOR_COLLAPSE).orElseThrow();
+        assertEquals(SoundEffectNamespace.NOISE, effect.namespace());
+        assertEquals(0x2B, effect.id());
+    }
+
+    @Test
+    void mapsBlockPushToEntityInitPushedBlockRumble() throws IOException {
+        var map = GameplaySoundEffectMap.fromCatalog(
+                SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom())));
+        var effect = map.resolve(GameplaySoundEvent.BLOCK_PUSH).orElseThrow();
+        assertEquals(SoundEffectNamespace.NOISE, effect.namespace());
+        assertEquals(0x11, effect.id());
+    }
 
     @Test
     void mapsWaterSplashToTheRomWaterSplashJingle() throws IOException {
         GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
-            SoundEffectCatalog.fromRom(loadRom()));
+                SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom())));
 
         SoundEffect effect = map.resolve(GameplaySoundEvent.WATER_SPLASH).orElseThrow();
 
@@ -27,7 +45,7 @@ final class GameplaySoundEffectMapTest {
     @Test
     void mapsCrystalSwitchToTheRomFloorSwitchWave() throws IOException {
         GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
-            SoundEffectCatalog.fromRom(loadRom()));
+                SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom())));
 
         SoundEffect effect = map.resolve(GameplaySoundEvent.SWITCH_BLOCK_TOGGLE).orElseThrow();
 
@@ -39,7 +57,7 @@ final class GameplaySoundEffectMapTest {
     @Test
     void mapsFloorButtonToTheRomFloorSwitchWave() throws IOException {
         GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
-            SoundEffectCatalog.fromRom(loadRom()));
+                SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom())));
 
         SoundEffect effect = map.resolve(GameplaySoundEvent.FLOOR_SWITCH).orElseThrow();
 
@@ -51,7 +69,7 @@ final class GameplaySoundEffectMapTest {
     @Test
     void mapsHookshotToTheRomHookshotNoise() throws IOException {
         GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
-            SoundEffectCatalog.fromRom(loadRom()));
+                SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom())));
 
         SoundEffect effect = map.resolve(GameplaySoundEvent.HOOKSHOT).orElseThrow();
 
@@ -63,20 +81,21 @@ final class GameplaySoundEffectMapTest {
     @Test
     void mapsBombExplosionToTheRomExplosionNoiseWithoutChangingHookshot() throws IOException {
         GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
-            SoundEffectCatalog.fromRom(loadRom()));
+                SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom())));
 
         SoundEffect effect = map.resolve(GameplaySoundEvent.BOMB_EXPLOSION).orElseThrow();
 
         assertEquals(SoundEffectNamespace.NOISE, effect.namespace());
         assertEquals(0x0C, effect.id());
         assertEquals("NOISE_SFX_EXPLOSION", effect.name());
-        assertEquals(0x0B, map.resolve(GameplaySoundEvent.HOOKSHOT).orElseThrow().id());
+        assertEquals(
+                0x0B, map.resolve(GameplaySoundEvent.HOOKSHOT).orElseThrow().id());
     }
 
     @Test
     void mapsArrowShotToTheRomWhooshNoise() throws IOException {
         GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
-            SoundEffectCatalog.fromRom(loadRom()));
+                SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom())));
 
         SoundEffect effect = map.resolve(GameplaySoundEvent.ARROW_SHOT).orElseThrow();
 
@@ -88,7 +107,7 @@ final class GameplaySoundEffectMapTest {
     @Test
     void mapsBoomerangToTheRomBoomerangNoise() throws IOException {
         GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
-            SoundEffectCatalog.fromRom(loadRom()));
+                SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom())));
 
         SoundEffect effect = map.resolve(GameplaySoundEvent.BOOMERANG).orElseThrow();
 
@@ -100,7 +119,7 @@ final class GameplaySoundEffectMapTest {
     @Test
     void mapsMagicRodToTheRomMagicRodNoise() throws IOException {
         GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
-            SoundEffectCatalog.fromRom(loadRom()));
+                SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom())));
 
         SoundEffect effect = map.resolve(GameplaySoundEvent.MAGIC_ROD).orElseThrow();
 
@@ -112,7 +131,7 @@ final class GameplaySoundEffectMapTest {
     @Test
     void mapsMagicPowderAndItsPoofToRomJingles() throws IOException {
         GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
-            SoundEffectCatalog.fromRom(loadRom()));
+                SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom())));
 
         SoundEffect powder = map.resolve(GameplaySoundEvent.MAGIC_POWDER).orElseThrow();
         SoundEffect poof = map.resolve(GameplaySoundEvent.MAGIC_POWDER_POOF).orElseThrow();
@@ -128,7 +147,7 @@ final class GameplaySoundEffectMapTest {
     @Test
     void mapsSwordBeamToTheRomSwordBeamJingle() throws IOException {
         GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
-            SoundEffectCatalog.fromRom(loadRom()));
+                SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom())));
 
         SoundEffect effect = map.resolve(GameplaySoundEvent.SWORD_BEAM).orElseThrow();
 
@@ -140,7 +159,7 @@ final class GameplaySoundEffectMapTest {
     @Test
     void mapsTreasureFoundToTheRomTreasureJingle() throws IOException {
         GameplaySoundEffectMap map = GameplaySoundEffectMap.fromCatalog(
-            SoundEffectCatalog.fromRom(loadRom()));
+                SoundEffectCatalog.fromRom(linksawakening.rom.Rom.unchecked(loadRom())));
 
         SoundEffect effect = map.resolve(GameplaySoundEvent.TREASURE_FOUND).orElseThrow();
 
@@ -150,8 +169,7 @@ final class GameplaySoundEffectMapTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (InputStream stream = GameplaySoundEffectMapTest.class.getClassLoader()
-                .getResourceAsStream("rom/azle.gbc")) {
+        try (InputStream stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing ROM resource: rom/azle.gbc");
             }

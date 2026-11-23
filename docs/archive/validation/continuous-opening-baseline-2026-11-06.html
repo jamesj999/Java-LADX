@@ -1,0 +1,23 @@
+<!doctype html><html><meta charset="utf-8"><style>
+article{display:flex;gap:16px;flex-wrap:wrap}figure{margin:0}img{width:240px;image-rendering:pixelated}section{margin:20px 0}p{line-height:1.5}
+</style>
+<p><strong>Continuous opening route: 8/22 checkpoints match.</strong> Worst difference: 391/23040 pixels at RGB555 precision.</p>
+<p>Both games wake Link, finish Marin’s conversation, hop out of bed, walk to Tarin, receive the shield, and exit into room A2 using the same button durations. Java runs the desktop Main input, update and renderer; no scene or state injections follow bootstrap. The original is reached by normal file-menu input with fresh in-memory RAM.</p>
+<p>This is a diagnostic baseline, not a pixel-parity pass. Java starts at its new-game bootstrap; the emulator starts at the settled house after file-menu entry. Initial clocks are not synchronized. Animation/input/display phase differences remain, including a one-pixel walking endpoint difference. No masks or screenshot alignment are applied.</p>
+<section><p>Marin opening: 28 differing pixels</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>c5617ad729881c2cf307d349147926520aa38f165e798ec3bf87b71859d706c1</code></small></figure>
+<figure><figcaption>Java Main loop</figcaption><small>PNG SHA-256 <code>bb2bd45bb5c7d74b063a08f5cb3cdbae15807fcac2c105958d736e4172df1fa8</code></small></figure>
+</article></section>
+<section><p>Walk to Tarin: 141 differing pixels</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>5de5cc90c33d8d6542fb7ec626ff80bad217b058d625535383e2decb6d3b2553</code></small></figure>
+<figure><figcaption>Java Main loop</figcaption><small>PNG SHA-256 <code>912d3f94360f3fecced2d0a81dba24275accd7edfb905784adeeff0a7b69ad1d</code></small></figure>
+</article></section>
+<section><p>Shield received: 0 differing pixels</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>fb4a514d9947beca05c229df36cb3a4be35484df7a318f3ffbbb734409fd0aea</code></small></figure>
+<figure><figcaption>Java Main loop</figcaption><small>PNG SHA-256 <code>8c71f71a03bd21b209de8d5ce04c2c50f4890d1fd391f5a20bc0f9bef62e6d58</code></small></figure>
+</article></section>
+<section><p>House exit: 391 differing pixels</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>3b622dbf6add0d120dc7697c40974337e099d0bec641dedc5600bef2e2efc429</code></small></figure>
+<figure><figcaption>Java Main loop</figcaption><small>PNG SHA-256 <code>877e2cc6e2239f72d7d3fdfb9737df3d070d2e81caa207dcea7c46cae7dad291</code></small></figure>
+</article></section>
+<p>Reproduce: python tools/opening/capture.py; gradle -p java captureOpeningRoute; python tools/opening/compare.py. Python dependencies: tools/intro/requirements.txt.</p></html>

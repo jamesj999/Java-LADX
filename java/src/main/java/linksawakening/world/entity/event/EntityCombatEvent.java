@@ -1,0 +1,190 @@
+package linksawakening.world.entity.event;
+
+import java.util.Locale;
+import linksawakening.world.entity.RoomEntity;
+
+/** A single room-entity combat result produced by the ROM collision pass. */
+public record EntityCombatEvent(
+        int slot,
+        int type,
+        int linkDamage,
+        boolean swordHit,
+        int enemyDamage,
+        int enemySpecialAction,
+        SoundChannel soundChannel,
+        int soundId,
+        SoundChannel secondarySoundChannel,
+        int secondarySoundId,
+        SwordPokeVfx swordPokeVfx,
+        LinkAction linkAction,
+        LinkCollisionResponse linkCollisionResponse)
+        implements EntityEvent {
+
+    public static EntityCombatEventBuilder builder(int slot, int type) {
+        return new EntityCombatEventBuilder(slot, type);
+    }
+
+    public EntityCombatEvent(int slot, int type, int linkDamage, boolean swordHit) {
+        this(
+                slot,
+                type,
+                linkDamage,
+                swordHit,
+                0,
+                -1,
+                SoundChannel.NONE,
+                -1,
+                SoundChannel.NONE,
+                -1,
+                null,
+                LinkAction.NONE,
+                LinkCollisionResponse.NONE);
+    }
+
+    /** Combat result with one raw sound request. */
+    public EntityCombatEvent(
+            int slot, int type, int linkDamage, boolean swordHit, SoundChannel soundChannel, int soundId) {
+        this(
+                slot,
+                type,
+                linkDamage,
+                swordHit,
+                0,
+                -1,
+                soundChannel,
+                soundId,
+                SoundChannel.NONE,
+                -1,
+                null,
+                LinkAction.NONE,
+                LinkCollisionResponse.NONE);
+    }
+
+    /** Combat damage and special action with one raw sound request. */
+    public EntityCombatEvent(
+            int slot,
+            int type,
+            int linkDamage,
+            boolean swordHit,
+            int enemyDamage,
+            int enemySpecialAction,
+            SoundChannel soundChannel,
+            int soundId) {
+        this(
+                slot,
+                type,
+                linkDamage,
+                swordHit,
+                enemyDamage,
+                enemySpecialAction,
+                soundChannel,
+                soundId,
+                SoundChannel.NONE,
+                -1,
+                null,
+                LinkAction.NONE,
+                LinkCollisionResponse.NONE);
+    }
+
+    /** Combat result carrying a generic Link collision response. */
+    public EntityCombatEvent {
+        if (slot < 0 || slot >= RoomEntity.SLOT_COUNT) {
+            throw new IllegalArgumentException("Entity slot out of range: " + slot);
+        }
+        if ((type & ~0xFF) != 0) {
+            throw new IllegalArgumentException("Entity type must be an unsigned byte: " + type);
+        }
+        if (linkDamage < 0) {
+            throw new IllegalArgumentException("Link damage cannot be negative: " + linkDamage);
+        }
+        if (enemyDamage < 0) {
+            throw new IllegalArgumentException("Enemy damage cannot be negative: " + enemyDamage);
+        }
+        if (enemySpecialAction < -1 || enemySpecialAction > 0xFF) {
+            throw new IllegalArgumentException(
+                    "Enemy special action must be -1 or an unsigned byte: " + enemySpecialAction);
+        }
+        if (enemyDamage > 0 && enemySpecialAction != -1) {
+            throw new IllegalArgumentException("Numeric and special enemy damage cannot coexist");
+        }
+        if (linkAction == null) {
+            throw new IllegalArgumentException("Link action cannot be null");
+        }
+        if (linkCollisionResponse == null) {
+            throw new IllegalArgumentException("Link collision response cannot be null");
+        }
+        validateSoundPair(soundChannel, soundId, "Combat");
+        validateSoundPair(secondarySoundChannel, secondarySoundId, "Secondary combat");
+    }
+
+    /** Source-shaped request for bank-$02's transient sword-poke renderer. */
+    public record SwordPokeVfx(int worldX, int worldY) {
+        public SwordPokeVfx {
+            if ((worldX & ~0xFF) != 0 || (worldY & ~0xFF) != 0) {
+                throw new IllegalArgumentException("Sword-poke coordinates must be unsigned bytes");
+            }
+        }
+    }
+
+    /** A handler-written response that must be applied to Link immediately. */
+    public enum LinkAction {
+        NONE,
+        GOOMBA_BOUNCE_TOP_DOWN,
+        GOOMBA_BOUNCE_SIDE_SCROLLING
+    }
+
+    /**
+     * The generic ApplyLinkCollisionWithEnemy writes these Link HRAM values
+     * after accepting a normal enemy collision.
+     */
+    public record LinkCollisionResponse(
+            int speedX, int speedY, int ignoreCollisionCountdown, int invincibilityCountdown) {
+        public static final LinkCollisionResponse NONE = new LinkCollisionResponse(0, 0, 0, 0);
+
+        public LinkCollisionResponse(int speedX, int speedY, int ignoreCollisionCountdown) {
+            this(speedX, speedY, ignoreCollisionCountdown, 0);
+        }
+
+        public LinkCollisionResponse {
+            validateByte(speedX, "Link response X speed");
+            validateByte(speedY, "Link response Y speed");
+            validateByte(ignoreCollisionCountdown, "Link collision-ignore countdown");
+            validateByte(invincibilityCountdown, "Link invincibility countdown");
+        }
+
+        public boolean active() {
+            return speedX != 0 || speedY != 0 || ignoreCollisionCountdown != 0 || invincibilityCountdown != 0;
+        }
+    }
+
+    private static void validateSoundPair(SoundChannel channel, int id, String label) {
+        if (channel == null) {
+            throw new IllegalArgumentException(label + " sound channel cannot be null");
+        }
+        if (id < -1 || id > 0xFF) {
+            throw new IllegalArgumentException(label + " sound id must be -1 or an unsigned byte: " + id);
+        }
+        if (channel == SoundChannel.NONE && id != -1) {
+            throw new IllegalArgumentException(
+                    "A sound id requires a " + label.toLowerCase(Locale.getDefault()) + " sound channel");
+        }
+        if (channel != SoundChannel.NONE && id == -1) {
+            throw new IllegalArgumentException(
+                    "A " + label.toLowerCase(Locale.getDefault()) + " sound channel requires a sound id");
+        }
+    }
+
+    private static void validateByte(int value, String label) {
+        if ((value & ~0xFF) != 0) {
+            throw new IllegalArgumentException(label + " must be an unsigned byte: " + value);
+        }
+    }
+
+    /** Raw Game Boy sound request written by the combat handler. */
+    public enum SoundChannel {
+        NONE,
+        JINGLE,
+        WAVE,
+        NOISE
+    }
+}

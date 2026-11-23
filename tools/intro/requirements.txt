@@ -1,0 +1,2 @@
+# Compatibility entry point; keep one set of exact pins.
+-r ../requirements.txt

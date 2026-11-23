@@ -1,0 +1,228 @@
+package linksawakening.entity;
+
+import static linksawakening.entity.LinkRomConstants.ATTACK_STEP_DURATION_MASK;
+import static linksawakening.entity.LinkRomConstants.JOYPAD_TO_DIRECTION;
+import static linksawakening.entity.LinkRomConstants.ROM_ITEM_ATTACK_STEP_COUNTDOWN;
+
+import java.util.Objects;
+import java.util.function.BooleanSupplier;
+import linksawakening.equipment.EquipmentItem;
+import linksawakening.state.Direction;
+import linksawakening.state.InventoryItem;
+
+/** ROM-faithful equipment collaborator for Link. */
+final class LinkEquipment {
+    private final LinkComponentRef<LinkAirborne> linkAirborne;
+    private final LinkComponentRef<LinkAnimationState> linkAnimationState;
+    private final LinkComponentRef<LinkControls> linkControls;
+    private final LinkComponentRef<LinkEntityEffects> linkEntityEffects;
+    private final LinkComponentRef<LinkItemState> linkItemState;
+    private final LinkComponentRef<LinkServices> linkServices;
+    private final LinkComponentRef<LinkStateMachine> linkStateMachine;
+
+    BooleanSupplier shieldInputAllowed = () -> true;
+
+    LinkEquipment(Dependencies dependencies) {
+        linkAirborne = Objects.requireNonNull(dependencies.linkAirborne, "linkAirborne");
+        linkAnimationState = Objects.requireNonNull(dependencies.linkAnimationState, "linkAnimationState");
+        linkControls = Objects.requireNonNull(dependencies.linkControls, "linkControls");
+        linkEntityEffects = Objects.requireNonNull(dependencies.linkEntityEffects, "linkEntityEffects");
+        linkItemState = Objects.requireNonNull(dependencies.linkItemState, "linkItemState");
+        linkServices = Objects.requireNonNull(dependencies.linkServices, "linkServices");
+        linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
+    }
+
+    /**
+     * Mirrors the leading CheckItemsToUse gate used before an equipped item
+     * spends inventory. Airborne motion remains eligible; PlaceBomb does not
+     * reject it, while pit, carry, and interactive item motion do.
+     */
+    boolean canUseItems() {
+        if (linkAirborne.get().accessRomMotionState() != 0
+                || linkEntityEffects.get().accessIsCarryingLiftedObject()
+                || linkItemState.get().accessIsRomLinkPushing()) {
+            return false;
+        }
+        return !itemsBlockMotion();
+    }
+
+    /** Live input gate, also consulted when rendering a paused dialogue frame. */
+    void setShieldInputAllowed(BooleanSupplier allowed) {
+        shieldInputAllowed = Objects.requireNonNull(allowed);
+    }
+
+    /** Mirrors wIsUsingShield: equipped, held, and permitted by gameplay input. */
+    boolean isUsingShield() {
+        if (linkStateMachine.get().status().gelClinging() || !shieldInputAllowed.getAsBoolean()) {
+            return false;
+        }
+
+        boolean usingA = linkServices.get().playerState.inventory().itemA() == InventoryItem.SHIELD.romValue()
+                && linkServices
+                        .get()
+                        .inputState
+                        .isDown(linkServices.get().inputConfig.aKey());
+        boolean usingB = linkServices.get().playerState.inventory().itemB() == InventoryItem.SHIELD.romValue()
+                && linkServices
+                        .get()
+                        .inputState
+                        .isDown(linkServices.get().inputConfig.bKey());
+        return usingA || usingB;
+    }
+
+    /**
+     * Mirrors {@code func_157C}: a single currently-held D-pad direction
+     * immediately becomes Link's facing before an arrow is spawned; neutral
+     * and diagonal masks preserve the existing facing.
+     */
+    int applyRomItemDirectionFromInput() {
+        int newDirection = JOYPAD_TO_DIRECTION[linkControls.get().accessBuildJoypadMask()];
+        if (newDirection != -1) {
+            linkAnimationState.get().direction = Direction.fromJava(newDirection);
+        }
+        return linkAnimationState.get().direction.romIndex();
+    }
+
+    boolean itemsBlockMotion() {
+        return itemsBlockMotion(false);
+    }
+
+    boolean itemsBlockMotion(boolean beforeTopDownAnimation) {
+        if (linkEntityEffects.get().grabbingObject || linkEntityEffects.get().accessIsLiftTransitionBlockingMotion()) {
+            return true;
+        }
+
+        EquipmentItem a = linkServices
+                .get()
+                .itemRegistry
+                .item(linkServices.get().playerState.inventory().itemA());
+        if (itemBlocksMotion(a, beforeTopDownAnimation)) {
+            return true;
+        }
+        EquipmentItem b = linkServices
+                .get()
+                .itemRegistry
+                .item(linkServices.get().playerState.inventory().itemB());
+        return itemBlocksMotion(b, beforeTopDownAnimation);
+    }
+
+    static boolean itemBlocksMotion(EquipmentItem item, boolean beforeTopDownAnimation) {
+        return (beforeTopDownAnimation && item instanceof linksawakening.equipment.Sword sword)
+                ? sword.blocksTopDownMotion()
+                : item.blocksMotion();
+    }
+
+    boolean itemsLockFacing() {
+        return itemsLockFacing(false);
+    }
+
+    boolean itemsLockFacing(boolean beforeTopDownAnimation) {
+        if (linkEntityEffects.get().grabbingObject) return true;
+
+        EquipmentItem a = linkServices
+                .get()
+                .itemRegistry
+                .item(linkServices.get().playerState.inventory().itemA());
+        if (itemLocksFacing(a, beforeTopDownAnimation)) {
+            return true;
+        }
+        EquipmentItem b = linkServices
+                .get()
+                .itemRegistry
+                .item(linkServices.get().playerState.inventory().itemB());
+        return itemLocksFacing(b, beforeTopDownAnimation);
+    }
+
+    static boolean itemLocksFacing(EquipmentItem item, boolean beforeTopDownAnimation) {
+        return (beforeTopDownAnimation && item instanceof linksawakening.equipment.Sword sword)
+                ? sword.locksTopDownFacing()
+                : item.locksFacing();
+    }
+
+    EquipmentItem itemInSlotA() {
+
+        return linkServices
+                .get()
+                .itemRegistry
+                .item(linkServices.get().playerState.inventory().itemA());
+    }
+
+    EquipmentItem itemInSlotB() {
+
+        return linkServices
+                .get()
+                .itemRegistry
+                .item(linkServices.get().playerState.inventory().itemB());
+    }
+
+    void tickRomAttackStepAnimationCountdown() {
+        if ((linkItemState.get().romAttackStepAnimationCountdown & ATTACK_STEP_DURATION_MASK) == 0) {
+            linkItemState.get().romAttackStepAnimationCountdown = 0;
+        } else {
+            linkItemState.get().romAttackStepAnimationCountdown =
+                    (linkItemState.get().romAttackStepAnimationCountdown - 1) & 0xFF;
+        }
+    }
+
+    /** Starts the ROM's generic item attack-step animation window. */
+    void startRomItemAttackStep() {
+        linkItemState.get().romAttackStepAnimationCountdown = ROM_ITEM_ATTACK_STEP_COUNTDOWN;
+    }
+
+    /** Starts SprinkleMagicPowder's two-frame-longer generic item window ($0E). */
+    void startRomMagicPowderAttackStep() {
+        linkItemState.get().romAttackStepAnimationCountdown = 0x0E;
+    }
+
+    /** Starts UseMagicRod's high-bit attack-step animation window. */
+    void startRomMagicRodAttackStep() {
+        linkItemState.get().romAttackStepAnimationCountdown = 0x8E;
+    }
+
+    /** Mirrors TarinEntityHandler's direct clear of the item attack-step byte. */
+    void clearRomAttackStepAnimationCountdown() {
+        linkItemState.get().romAttackStepAnimationCountdown = 0;
+    }
+
+    void accessStartRomItemAttackStep() {
+        this.startRomItemAttackStep();
+    }
+
+    void accessStartRomMagicPowderAttackStep() {
+        this.startRomMagicPowderAttackStep();
+    }
+
+    void accessStartRomMagicRodAttackStep() {
+        this.startRomMagicRodAttackStep();
+    }
+
+    void accessClearRomAttackStepAnimationCountdown() {
+        this.clearRomAttackStepAnimationCountdown();
+    }
+
+    boolean accessCanUseItems() {
+        return this.canUseItems();
+    }
+
+    void accessSetShieldInputAllowed(BooleanSupplier allowed) {
+        this.setShieldInputAllowed(allowed);
+    }
+
+    boolean accessIsUsingShield() {
+        return this.isUsingShield();
+    }
+
+    int accessApplyRomItemDirectionFromInput() {
+        return this.applyRomItemDirectionFromInput();
+    }
+
+    static final class Dependencies {
+        LinkComponentRef<LinkAirborne> linkAirborne;
+        LinkComponentRef<LinkAnimationState> linkAnimationState;
+        LinkComponentRef<LinkControls> linkControls;
+        LinkComponentRef<LinkEntityEffects> linkEntityEffects;
+        LinkComponentRef<LinkItemState> linkItemState;
+        LinkComponentRef<LinkServices> linkServices;
+        LinkComponentRef<LinkStateMachine> linkStateMachine;
+    }
+}

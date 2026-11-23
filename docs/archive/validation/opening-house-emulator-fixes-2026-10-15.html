@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><title>Opening house comparison</title><style>body{font:16px system-ui;margin:32px;background:#181a20;color:white}article{display:flex;gap:24px}img{width:480px;image-rendering:pixelated}</style><h1>Marin and Tarin’s house</h1>
+<p>400/400 full 160×144 screenshots match at RGB555 precision. Worst difference: 0/23040 pixels.</p>
+<p>Original: PyBoy 2.8.1 CGB, built-in boot ROM. ROM SHA256: c95dd3d9cb798e86c28e3269554e458d434bf3277b96cadf5bc81cfacfb5ee60. Reached through button input; no memory injection. Java uses production RoomSession, MarinWakeUpMotion, GPU, GameFrameSceneBuilder and InventoryMenu. Initial animation clocks are synchronized once from read-only WRAM observations; subsequent frames advance normally, with a fixed two-frame OAM/display pipeline offset, no image alignment, masks or per-frame state overrides. This validates the settled opening room and all five bed poses, NPC idle animation and HUD. Fade-in, dialog, sound and desktop presentation are outside this comparison.</p>
+<p>Reproduce: install tools/intro/requirements.txt; python tools/house/compare.py --capture; gradle -p java captureHouse; python tools/house/compare.py.</p><article>
+<div>original<br><small>PNG SHA-256 <code>45a6857f078b58909b6904e7dcbdee7831132a4dc7da5b0ef1675c5d06b4eba6</code></small></div>
+<div>ours<br><small>PNG SHA-256 <code>5264d6926fd8b6cbfa383516d444a3c0a32c8b5bde23f183f73f64c4536f0f11</code></small></div>
+</article>
+<p>Validation: 163 focused room, rendering, startup animation and inventory regressions passed. The broader suite ran 2261 tests with 8 failures; all 8 were independently reproduced against the pre-task sources (two checked-in startup-config assertions and six BowWow pause assertions).</p>

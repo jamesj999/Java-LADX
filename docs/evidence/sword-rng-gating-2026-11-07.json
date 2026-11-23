@@ -1,0 +1,423 @@
+{
+  "frames": 320,
+  "input_sha256": "d2a332dd8611ce7c936921599947a0ff7f6689f2ac88f940bc5f7b3ddf6fed36",
+  "rom_sha256": "c95dd3d9cb798e86c28e3269554e458d434bf3277b96cadf5bc81cfacfb5ee60",
+  "emulator": "PyBoy 2.8.1",
+  "engine_rng": [
+    {
+      "frame": 288,
+      "counter": 34,
+      "ly": 0,
+      "previousSeed": 162,
+      "value": 98,
+      "caller": "linksawakening.equipment.Sword.onPress:170"
+    },
+    {
+      "frame": 312,
+      "counter": 58,
+      "ly": 0,
+      "previousSeed": 98,
+      "value": 78,
+      "caller": "linksawakening.equipment.Sword.onPress:170"
+    }
+  ],
+  "emulator_rng": [
+    {
+      "frame": 193,
+      "counter": 194,
+      "ly": 17,
+      "previousSeed": 162,
+      "value": 186,
+      "caller": "00:1547"
+    },
+    {
+      "frame": 193,
+      "counter": 194,
+      "ly": 17,
+      "noise": 21
+    },
+    {
+      "frame": 257,
+      "counter": 2,
+      "ly": 29,
+      "previousSeed": 186,
+      "value": 236,
+      "caller": "04:4B85"
+    },
+    {
+      "frame": 257,
+      "counter": 2,
+      "ly": 29,
+      "previousSeed": 236,
+      "value": 133,
+      "caller": "04:4BAC"
+    },
+    {
+      "frame": 288,
+      "counter": 33,
+      "ly": 15,
+      "previousSeed": 133,
+      "value": 218,
+      "caller": "00:1547"
+    },
+    {
+      "frame": 288,
+      "counter": 33,
+      "ly": 15,
+      "noise": 21
+    },
+    {
+      "frame": 312,
+      "counter": 57,
+      "ly": 14,
+      "previousSeed": 218,
+      "value": 144,
+      "caller": "00:1547"
+    },
+    {
+      "frame": 312,
+      "counter": 57,
+      "ly": 14,
+      "noise": 2
+    }
+  ],
+  "setup": "Isolated D3 Slime Eye; initial frame counter1 andseedA2; identical320-frame button transcript; no state writes aftercutoff.",
+  "selected_states": [
+    {
+      "frame": 192,
+      "engine": {
+        "frame": "192",
+        "counter": "194",
+        "buttons": "",
+        "dialog": "false",
+        "sword": "0",
+        "linkX": "72",
+        "linkY": "80",
+        "bossState": "2",
+        "slowCountdown": "19",
+        "blockBefore": "2"
+      },
+      "emulator": {
+        "frame": 192,
+        "counter": 194,
+        "buttons": "",
+        "dialog": 0,
+        "sword": 0,
+        "linkX": 72,
+        "linkY": 80,
+        "bossState": 2,
+        "slowCountdown": 20,
+        "motionBlocked": 0,
+        "swordTimer": 0
+      }
+    },
+    {
+      "frame": 193,
+      "engine": {
+        "frame": "193",
+        "counter": "195",
+        "buttons": "a",
+        "dialog": "false",
+        "sword": "0",
+        "linkX": "72",
+        "linkY": "80",
+        "bossState": "2",
+        "slowCountdown": "19",
+        "blockBefore": "2"
+      },
+      "emulator": {
+        "frame": 193,
+        "counter": 195,
+        "buttons": "a",
+        "dialog": 0,
+        "sword": 1,
+        "linkX": 72,
+        "linkY": 80,
+        "bossState": 2,
+        "slowCountdown": 20,
+        "motionBlocked": 2,
+        "swordTimer": 2
+      }
+    },
+    {
+      "frame": 194,
+      "engine": {
+        "frame": "194",
+        "counter": "196",
+        "buttons": "a",
+        "dialog": "false",
+        "sword": "0",
+        "linkX": "72",
+        "linkY": "80",
+        "bossState": "2",
+        "slowCountdown": "18",
+        "blockBefore": "2"
+      },
+      "emulator": {
+        "frame": 194,
+        "counter": 196,
+        "buttons": "a",
+        "dialog": 0,
+        "sword": 1,
+        "linkX": 72,
+        "linkY": 80,
+        "bossState": 2,
+        "slowCountdown": 20,
+        "motionBlocked": 2,
+        "swordTimer": 2
+      }
+    },
+    {
+      "frame": 200,
+      "engine": {
+        "frame": "200",
+        "counter": "202",
+        "buttons": "",
+        "dialog": "false",
+        "sword": "0",
+        "linkX": "72",
+        "linkY": "80",
+        "bossState": "2",
+        "slowCountdown": "17",
+        "blockBefore": "2"
+      },
+      "emulator": {
+        "frame": 200,
+        "counter": 202,
+        "buttons": "",
+        "dialog": 0,
+        "sword": 1,
+        "linkX": 72,
+        "linkY": 80,
+        "bossState": 2,
+        "slowCountdown": 18,
+        "motionBlocked": 2,
+        "swordTimer": 2
+      }
+    },
+    {
+      "frame": 216,
+      "engine": {
+        "frame": "216",
+        "counter": "218",
+        "buttons": "a",
+        "dialog": "false",
+        "sword": "0",
+        "linkX": "72",
+        "linkY": "80",
+        "bossState": "2",
+        "slowCountdown": "13",
+        "blockBefore": "2"
+      },
+      "emulator": {
+        "frame": 216,
+        "counter": 218,
+        "buttons": "a",
+        "dialog": 0,
+        "sword": 1,
+        "linkX": 72,
+        "linkY": 80,
+        "bossState": 2,
+        "slowCountdown": 14,
+        "motionBlocked": 2,
+        "swordTimer": 2
+      }
+    },
+    {
+      "frame": 240,
+      "engine": {
+        "frame": "240",
+        "counter": "242",
+        "buttons": "a",
+        "dialog": "false",
+        "sword": "0",
+        "linkX": "72",
+        "linkY": "80",
+        "bossState": "2",
+        "slowCountdown": "7",
+        "blockBefore": "2"
+      },
+      "emulator": {
+        "frame": 240,
+        "counter": 242,
+        "buttons": "a",
+        "dialog": 0,
+        "sword": 1,
+        "linkX": 72,
+        "linkY": 80,
+        "bossState": 2,
+        "slowCountdown": 8,
+        "motionBlocked": 2,
+        "swordTimer": 2
+      }
+    },
+    {
+      "frame": 257,
+      "engine": {
+        "frame": "257",
+        "counter": "3",
+        "buttons": "",
+        "dialog": "false",
+        "sword": "0",
+        "linkX": "72",
+        "linkY": "80",
+        "bossState": "3",
+        "slowCountdown": "3",
+        "blockBefore": "2"
+      },
+      "emulator": {
+        "frame": 257,
+        "counter": 3,
+        "buttons": "",
+        "dialog": 0,
+        "sword": 1,
+        "linkX": 72,
+        "linkY": 80,
+        "bossState": 3,
+        "slowCountdown": 4,
+        "motionBlocked": 2,
+        "swordTimer": 2
+      }
+    },
+    {
+      "frame": 264,
+      "engine": {
+        "frame": "264",
+        "counter": "10",
+        "buttons": "a",
+        "dialog": "false",
+        "sword": "0",
+        "linkX": "72",
+        "linkY": "80",
+        "bossState": "3",
+        "slowCountdown": "1",
+        "blockBefore": "2"
+      },
+      "emulator": {
+        "frame": 264,
+        "counter": 10,
+        "buttons": "a",
+        "dialog": 0,
+        "sword": 1,
+        "linkX": 72,
+        "linkY": 80,
+        "bossState": 3,
+        "slowCountdown": 2,
+        "motionBlocked": 2,
+        "swordTimer": 2
+      }
+    },
+    {
+      "frame": 288,
+      "engine": {
+        "frame": "288",
+        "counter": "34",
+        "buttons": "a+up",
+        "dialog": "false",
+        "sword": "1",
+        "linkX": "71",
+        "linkY": "71",
+        "bossState": "3",
+        "slowCountdown": "0",
+        "blockBefore": "0"
+      },
+      "emulator": {
+        "frame": 288,
+        "counter": 34,
+        "buttons": "a+up",
+        "dialog": 0,
+        "sword": 1,
+        "linkX": 71,
+        "linkY": 85,
+        "bossState": 3,
+        "slowCountdown": 0,
+        "motionBlocked": 1,
+        "swordTimer": 2
+      }
+    },
+    {
+      "frame": 312,
+      "engine": {
+        "frame": "312",
+        "counter": "58",
+        "buttons": "a+right",
+        "dialog": "false",
+        "sword": "1",
+        "linkX": "68",
+        "linkY": "72",
+        "bossState": "3",
+        "slowCountdown": "0",
+        "blockBefore": "0"
+      },
+      "emulator": {
+        "frame": 312,
+        "counter": 58,
+        "buttons": "a+right",
+        "dialog": 0,
+        "sword": 1,
+        "linkX": 72,
+        "linkY": 84,
+        "bossState": 3,
+        "slowCountdown": 0,
+        "motionBlocked": 1,
+        "swordTimer": 2
+      }
+    }
+  ],
+  "limits": [
+    "ROM hook observes actual call-time hFrameCounter andrLY; engine begins RNGframe before simulation and suppliesLY0.",
+    "Post-tick frame counters can match while call-time inputs differ.",
+    "Identical buttons do not imply identical dialog/slow-timer/position trajectories.",
+    "00:1547 is sword random sound selection; no footstep RNG consumption is missing."
+  ],
+  "engine_rng_before": [
+    {
+      "frame": 193,
+      "counter": 195,
+      "ly": 0,
+      "previousSeed": 162,
+      "value": 178,
+      "caller": "linksawakening.equipment.Sword.onPress:170"
+    },
+    {
+      "frame": 216,
+      "counter": 218,
+      "ly": 0,
+      "previousSeed": 178,
+      "value": 70,
+      "caller": "linksawakening.equipment.Sword.onPress:170"
+    },
+    {
+      "frame": 240,
+      "counter": 242,
+      "ly": 0,
+      "previousSeed": 70,
+      "value": 28,
+      "caller": "linksawakening.equipment.Sword.onPress:170"
+    },
+    {
+      "frame": 264,
+      "counter": 10,
+      "ly": 0,
+      "previousSeed": 28,
+      "value": 19,
+      "caller": "linksawakening.equipment.Sword.onPress:170"
+    },
+    {
+      "frame": 288,
+      "counter": 34,
+      "ly": 0,
+      "previousSeed": 19,
+      "value": 154,
+      "caller": "linksawakening.equipment.Sword.onPress:170"
+    },
+    {
+      "frame": 312,
+      "counter": 58,
+      "ly": 0,
+      "previousSeed": 154,
+      "value": 106,
+      "caller": "linksawakening.equipment.Sword.onPress:170"
+    }
+  ]
+}

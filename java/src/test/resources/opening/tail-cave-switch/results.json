@@ -1,0 +1,1363 @@
+{
+  "checkpoints": 339,
+  "exact": 8,
+  "worst_pixels": 4669,
+  "differences": [
+    {
+      "checkpoint": 0,
+      "pixels": 28
+    },
+    {
+      "checkpoint": 1,
+      "pixels": 28
+    },
+    {
+      "checkpoint": 2,
+      "pixels": 93
+    },
+    {
+      "checkpoint": 3,
+      "pixels": 93
+    },
+    {
+      "checkpoint": 4,
+      "pixels": 93
+    },
+    {
+      "checkpoint": 5,
+      "pixels": 93
+    },
+    {
+      "checkpoint": 6,
+      "pixels": 62
+    },
+    {
+      "checkpoint": 7,
+      "pixels": 0
+    },
+    {
+      "checkpoint": 8,
+      "pixels": 214
+    },
+    {
+      "checkpoint": 9,
+      "pixels": 141
+    },
+    {
+      "checkpoint": 10,
+      "pixels": 0
+    },
+    {
+      "checkpoint": 11,
+      "pixels": 0
+    },
+    {
+      "checkpoint": 12,
+      "pixels": 28
+    },
+    {
+      "checkpoint": 13,
+      "pixels": 28
+    },
+    {
+      "checkpoint": 14,
+      "pixels": 0
+    },
+    {
+      "checkpoint": 15,
+      "pixels": 0
+    },
+    {
+      "checkpoint": 16,
+      "pixels": 0
+    },
+    {
+      "checkpoint": 17,
+      "pixels": 28
+    },
+    {
+      "checkpoint": 18,
+      "pixels": 0
+    },
+    {
+      "checkpoint": 19,
+      "pixels": 93
+    },
+    {
+      "checkpoint": 20,
+      "pixels": 151
+    },
+    {
+      "checkpoint": 21,
+      "pixels": 342
+    },
+    {
+      "checkpoint": 22,
+      "pixels": 339
+    },
+    {
+      "checkpoint": 23,
+      "pixels": 790
+    },
+    {
+      "checkpoint": 24,
+      "pixels": 785
+    },
+    {
+      "checkpoint": 25,
+      "pixels": 764
+    },
+    {
+      "checkpoint": 26,
+      "pixels": 1040
+    },
+    {
+      "checkpoint": 27,
+      "pixels": 1459
+    },
+    {
+      "checkpoint": 28,
+      "pixels": 1068
+    },
+    {
+      "checkpoint": 29,
+      "pixels": 1072
+    },
+    {
+      "checkpoint": 30,
+      "pixels": 1160
+    },
+    {
+      "checkpoint": 31,
+      "pixels": 268
+    },
+    {
+      "checkpoint": 32,
+      "pixels": 244
+    },
+    {
+      "checkpoint": 33,
+      "pixels": 268
+    },
+    {
+      "checkpoint": 34,
+      "pixels": 268
+    },
+    {
+      "checkpoint": 35,
+      "pixels": 224
+    },
+    {
+      "checkpoint": 36,
+      "pixels": 421
+    },
+    {
+      "checkpoint": 37,
+      "pixels": 457
+    },
+    {
+      "checkpoint": 38,
+      "pixels": 292
+    },
+    {
+      "checkpoint": 39,
+      "pixels": 0
+    },
+    {
+      "checkpoint": 40,
+      "pixels": 663
+    },
+    {
+      "checkpoint": 41,
+      "pixels": 736
+    },
+    {
+      "checkpoint": 42,
+      "pixels": 14
+    },
+    {
+      "checkpoint": 43,
+      "pixels": 3500
+    },
+    {
+      "checkpoint": 44,
+      "pixels": 3546
+    },
+    {
+      "checkpoint": 45,
+      "pixels": 3531
+    },
+    {
+      "checkpoint": 46,
+      "pixels": 4049
+    },
+    {
+      "checkpoint": 47,
+      "pixels": 4216
+    },
+    {
+      "checkpoint": 48,
+      "pixels": 3232
+    },
+    {
+      "checkpoint": 49,
+      "pixels": 533
+    },
+    {
+      "checkpoint": 50,
+      "pixels": 3299
+    },
+    {
+      "checkpoint": 51,
+      "pixels": 358
+    },
+    {
+      "checkpoint": 52,
+      "pixels": 304
+    },
+    {
+      "checkpoint": 53,
+      "pixels": 2988
+    },
+    {
+      "checkpoint": 54,
+      "pixels": 3188
+    },
+    {
+      "checkpoint": 55,
+      "pixels": 277
+    },
+    {
+      "checkpoint": 56,
+      "pixels": 3016
+    },
+    {
+      "checkpoint": 57,
+      "pixels": 3647
+    },
+    {
+      "checkpoint": 58,
+      "pixels": 305
+    },
+    {
+      "checkpoint": 59,
+      "pixels": 3016
+    },
+    {
+      "checkpoint": 60,
+      "pixels": 3647
+    },
+    {
+      "checkpoint": 61,
+      "pixels": 3124
+    },
+    {
+      "checkpoint": 62,
+      "pixels": 213
+    },
+    {
+      "checkpoint": 63,
+      "pixels": 2924
+    },
+    {
+      "checkpoint": 64,
+      "pixels": 2827
+    },
+    {
+      "checkpoint": 65,
+      "pixels": 3366
+    },
+    {
+      "checkpoint": 66,
+      "pixels": 3054
+    },
+    {
+      "checkpoint": 67,
+      "pixels": 3458
+    },
+    {
+      "checkpoint": 68,
+      "pixels": 34
+    },
+    {
+      "checkpoint": 69,
+      "pixels": 2994
+    },
+    {
+      "checkpoint": 70,
+      "pixels": 3579
+    },
+    {
+      "checkpoint": 71,
+      "pixels": 4575
+    },
+    {
+      "checkpoint": 72,
+      "pixels": 4669
+    },
+    {
+      "checkpoint": 73,
+      "pixels": 3614
+    },
+    {
+      "checkpoint": 74,
+      "pixels": 3870
+    },
+    {
+      "checkpoint": 75,
+      "pixels": 34
+    },
+    {
+      "checkpoint": 76,
+      "pixels": 801
+    },
+    {
+      "checkpoint": 77,
+      "pixels": 823
+    },
+    {
+      "checkpoint": 78,
+      "pixels": 156
+    },
+    {
+      "checkpoint": 79,
+      "pixels": 436
+    },
+    {
+      "checkpoint": 80,
+      "pixels": 419
+    },
+    {
+      "checkpoint": 81,
+      "pixels": 238
+    },
+    {
+      "checkpoint": 82,
+      "pixels": 292
+    },
+    {
+      "checkpoint": 83,
+      "pixels": 383
+    },
+    {
+      "checkpoint": 84,
+      "pixels": 675
+    },
+    {
+      "checkpoint": 85,
+      "pixels": 568
+    },
+    {
+      "checkpoint": 86,
+      "pixels": 485
+    },
+    {
+      "checkpoint": 87,
+      "pixels": 61
+    },
+    {
+      "checkpoint": 88,
+      "pixels": 1326
+    },
+    {
+      "checkpoint": 89,
+      "pixels": 1246
+    },
+    {
+      "checkpoint": 90,
+      "pixels": 1279
+    },
+    {
+      "checkpoint": 91,
+      "pixels": 1131
+    },
+    {
+      "checkpoint": 92,
+      "pixels": 1320
+    },
+    {
+      "checkpoint": 93,
+      "pixels": 787
+    },
+    {
+      "checkpoint": 94,
+      "pixels": 1250
+    },
+    {
+      "checkpoint": 95,
+      "pixels": 1119
+    },
+    {
+      "checkpoint": 96,
+      "pixels": 445
+    },
+    {
+      "checkpoint": 97,
+      "pixels": 1109
+    },
+    {
+      "checkpoint": 98,
+      "pixels": 163
+    },
+    {
+      "checkpoint": 99,
+      "pixels": 515
+    },
+    {
+      "checkpoint": 100,
+      "pixels": 327
+    },
+    {
+      "checkpoint": 101,
+      "pixels": 201
+    },
+    {
+      "checkpoint": 102,
+      "pixels": 217
+    },
+    {
+      "checkpoint": 103,
+      "pixels": 271
+    },
+    {
+      "checkpoint": 104,
+      "pixels": 762
+    },
+    {
+      "checkpoint": 105,
+      "pixels": 299
+    },
+    {
+      "checkpoint": 106,
+      "pixels": 618
+    },
+    {
+      "checkpoint": 107,
+      "pixels": 744
+    },
+    {
+      "checkpoint": 108,
+      "pixels": 225
+    },
+    {
+      "checkpoint": 109,
+      "pixels": 766
+    },
+    {
+      "checkpoint": 110,
+      "pixels": 61
+    },
+    {
+      "checkpoint": 111,
+      "pixels": 61
+    },
+    {
+      "checkpoint": 112,
+      "pixels": 247
+    },
+    {
+      "checkpoint": 113,
+      "pixels": 331
+    },
+    {
+      "checkpoint": 114,
+      "pixels": 417
+    },
+    {
+      "checkpoint": 115,
+      "pixels": 192
+    },
+    {
+      "checkpoint": 116,
+      "pixels": 198
+    },
+    {
+      "checkpoint": 117,
+      "pixels": 217
+    },
+    {
+      "checkpoint": 118,
+      "pixels": 34
+    },
+    {
+      "checkpoint": 119,
+      "pixels": 239
+    },
+    {
+      "checkpoint": 120,
+      "pixels": 34
+    },
+    {
+      "checkpoint": 121,
+      "pixels": 235
+    },
+    {
+      "checkpoint": 122,
+      "pixels": 34
+    },
+    {
+      "checkpoint": 123,
+      "pixels": 34
+    },
+    {
+      "checkpoint": 124,
+      "pixels": 34
+    },
+    {
+      "checkpoint": 125,
+      "pixels": 34
+    },
+    {
+      "checkpoint": 126,
+      "pixels": 165
+    },
+    {
+      "checkpoint": 127,
+      "pixels": 394
+    },
+    {
+      "checkpoint": 128,
+      "pixels": 406
+    },
+    {
+      "checkpoint": 129,
+      "pixels": 270
+    },
+    {
+      "checkpoint": 130,
+      "pixels": 34
+    },
+    {
+      "checkpoint": 131,
+      "pixels": 34
+    },
+    {
+      "checkpoint": 132,
+      "pixels": 34
+    },
+    {
+      "checkpoint": 133,
+      "pixels": 34
+    },
+    {
+      "checkpoint": 134,
+      "pixels": 277
+    },
+    {
+      "checkpoint": 135,
+      "pixels": 34
+    },
+    {
+      "checkpoint": 136,
+      "pixels": 283
+    },
+    {
+      "checkpoint": 137,
+      "pixels": 292
+    },
+    {
+      "checkpoint": 138,
+      "pixels": 200
+    },
+    {
+      "checkpoint": 139,
+      "pixels": 262
+    },
+    {
+      "checkpoint": 140,
+      "pixels": 308
+    },
+    {
+      "checkpoint": 141,
+      "pixels": 203
+    },
+    {
+      "checkpoint": 142,
+      "pixels": 73
+    },
+    {
+      "checkpoint": 143,
+      "pixels": 123
+    },
+    {
+      "checkpoint": 144,
+      "pixels": 214
+    },
+    {
+      "checkpoint": 145,
+      "pixels": 582
+    },
+    {
+      "checkpoint": 146,
+      "pixels": 591
+    },
+    {
+      "checkpoint": 147,
+      "pixels": 403
+    },
+    {
+      "checkpoint": 148,
+      "pixels": 464
+    },
+    {
+      "checkpoint": 149,
+      "pixels": 453
+    },
+    {
+      "checkpoint": 150,
+      "pixels": 685
+    },
+    {
+      "checkpoint": 151,
+      "pixels": 493
+    },
+    {
+      "checkpoint": 152,
+      "pixels": 1297
+    },
+    {
+      "checkpoint": 153,
+      "pixels": 1256
+    },
+    {
+      "checkpoint": 154,
+      "pixels": 339
+    },
+    {
+      "checkpoint": 155,
+      "pixels": 1244
+    },
+    {
+      "checkpoint": 156,
+      "pixels": 1211
+    },
+    {
+      "checkpoint": 157,
+      "pixels": 1124
+    },
+    {
+      "checkpoint": 158,
+      "pixels": 976
+    },
+    {
+      "checkpoint": 159,
+      "pixels": 273
+    },
+    {
+      "checkpoint": 160,
+      "pixels": 259
+    },
+    {
+      "checkpoint": 161,
+      "pixels": 967
+    },
+    {
+      "checkpoint": 162,
+      "pixels": 901
+    },
+    {
+      "checkpoint": 163,
+      "pixels": 229
+    },
+    {
+      "checkpoint": 164,
+      "pixels": 215
+    },
+    {
+      "checkpoint": 165,
+      "pixels": 146
+    },
+    {
+      "checkpoint": 166,
+      "pixels": 989
+    },
+    {
+      "checkpoint": 167,
+      "pixels": 1214
+    },
+    {
+      "checkpoint": 168,
+      "pixels": 484
+    },
+    {
+      "checkpoint": 169,
+      "pixels": 471
+    },
+    {
+      "checkpoint": 170,
+      "pixels": 181
+    },
+    {
+      "checkpoint": 171,
+      "pixels": 186
+    },
+    {
+      "checkpoint": 172,
+      "pixels": 21
+    },
+    {
+      "checkpoint": 173,
+      "pixels": 320
+    },
+    {
+      "checkpoint": 174,
+      "pixels": 1767
+    },
+    {
+      "checkpoint": 175,
+      "pixels": 1557
+    },
+    {
+      "checkpoint": 176,
+      "pixels": 442
+    },
+    {
+      "checkpoint": 177,
+      "pixels": 485
+    },
+    {
+      "checkpoint": 178,
+      "pixels": 483
+    },
+    {
+      "checkpoint": 179,
+      "pixels": 499
+    },
+    {
+      "checkpoint": 180,
+      "pixels": 474
+    },
+    {
+      "checkpoint": 181,
+      "pixels": 317
+    },
+    {
+      "checkpoint": 182,
+      "pixels": 294
+    },
+    {
+      "checkpoint": 183,
+      "pixels": 490
+    },
+    {
+      "checkpoint": 184,
+      "pixels": 484
+    },
+    {
+      "checkpoint": 185,
+      "pixels": 372
+    },
+    {
+      "checkpoint": 186,
+      "pixels": 425
+    },
+    {
+      "checkpoint": 187,
+      "pixels": 1767
+    },
+    {
+      "checkpoint": 188,
+      "pixels": 1589
+    },
+    {
+      "checkpoint": 189,
+      "pixels": 309
+    },
+    {
+      "checkpoint": 190,
+      "pixels": 309
+    },
+    {
+      "checkpoint": 191,
+      "pixels": 346
+    },
+    {
+      "checkpoint": 192,
+      "pixels": 21
+    },
+    {
+      "checkpoint": 193,
+      "pixels": 21
+    },
+    {
+      "checkpoint": 194,
+      "pixels": 21
+    },
+    {
+      "checkpoint": 195,
+      "pixels": 21
+    },
+    {
+      "checkpoint": 196,
+      "pixels": 330
+    },
+    {
+      "checkpoint": 197,
+      "pixels": 21
+    },
+    {
+      "checkpoint": 198,
+      "pixels": 263
+    },
+    {
+      "checkpoint": 199,
+      "pixels": 299
+    },
+    {
+      "checkpoint": 200,
+      "pixels": 197
+    },
+    {
+      "checkpoint": 201,
+      "pixels": 50
+    },
+    {
+      "checkpoint": 202,
+      "pixels": 50
+    },
+    {
+      "checkpoint": 203,
+      "pixels": 50
+    },
+    {
+      "checkpoint": 204,
+      "pixels": 218
+    },
+    {
+      "checkpoint": 205,
+      "pixels": 1273
+    },
+    {
+      "checkpoint": 206,
+      "pixels": 1569
+    },
+    {
+      "checkpoint": 207,
+      "pixels": 1482
+    },
+    {
+      "checkpoint": 208,
+      "pixels": 1667
+    },
+    {
+      "checkpoint": 209,
+      "pixels": 362
+    },
+    {
+      "checkpoint": 210,
+      "pixels": 964
+    },
+    {
+      "checkpoint": 211,
+      "pixels": 858
+    },
+    {
+      "checkpoint": 212,
+      "pixels": 739
+    },
+    {
+      "checkpoint": 213,
+      "pixels": 352
+    },
+    {
+      "checkpoint": 214,
+      "pixels": 152
+    },
+    {
+      "checkpoint": 215,
+      "pixels": 286
+    },
+    {
+      "checkpoint": 216,
+      "pixels": 1060
+    },
+    {
+      "checkpoint": 217,
+      "pixels": 354
+    },
+    {
+      "checkpoint": 218,
+      "pixels": 584
+    },
+    {
+      "checkpoint": 219,
+      "pixels": 767
+    },
+    {
+      "checkpoint": 220,
+      "pixels": 841
+    },
+    {
+      "checkpoint": 221,
+      "pixels": 283
+    },
+    {
+      "checkpoint": 222,
+      "pixels": 928
+    },
+    {
+      "checkpoint": 223,
+      "pixels": 217
+    },
+    {
+      "checkpoint": 224,
+      "pixels": 103
+    },
+    {
+      "checkpoint": 225,
+      "pixels": 96
+    },
+    {
+      "checkpoint": 226,
+      "pixels": 1763
+    },
+    {
+      "checkpoint": 227,
+      "pixels": 1585
+    },
+    {
+      "checkpoint": 228,
+      "pixels": 206
+    },
+    {
+      "checkpoint": 229,
+      "pixels": 285
+    },
+    {
+      "checkpoint": 230,
+      "pixels": 545
+    },
+    {
+      "checkpoint": 231,
+      "pixels": 545
+    },
+    {
+      "checkpoint": 232,
+      "pixels": 526
+    },
+    {
+      "checkpoint": 233,
+      "pixels": 456
+    },
+    {
+      "checkpoint": 234,
+      "pixels": 365
+    },
+    {
+      "checkpoint": 235,
+      "pixels": 219
+    },
+    {
+      "checkpoint": 236,
+      "pixels": 219
+    },
+    {
+      "checkpoint": 237,
+      "pixels": 279
+    },
+    {
+      "checkpoint": 238,
+      "pixels": 315
+    },
+    {
+      "checkpoint": 239,
+      "pixels": 185
+    },
+    {
+      "checkpoint": 240,
+      "pixels": 302
+    },
+    {
+      "checkpoint": 241,
+      "pixels": 149
+    },
+    {
+      "checkpoint": 242,
+      "pixels": 85
+    },
+    {
+      "checkpoint": 243,
+      "pixels": 1842
+    },
+    {
+      "checkpoint": 244,
+      "pixels": 1664
+    },
+    {
+      "checkpoint": 245,
+      "pixels": 145
+    },
+    {
+      "checkpoint": 246,
+      "pixels": 145
+    },
+    {
+      "checkpoint": 247,
+      "pixels": 227
+    },
+    {
+      "checkpoint": 248,
+      "pixels": 293
+    },
+    {
+      "checkpoint": 249,
+      "pixels": 185
+    },
+    {
+      "checkpoint": 250,
+      "pixels": 139
+    },
+    {
+      "checkpoint": 251,
+      "pixels": 310
+    },
+    {
+      "checkpoint": 252,
+      "pixels": 755
+    },
+    {
+      "checkpoint": 253,
+      "pixels": 804
+    },
+    {
+      "checkpoint": 254,
+      "pixels": 302
+    },
+    {
+      "checkpoint": 255,
+      "pixels": 1113
+    },
+    {
+      "checkpoint": 256,
+      "pixels": 69
+    },
+    {
+      "checkpoint": 257,
+      "pixels": 541
+    },
+    {
+      "checkpoint": 258,
+      "pixels": 659
+    },
+    {
+      "checkpoint": 259,
+      "pixels": 897
+    },
+    {
+      "checkpoint": 260,
+      "pixels": 148
+    },
+    {
+      "checkpoint": 261,
+      "pixels": 1056
+    },
+    {
+      "checkpoint": 262,
+      "pixels": 617
+    },
+    {
+      "checkpoint": 263,
+      "pixels": 1126
+    },
+    {
+      "checkpoint": 264,
+      "pixels": 1146
+    },
+    {
+      "checkpoint": 265,
+      "pixels": 1510
+    },
+    {
+      "checkpoint": 266,
+      "pixels": 1124
+    },
+    {
+      "checkpoint": 267,
+      "pixels": 1426
+    },
+    {
+      "checkpoint": 268,
+      "pixels": 1225
+    },
+    {
+      "checkpoint": 269,
+      "pixels": 279
+    },
+    {
+      "checkpoint": 270,
+      "pixels": 363
+    },
+    {
+      "checkpoint": 271,
+      "pixels": 290
+    },
+    {
+      "checkpoint": 272,
+      "pixels": 350
+    },
+    {
+      "checkpoint": 273,
+      "pixels": 277
+    },
+    {
+      "checkpoint": 274,
+      "pixels": 1199
+    },
+    {
+      "checkpoint": 275,
+      "pixels": 834
+    },
+    {
+      "checkpoint": 276,
+      "pixels": 786
+    },
+    {
+      "checkpoint": 277,
+      "pixels": 951
+    },
+    {
+      "checkpoint": 278,
+      "pixels": 713
+    },
+    {
+      "checkpoint": 279,
+      "pixels": 964
+    },
+    {
+      "checkpoint": 280,
+      "pixels": 170
+    },
+    {
+      "checkpoint": 281,
+      "pixels": 170
+    },
+    {
+      "checkpoint": 282,
+      "pixels": 216
+    },
+    {
+      "checkpoint": 283,
+      "pixels": 50
+    },
+    {
+      "checkpoint": 284,
+      "pixels": 50
+    },
+    {
+      "checkpoint": 285,
+      "pixels": 50
+    },
+    {
+      "checkpoint": 286,
+      "pixels": 50
+    },
+    {
+      "checkpoint": 287,
+      "pixels": 50
+    },
+    {
+      "checkpoint": 288,
+      "pixels": 221
+    },
+    {
+      "checkpoint": 289,
+      "pixels": 262
+    },
+    {
+      "checkpoint": 290,
+      "pixels": 50
+    },
+    {
+      "checkpoint": 291,
+      "pixels": 50
+    },
+    {
+      "checkpoint": 292,
+      "pixels": 226
+    },
+    {
+      "checkpoint": 293,
+      "pixels": 226
+    },
+    {
+      "checkpoint": 294,
+      "pixels": 597
+    },
+    {
+      "checkpoint": 295,
+      "pixels": 532
+    },
+    {
+      "checkpoint": 296,
+      "pixels": 818
+    },
+    {
+      "checkpoint": 297,
+      "pixels": 815
+    },
+    {
+      "checkpoint": 298,
+      "pixels": 229
+    },
+    {
+      "checkpoint": 299,
+      "pixels": 315
+    },
+    {
+      "checkpoint": 300,
+      "pixels": 315
+    },
+    {
+      "checkpoint": 301,
+      "pixels": 258
+    },
+    {
+      "checkpoint": 302,
+      "pixels": 573
+    },
+    {
+      "checkpoint": 303,
+      "pixels": 226
+    },
+    {
+      "checkpoint": 304,
+      "pixels": 369
+    },
+    {
+      "checkpoint": 305,
+      "pixels": 385
+    },
+    {
+      "checkpoint": 306,
+      "pixels": 116
+    },
+    {
+      "checkpoint": 307,
+      "pixels": 309
+    },
+    {
+      "checkpoint": 308,
+      "pixels": 526
+    },
+    {
+      "checkpoint": 309,
+      "pixels": 688
+    },
+    {
+      "checkpoint": 310,
+      "pixels": 707
+    },
+    {
+      "checkpoint": 311,
+      "pixels": 420
+    },
+    {
+      "checkpoint": 312,
+      "pixels": 439
+    },
+    {
+      "checkpoint": 313,
+      "pixels": 488
+    },
+    {
+      "checkpoint": 314,
+      "pixels": 505
+    },
+    {
+      "checkpoint": 315,
+      "pixels": 439
+    },
+    {
+      "checkpoint": 316,
+      "pixels": 637
+    },
+    {
+      "checkpoint": 317,
+      "pixels": 496
+    },
+    {
+      "checkpoint": 318,
+      "pixels": 381
+    },
+    {
+      "checkpoint": 319,
+      "pixels": 83
+    },
+    {
+      "checkpoint": 320,
+      "pixels": 83
+    },
+    {
+      "checkpoint": 321,
+      "pixels": 235
+    },
+    {
+      "checkpoint": 322,
+      "pixels": 221
+    },
+    {
+      "checkpoint": 323,
+      "pixels": 369
+    },
+    {
+      "checkpoint": 324,
+      "pixels": 165
+    },
+    {
+      "checkpoint": 325,
+      "pixels": 332
+    },
+    {
+      "checkpoint": 326,
+      "pixels": 432
+    },
+    {
+      "checkpoint": 327,
+      "pixels": 251
+    },
+    {
+      "checkpoint": 328,
+      "pixels": 385
+    },
+    {
+      "checkpoint": 329,
+      "pixels": 324
+    },
+    {
+      "checkpoint": 330,
+      "pixels": 272
+    },
+    {
+      "checkpoint": 331,
+      "pixels": 450
+    },
+    {
+      "checkpoint": 332,
+      "pixels": 341
+    },
+    {
+      "checkpoint": 333,
+      "pixels": 176
+    },
+    {
+      "checkpoint": 334,
+      "pixels": 388
+    },
+    {
+      "checkpoint": 335,
+      "pixels": 88
+    },
+    {
+      "checkpoint": 336,
+      "pixels": 58
+    },
+    {
+      "checkpoint": 337,
+      "pixels": 58
+    },
+    {
+      "checkpoint": 338,
+      "pixels": 314
+    }
+  ]
+}

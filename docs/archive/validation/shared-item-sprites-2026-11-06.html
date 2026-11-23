@@ -1,0 +1,10 @@
+<!doctype html><html><meta charset="utf-8"><style>article{display:flex;gap:16px;flex-wrap:wrap}figure{margin:0}img{width:240px;image-rendering:pixelated}p{line-height:1.5}</style><p>Shared item graphics now render from gameplay VRAM. The room sprite snapshot covers only tiles $40–$7F; the heart piece uses $AC.</p>
+<p>Rock puzzle entrance: 204/23040 pixels differ at RGB555 precision. Full frames, no masks or alignment.</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>608ee919d25ddf9230cd5345e9ab207c0027ad3e9e7fd632605fdba312eab880</code></small></figure>
+<figure><figcaption>Java</figcaption><small>PNG SHA-256 <code>2015aefc85070bb77d2cf17ae48603241ec9eb7236fdecfc05a3bf808fe0ac30</code></small></figure>
+</article>
+<p>After two rock pushes: 21/23040 pixels differ at RGB555 precision. Full frames, no masks or alignment.</p><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>e0cb55711bb14036dc9e746963a7471b57114d5642640c708fc4ef98496d977a</code></small></figure>
+<figure><figcaption>Java</figcaption><small>PNG SHA-256 <code>4175b1a8721705ac0335595ae4d5174fa4525ae44a56bb000ee6d5ec4a69d67d</code></small></figure>
+</article>
+<p>Continuous normal-input replay: tools/opening/mushroom-route.tsv. Whole route: 7/129 exact frames; worst difference 4597 pixels. Actor phases, loot and earlier differences remain unresolved. This verifies the missing sprite fix, not full-game parity.</p></html>

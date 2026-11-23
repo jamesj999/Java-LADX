@@ -1,0 +1,33 @@
+<!doctype html><html lang="en"><meta charset="utf-8">
+<title>Opening dialogue emulator comparison</title>
+<style>body{font:14px/1.5 var(--font-sans,system-ui);color:var(--foreground);margin:0}
+article{display:flex;gap:16px;flex-wrap:wrap}figure{margin:0}img{width:240px;image-rendering:pixelated}
+section{margin:16px 0}code{overflow-wrap:anywhere}</style>
+<p><strong>64/64 full frames match at RGB555 precision.</strong> Worst difference: 0/23040 pixels. No masks or image alignment.</p>
+<p>Scenario: bed-exit. Production Java room, bed, Link, NPC, HUD and dialogue rendering. One initial NPC clock synchronization and a fixed two-frame OAM display offset. Java scene/pose setup is checkpoint-based, not a continuous input replay. Opening/closing, letter reveal, scrolling, audio and desktop presentation are outside this comparison.</p>
+<p>PyBoy 2.8.1 CGB; fresh in-memory save; normal button input. ROM SHA256: <code>c95dd3d9cb798e86c28e3269554e458d434bf3277b96cadf5bc81cfacfb5ee60</code>.</p>
+<section><strong>Jump frame 0</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>b7174f17bd7cbb487a4b15097efbc62fac432ac56f78ae24fc5114124a04394f</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>9f5f60b657102bcf04a720f58aaf0cb87976f5797a691ca7370c4e6d75f0f034</code></small></figure>
+</article></section>
+<section><strong>Jump frame 4</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>333abacd33e266c0ad7b1b5625b5960b518bae7000f4d44b6af5c14c880e7ca3</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>cb509a417745735b869998dfe1da10a12de880aaabd538a1d2c7c7696b2d96c7</code></small></figure>
+</article></section>
+<section><strong>Jump frame 10</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>e837c05e26cb87ea861de6e904af76fadc8647418a629e13456ad1a6882fff64</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>b904da83faa478fc8b34f30d6776311cfc6e9c5e4ca87021f6ab1284e428160c</code></small></figure>
+</article></section>
+<section><strong>Jump frame 16</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>ab9d6a0f07b40e072d3ac45736853991c0b495f803bea81a1fbecabdd1eb21a0</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>10b6e4babdd1dc0f96c486bbb7e81f80c05bf25b12efa3f272c88fefffa4b54e</code></small></figure>
+</article></section>
+<section><strong>Jump frame 23</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>124a4d8f124076114d521aaa77b54b1775a048e50e8c93520dc30d35d93f0652</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>088835ec3e0da4a97a226c3da230a388bbc45335548cd28670c38b96bfc1b0ad</code></small></figure>
+</article></section>
+<section><strong>Jump frame 63</strong><article>
+<figure><figcaption>Original ROM</figcaption><small>PNG SHA-256 <code>bff8de4b5886e366c492d0d7598c947e4df8065a899027778a0d05105fe9786e</code></small></figure>
+<figure><figcaption>Java reconstruction</figcaption><small>PNG SHA-256 <code>bfa55b60320dd78d71562f6427bf633f55cad528e45b16ee498c4b48b670cca2</code></small></figure>
+</article></section>
+<p>Reproduce: install tools/intro/requirements.txt; run python tools/dialog/compare.py --capture --scenario bed-exit; gradle -p java captureDialog -PdialogScenario=bed-exit; python tools/dialog/compare.py --scenario bed-exit.</p></html>

@@ -2,11 +2,8 @@ package linksawakening.audio.sfx;
 
 import java.util.Objects;
 
-public record SoundEffect(
-        SoundEffectNamespace namespace,
-        int id,
-        String name,
-        String source) {
+/** Named sound request with its ROM namespace, identifier and source. */
+public record SoundEffect(SoundEffectNamespace namespace, int id, String name, String source) {
     public SoundEffect {
         Objects.requireNonNull(namespace, "namespace");
         Objects.requireNonNull(name, "name");

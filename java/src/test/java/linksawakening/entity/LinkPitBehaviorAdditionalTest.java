@@ -1,0 +1,61 @@
+package linksawakening.entity;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
+
+import linksawakening.equipment.ItemRegistry;
+import linksawakening.input.InputConfig;
+import linksawakening.input.InputState;
+import linksawakening.physics.OverworldCollision;
+import linksawakening.rom.RomTables;
+import linksawakening.state.PlayerState;
+import linksawakening.testing.TestLinks;
+import org.junit.jupiter.api.Test;
+
+@linksawakening.testing.RequiresRom
+final class LinkPitBehaviorAdditionalTest extends LinkFixture {
+
+    @Test
+    void rocsFeatherDoesNotStartDuringPitFallStateEvenIfFeetMoveOffPit() throws Exception {
+        byte[] rom = loadRom();
+        RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
+        InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        int[] roomObjects = emptyRoomObjectsArea();
+        // Releasing direction preserves airborne momentum: land in column 4.
+        roomObjects[ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE + 4] = OBJECT_PIT;
+        InputState inputState = new InputState();
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_PRESS);
+        OverworldCollision collision = new OverworldCollision(romTables);
+        collision.setRoom(roomObjects);
+        Link link = TestLinks.link()
+                .input(inputState)
+                .config(inputConfig)
+                .tables(romTables)
+                .collision(collision)
+                .player(new PlayerState())
+                .items(new ItemRegistry())
+                .build();
+        link.position().setPixelPosition(0x24, 0x20);
+
+        link.airborne().useRocsFeather();
+        for (int i = 0; i < 12; i++) {
+            link.motion().update();
+        }
+        inputState.onKeyEvent(inputConfig.rightKey(), GLFW_RELEASE);
+        int guard = 0;
+        while (link.airborne().isAirborne() && guard++ < 80) {
+            link.motion().update();
+        }
+        runUntilPitFallStarts(link);
+        assertTrue(link.airborne().isFallingIntoPit());
+
+        link.position().setPixelPosition(0x10, 0x20);
+        link.airborne().useRocsFeather();
+
+        assertFalse(link.airborne().isAirborne());
+        assertEquals(0, link.airborne().zVelocity());
+    }
+}

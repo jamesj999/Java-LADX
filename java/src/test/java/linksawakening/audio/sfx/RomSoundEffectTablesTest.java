@@ -1,19 +1,21 @@
 package linksawakening.audio.sfx;
 
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.IOException;
+import linksawakening.rom.Rom;
+import org.junit.jupiter.api.Test;
+
+@linksawakening.testing.RequiresRom
 final class RomSoundEffectTablesTest {
     @Test
     void readsHandlerPointersFromRomTables() throws IOException {
         byte[] romData = loadRom();
-        RomSoundEffectTables tables = new RomSoundEffectTables(romData);
-        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(romData);
+        RomSoundEffectTables tables = new RomSoundEffectTables(Rom.of(romData));
+        SoundEffectCatalog catalog = SoundEffectCatalog.fromRom(Rom.of(romData));
 
-        SoundEffect dialogBreak = catalog.find(SoundEffectNamespace.JINGLE, 0x15).orElseThrow();
+        SoundEffect dialogBreak =
+                catalog.find(SoundEffectNamespace.JINGLE, 0x15).orElseThrow();
         SoundEffect textPrint = catalog.find(SoundEffectNamespace.WAVE, 0x0F).orElseThrow();
         SoundEffect explosion = catalog.find(SoundEffectNamespace.NOISE, 0x0C).orElseThrow();
 
@@ -26,7 +28,7 @@ final class RomSoundEffectTablesTest {
     }
 
     private static byte[] loadRom() throws IOException {
-        try (var stream = RomSoundEffectTablesTest.class.getClassLoader().getResourceAsStream("rom/azle.gbc")) {
+        try (var stream = linksawakening.testing.TestRom.open()) {
             if (stream == null) {
                 throw new IOException("Missing ROM resource: rom/azle.gbc");
             }

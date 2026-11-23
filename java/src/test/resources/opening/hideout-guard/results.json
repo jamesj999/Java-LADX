@@ -1,0 +1,12 @@
+{
+  "checkpoint": 769,
+  "roi": [
+    90,
+    46,
+    122,
+    80
+  ],
+  "rgb555_differing_pixels": 0,
+  "source": "func_020_4AB3 at $20:4ACF writes $F0 to OAM X, hiding the $FF sprite",
+  "remaining": "Whole-scene phase/health differences; hideout rescue"
+}
