@@ -200,13 +200,25 @@ class EntityInfrastructureTest {
     @Test
     void typedDrainLeavesOtherEffectsAndChannelsPending() {
         EntityOutbox outbox = new EntityOutbox();
-        outbox.channel(LinkFacingRequest.class, "effects").add(new LinkFacingRequest(1, 2));
-        outbox.channel(ScreenShakeRequest.class, "effects").add(new ScreenShakeRequest(2, 8, 0));
+        var facing = outbox.channel(LinkFacingRequest.class, "effects");
+        var shake = outbox.channel(ScreenShakeRequest.class, "effects");
+        var staged = outbox.channel(LinkFacingRequest.class, "staged");
+        for (int slot = 0; slot < 3; slot++) {
+            facing.add(new LinkFacingRequest(slot, 2));
+            shake.add(new ScreenShakeRequest(slot, 8, 0));
+            staged.add(new LinkFacingRequest(slot, 1));
+        }
+        var expected = List.copyOf(facing);
+        var pendingShake = List.copyOf(shake);
+        var pendingStaged = List.copyOf(staged);
         var drained = outbox.drain(LinkFacingRequest.class, "effects");
-        assertEquals(1, drained.size());
+        assertEquals(expected, drained);
         assertThrows(UnsupportedOperationException.class, () -> drained.clear());
         assertTrue(outbox.drain(LinkFacingRequest.class, "effects").isEmpty());
-        assertEquals(1, outbox.drain(ScreenShakeRequest.class, "effects").size());
+        facing.add(new LinkFacingRequest(4, 1));
+        assertEquals(expected, drained);
+        assertEquals(pendingShake, outbox.drain(ScreenShakeRequest.class, "effects"));
+        assertEquals(pendingStaged, outbox.drain(LinkFacingRequest.class, "staged"));
     }
 
     @Test

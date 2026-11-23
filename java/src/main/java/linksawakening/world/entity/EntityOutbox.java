@@ -3,6 +3,7 @@ package linksawakening.world.entity;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import linksawakening.world.entity.event.EntityEvent;
@@ -14,14 +15,32 @@ final class EntityOutbox {
     private final ArrayList<Channel<?>> channels = new ArrayList<>();
 
     <T extends EntityEvent> List<T> drain(Class<T> type, String name) {
-        List<T> events = channel(type, name);
-        int size = events.size();
-        if (size == 0) return List.of();
-        ArrayList<T> result = new ArrayList<>(size);
-        for (int i = 0; i < size; i++) result.add(events.get(i));
-        List<T> snapshot = List.copyOf(result);
-        events.clear();
-        return snapshot;
+        Objects.requireNonNull(type);
+        Objects.requireNonNull(name);
+        // Compact surviving events in place so interleaved channels retain insertion order.
+        ArrayList<T> drained = null;
+        int kept = 0;
+        int size = entries.size();
+        for (int i = 0; i < size; i++) {
+            EntityEvent event = entries.get(i);
+            String eventName = names.get(i);
+            if (eventName.equals(name) && type.isInstance(event)) {
+                if (drained == null) drained = new ArrayList<>();
+                drained.add(type.cast(event));
+            } else {
+                if (kept != i) {
+                    entries.set(kept, event);
+                    names.set(kept, eventName);
+                }
+                kept++;
+            }
+        }
+        if (drained == null) return List.of();
+        for (int i = size - 1; i >= kept; i--) {
+            entries.remove(i);
+            names.remove(i);
+        }
+        return Collections.unmodifiableList(drained);
     }
 
     /** Class filtering allows different payload types on the same named channel. */
