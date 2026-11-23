@@ -3,7 +3,7 @@ allprojects {
     afterEvaluate {
         tasks.register('captureIntroAudio', JavaExec) {
             dependsOn testClasses
-            classpath = sourceSets.test.runtimeClasspath + files(providers.gradleProperty('la.rom').orElse(providers.environmentVariable('LA_ROM')).map { file(it).parentFile.parentFile }.getOrElse(file('src/main/resources')))
+            classpath = sourceSets.test.runtimeClasspath
             mainClass = 'linksawakening.audio.IntroAudioCapture'
             jvmArgs '-Djava.awt.headless=true'
             args providers.gradleProperty('audioOutput').getOrElse('/tmp/ladx-intro-audio'),

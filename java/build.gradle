@@ -65,6 +65,19 @@ java {
     targetCompatibility = JavaVersion.VERSION_21
 }
 
+def romFile = file(providers.gradleProperty('la.rom').orElse(providers.environmentVariable('LA_ROM'))
+    .getOrElse('src/main/resources/rom/azle.gbc'))
+tasks.register('testRomResources', Sync) {
+    from(romFile) { rename { 'azle.gbc' } }
+    into layout.buildDirectory.dir('test-rom/rom')
+}
+// Runtime-only overlay for local launchers, capture tools and ROM-backed tests.
+def localRomClasspath = files(providers.provider {
+    romFile.isFile() ? [layout.buildDirectory.dir('test-rom').get().asFile] : []
+}).builtBy(tasks.named('testRomResources'))
+sourceSets.main.runtimeClasspath += localRomClasspath
+sourceSets.test.runtimeClasspath += localRomClasspath
+
 run {
     if (os.contains('mac')) jvmArgs '-XstartOnFirstThread'
 }
@@ -143,15 +156,8 @@ tasks.register('captureOpeningRoute', JavaExec) {
 
 // Never package user-supplied ROMs or saves.
 tasks.named('processResources') { exclude '**/*.gb', '**/*.gbc', '**/*.sav' }
-def romFile = file(providers.gradleProperty('la.rom').orElse(providers.environmentVariable('LA_ROM'))
-    .getOrElse('src/main/resources/rom/azle.gbc'))
-tasks.register('testRomResources', Sync) {
-    from(romFile) { rename { 'azle.gbc' } }
-    into layout.buildDirectory.dir('test-rom/rom')
-}
 tasks.withType(Test).configureEach {
-    dependsOn 'testRomResources'
-    classpath += files(layout.buildDirectory.dir('test-rom'))
+    classpath += localRomClasspath
     useJUnitPlatform()
     // Documented parity gaps stay out of the default suites; run them with knownGapTest.
     if (name == 'romFreeTest') useJUnitPlatform { excludeTags 'rom', 'known-gap' }
@@ -161,12 +167,12 @@ tasks.withType(Test).configureEach {
 tasks.register('romFreeTest', Test) {
     description = 'Run only tests independent of the user ROM'
     testClassesDirs = sourceSets.test.output.classesDirs
-    classpath = sourceSets.test.runtimeClasspath + files(layout.buildDirectory.dir('test-rom'))
+    classpath = sourceSets.test.runtimeClasspath
 }
 tasks.register('knownGapTest', Test) {
     description = 'Run tests for documented, not-yet-ported ROM parity gaps (expected to fail)'
     testClassesDirs = sourceSets.test.output.classesDirs
-    classpath = sourceSets.test.runtimeClasspath + files(layout.buildDirectory.dir('test-rom'))
+    classpath = sourceSets.test.runtimeClasspath
 }
 tasks.register('verifyRom') {
     doLast {
@@ -178,7 +184,6 @@ tasks.register('verifyRom') {
     }
 }
 tasks.withType(Test).configureEach { dependsOn 'verifyRom' }
-run { classpath += files(romFile.parentFile.parentFile) }
 
 // Keep dual-pipeline scene reports from the full and ROM-free suites separate.
 tasks.withType(Test).configureEach {
@@ -216,13 +221,6 @@ tasks.withType(Test).configureEach {
         logger.lifecycle("Scene parity ${name}: ${totals}")
         sorted.each { logger.lifecycle("  blocked by ${it.key}: ${it.value}") }
     }
-}
-
-// Headless captures need the same user-ROM overlay as ROM integration tests.
-// This directory is never included in distributions or processResources.
-tasks.named('captureOpeningRoute', JavaExec).configure {
-    dependsOn tasks.named('testRomResources')
-    classpath += files(layout.buildDirectory.dir('test-rom'))
 }
 
 // The Java lifecycle already includes both linted compilations and test.
