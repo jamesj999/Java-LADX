@@ -228,11 +228,8 @@ public class GameSession implements AutoCloseable {
     void cleanup() {
         if (closed) return;
         closed = true;
-        try {
-            if (context != null) context.runtime().shutdown().close();
-        } finally {
-            recording.close();
-        }
+        if (context == null) recording.close();
+        else context.runtime().shutdown().close(recording::close);
     }
 
     void onKeyEvent(int key, int action) {
