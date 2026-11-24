@@ -33,9 +33,54 @@ final class SwordTest {
         for (int frame = 1; frame <= 20; frame++) {
             sword.tick(false);
             assertEquals(frame >= 2 && frame <= 16, sword.blocksTopDownMotion(), "movement frame " + frame);
+            assertEquals(frame <= 15, sword.blocksMotionAfterAnimation(false), "ground frame " + frame);
+            assertFalse(sword.blocksMotionAfterAnimation(true), "running frame " + frame);
             assertEquals(frame >= 2 && frame <= 19, sword.locksTopDownFacing(), "facing frame " + frame);
             if (frame >= 15) assertEquals(Sword.STATE_NONE, sword.state());
         }
+    }
+
+    @Test
+    void activeSwordClashHoldsTheMiddleSwingForElevenFollowingTicks() {
+        Sword sword = new Sword(Sword.Assets.animationOnly());
+        sword.onPress();
+        sword.onBladeClash();
+        for (int tick = 1; tick < 12; tick++) {
+            sword.tick(false);
+            assertEquals(Sword.STATE_SWING_MIDDLE, sword.state(), "clash frame " + tick);
+            assertTrue(sword.blocksMotionAfterAnimation(false), "clash frame " + tick);
+        }
+        sword.tick(false);
+        assertEquals(Sword.STATE_NONE, sword.state());
+        assertFalse(sword.blocksMotionAfterAnimation(false));
+
+        sword.onBladeClash();
+        sword.tick(false);
+        assertEquals(Sword.STATE_NONE, sword.state(), "a shield-only clash does not draw the sword");
+    }
+
+    @Test
+    void swordHitTargetSurvivesDuringTheSwingAndClearsAtItsEnd() {
+        Sword sword = new Sword(Sword.Assets.animationOnly());
+        sword.onPress();
+        sword.setHitTarget(3);
+        sword.tick(false);
+        assertEquals(3, sword.hitTarget());
+
+        while (sword.state() != Sword.STATE_NONE) sword.tick(false);
+        assertEquals(0, sword.hitTarget());
+    }
+
+    @Test
+    void spinBlocksGroundInteractionWhileRunningThroughItsFinalTick() {
+        Sword sword = new Sword(Sword.Assets.animationOnly());
+        sword.startSwordAcquisitionSpin(Direction.DOWN.javaIndex());
+        while (sword.spinAttackActive()) {
+            sword.tick(false);
+            assertTrue(sword.blocksMotionAfterAnimation(true));
+        }
+        sword.tick(false);
+        assertFalse(sword.blocksMotionAfterAnimation(true));
     }
 
     @Test

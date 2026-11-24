@@ -35,11 +35,14 @@ public final class Sword implements EquipmentItem {
     private int state = STATE_NONE;
     private int timer;
     private boolean animationMotionBlocked;
+    private boolean spinAnimationMotionBlocked;
     private boolean motionBlockedBeforeAnimation;
     private int facingLockCountdown;
     private boolean facingLockedBeforeAnimation;
     private boolean suppressesJumpAnimation;
     private int charge;
+    private int hitTarget;
+    private int bladeClashAnimationCountdown;
     private int frameCounter;
     private int lastKnownDirection = Direction.DOWN.javaIndex();
 
@@ -123,6 +126,21 @@ public final class Sword implements EquipmentItem {
         return charge;
     }
 
+    // wC1AC records the most recent sword-hit entity slot plus one.
+    public int hitTarget() {
+        return hitTarget;
+    }
+
+    public void setHitTarget(int value) {
+        hitTarget = value;
+    }
+
+    /** $03:7477/$7488 clear charge and hold an active swing in its clash pose. */
+    public void onBladeClash() {
+        charge = 0;
+        if (state != STATE_NONE) bladeClashAnimationCountdown = 0x0C;
+    }
+
     /**
      * Mirrors CheckStaticSwordCollision: HOLDING does not cut static objects,
      * while normal swings and active spin frames do.
@@ -139,6 +157,7 @@ public final class Sword implements EquipmentItem {
         state = STATE_DRAW;
         timer = DRAW_FRAMES;
         charge = 0;
+        hitTarget = 0;
         soundSink.play(swordSwingSound(randomByteSupplier.getAsInt()));
         beamTarget.fireSwordBeam();
     }
@@ -153,6 +172,7 @@ public final class Sword implements EquipmentItem {
                 state = STATE_NONE;
             }
             charge = 0;
+            hitTarget = 0;
         }
     }
 
@@ -161,6 +181,7 @@ public final class Sword implements EquipmentItem {
         if (state == STATE_HOLDING) {
             state = STATE_NONE;
             charge = 0;
+            hitTarget = 0;
         }
     }
 
@@ -180,8 +201,19 @@ public final class Sword implements EquipmentItem {
         if (state != STATE_NONE) facingLockCountdown = 4; // wC16E, $02:47F3
         motionBlockedBeforeAnimation = animationMotionBlocked;
         animationMotionBlocked = blocksMotion();
-        if (spin.queued() || spin.active()) {
+        spinAnimationMotionBlocked = spin.active();
+        if (bladeClashAnimationCountdown > 0) {
+            // $02:476B returns to the middle swing until wC16D reaches zero.
+            bladeClashAnimationCountdown--;
+            animationMotionBlocked = bladeClashAnimationCountdown > 0;
+            state = animationMotionBlocked ? STATE_SWING_MIDDLE : STATE_NONE;
+            if (!animationMotionBlocked) hitTarget = 0;
+            return;
+        }
+        if (spin.queued() || spinAnimationMotionBlocked) {
             state = spin.advance(state);
+            spinAnimationMotionBlocked |= spin.active();
+            if (!spin.active()) hitTarget = 0;
             return;
         }
         switch (state) {
@@ -204,6 +236,7 @@ public final class Sword implements EquipmentItem {
             }
             case STATE_SWING_MIDDLE -> {
                 if (--timer <= 0) {
+                    hitTarget = 0;
                     state = buttonHeld ? STATE_HOLDING : STATE_NONE;
                     if (state == STATE_NONE) {
                         charge = 0;
@@ -212,6 +245,7 @@ public final class Sword implements EquipmentItem {
                 return;
             }
             case STATE_SWING_END -> {
+                hitTarget = 0;
                 state = buttonHeld ? STATE_HOLDING : STATE_NONE;
                 if (state == STATE_NONE) {
                     charge = 0;
@@ -248,6 +282,12 @@ public final class Sword implements EquipmentItem {
     /** Movement phase preceding this tick's UpdateLinkAnimation. */
     public boolean blocksTopDownMotion() {
         return spinAttackActive() || motionBlockedBeforeAnimation;
+    }
+
+    /** Current UpdateLinkAnimation block, including the tick that ends a swing or spin. */
+    public boolean blocksMotionAfterAnimation(boolean runningWithPegasusBoots) {
+        // $02:4710 always blocks during a spin. $02:4807 skips the ordinary swing block while running.
+        return spinAnimationMotionBlocked || (animationMotionBlocked && !runningWithPegasusBoots);
     }
 
     @Override
@@ -324,14 +364,17 @@ public final class Sword implements EquipmentItem {
         spin.startAcquisition(baseDirection);
         state = STATE_NONE;
         charge = 0;
+        hitTarget = 0;
     }
 
     /** The room-load WRAM clear also discards any pre-death sword animation. */
     public void resetAfterGameOver() {
         resetSpinAttack();
         state = STATE_NONE;
+        hitTarget = 0;
         timer = 0;
         animationMotionBlocked = false;
+        spinAnimationMotionBlocked = false;
         motionBlockedBeforeAnimation = false;
         facingLockCountdown = 0;
         facingLockedBeforeAnimation = false;
@@ -341,6 +384,7 @@ public final class Sword implements EquipmentItem {
     public void cancelAttack() {
         resetSpinAttack();
         state = STATE_NONE;
+        hitTarget = 0;
         timer = 0;
     }
 
@@ -348,8 +392,12 @@ public final class Sword implements EquipmentItem {
         boolean wasActive = spin.active();
         spin.clearQueue();
         charge = 0;
+        bladeClashAnimationCountdown = 0;
         spin.clearAnimation();
-        if (wasActive) state = STATE_NONE;
+        if (wasActive) {
+            state = STATE_NONE;
+            hitTarget = 0;
+        }
     }
 
     /**
