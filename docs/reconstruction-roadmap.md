@@ -5,25 +5,40 @@ Never commit or distribute ROMs or extracted original assets.
 
 ## Implemented and verified scope
 
-Current bounded evidence through 2026-11-07. Tests and isolated comparisons do
-not establish complete parity or a restored normal progression route.
+Verified through 2026-11-24. Fresh Java and PyBoy games both complete the
+BowWow rescue. The first room mismatch on the onward swamp route is at
+checkpoint 918.
 
 - Graphics: ROM-driven intro/menu scenes, overworld objects, GBC overlays,
   palettes, tilesets, animated tiles and entity/OAM rendering.
-- Gameplay implementations include the opening house/dialogue, sword, forest
-  and Witch exchange, Tail Key, Tail Cave, Rolling Bones, Moldorm, Heart
-  Container, Full Moon Cello, hideout guards, king fight and BowWow rescue.
-  The historical 843-checkpoint rescue replay is recorded in the dated log;
-  it is not the current rebuilt-checkout result.
-- BowWow chain OAM (`$05:4253`) and tether movement (`$05:43FE`) are implemented.
-  Current fresh-game rescue continuity has **not** been restored. The unchanged
-  canonical route currently reaches 73 checkpoints and dies at frame 10006,
-  overworld `$F1`, Link `(82,28)`. Its SHA-256 remains
-  `bdb62bf6d714e77b97f1e670e849597f19e9e4e310c751194c6d525dda152e9d`.
-- [Leever contact recoil](evidence/leever-contact-recoil.md) now uses the source
-  post-movement position for recoil while retaining the cached contact hitbox.
-  Controlled free-sand/wall probes verify that narrow correction; the current
-  rescue replay still fails as above.
+- The [899-checkpoint rescue](evidence/rescue-forest-approach.md) runs from
+  the opening house through the beach sword, forest, Tail Key, Tail Cave,
+  Full Moon Cello and Moblin Hideout. Both engines finish in overworld
+  `$35` at (104,80) with BowWow and four full hearts. The route records
+  separate controller inputs where the fights and movement diverge.
+- Focused Tail Cave comparisons cover [chest-room Sparks](evidence/tail-cave-chest-sparks.md),
+  [side-view Goombas](evidence/tail-cave-goomba-patrol.md), [Spike Traps](evidence/tail-cave-spike-traps.md),
+  [Rolling Bones](evidence/tail-cave-rolling-bones.md) and [Moldorm](evidence/tail-cave-moldorm.md).
+  [Pit-edge movement](evidence/pit-edge-movement.md) covers escape, pull cadence
+  and the centered fall.
+- BowWow's chain OAM (`$05:4253`) and tether movement (`$05:43FE`) are
+  implemented. A [fresh 1,190-checkpoint ROM run](evidence/bottle-grotto-entrance-torches.md)
+  crosses Goponga Swamp, opens Bottle Grotto, defeats Hinox and both Boo
+  Buddies, and collects the Power Bracelet. On the same route, fresh Java
+  first misses the west exit from overworld `$44` and eventually dies in
+  `$24`. With a controlled swamp start Java clears the flowers, opens the
+  dungeon and reaches Hinox. A separate controlled Boo Buddy encounter
+  awards the Bracelet. The [Feather crossing](evidence/room-44-feather-landing.md)
+  and [BowWow spawn height](evidence/bowwow-follower-spawn-height.md) have
+  separate comparisons.
+- The [beach contact comparison](evidence/leever-contact-recoil.md) covers
+  shield, sword and body responses. [Enemy recoil](evidence/beach-enemy-recoil.md)
+  and [room allocation](evidence/room-entity-initialization.md) have
+  frame-by-frame checks on the beach crossings.
+- From a [controlled Key Cavern entrance](evidence/key-cavern-entrance-controls.md),
+  the same 2,503 input frames earn and spend the first small key in both
+  engines. With separate combat inputs, both earn and spend the second key
+  and take the stairs to `$02:$4D` at (72,80).
 - [Slime Eye](evidence/slime-eye-controls.md) is connected through the production
   engine. A directly initialized D3 encounter completes with normal buttons
   only after setup, including both halves and heart collection. Live ROM
@@ -33,8 +48,9 @@ not establish complete parity or a restored normal progression route.
   remain scoped; there is no normal-route D3 completion claim.
 - [Scroll landing and grass movement](evidence/overworld-scroll-entry.md) have
   controlled source evidence for preserved entry coordinates/fractions and
-  world-frame slowdown timing. Link body upload staging and grass overlay OAM
-  remain open; these are not whole-scene pixel matches.
+  world-frame slowdown timing. The [grass overlay](evidence/link-grass-overlay.md)
+  matches one aligned right-entry frame at RGB555 precision. Link body tile and
+  attribute uploads now follow [gameplay VBlank transfer priority](evidence/link-body-vblank.md).
 - [Intro audio measurements](intro-audio-validation.md) cover production PCM,
   source noise requests/writes, and isolated noise-envelope behavior. Measured
   noise corrections are implemented; sample-clock, mixer, waveform and other
@@ -43,8 +59,10 @@ not establish complete parity or a restored normal progression route.
 
 ## Pending
 
-- Restore and compare current opening/rescue continuity before claiming the
-  Goponga Swamp route or second-dungeon progression is verified.
+- Resume the fresh swamp approach at checkpoint 917 in overworld `$44`.
+  Java is at (67,84) and PyBoy at (64,73), both at full health. On the next
+  westward crossing PyBoy enters `$43` while Java stays in `$44`. Compare
+  the approach and landing before extending fresh Java into Bottle Grotto.
 - Source RNG consumption cadence and hardware LY inputs, live combat/position
   timing, follower behavior, and complete reward/presentation comparisons.
 - Dynamic ROM OAM allocation; see [rendering](RENDERING.md).
