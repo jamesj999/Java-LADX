@@ -124,8 +124,12 @@ public final class OpeningRouteCapture {
                     case "bowwow" -> game.headlessBowWowState();
                     case "kingstate" -> Integer.parseInt(
                             game.headlessMoblinKingTrace().split(",")[0]);
-                    case "instrumentstate" -> Integer.parseInt(
-                            game.headlessInstrumentTrace().split(";")[1].split(",")[1]);
+                    case "instrumentstate" -> {
+                        String[] instruments = game.headlessInstrumentTrace().split(";", 3);
+                        yield instruments.length > 1
+                                ? Integer.parseInt(instruments[1].split(",")[1])
+                                : -1;
+                    }
                     case "room" -> s.room();
                     case "dialog" -> s.dialog() ? 1 : 0;
                     case "sword" -> s.sword();

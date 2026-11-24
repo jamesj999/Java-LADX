@@ -16,6 +16,15 @@ import org.junit.jupiter.api.Test;
 final class MainOpeningRouteTest {
     private static final HeadlessGameDriver game = new HeadlessGameDriver();
 
+    @Test
+    void absentInstrumentCannotSatisfyAnInstrumentStateCheckpoint() throws Exception {
+        try (var freshGame = new HeadlessGameDriver()) {
+            freshGame.initializeHeadlessNewGame();
+            assertFalse(OpeningRouteCapture.reached(freshGame, "none", "instrumentstate=0", freshGame.headlessState()));
+            assertFalse(OpeningRouteCapture.reached(freshGame, "none", "instrumentstate=2", freshGame.headlessState()));
+        }
+    }
+
     // Known parity gap: the ROM pauses hFrameCounter on tileset/LCD-off load frames
     // ($00:024A, render_loop.asm) and GameSession does not yet. Runs under `knownGapTest`.
     // Keep JDK regex/trailing-empty-field semantics for diagnostic and fixture parsing without a Guava dependency.

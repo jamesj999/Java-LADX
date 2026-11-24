@@ -14,6 +14,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--visual", action="store_true", help="Trace body VRAM uploads/OAM and save adjacent frames"
 )
+parser.add_argument(
+    "--grass", action="store_true", help="Trace grass OAM after the rightward entry"
+)
 args = parser.parse_args()
 root = Path(__file__).resolve().parents[2]
 p = PyBoy(
@@ -73,6 +76,24 @@ def integrate(_):
 
 
 p.hook_register(2, 0x44B2, integrate, None)
+
+
+def capture_grass_frame():
+    # The snapshot counter has advanced past the CPU frame that wrote OAM.
+    return {
+        "screen_frame": p.memory[0xFFE7],
+        "room": p.memory[0xFFF6],
+        "transition": p.memory[0xC124],
+        "x": p.memory[0xFF98],
+        "y": p.memory[0xFF99],
+        "held": p.memory[0xFFCB],
+        "steps": p.memory[0xC120],
+        "object_physics": p.memory[0xC181],
+        "ground_status": p.memory[0xC11F],
+        "oam": [list(p.memory[a : a + 4]) for a in range(0xFE00, 0xFE10, 4)],
+    }
+
+
 for button, x, y in [("right", 156, 96), ("left", 3, 96), ("up", 80, 11), ("down", 80, 132)]:
     state.seek(0)
     p.load_state(state)
@@ -132,6 +153,8 @@ for button, x, y in [("right", 156, 96), ("left", 3, 96), ("up", 80, 11), ("down
     allrows[button] = rows
     print(button, "start", rows[0], "complete", rows[-1])
     if button == "right":
+        if args.grass:
+            grass = [capture_grass_frame()]
         if args.visual:
             rom = (root / "java/src/main/resources/rom/azle.gbc").read_bytes()
 
@@ -165,6 +188,8 @@ for button, x, y in [("right", 156, 96), ("left", 3, 96), ("up", 80, 11), ("down
             )
         for post in range(4):
             p.tick()
+            if args.grass:
+                grass.append(capture_grass_frame())
             if args.visual:
                 p.screen.image.save(out / f"rom-right-post{post + 1}.png")
                 print(
@@ -185,5 +210,19 @@ for button, x, y in [("right", 156, 96), ("left", 3, 96), ("up", 80, 11), ("down
             )
         print("right slow-ground gates", ground_gates[-5:])
         print("right normal-motion integrations", integrations[-4:])
+        if args.grass:
+            for _ in range(16):
+                p.tick()
+                grass.append(capture_grass_frame())
+            p.button_release("right")
+            for _ in range(4):
+                p.tick()
+                grass.append(capture_grass_frame())
+            p.button_press("left")
+            for _ in range(76):
+                p.tick()
+                grass.append(capture_grass_frame())
+            p.button_release("left")
+            (out / "rom-grass-trace.json").write_text(json.dumps(grass, indent=2))
 (out / "rom-trace.json").write_text(json.dumps(allrows, indent=2))
 p.stop(save=False)
