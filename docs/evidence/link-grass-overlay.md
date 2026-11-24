@@ -73,7 +73,7 @@ including HUD, entities and background, are compared. RNG is not synchronized;
 no broader RNG/progression conclusion follows from this captured frame.
 
 Reproduce ROM with `tools/entry/capture_rom.py --visual` and Java with
-`EntryProbe grass-after 210 visual`, using the documented test runtime classpath.
+`linksawakening.render.EntryProbe grass-after 210 visual`, using the documented test runtime classpath.
 Copy `java-right-post1.png` to the after filename before a later capture replaces
 it. Captures remain local; no ROM, extracted tiles or screenshots are committed.
 
@@ -82,8 +82,8 @@ MainArchitectureTest and GlBoundaryTest: 23 checks pass. The new single test cov
 source step 8 flip versus stationary 7, complementary tile flips, 8×16 placement,
 palette 6, reserved OAM dialog priority, warp-cache reset and airborne suppression.
 
-Persistent body-VRAM/attribute staging remains open. Completion-frame Java still
-resolves the new body pose before the ROM upload schedule allows it. The exact
+The [later VBlank comparison](link-body-vblank.md) covers persistent body tiles and attributes. At the time of this grass-only change, staging was still open. Completion-frame Java then
+resolved the new body pose before the ROM upload schedule allows it. The exact
 source gates and adjacent-frame evidence remain in the prior entry document;
 this grass milestone does not hide or claim to fix that scheduling gap. Body-VRAM
 staging is pending manual direction; no staging implementation was started.

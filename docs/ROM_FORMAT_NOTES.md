@@ -86,8 +86,8 @@ refer to the supported English DX v1.0 layout. Use symbols as described in
 - Animated BG tiles are pure tile-data swapping, not palette animation. The game reserves 4 VRAM tile slots at index `0x16C` (`vTiles2 + $6C0`) and copies the next 0x40-byte frame in at a group-specific cadence.
 - `AnimatedTiles` (bank `0x0C` / CGB `0x2C`, offset `$6A00`) is a flat blob of 18 groups × `$100` bytes. Each group holds 4 frames × 4 tiles × 16 bytes. Group number does NOT equal blob index: see the `HIGH(AnimatedTiles) + N` loads in `home/animated_tiles.asm` (e.g., `0x0B` slow waterfall → blob offset `0x000`, `0x02` tide → `0x100`, `0x10` weather vane → `0xD00`).
 - Timing masks: slow (& `$0F`, every 16 frames) for groups `$02, $03, $05, $0B, $0C`; medium (& `$07`, every 8) for `$08, $0E, $0F, $10`; fast (& `$03`, every 4) for `$09, $0A, $0D`. Groups `$04` and `$06` use (& `$07`) timing but pick offsets from the ping-pong table `[0, $40, $80, $C0, $C0, $C0, $80, $40]` indexed by `(frameCount >> 3) & 7`. Groups `$01`, `$07`, `$11` are special-case and not handled by the generic path.
-- `hAnimatedTilesFrameCount` and `hAnimatedTilesDataOffset` are NOT reset on room change; only the group ID is updated. The next animation tick naturally re-populates VRAM `0x16C` with the new group's tiles at the carried-over offset.
-- Animation ticking is gated in the original: skipped while `wRoomTransitionState != 0` (room transitions) or when the inventory window overlaps the screen. Only `DrawLinkSprite` runs during those gates.
+- Full world loads ($01:4460) and completed adjacent-room scrolls ($02:7989) set `hAnimatedTilesFrameCount` to $FF. The next eligible animation tick wraps to zero. These two writes preserve `hAnimatedTilesDataOffset`. The separate bulk graphics initializer at $00:2D50 clears both bytes.
+- At $00:1B58 an overlapping inventory window returns immediately. Inventory appearance, a pending draw command or an active scroll can bypass tile transfers and still reach `DrawLinkSprite`. On ordinary world frames eligible for tile animation, the group handler selects either a BG transfer or a Link OBJ tile upload.
 
 ## Entities
 

@@ -81,7 +81,7 @@ focused traversal class passes after these fixture corrections.
 To reproduce the ROM probe, run `python tools/entry/capture_rom.py` using the
 Python environment with `tools/requirements.txt`. For Java, compile
 `tools/entry/EntryProbe.java` against Gradle's `sourceSets.test.runtimeClasspath`,
-then run `EntryProbe after` from the repository root with that classpath plus
+then run `linksawakening.render.EntryProbe after` from the repository root with that classpath plus
 `java/build/test-rom` and the compiled probe directory. Run Gradle `testClasses`
 and `testRomResources` first. Outputs go to `/tmp/ladx-entry-controlled`.
 
@@ -129,7 +129,7 @@ Updated local screenshots:
 `/tmp/ladx-entry-controlled/java-phase-before-right-complete.png`,
 `java-phase-after-right-complete.png`, `rom-right-complete.png`.
 The before capture uses the committed `8ed89ed` Link class in a temporary
-classpath. Java `EntryProbe phase-after 210` reproduces the matched phase;
+classpath. Java `linksawakening.render.EntryProbe phase-after 210` reproduces the matched phase;
 `capture_rom.py` prints the source CPU gate trace and post-completion positions.
 No image assets are committed. Focused grass/Gel tests and existing entry
 regressions pass, including a new test with skipped Link updates that checks
@@ -198,17 +198,204 @@ Reproducible local images:
 
 Run `capture_rom.py --visual` to record body-VRAM matching states, actual
 upload-hook events, OAM entries and adjacent source images. Run
-`EntryProbe render-diagnostic 210 visual` for the production Java image,
+`linksawakening.render.EntryProbe render-diagnostic 210 visual` for the production Java image,
 isolated body/background diagnostics and adjacent Java images. The Java
 probe's equivalent diagnostic code was executed against the already compiled
 `44afe9b` classes; no new Gradle task or production code was used for this
 follow-up. Source screenshots remain local; no extracted assets are committed.
 
-The next implementation needs persistent Link body VRAM pairs and attributes,
+The body upload gap needs persistent Link body VRAM pairs and attributes,
 an explicit source-ordered VBlank upload decision, and an agreed simulation/OAM/
 display snapshot boundary. A blanket one-frame animation delay would mishandle
-scroll, inventory, replacement and background-upload gates. First validate
-this transition plus steady walking and sword poses against upload/OAM traces,
-then add the source grass overlay entries with their actual OAM priority.
-Movement fixes `8ed89ed` and `44afe9b` are preserved. Rendering staging and grass
-VFX remain open; this evidence milestone makes no visible-pose parity claim.
+scroll, inventory, replacement and background-upload gates. The grass overlay
+shipped separately. [Grass overlay evidence](link-grass-overlay.md)
+
+## Walking and sword upload validation, 2026-11-24
+
+A normal-input probe extends the sword route with rightward walking, a
+stationary sword swing and leftward walking. Both captures completed 72
+checkpoints with no ROM input overrides or RAM writes. The extended route
+SHA-256 is `b275ff19aafe09a9a0c659a71ef9ff1c0685da1a1280e49a03303e88b651a648`.
+
+```sh
+out=$(mktemp -d)
+cp tools/opening/sword-route.tsv "$out/route.tsv"
+printf 'right 12 8\na 1 20\nleft 12 8\n' >> "$out/route.tsv"
+python tools/opening/capture.py --body-trace-from 70 --route "$out/route.tsv" --output "$out"
+(cd java && ./gradlew captureOpeningRoute -PopeningRoute="$out/route.tsv" -PopeningOutput="$out")
+```
+
+The body trace records the current animation at the screen boundary, CRC32 of
+the four sprite tiles in VRAM bank 0, raw attributes from OAM slots 2/3, and
+CPU hooks at `$00:1B58`, `$00:1C51`, `$20:54F5` and `$00:1D2E`. Each
+CPU event includes the frame counter, pose, transition, window, inventory
+appearance, draw command, switch stage, tile replacement, BG group and BG
+tick, and the two requested graphics registers, in that order as hex fields
+after the address. The trace also hooks the requested graphics load at
+`$00:022F` and the frame increment at `$00:024D`. The Java trace records
+the current pose. At the time of this upstream measurement its renderer resolved both columns and flips from that pose
+during submission, as confirmed by tracing the first four tiles from the
+production Link OAM producer.
+
+| ROM route frame | CPU / screen counter | Current pose | VRAM CRC32 | OAM attrs | CPU decision |
+| --- | --- | --- | --- | --- | --- |
+| 8263, first right input | `$5C/$5D` | `$2D` | `da703aea` | `$00/$00` | Draw command `$9C` |
+| 8264 | `$5D/$5E` | `$2D` | `07ed256e` | `$00/$20` | Upload |
+| 8271, right walk | `$64/$65` | `$2C` | `07ed256e` | `$00/$20` | Draw command `$9C` |
+| 8272 | `$65/$66` | `$2C` | `efcce262` | `$00/$20` | Upload |
+| 8283, first A press | `$70/$71` | `$18` | `efcce262` | `$00/$20` | Draw command `$9C` |
+| 8284 | `$71/$72` | `$18` | `90774ad0` | `$20/$20` | Upload |
+
+All 61 observed frames reached DrawLinkSprite. The draw command preempted
+16 uploads, and tide BG copies preempted another three when the animation
+tick reached `$00`, `$10` or `$20`. The remaining 42 reached the body
+upload routine. Java submitted CRC `90774ad0` and flips `$20/$20` on its
+first A-press frame (8088), one frame earlier relative to that input than the
+ROM's VRAM/OAM observation. The starting Y positions differ by one pixel and
+their clocks differ. The table compares upload decisions and observed OAM,
+with no claim about latched display pixels or a global one-frame offset.
+
+## Frame counter during a full room load
+
+The ROM render loop checks `wTilesetToLoad` and `wBGMapToLoad` before advancing
+`hFrameCounter`. The requested graphics branch jumps to the frame wait
+without executing the increment at `$00:024D`. On the normal rescue route
+into room `$0A:$BD`, the graphics hook saw requests for BG map `$09` followed
+by tileset IDs `$06`, `$09` and `$01`. The hook saw 17 screen observations
+without an increment between the destination room first becoming current
+and the first observation of interactive gameplay. One screen observation
+contained an increment and the subsequent graphics-load branch.
+
+Java loads the destination synchronously during the transition and advanced
+its clock every update through the corresponding room-load and fade phases.
+The ROM's ordinary scroll from `$BD` to `$AC` used no requested-graphics branch.
+The Java room-load phase counts its own transition updates, while a single
+ROM graphics request can span multiple emulator screen observations. The
+measured screen stalls therefore do not specify which Java updates should
+hold the clock. Pausing it for every transition would also alter the observed
+ordinary scroll timing. No global clock correction was applied.
+
+To repeat the ROM measurement, run the opening capture with
+`--body-trace-from 113` on the rescue route prefix through checkpoint 118.
+In `emulator-body.tsv`, compare CPU events `022f` and `024d` with the snapshot
+counter on the same line.
+
+## Ordinary indoor scrolls, 2026-11-24
+
+Ordinary top-down indoor scrolls share the boundary thresholds at
+`$02:6C99..6CB1` and the horizontal and vertical position deltas above.
+`$02:6D5C` calls `$00:0CBE` before the scroll to copy the previous integer
+position bytes back after the boundary-crossing motion. That copy leaves the
+active fractional accumulators alone. Java now uses that saved integer
+position for the ordinary indoor scroll and preserves both live fractions.
+
+These observations used the historical normal-input rescue prefix from
+`b5fd0ecf` through checkpoint 329 (SHA-256
+`fa098fcee5b30be5fc1c6f389af3670cd7170df2f14c15dc0bc3d089394f4c35` for the
+prefix with comment and blank lines omitted). The hook at `$02:790B`
+observed 40 horizontal or 32 vertical integrations. The hook at `$02:7945`
+observed the position saved at scroll completion.
+
+| Checkpoint | Map and rooms | Direction | First integration X,Y | Saved entry X,Y | Start and end fractions X,Y |
+| --- | --- | --- | --- | --- | --- |
+| 118 | `$0A:$BD→$AC` | Up | 73,12 | 73,128 | `$00,$00` |
+| 146 | `$0A:$AC→$BD` | Down | 72,131 | 72,15 | `$00,$00` |
+| 299 | `$00:$17→$16` | Left | 4,80 | 149,80 | `$00,$00` |
+| 326 | `$00:$16→$17` | Right | 155,80 | 10,80 | `$00,$80` |
+
+A separate injected experiment loaded the normal route through checkpoint
+298, then set raw X,Y to 4,80 with fractions `$00,$A0` and held Left+Down.
+At `$02:6C99` the candidate was 3,81 with fractions `$40,$60`.
+`$02:6DE4` and the first `$02:790B` hook observed 4,80 with the updated
+fractions. The saved entry was 149,80 with the same fractions, and resumed
+motion reached 148,81 during the completion frame. The Java coordinator
+regression tests both the diagonal integer rollback and fractional retention,
+plus saved entry for all four directions using the loaded rooms.
+
+The normal-input Java rescue prefix reached checkpoint 118 at 72,128, with
+saved Y128. The ROM's saved X,Y was 73,128 and its checkpoint was 73,127.
+The X difference was present before starting the scroll. This comparison does
+not align control release or resumed movement. On the standalone Tail Cave
+dungeon route both Java versions had byte-identical state traces until death
+at frame 13072 in overworld room `$70`, before any affected indoor scroll.
+
+## Follow-up on grass OAM during movement and idle
+
+The [grass-overlay implementation and aligned-frame comparison](link-grass-overlay.md)
+followed the original scroll-entry investigation.
+
+Run `python tools/entry/capture_rom.py --grass` with PyBoy 2.8.1 and the ROM
+and house-route hashes above. The rightward experiment continues holding right
+for 20 frames after completion, releases input for four frames, then holds
+left back into A2. It records OAM slots 0–3, Link's raw position, ground status,
+object physics and consecutive steps in
+`/tmp/ladx-entry-controlled/rom-grass-trace.json`.
+
+| Screen frame | Held | Raw Link X | Consecutive steps | Grass left/right OAM attributes |
+| --- | --- | --- | --- | --- |
+| 211 (entry) | Right | 12 | 9 | `$20 / $00` |
+| 217 | Right | 16 | 15 | `$20 / $00` |
+| 218 | Right | 17 | 16 | `$00 / $20` |
+| 226 | Right | 23 | 24 | `$20 / $00` |
+| 231 | Right | 27 | 29 | `$20 / $00` |
+| 232–235 | Released | 27 | 7 | `$00 / $20` |
+| 236 | Left | 26 | 8 | `$20 / $00` |
+
+Link's raw Y is 96 throughout these observations. OAM slots 0 and 1 start
+at raw Y 104 and raw X−1/X+7 with tile `$1A`. Body slots 2 and 3
+remain at raw Y 96 and raw X/X+8. A motion integration skip still advances
+the step count, as at screen frame 217 when X repeats at 16. Releasing
+movement resets the count to 7 and retains both grass columns. The return
+to A2 completes at screen frame 54 after wraparound. Object physics and
+ground status both become zero, and the grass entries' raw Y becomes
+`$F4`, hiding them even though their tile bytes still read `$1A`.
+
+The source increments the step count at `$02:4440`, resets it at
+`$02:445F`, and derives the left horizontal flip from bit 3 at
+`$02:788A`–`$02:788F`. The right attribute flips the same bit at
+`$02:78CF`. The CGB outdoor room `$32` palette-6 override is present
+in the source and falls outside this A3 trace.
+
+
+## Ordinary side-view and overworld scrolls on the fresh route
+
+A read-only replay through checkpoint 510 measured the candidate position at
+`$02:6CB6` or `$02:6D13`, the restored position at `$02:6DE4`, each scroll
+step at `$02:790B`, and the saved room entry at `$02:7945`. Both Tail Cave
+passage crossings use the same previous integer coordinate and live fractional
+accumulators as the measured ordinary top-down crossings. The integrated Java
+coordinator now uses this rule for side-view passages and the overworld.
+Previously the side-view path snapped X to 8 or 152, and the overworld used the
+integer coordinate from after motion. The earlier controlled overworld test
+started with Link already over the threshold and could not distinguish these
+two integer positions.
+
+| Checkpoint | Rooms | Candidate X,Y | Restored X,Y | Saved entry X,Y | X,Y fraction bytes |
+| --- | --- | --- | --- | --- | --- |
+| 24 | Overworld A2 to A1 | 3,120 | 4,120 | 149,120 | 00,00 |
+| 40 | Overworld D0 to E0 | 40,132 | 40,131 | 40,15 | 50,70 |
+| 45 | Overworld F0 to F1 | 156,48 | 155,48 | 10,48 | 50,70 |
+| 74 | Overworld F1 to F0 | 3,35 | 4,35 | 149,35 | 90,40 |
+| 478 | Tail Cave 19 to 18 | 3,64 | 4,64 | 149,64 | 60,B0 |
+| 509 | Tail Cave 18 to 19 | 156,64 | 155,64 | 10,64 | 00,40 |
+
+Room identifiers and fraction bytes are hexadecimal. Coordinates are decimal.
+There were 40 integrations on each measured horizontal crossing and 32 on
+the downward crossing. The integration tests start with the recorded room,
+position and fractions and assert both saved coordinates and retained fractions
+after the production coordinator runs. For the two Tail Cave rows, Java is a
+controlled room start and the original is a fresh game.
+
+```sh
+out=$(mktemp -d)
+awk 'NF && !/^#/ { print; if (++rows == 510) exit }' \
+    tools/opening/bowwow-rescue-route.tsv > "$out/first510.tsv"
+python tools/opening/capture.py --route "$out/first510.tsv" \
+    --trace-scroll-positions --output "$out"
+```
+
+The 510-row input SHA-256 is
+`0933ef429e9772a844f95cdd13d3a7c310d2095b21fcca49523dd8256c03a596`.
+`emulator-scroll.tsv` distinguishes the saved entry from resumed motion.
+At checkpoint 478 the ROM had already moved left one pixel to (148,64)
+after saving (149,64).

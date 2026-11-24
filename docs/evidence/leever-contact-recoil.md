@@ -72,3 +72,71 @@ restore rescue continuity, or establish all combat/position/visual fidelity.
 The session's fixed `rLY=0` RNG policy and unmatched startup frame origins
 remain separate comparison limitations. Independent-control route experiments
 are not input-identical fidelity evidence and were not committed as a route.
+
+## Beach shield and sword contacts, 2026-11-24
+
+On checkpoint 47 of the fresh rescue route, the ROM raises the shield while
+walking east across room `$F1`. Four Leever bumps and three Octorok bumps
+reach `$03:6F93`. Each plays jingle 9, sets Link's collision-ignore timer
+to 12 and the enemy's timer to 10. Three bumps occur while Link's previous
+collision-ignore timer is still running.
+
+| Route frame | Enemy | Cached XY | XY used for recoil | Link XY | Link recoil | Enemy recoil |
+| --- | --- | --- | --- | --- | --- | --- |
+| 4619 | Leever 2 | 49,44 | 49,44 | 41,32 | −12,−18 | +21,+32 |
+| 4655 | Octorok 1 | 71,25 | 71,25 | 56,26 | −18,+1 | +32,−2 |
+| 4710 | Leever 5 | 65,32 | 66,32 | 64,30 | −18,−18 | +32,+32 |
+
+The weapon rectangle is compared against the cached coordinates. Both
+recoil vectors use the position tables. A later slot in descending order
+can replace Link's response while the earlier enemy retains its own recoil.
+At `$03:6FC5` the ROM loads `$08` before an OR instruction, which makes
+the zero branch unreachable. A separate injection at `$03:6FC1` cleared
+both the input byte and the saved boots byte. All seven bumps still entered
+`ConfigureEntityRecoil` with magnitude 32.
+
+Capture the read-only measurements from the repository root. The input
+prefix has SHA-256 `524092c7a4d4981988623f127390ac638c4a087f1ef8a7b981881ee800597593`
+when written as the 48 gameplay rows with a trailing newline.
+
+```sh
+out=$(mktemp -d)
+awk 'NF && !/^#/ { print; if (++n == 48) exit }' tools/opening/bowwow-rescue-route.tsv > "$out/beach.tsv"
+python tools/opening/capture.py --route "$out/beach.tsv" --shield-trace-room 0xf1 --output "$out"
+```
+
+In a second, controlled comparison, a sword and Link's body both touch a
+chasing Leever. With initial enemy health 1 or 8, the native Leever moves
+from (110,40) to (109,40), then buffers 4 damage to Link and writes recoil
+(0,−20) and collision-ignore 16. The enemy takes one damage and receives
+recoil (0,+48), collision-ignore 10 and flash 24. The lethal case enters
+the dying state at (109,40) with its death countdown still at 47. Java
+regressions cover both health values and a lower-slot Octorok overriding
+a higher-slot Leever's shield response. The [subsequent recoil trace](beach-enemy-recoil.md)
+covers positions and timers on later dispatches.
+
+```sh
+python tools/leever/capture_rom.py --case leever-sword --enemy-health 1 --follow-recoil 2 --output /tmp/leever-lethal.json
+python tools/leever/capture_rom.py --case leever-sword --enemy-health 8 --follow-recoil 2 --output /tmp/leever-survivor.json
+```
+
+The full rescue TSV has SHA-256
+`d21b8ba1c6f702689be10cda86e58b564959f14427431ac5c02be56e693ad208`.
+On the integrated sword/arrow/recoil revision Java ended checkpoint 47 at
+(120,25) with 20 health, against (120,32) with 24 in PyBoy. An earlier
+revision with only the shield changes reached the Java checkpoint with 24.
+After collecting the sword, the integrated Java replay finished checkpoint
+73 and died on the return through `$F1` at frame 8928, (68,12).
+
+## Final recoil step at the north edge
+
+The last step of a shield shove can carry Link across the north scroll
+threshold while Right remains held. In a controlled native probe, the
+candidate raw coordinates were (96, 10), the saved coordinates were
+(97, 12), and the velocity was (−7, −18). With zero ignore frames left,
+neutral or Right took the rejection path at `$02:6E12`, restored (97, 12)
+and cleared both speeds. Up or Up+Right reached the scroll branch at
+`$02:6DCC` with both speeds intact. Up with an active ignore timer still
+rejected the scroll. Java's final recoil step now tests the held
+direction and preserves the current movement fractions when restoring
+both coordinate bytes.

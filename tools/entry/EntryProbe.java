@@ -1,62 +1,106 @@
-import linksawakening.app.*;
-import linksawakening.entity.*;
-import linksawakening.world.room.*;
-import linksawakening.world.transition.*;
-import java.nio.file.*;
+package linksawakening.render;
+
 import java.awt.image.BufferedImage;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 import javax.imageio.ImageIO;
-/** Synthetic scroll probe. Run from the repository root with the test runtime
- * classpath and user ROM available; outputs local screenshots under /tmp.
- * Room/Link state is injected after the real opening house input route.
- */
-public class EntryProbe {
- static void png(byte[] rgba, Path out)throws Exception {
-  BufferedImage img=new BufferedImage(160,144,BufferedImage.TYPE_INT_ARGB);
-  for(int y=0;y<144;y++)for(int x=0;x<160;x++){int i=(y*160+x)*4;img.setRGB(x,y,0xff000000|((rgba[i]&255)<<16)|((rgba[i+1]&255)<<8)|(rgba[i+2]&255));}
-  ImageIO.write(img,"png",out.toFile());
- }
- public static void main(String[] args)throws Exception {
-  for(String b:new String[]{"right","left","up","down"}) {
-   GameSession s=new GameSession();s.initializeHeadlessNewGame();
-   for(String line:Files.readAllLines(Path.of("tools/opening/house-route.tsv"))){if(line.isBlank()||line.startsWith("#"))continue;String[] f=line.split(" ");int held=Integer.parseInt(f[1]),idle=Integer.parseInt(f[2]);if(held>0)s.headlessButton(f[0],true);for(int t=0;t<held+idle;t++){if(t==held&&held>0)s.headlessButton(f[0],false);s.headlessFrame();}}
-   var d=s.diagnostics();var l=d.link();int x=b.equals("right")?148:b.equals("left")?-5:72;int y=b.equals("up")?-5:b.equals("down")?116:80;
-   l.setPixelPosition(x,y);
-   var mf=Link.class.getDeclaredField("linkMotion");mf.setAccessible(true);var m=mf.get(l);
-   for(String n:new String[]{"subX","subY"}){var f=m.getClass().getDeclaredField(n);f.setAccessible(true);f.setInt(m,f.getInt(m)+(n.equals("subX")?10:5));}
-   s.headlessButton(b,true);
-   var c=new RoomTransitionCoordinator(d.roomSession(),new RoomBoundaryController(),d.transitionController(),d.scrollController());c.handleOverworldBoundary(l);
-   System.out.println(b+" entry "+l.romEntityX()+","+l.romEntityY()+" room="+d.roomSession().currentRoomId());
-   if(args.length > 1) {
-    // Match global motion phase independently of transition preparation time.
-    var frame=GameSession.class.getDeclaredField("frameCounter"); frame.setAccessible(true);
-    frame.setInt(s,(Integer.parseInt(args[1])-(b.equals("left")||b.equals("right")?40:32))&255);
-   }
-   byte[] rgba=null;int count=0;while(d.scrollController().isActive()&&count++<100)rgba=s.headlessFrame();
-   for(String n:new String[]{"subX","subY"}) {
-    var f=m.getClass().getDeclaredField(n); f.setAccessible(true);
-    System.out.println(b+" "+n+" fraction="+(f.getInt(m)&15));
-   }
-   System.out.println(b+" complete "+l.romEntityX()+","+l.romEntityY()+" speed="+l.romSpeedX()+","+l.romSpeedY()+" frames="+count+" worldFrame="+s.diagnostics().frameCounter()+" collision="+l.romCollisionType());
-   if(args.length > 2 && b.equals("right")) {
-    byte[] solo=new byte[160*144*4], background=new byte[160*144*4];
-    linksawakening.render.FrameScene.of(java.util.List.of(new linksawakening.render.LinkRenderLayer(l,d.scrollController()))).drawTo(solo,d.gpu());
-    linksawakening.render.FrameScene.of(java.util.List.of(new linksawakening.render.RoomRenderLayer(d.roomSession().renderSnapshot(),d.scrollController(),d.transitionController()))).drawTo(background,d.gpu());
-    int changed=0;
-    for(int yy=l.pixelY();yy<l.pixelY()+16;yy++) for(int xx=l.pixelX();xx<l.pixelX()+16;xx++) {
-     int ii=(yy*160+xx)*4;
-     if(rgba[ii]!=background[ii]||rgba[ii+1]!=background[ii+1]||rgba[ii+2]!=background[ii+2]) changed++;
+import linksawakening.app.GameSession;
+import linksawakening.entity.LinkPositionRole;
+
+/** Controlled scroll after the normal house route. Run from the repo root with the test runtime classpath. */
+public final class EntryProbe {
+    private static final Path OUTPUT = Path.of("/tmp/ladx-entry-controlled");
+
+    public static void main(String[] args) throws Exception {
+        Files.createDirectories(OUTPUT);
+        for (String button : List.of("right", "left", "up", "down")) {
+            try (var game = new GameSession()) {
+                game.initializeHeadlessNewGame();
+                for (String row : Files.readAllLines(Path.of("tools/opening/house-route.tsv"))) {
+                    if (row.isBlank() || row.startsWith("#")) continue;
+                    String[] fields = row.split("\\s+");
+                    int held = Integer.parseInt(fields[1]);
+                    if (held > 0) game.headlessButton(fields[0], true);
+                    for (int i = 0; i < held; i++) game.headlessFrame();
+                    if (held > 0) game.headlessButton(fields[0], false);
+                    for (int i = 0; i < Integer.parseInt(fields[2]); i++) game.headlessFrame();
+                }
+                capture(game, button, args);
+            }
+        }
     }
-    System.out.println("render animation="+l.romAnimationState()+" z="+l.romEntityZ()+" bed="+l.isMarinWakeUpBedVisible()+" visible pixels over background="+changed);
-    png(solo,Path.of("/tmp/ladx-entry-controlled/link-only-right.png"));
-    png(background,Path.of("/tmp/ladx-entry-controlled/background-only-right.png"));
-   }
-   png(rgba,Path.of("/tmp/ladx-entry-controlled/java-"+args[0]+"-"+b+"-complete.png"));
-   if(args.length > 1 && b.equals("right")) for(int post=0;post<4;post++) {
-    byte[] postRgba=s.headlessFrame();
-    if(args.length > 2) png(postRgba,Path.of("/tmp/ladx-entry-controlled/java-right-post"+(post+1)+".png"));
-    System.out.println("right post worldFrame="+s.diagnostics().frameCounter()+" x="+l.romEntityX()
-        +" y="+l.romEntityY()+" speed="+l.romSpeedX()+","+l.romSpeedY()+" collision="+l.romCollisionType());
-   }
-  }
- }
+
+    private static void capture(GameSession game, String button, String[] args) throws Exception {
+        var diagnostics = game.diagnostics();
+        var scroll = diagnostics.scrollController();
+        var rooms = diagnostics.roomSession().rooms();
+        var link = diagnostics.link();
+        var position = link.position();
+        int x = button.equals("right") ? 148 : button.equals("left") ? -5 : 72;
+        int y = button.equals("up") ? -5 : button.equals("down") ? 116 : 80;
+        position.setPixelPosition(x, y);
+        position.applyRomFinalPosition(10, 5);
+        position.captureRomFinalPosition();
+        game.headlessButton(button, true);
+        game.services().world().roomTransitionCoordinator().handleOverworldBoundary(link);
+        System.out.printf("%s entry (%d,%d) room %02X%n", button,
+                position.romEntityX(), position.romEntityY(), rooms.currentRoomId());
+        if (args.length > 1) {
+            int steps = button.equals("left") || button.equals("right") ? 40 : 32;
+            game.state().clock().seed((Integer.parseInt(args[1]) - steps) & 255);
+        }
+        if (!scroll.isActive()) throw new IllegalStateException("No scroll for " + button);
+        byte[] rgba;
+        int count = 0;
+        do {
+            if (++count > 100) throw new IllegalStateException("Scroll timed out for " + button);
+            rgba = game.headlessFrame();
+        } while (scroll.isActive());
+        System.out.printf("%s complete (%d,%d) fractions (%d,%d) speed (%d,%d) frames %d clock %d%n",
+                button, position.romEntityX(), position.romEntityY(), fraction(position, true), fraction(position, false),
+                position.romSpeedX(), position.romSpeedY(), count, game.state().clock().value());
+        String label = args.length == 0 ? "current" : args[0];
+        png(rgba, "java-" + label + "-" + button + "-complete.png");
+        if (!button.equals("right") || args.length < 2) return;
+
+        boolean visual = args.length > 2;
+        if (visual) {
+            byte[] solo = new byte[rgba.length], background = new byte[rgba.length];
+            FrameScene.of(List.of(new LinkRenderLayer(link, scroll))).drawTo(solo, diagnostics.gpu());
+            FrameScene.of(List.of(new RoomRenderLayer(rooms.renderViewOrNull(), scroll, diagnostics.transitionController())))
+                    .drawTo(background, diagnostics.gpu());
+            png(solo, "link-only-right.png");
+            png(background, "background-only-right.png");
+        }
+        for (int post = 1; post <= 4; post++) {
+            byte[] next = game.headlessFrame();
+            if (visual) png(next, "java-right-post" + post + ".png");
+            System.out.printf("right post %d clock %d position (%d,%d) pose %02X%n",
+                    post, game.state().clock().value(), position.romEntityX(), position.romEntityY(),
+                    link.animation().romAnimationState());
+        }
+    }
+
+    // Observe when the next integer pixel is reached, then undo the fractional displacement.
+    private static int fraction(LinkPositionRole position, boolean horizontal) {
+        int start = horizontal ? position.pixelX() : position.pixelY();
+        int steps = 0;
+        do {
+            position.applyRomFinalPosition(horizontal ? 1 : 0, horizontal ? 0 : 1);
+            steps++;
+        } while ((horizontal ? position.pixelX() : position.pixelY()) == start);
+        position.applyRomFinalPosition(horizontal ? (-steps & 255) : 0, horizontal ? 0 : (-steps & 255));
+        return 16 - steps;
+    }
+
+    private static void png(byte[] rgba, String filename) throws Exception {
+        var image = new BufferedImage(160, 144, BufferedImage.TYPE_INT_RGB);
+        for (int pixel = 0; pixel < 160 * 144; pixel++) {
+            int i = pixel * 4;
+            image.setRGB(pixel % 160, pixel / 160,
+                    ((rgba[i] & 255) << 16) | ((rgba[i + 1] & 255) << 8) | (rgba[i + 2] & 255));
+        }
+        ImageIO.write(image, "png", OUTPUT.resolve(filename).toFile());
+    }
 }
