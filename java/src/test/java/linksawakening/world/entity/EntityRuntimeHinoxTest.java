@@ -203,16 +203,16 @@ final class EntityRuntimeHinoxTest extends EntityRuntimeTestSupport {
                 .build();
         RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(hinox)).build();
         EntityRuntimeFixture.debug(runtime).setHinoxStateForTest(0, MotionTestAccess.HinoxMotion_STATE_CHARGE);
-        EntityRuntimeFixture.debug(runtime).setTransitionCountdownForTest(0, 0);
+        EntityRuntimeFixture.debug(runtime).setTransitionCountdownForTest(0, 0x10);
 
         runtime.tick(EntityTestFrames.projectileFrame(
                 runtime,
                 0,
-                0x30,
-                0x30,
+                0x60,
+                0x40,
                 () -> 0,
                 linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN,
-                new EnemyProjectileCollision.LinkState(0x30, 0x30, 0, 0, 3, false)));
+                new EnemyProjectileCollision.LinkState(0x60, 0x40, 0, 0, 3, false)));
 
         List<EntityCombatEvent> events = runtime.outbox().consumePendingEntityEvents();
         assertTrue(events.contains(new EntityCombatEvent(

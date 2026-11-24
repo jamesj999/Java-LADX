@@ -249,9 +249,7 @@ public final class HinoxMotion {
     }
 
     static boolean withinDistance(int value, int target, int distance) {
-        int delta = (value - target) & 0xFF;
-        int absolute = delta < 0x80 ? delta : 0x100 - delta;
-        return absolute < distance;
+        return ((target - value + distance) & 0xFF) < distance * 2;
     }
 
     static int directionToLink(int x, int y, int linkX, int linkY) {
@@ -427,20 +425,18 @@ public final class HinoxMotion {
 
         private boolean advanceCharge() {
             if (transition == 0) {
-                owner.state[slot] = STATE_GRAB;
-                transition = 0x4F;
-                wave = 0x16;
+                owner.state[slot] = STATE_INITIAL;
             }
             HinoxMotion.Position next = owner.move(entity, x, y, backgroundInteraction, slot);
             x = next.x();
             y = next.y();
-            if (owner.state[slot] == STATE_CHARGE
-                    && HinoxMotion.withinDistance(x, linkX, 0x18)
+            if (HinoxMotion.withinDistance(x, linkX, 0x18)
                     && HinoxMotion.withinDistance(y, linkY, 0x18)
                     && (linkMotionState & 0xFF) == 0) {
-                owner.state[slot] = STATE_GRAB;
+                // $06:50F6 increments the stored state, including after a timeout reset.
+                owner.state[slot]++;
                 transition = 0x4F;
-                jingle = 0x16;
+                wave = 0x16;
             }
             dust = (frame & 0x07) == 0;
             if (dust) {

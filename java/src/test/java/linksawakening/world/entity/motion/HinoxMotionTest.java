@@ -278,6 +278,8 @@ final class HinoxMotionTest {
                 0));
         assertEquals(HinoxMotion.STATE_GRAB, grabbed.state());
         assertEquals(0x4F, grabbed.transitionCountdown());
+        assertEquals(0x16, grabbed.waveId());
+        assertEquals(0x20, grabbed.jingleId());
         HinoxMotion.Update held = motion.advance(new HinoxFrame(
                 grabbed.entity(),
                 grabbed.transitionCountdown(),
@@ -340,19 +342,19 @@ final class HinoxMotionTest {
     }
 
     @Test
-    void chargeTransitionEmitsGrowlOnWaveAndBounceOnJingleChannels() {
+    void expiredChargeResetsBeforeRecheckingTheAsymmetricProximityBox() {
         HinoxMotion motion = new HinoxMotion();
         RoomEntity entity = entity(0x50, 0x40);
         motion.initialize(entity.slot());
         MotionTestFixture.setStateForTest(motion, entity.slot(), HinoxMotion.STATE_CHARGE, 0, 0);
         MotionTestFixture.setSpeedForTest(motion, entity.slot(), 0, 0);
 
-        HinoxMotion.Update update = motion.advance(new HinoxFrame(
+        HinoxMotion.Update far = motion.advance(new HinoxFrame(
                 entity,
                 0,
                 0,
-                0x30,
-                0x30,
+                0x68,
+                0x40,
                 0,
                 0,
                 () -> 0,
@@ -360,8 +362,28 @@ final class HinoxMotionTest {
                 0,
                 0));
 
-        assertEquals(0x16, update.waveId());
-        assertEquals(0x20, update.jingleId());
+        assertEquals(HinoxMotion.STATE_INITIAL, far.state());
+        assertEquals(0, far.transitionCountdown());
+        assertEquals(-1, far.waveId());
+        assertEquals(0x20, far.jingleId());
+
+        MotionTestFixture.setStateForTest(motion, entity.slot(), HinoxMotion.STATE_CHARGE, 0, 0);
+        HinoxMotion.Update near = motion.advance(new HinoxFrame(
+                entity,
+                0,
+                1,
+                0x38,
+                0x40,
+                0,
+                0,
+                () -> 0,
+                linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE,
+                0,
+                0));
+        assertEquals(HinoxMotion.STATE_WANDER, near.state());
+        assertEquals(0x4F, near.transitionCountdown());
+        assertEquals(0x16, near.waveId());
+        assertEquals(-1, near.jingleId());
     }
 
     @Test
