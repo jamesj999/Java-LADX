@@ -1,6 +1,7 @@
 package linksawakening.entity;
 
 import java.util.Objects;
+import linksawakening.state.Direction;
 import linksawakening.state.InventoryItem;
 import linksawakening.state.LinkMotionState;
 import linksawakening.state.PlayerState;
@@ -69,7 +70,7 @@ final class LinkDamage {
         linkServices.get().soundSink.play(linksawakening.gameplay.GameplaySoundEvent.LINK_HURT);
     }
 
-    void tickRecoil() {
+    void tickRecoil(int directionMask) {
         collisionIgnoreFramesRemaining--;
         int speedX = linkMotion.get().position().forcedSpeedPending()
                 ? linkMotion.get().position().forcedSpeedX()
@@ -84,16 +85,12 @@ final class LinkDamage {
         int beforeRecoilY = linkMotion.get().position().subY();
         if (speedX != 0) linkMotion.get().tryMoveAxis(speedX, true);
         if (speedY != 0) linkMotion.get().tryMoveAxis(speedY, false);
-        // CheckPositionForMapTransition restores the previous position
-        // at a normal room edge, then $02:6D94 rejects active recoil.
-        if (normalRecoilRoomBoundaries
-                && collisionIgnoreFramesRemaining > 0
-                && (linkMotion.get().position().romEntityX() < 0x04
-                        || linkMotion.get().position().romEntityX() >= 0x9C
-                        || linkMotion.get().position().romEntityY() < 0x0C
-                        || linkMotion.get().position().romEntityY() >= 0x84)) {
-            linkMotion.get().position().subX(beforeRecoilX);
-            linkMotion.get().position().subY(beforeRecoilY);
+        if (normalRecoilRoomBoundaries && blocksRecoilAtEdge(directionMask, beforeRecoilY)) {
+            // CopyLinkFinalPositionToPosition restores the two integer bytes. The movement fractions survive.
+            int fractionMask = (1 << Link.SUB_PIXEL_SHIFT) - 1;
+            var position = linkMotion.get().position();
+            position.subX((beforeRecoilX & ~fractionMask) | (position.subX() & fractionMask));
+            position.subY((beforeRecoilY & ~fractionMask) | (position.subY() & fractionMask));
             collisionIgnoreFramesRemaining = 0;
             speedX = 0;
             speedY = 0;
@@ -111,6 +108,31 @@ final class LinkDamage {
         linkAnimationState.get().movingThisFrame = speedX != 0 || speedY != 0;
     }
 
+    private boolean blocksRecoilAtEdge(int directionMask, int beforeRecoilY) {
+        var position = linkMotion.get().position();
+        int x = position.romEntityX() & 0xFF;
+        int y = position.romEntityY() & 0xFF;
+        Direction edge;
+        if (y < 0x0C) edge = Direction.UP;
+        else if (y >= 0x84) edge = Direction.DOWN;
+        else if (x < 0x04) edge = Direction.LEFT;
+        else if (x >= 0x9C) edge = Direction.RIGHT;
+        else return false;
+
+        // $02:6D94 rejects active recoil. On its last step, test the held direction
+        // just as for normal travel, including the south-edge and motion exceptions.
+        if (collisionIgnoreFramesRemaining != 0) return true;
+        int restoredY = ((beforeRecoilY >> Link.SUB_PIXEL_SHIFT) + 16) & 0xFF;
+        if (restoredY >= 0x88
+                || linkSideView.get().sideScrolling
+                || linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots()
+                || linkStateMachine.get().status().slowWalkingSpeed() != 0) return false;
+        int horizontal = directionMask & 3;
+        int vertical = (directionMask >>> 2) & 3;
+        return (horizontal == 0 || horizontal - 1 != edge.romIndex())
+                && (vertical == 0 || vertical + 1 != edge.romIndex());
+    }
+
     void setCollisionIgnoreFrames(int frames) {
         collisionIgnoreFramesRemaining = Math.max(0, frames);
         recoilSpeedX = linkMotion.get().position().forcedSpeedPending()
@@ -124,6 +146,11 @@ final class LinkDamage {
 
     boolean hasRecoil() {
         return collisionIgnoreFramesRemaining > 0;
+    }
+
+    void clearRecoilSpeed() {
+        recoilSpeedX = 0;
+        recoilSpeedY = 0;
     }
 
     void tickInvincibility() {

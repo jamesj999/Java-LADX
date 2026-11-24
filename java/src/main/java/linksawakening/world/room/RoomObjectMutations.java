@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.physics.PhysicsFlags;
 import linksawakening.rom.RomAddress;
 import linksawakening.rom.RomSymbols;
 import linksawakening.rom.RomTables;
@@ -112,7 +113,7 @@ final class RoomObjectMutations implements RoomTerrain {
                             && dependencies.terrain().linkGroundObjectUnderEntity() == 0x4C
                             && (((frame.pixelY() + 15) & 15) >= 12))) return false;
         }
-        if (!RoomObjectMutations.reachesDefaultGroundPhysics(
+        if (!PhysicsFlags.reachesDefaultLinkGroundPhysics(
                 dependencies.terrain().linkGroundObjectPhysics(),
                 bypassEntry,
                 frame.slowWalkingSpeed(),
@@ -168,23 +169,6 @@ final class RoomObjectMutations implements RoomTerrain {
         // hLinkPositionX = Java X+8; hLinkPositionY = Java Y+16, then subtract 4.
         // AND $F0 after byte arithmetic also preserves the ROM's wrap behavior.
         return ((pixelY + 12) & 0xF0) | (((pixelX + 8) & 0xF0) >>> 4);
-    }
-
-    /** Only the control-flow decision; movement, damage and water effects stay with Link. */
-    static boolean reachesDefaultGroundPhysics(
-            int physics, boolean bypassEntry, int slowWalkingSpeed, int itemUsageContext) {
-        if (!bypassEntry) {
-            if (physics == 0 || physics == 0xFF) return true; // $75EE/$763A
-            if (physics == 0xE0 || physics >= 0xF0 || physics == 0x50 || physics == 0x51) return false;
-        }
-        // label_002_76C0 is also the entry used by dialogs/transitions ($75C4).
-        if (physics == 0x08 || physics == 0x09) return true; // $76D2/$76E1
-        if (physics == 0x07 || physics == 0x0B) {
-            if (slowWalkingSpeed != 0) return false; // $76F1 -> current handler $7C50
-            if (itemUsageContext == 0x80) return true; // raft: $76F9 -> $7757
-            return false; // swimming/recovery and entry into water return before Default
-        }
-        return physics != 0x06; // grass $7752 returns; shallow water falls through $779F
     }
 
     /** CheckStaticSwordCollision $00:161A-1679; RevealObjectUnderObject $14:5584-55E3. */

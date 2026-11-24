@@ -136,6 +136,7 @@ final class DefaultLinkMotionRole implements LinkMotionRole {
         linkEntityEffects.likeLikeCaptured = false;
         linkEntityEffects.likeLikeCapturePinsPosition = false;
         linkAirborne.pit().fallingIntoPit(false);
+        linkAirborne.pit().clearSlippingCounter();
         linkAirborne.pit().warpHoleCharge = 0;
         linkAirborne.pit().warpHoleLanding = false;
         linkAirborne.spinningPitWarpArrival(false);

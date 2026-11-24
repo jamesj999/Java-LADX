@@ -39,7 +39,6 @@ final class LinkAirborne {
     private final LinkComponentRef<LinkSideView> linkSideView;
     private final LinkComponentRef<LinkSignals> linkSignals;
     private final LinkComponentRef<LinkStateMachine> linkStateMachine;
-    private final LinkComponentRef<LinkSwimming> linkSwimming;
 
     LinkAirborne(Dependencies dependencies) {
         dialogGotItemSequence = Objects.requireNonNull(dependencies.dialogGotItemSequence, "dialogGotItemSequence");
@@ -54,7 +53,6 @@ final class LinkAirborne {
         linkSideView = Objects.requireNonNull(dependencies.linkSideView, "linkSideView");
         linkSignals = Objects.requireNonNull(dependencies.linkSignals, "linkSignals");
         linkStateMachine = Objects.requireNonNull(dependencies.linkStateMachine, "linkStateMachine");
-        linkSwimming = Objects.requireNonNull(dependencies.linkSwimming, "linkSwimming");
         pit = new LinkPitFall(linkAnimationState, linkDamage, linkMotion, linkServices, linkSignals, elevation);
     }
 
@@ -185,7 +183,11 @@ final class LinkAirborne {
         elevation.zVelocity(0);
         linkAnimator.get().jumpAnimationCounter(0);
         linkAnimator.get().jumpAnimationFrame(0);
-        pit.refreshGroundStatus();
+        // $02:4588 samples and applies ground physics on landing. The later
+        // grounded pass re-samples after any displacement from this one.
+        if (linkMotion.get().position().romEntityY() < 0x88) {
+            linkStateMachine.get().applyPitGroundPhysics();
+        }
         if (pit.warpHoleLanding) {
             pit.warpHoleLanding = false;
             linkServices.get().soundSink.play(GameplaySoundEvent.LINK_FOOTSTEP);
@@ -255,7 +257,7 @@ final class LinkAirborne {
     }
 
     int accessRomMotionState() {
-        if (pit.groundStatus() == GroundStatus.PIT || pit.fallingIntoPit()) {
+        if (pit.fallingIntoPit()) {
             return 0x06;
         }
         return linkStateMachine.get().status().motionState().romValue();
@@ -297,11 +299,13 @@ final class LinkAirborne {
     }
 
     void accessBounceFromGoomba() {
-        elevation.airborne(true);
-        elevation.zVelocity(0x10);
-        pit.fallingIntoPit(false);
-        pit.groundStatus(GroundStatus.NORMAL);
-        linkSwimming.get().leaveSwimming();
+        // $03:6D2E sets only the vertical speed in the active perspective.
+        if (linkSideView.get().sideScrolling) {
+            linkSideView.get().sideViewSpeedY = -0x10;
+            linkMotion.get().position().lastRomSpeedY(0xF0);
+        } else {
+            elevation.zVelocity(0x10);
+        }
     }
 
     int accessZPixels() {
@@ -346,6 +350,5 @@ final class LinkAirborne {
         LinkComponentRef<LinkSideView> linkSideView;
         LinkComponentRef<LinkSignals> linkSignals;
         LinkComponentRef<LinkStateMachine> linkStateMachine;
-        LinkComponentRef<LinkSwimming> linkSwimming;
     }
 }

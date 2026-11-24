@@ -285,6 +285,15 @@ final class LinkPosition {
         subY = romFinalSubY;
     }
 
+    /** Copies the integer position bytes without replacing the current fractional accumulators. */
+    void restoreRomFinalPositionPixels() {
+        if (hasRomFinalPosition) {
+            int fractionMask = (1 << Link.SUB_PIXEL_SHIFT) - 1;
+            subX = (romFinalSubX & ~fractionMask) | (subX & fractionMask);
+            subY = (romFinalSubY & ~fractionMask) | (subY & fractionMask);
+        }
+    }
+
     /** Copies only hLinkFinalPositionX back over a side-view pot push. */
     void restoreRomFinalPositionX() {
         if (hasRomFinalPosition) {
@@ -312,7 +321,8 @@ final class LinkPosition {
 
     /** ROM hLinkFinalPositionX captured before the current Link update. */
     int romFinalPositionX() {
-        return hasRomFinalPosition ? (romFinalSubX >> Link.SUB_PIXEL_SHIFT) + 0x08 : romEntityX();
+        int x = hasRomFinalPosition ? (romFinalSubX >> Link.SUB_PIXEL_SHIFT) + 0x08 : romEntityX();
+        return x & 0xFF;
     }
 
     /** Mirrors ClearLinkPositionIncrement for handlers that clear HRAM speed bytes. */

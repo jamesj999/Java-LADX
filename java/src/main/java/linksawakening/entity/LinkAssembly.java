@@ -121,7 +121,6 @@ final class LinkAssembly {
         linkAirborneDependencies.linkSideView = linkSideView;
         linkAirborneDependencies.linkSignals = linkSignals;
         linkAirborneDependencies.linkStateMachine = linkStateMachine;
-        linkAirborneDependencies.linkSwimming = linkSwimming;
         linkAirborne.bind(new LinkAirborne(linkAirborneDependencies));
         LinkSwimming.Dependencies linkSwimmingDependencies = new LinkSwimming.Dependencies();
         linkSwimmingDependencies.linkAirborne = linkAirborne;

@@ -44,6 +44,8 @@ public interface LinkPositionRole {
 
     void restoreRomFinalPosition();
 
+    void restoreRomFinalPositionPixels();
+
     void restoreRomFinalPositionX();
 
     void clearRomPositionIncrement();

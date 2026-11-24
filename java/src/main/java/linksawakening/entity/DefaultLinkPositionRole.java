@@ -3,9 +3,11 @@ package linksawakening.entity;
 /** Delegates position operations to state owners used by ROM {@code ComputeLinkPosition}. */
 final class DefaultLinkPositionRole implements LinkPositionRole {
     private final LinkMotion linkMotion;
+    private final LinkDamage linkDamage;
 
     DefaultLinkPositionRole(LinkAssembly assembly) {
         linkMotion = assembly.linkMotion.get();
+        linkDamage = assembly.linkDamage.get();
     }
 
     @Override
@@ -114,6 +116,11 @@ final class DefaultLinkPositionRole implements LinkPositionRole {
     }
 
     @Override
+    public void restoreRomFinalPositionPixels() {
+        linkMotion.position().restoreRomFinalPositionPixels();
+    }
+
+    @Override
     public void restoreRomFinalPositionX() {
         linkMotion.position().restoreRomFinalPositionX();
     }
@@ -121,6 +128,7 @@ final class DefaultLinkPositionRole implements LinkPositionRole {
     @Override
     public void clearRomPositionIncrement() {
         linkMotion.position().clearRomPositionIncrement();
+        linkDamage.clearRecoilSpeed();
     }
 
     @Override

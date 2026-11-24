@@ -116,50 +116,61 @@ final class LinkPitFall {
     }
 
     void enterPitGroundState() {
-        if (groundStatus != GroundStatus.PIT) {
-            pitSlippingCounter = 0;
-            OverworldCollision.PitCell pit = linkServices
-                    .get()
-                    .collision
-                    .normalPitUnderLink(
-                            linkMotion.get().position().pixelX(),
-                            linkMotion.get().position().pixelY());
-            if (pit.present()) {
-                pitSlipTargetTopLeftX = pit.targetTopLeftX();
-                pitSlipTargetTopLeftY = pit.targetTopLeftY();
-                pitSlipPhysicsFlag = pit.physicsFlag();
-                hasPitSlipTarget = true;
-            }
+        OverworldCollision.PitCell pit = linkServices
+                .get()
+                .collision
+                .normalPitUnderLink(
+                        linkMotion.get().position().pixelX(),
+                        linkMotion.get().position().pixelY());
+        hasPitSlipTarget = pit.present();
+        if (hasPitSlipTarget) {
+            pitSlipTargetTopLeftX = pit.targetTopLeftX();
+            pitSlipTargetTopLeftY = pit.targetTopLeftY();
+            pitSlipPhysicsFlag = pit.physicsFlag();
         }
         groundStatus = GroundStatus.PIT;
     }
 
-    void slipTowardPitCenter() {
+    void resetSlippingOnDefaultGround(int slowWalkingSpeed, int itemUsageContext) {
+        if (pitSlippingCounter == 0) return;
+        var position = linkMotion.get().position();
+        int physics =
+                linkServices.get().collision.objectPhysicsFlagAtPoint(position.romEntityX(), position.romEntityY() - 4);
+        // Only the shared default ground handler clears wPitSlippingCounter ($02:77A2).
+        if (PhysicsFlags.reachesDefaultLinkGroundPhysics(physics, false, slowWalkingSpeed, itemUsageContext)) {
+            clearSlippingCounter();
+        }
+    }
+
+    void clearSlippingCounter() {
+        pitSlippingCounter = 0;
+    }
+
+    boolean allowsInputMovement(int frame) {
+        // $02:4497..44A5. Movement slows further after 24 consecutive pit updates.
+        return (frame & (pitSlippingCounter < 0x18 ? 1 : 7)) == 0;
+    }
+
+    void slipTowardPitCenter(int frame) {
         if (!hasPitSlipTarget) {
             groundStatus = GroundStatus.NORMAL;
             return;
         }
 
-        pitSlippingCounter = pitSlippingCounter + 1;
-        if ((pitSlippingCounter & 0x03) != 0) {
+        pitSlippingCounter = (pitSlippingCounter + 1) & 0xFF;
+        if ((frame & 0x03) != 0) {
             return;
         }
 
         int x = linkMotion.get().position().pixelX();
         int y = linkMotion.get().position().pixelY();
-        if (x < pitSlipTargetTopLeftX) {
-            linkMotion.get().position().subX(linkMotion.get().position().subX() + (1 << Link.SUB_PIXEL_SHIFT));
-        } else if (x > pitSlipTargetTopLeftX) {
-            linkMotion.get().position().subX(linkMotion.get().position().subX() - (1 << Link.SUB_PIXEL_SHIFT));
-        }
-        if (y < pitSlipTargetTopLeftY) {
-            linkMotion.get().position().subY(linkMotion.get().position().subY() + (1 << Link.SUB_PIXEL_SHIFT));
-        } else if (y > pitSlipTargetTopLeftY) {
-            linkMotion.get().position().subY(linkMotion.get().position().subY() - (1 << Link.SUB_PIXEL_SHIFT));
-        }
-
-        if (Math.abs(linkMotion.get().position().pixelX() - pitSlipTargetTopLeftX) <= 1
-                && Math.abs(linkMotion.get().position().pixelY() - pitSlipTargetTopLeftY) <= 1) {
+        // $02:7662..76A2. Equality moves left on X and down on Y.
+        int stepX = x < pitSlipTargetTopLeftX ? 1 : -1;
+        int stepY = y <= pitSlipTargetTopLeftY ? 1 : -1;
+        var position = linkMotion.get().position();
+        position.subX(position.subX() + (stepX << Link.SUB_PIXEL_SHIFT));
+        position.subY(position.subY() + (stepY << Link.SUB_PIXEL_SHIFT));
+        if (((position.pixelX() + 2) & 0x0F) < 4 && ((position.pixelY() + 2) & 0x0F) < 4) {
             startPitFall();
         }
     }
@@ -170,6 +181,7 @@ final class LinkPitFall {
 
     void startPitFall(boolean slipping) {
         // $02:7644 routes $50 and $51 through the same slip/fall path.
+        boolean startsFall = !fallingIntoPit;
         groundStatus = GroundStatus.PIT;
         fallingIntoPit = true;
         elevation.airborne(false);
@@ -181,7 +193,8 @@ final class LinkPitFall {
         linkAnimationState.get().movingThisFrame = false;
         if (slipping)
             linkMotion.get().position().subY(linkMotion.get().position().subY() + (3 << Link.SUB_PIXEL_SHIFT));
-        linkServices.get().soundSink.play(GameplaySoundEvent.PIT_FALL);
+        // Two landing-frame pulls can write the same single wave-SFX register.
+        if (startsFall) linkServices.get().soundSink.play(GameplaySoundEvent.PIT_FALL);
     }
 
     void tickPitFall() {
@@ -193,7 +206,6 @@ final class LinkPitFall {
         fallingIntoPit = false;
         groundStatus = GroundStatus.NORMAL;
         hasPitSlipTarget = false;
-        pitSlippingCounter = 0;
         fallingFrameCounter = 0;
         if (overworldWarpHoleRoom) {
             warpHoleCharge = 1;

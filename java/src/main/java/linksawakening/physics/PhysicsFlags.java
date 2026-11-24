@@ -86,6 +86,23 @@ public final class PhysicsFlags {
         return flag == SHALLOW_WATER || flag == GRASS;
     }
 
+    /** Whether the physics dispatch in $02:75ED–7757 reaches the default handler at $77A2. */
+    public static boolean reachesDefaultLinkGroundPhysics(
+            int physics, boolean bypassEntry, int slowWalkingSpeed, int itemUsageContext) {
+        if (!bypassEntry
+                && (physics == CAT_SPIKES
+                        || (physics >= CAT_CONVEYOR && physics != 0xFF)
+                        || physics == NORMAL_PIT
+                        || physics == PIT_WARP)) {
+            return false;
+        }
+        if (physics == DEEP_WATER || physics == LAVA) {
+            // The current handler ($76F1) takes precedence over the raft branch ($76F9).
+            return slowWalkingSpeed == 0 && itemUsageContext == 0x80;
+        }
+        return physics != GRASS;
+    }
+
     public static boolean isNormalPit(int flag) {
         return flag == NORMAL_PIT;
     }

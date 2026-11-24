@@ -77,9 +77,31 @@ final class LinkStateMachine {
         if (advanceWarpHoleCharge()) return;
         if (!advanceSpecialMotion()) return;
         if (!advanceHazardMotion()) return;
-        if (!prepareGroundMotion()) return;
-        resolveSpeeds();
-        applyMotion();
+        if (prepareGroundMotion()) {
+            resolveSpeeds();
+            applyMotion();
+        }
+        if (!linkAirborne.get().elevation().airborne()) applyPitGroundPhysics();
+    }
+
+    void applyPitGroundPhysics() {
+        var pit = linkAirborne.get().pit();
+        // A landing pull can start a fall before the ordinary ground pass.
+        // $02:75B6 still samples a normal or warp pit on that same frame.
+        boolean fallingBeforeSample = pit.fallingIntoPit();
+        if (fallingBeforeSample && !pit.linkOverPit()) return;
+        pit.refreshGroundStatus();
+        if (pit.groundStatus() != GroundStatus.PIT) {
+            pit.resetSlippingOnDefaultGround(status.slowWalkingSpeed(), status.itemUsageContext());
+            return;
+        }
+        // $02:764C and $02:76AF call ResetSpinAttack, which falls through to ResetPegasusBoots.
+        if (linkServices.get().itemRegistry.item(linksawakening.state.InventoryItem.SWORD.romValue())
+                instanceof linksawakening.equipment.Sword sword) {
+            sword.resetSpinAttack();
+        }
+        dash.resetPegasusBoots();
+        if (!pit.fallingIntoPit() || fallingBeforeSample) pit.slipTowardPitCenter(groundFrame());
     }
 
     private static final int[] WARP_HOLE_DIRECTIONS = {0, 3, 1, 2};
@@ -96,9 +118,7 @@ final class LinkStateMachine {
             linkServices.get().soundSink.play(linksawakening.gameplay.GameplaySoundEvent.OVERWORLD_WARP_HOLE);
         }
         if (frame >= 67) {
-            int worldFrame = linkGroundMotion.get().worldMotionFrame;
-            if (worldFrame < 0) worldFrame = status.frameCounter();
-            linkAnimationState.get().direction = Direction.fromRom(WARP_HOLE_DIRECTIONS[(worldFrame >>> 2) & 3]);
+            linkAnimationState.get().direction = Direction.fromRom(WARP_HOLE_DIRECTIONS[(groundFrame() >>> 2) & 3]);
             airborne.elevation().zSubPixels(Math.min(0x78, (frame - 66) * 4) << Link.SUB_PIXEL_SHIFT);
         }
         return true;
@@ -285,7 +305,7 @@ final class LinkStateMachine {
         }
 
         if (linkDamage.get().hasRecoil()) {
-            linkDamage.get().tickRecoil();
+            linkDamage.get().tickRecoil(linkControls.get().accessBuildJoypadMask());
             linkAirborne.get().tickJump();
             return false;
         }
@@ -308,19 +328,14 @@ final class LinkStateMachine {
             linkAnimationState.get().direction = Direction.fromJava(newDirection);
         }
         dash.updatePegasusBootsUse();
-        if (!linkAirborne.get().elevation().airborne()
-                && linkAirborne.get().pit().groundStatus() != GroundStatus.PIT) {
-            linkAirborne.get().pit().refreshGroundStatus();
+        if (!linkAirborne.get().elevation().airborne()) {
+            linkServices
+                    .get()
+                    .collision
+                    .refreshLinkGroundInteraction(
+                            linkMotion.get().position().pixelX(),
+                            linkMotion.get().position().pixelY());
             linkAirborne.get().pit().updateLastSafePositionIfPossible();
-        }
-
-        if (linkAirborne.get().pit().fallingIntoPit()) return false;
-        if (linkAirborne.get().pit().groundStatus() == GroundStatus.PIT) {
-            linkAnimationState.get().movingThisFrame = false;
-            linkAnimationState.get().walkTickCounter = 0;
-            linkAnimationState.get().walkFrame = 0;
-            linkAirborne.get().pit().slipTowardPitCenter();
-            return false;
         }
 
         // Equipped items (sword swing, etc.) can block motion for a window of
@@ -346,14 +361,23 @@ final class LinkStateMachine {
 
     private void resolveSpeeds() { // Source $43E6/$4440/$445F/$4503. The grass OAM flip depends on
         // this byte, including steps suppressed by slow ground or a wall.
-        if (linkAirborne.get().elevation().airborne()) linkAnimationState.get().romConsecutiveStepsCount = 0xFF;
-        else if (linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots())
-            linkAnimationState.get().romConsecutiveStepsCount =
-                    (linkAnimationState.get().romConsecutiveStepsCount + 2) & 0xFF;
-        else if (frame.mask != 0)
-            linkAnimationState.get().romConsecutiveStepsCount =
-                    (linkAnimationState.get().romConsecutiveStepsCount + 1) & 0xFF;
-        else if (dash.pegasusBootsChargeMeter() == 0) linkAnimationState.get().romConsecutiveStepsCount = 7;
+        var animation = linkAnimationState.get();
+        if (linkAirborne.get().elevation().airborne()) {
+            // Walking animation reads the preceding byte before airborne gravity writes $FF.
+            animation.walkFrame = (animation.romConsecutiveStepsCount >>> 3) & 1;
+            animation.romConsecutiveStepsCount = 0xFF;
+        } else {
+            if (linkServices.get().playerState.equipmentLevels().runningWithPegasusBoots()) {
+                animation.romConsecutiveStepsCount = (animation.romConsecutiveStepsCount + 2) & 0xFF;
+            } else if (frame.mask != 0) {
+                animation.romConsecutiveStepsCount = (animation.romConsecutiveStepsCount + 1) & 0xFF;
+            } else if (dash.pegasusBootsChargeMeter() == 0) {
+                animation.romConsecutiveStepsCount = 7;
+            }
+            // $00:1A50 uses bit 3. From rest (7), the first step already selects pose 1.
+            animation.walkFrame = (animation.romConsecutiveStepsCount >>> 3) & 1;
+            animation.walkTickCounter = frame.mask == 0 ? 0 : animation.romConsecutiveStepsCount & 7;
+        }
 
         if (linkAirborne.get().directionalLedgeJumpMotionLocked()) {
             frame.speedX = linkAirborne.get().directionalLedgeJumpSpeedX();
@@ -410,6 +434,11 @@ final class LinkStateMachine {
                 : linkAirborne.get().elevation().airborne()
                         || linkGroundMotion.get().accessShouldApplyGroundMotion();
 
+        if (linkAirborne.get().pit().groundStatus() == GroundStatus.PIT
+                && !linkAirborne.get().elevation().airborne()) {
+            applyGroundMotion &= linkAirborne.get().pit().allowsInputMovement(groundFrame());
+        }
+
         if (applyGroundMotion
                 && frame.speedX != 0
                 && (!bedJumpFrame || linkAirborne.get().elevation().airborne())) {
@@ -433,17 +462,11 @@ final class LinkStateMachine {
                 linkAirborne.get().pit().updateLastSafePositionIfPossible();
             }
         }
+    }
 
-        if (linkAnimationState.get().movingThisFrame) {
-            linkAnimationState.get().walkTickCounter++;
-            if (linkAnimationState.get().walkTickCounter >= LinkRomConstants.WALK_FRAME_TICKS) {
-                linkAnimationState.get().walkTickCounter = 0;
-                linkAnimationState.get().walkFrame ^= 1;
-            }
-        } else {
-            linkAnimationState.get().walkTickCounter = 0;
-            linkAnimationState.get().walkFrame = 0;
-        }
+    private int groundFrame() {
+        int worldFrame = linkGroundMotion.get().worldMotionFrame;
+        return worldFrame >= 0 ? worldFrame : status.frameCounter();
     }
 
     private static final class Frame {

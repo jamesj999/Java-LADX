@@ -101,6 +101,22 @@ final class LinkSideViewMotionTest {
     }
 
     @Test
+    void goombaBounceKeepsHorizontalMotionAndOnlyReplacesVerticalSpeed() throws Exception {
+        Link link = room(floor(), 80, 48);
+        input.onKeyEvent(config.rightKey(), GLFW_PRESS);
+        link.motion().update();
+        int vx = link.position().romSpeedX();
+        assertTrue(vx > 0);
+        link.airborne().bounceFromGoomba();
+        assertEquals(vx, link.position().romSpeedX());
+        assertEquals(0xF0, link.position().romSpeedY());
+        int y = link.position().romEntityY();
+        link.motion().update();
+        assertTrue(link.position().romEntityY() < y);
+        assertTrue(link.position().romSpeedX() > 0);
+    }
+
+    @Test
     void featherMovesScreenYAndReturnsToTheFloor() throws Exception {
         player.inventory().setItemA(InventoryItem.ROCS_FEATHER.romValue());
         Link link = room(floor(), 80, 112);

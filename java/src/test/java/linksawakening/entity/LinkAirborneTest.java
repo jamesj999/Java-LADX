@@ -29,7 +29,7 @@ final class LinkAirborneTest {
         Link link = TestLinks.link().build();
         link.position().setPixelPosition(64, 64);
         link.linkAirborne.pit().groundStatus(GroundStatus.PIT);
-        link.linkAirborne.pit().slipTowardPitCenter();
+        link.linkAirborne.pit().slipTowardPitCenter(4);
         assertEquals(GroundStatus.NORMAL, link.linkAirborne.pit().groundStatus());
         assertEquals(64, link.position().pixelX());
         assertEquals(64, link.position().pixelY());

@@ -22,6 +22,11 @@ final class DefaultLinkStatusRole implements LinkStatusRole {
     }
 
     @Override
+    public boolean ignoringContactCollisions() {
+        return linkDamage.hasRecoil();
+    }
+
+    @Override
     public void setNormalRecoilRoomBoundaries(boolean normalBoundaries) {
         linkDamage.accessSetNormalRecoilRoomBoundaries(normalBoundaries);
     }

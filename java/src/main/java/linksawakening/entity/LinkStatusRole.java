@@ -6,6 +6,8 @@ import linksawakening.entity.Link.WaterSplash;
 public interface LinkStatusRole {
     void setCollisionIgnoreFrames(int frames);
 
+    boolean ignoringContactCollisions();
+
     void setNormalRecoilRoomBoundaries(boolean normalBoundaries);
 
     boolean recoveryBlocksInput();

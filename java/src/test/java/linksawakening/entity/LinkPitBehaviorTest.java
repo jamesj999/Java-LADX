@@ -48,6 +48,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
                 .sounds(soundSink)
                 .build();
         link.position().setPixelPosition(0x20, 0x20);
+        link.linkAirborne.pit().refreshGroundStatus();
 
         runUntilPitFallStarts(link);
         for (int i = 0; i < 8; i++) {
@@ -77,6 +78,7 @@ final class LinkPitBehaviorTest extends LinkFixture {
                 .items(new ItemRegistry())
                 .build();
         link.position().setPixelPosition(0x20, 0x20);
+        link.linkAirborne.pit().refreshGroundStatus();
 
         runUntilPitFallStarts(link);
         int fallX = link.position().pixelX();
@@ -97,7 +99,117 @@ final class LinkPitBehaviorTest extends LinkFixture {
     }
 
     @Test
-    void pitSlipCentersJavaTopLeftAtPitCellOriginBeforeFallNudge() throws Exception {
+    void canStepBackOffPitEdgeBeforeTheNextPull() throws Exception {
+        InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        Link link = pitLink(config);
+        link.position().setPixelPosition(24, 30); // ROM (32,46), left edge of cell $22
+        link.linkAirborne.pit().refreshGroundStatus();
+        link.linkServices.inputState.onKeyEvent(config.leftKey(), GLFW_PRESS);
+
+        link.motion().setGelClinging(false, 1);
+        link.motion().update();
+        assertEquals(24, link.position().pixelX());
+        assertEquals(0, link.airborne().romMotionState());
+        assertEquals(
+                linksawakening.state.GroundStatus.PIT, link.linkAirborne.pit().groundStatus());
+
+        link.motion().setGelClinging(false, 2);
+        link.motion().update();
+        assertEquals(23, link.position().pixelX());
+        assertEquals(30, link.position().pixelY());
+        assertEquals(
+                linksawakening.state.GroundStatus.NORMAL,
+                link.linkAirborne.pit().groundStatus());
+
+        link.motion().setGelClinging(false, 3);
+        link.motion().update();
+        assertEquals(22, link.position().pixelX());
+    }
+
+    @Test
+    void featherLandingAppliesTwoPitPullsAndCanStillEscape() throws Exception {
+        InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        Link link = pitLink(config);
+        landOnPit(link, 32, 39);
+
+        assertEquals(34, link.position().romEntityX());
+        assertEquals(41, link.position().romEntityY());
+        assertFalse(link.airborne().isFallingIntoPit());
+
+        link.linkServices.inputState.onKeyEvent(config.leftKey(), GLFW_PRESS);
+        for (int frame = 1; frame <= 10; frame++) {
+            link.motion().setGelClinging(false, frame);
+            link.motion().update();
+        }
+        assertEquals(29, link.position().romEntityX());
+        assertFalse(link.airborne().isFallingIntoPit());
+    }
+
+    @Test
+    void secondPitPullOnFeatherLandingCanStartTheFall() throws Exception {
+        Link link = pitLink(new InputConfig(1, 2, 3, 4, 5, 6, 7));
+        landOnPit(link, 36, 44);
+
+        assertEquals(38, link.position().romEntityX());
+        assertEquals(49, link.position().romEntityY());
+        assertTrue(link.airborne().isFallingIntoPit());
+    }
+
+    @Test
+    void ordinaryPitPullStillRunsWhenTheLandingPullStartsTheFall() throws Exception {
+        Link link = pitLink(new InputConfig(1, 2, 3, 4, 5, 6, 7));
+        landOnPit(link, 39, 47);
+
+        assertEquals(39, link.position().romEntityX());
+        assertEquals(50, link.position().romEntityY());
+        assertTrue(link.airborne().isFallingIntoPit());
+    }
+
+    @Test
+    void grassKeepsPitSlippingThresholdUntilDefaultGroundClearsIt() throws Exception {
+        InputConfig config = new InputConfig(1, 2, 3, 4, 5, 6, 7);
+        Link link = pitLink(config);
+        int[] room = emptyRoomObjectsArea();
+        int row = ROOM_OBJECTS_BASE + 2 * ROOM_OBJECT_ROW_STRIDE;
+        room[row + 1] = OBJECT_TALL_GRASS;
+        room[row + 2] = OBJECT_PIT;
+        link.linkServices.collision.setRoom(room);
+        link.position().setPixelPosition(24, 23);
+        link.motion().setGelClinging(false, 1);
+        for (int i = 0; i < 24; i++) link.motion().update();
+
+        link.position().setPixelPosition(23, 23); // grass immediately west of the pit
+        link.motion().update();
+        link.position().setPixelPosition(24, 23);
+        link.motion().update();
+        link.linkServices.inputState.onKeyEvent(config.rightKey(), GLFW_PRESS);
+        link.motion().setGelClinging(false, 2);
+        link.motion().update();
+        assertEquals(32, link.position().romEntityX());
+
+        link.linkServices.inputState.onKeyEvent(config.rightKey(), GLFW_RELEASE);
+        link.position().setPixelPosition(24, 0); // ordinary floor
+        link.motion().update();
+        link.position().setPixelPosition(24, 23);
+        link.motion().setGelClinging(false, 1);
+        link.motion().update();
+        link.linkServices.inputState.onKeyEvent(config.rightKey(), GLFW_PRESS);
+        link.motion().setGelClinging(false, 2);
+        link.motion().update();
+        assertEquals(33, link.position().romEntityX());
+    }
+
+    private static void landOnPit(Link link, int x, int y) {
+        link.position().setPixelPosition(x - 8, y - 16);
+        link.linkAirborne.elevation().airborne(true);
+        link.linkAirborne.elevation().zSubPixels(16);
+        link.linkAirborne.elevation().zVelocity(-16);
+        link.motion().setGelClinging(false, 0);
+        link.motion().update();
+    }
+
+    @Test
+    void pitCenterEqualityNudgesLeftAndDownBeforeTheFall() throws Exception {
         byte[] rom = loadRom();
         RomTables romTables = RomTables.load(linksawakening.rom.Rom.unchecked(rom));
         InputConfig inputConfig = new InputConfig(1, 2, 3, 4, 5, 6, 7);
@@ -121,8 +233,8 @@ final class LinkPitBehaviorTest extends LinkFixture {
         }
 
         assertTrue(link.airborne().isFallingIntoPit());
-        assertEquals(0x20, link.position().pixelX());
-        assertEquals(0x23, link.position().pixelY());
+        assertEquals(0x1F, link.position().pixelX());
+        assertEquals(0x24, link.position().pixelY());
     }
 
     @Test

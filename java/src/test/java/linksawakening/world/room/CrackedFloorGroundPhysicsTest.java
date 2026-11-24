@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.gpu.GPU;
 import linksawakening.physics.OverworldCollision;
+import linksawakening.physics.PhysicsFlags;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomTables;
 import linksawakening.testing.RequiresRom;
@@ -284,17 +285,17 @@ class CrackedFloorGroundPhysicsTest {
     @Test
     void defaultPathSelectionMatches75EE763A76D276E17757And779F() {
         for (int physics : new int[] {0, 1, 2, 3, 4, 5, 8, 9, 0xFF}) {
-            assertTrue(RoomObjectMutations.reachesDefaultGroundPhysics(physics, false, 0, 0), "physics=" + physics);
+            assertTrue(PhysicsFlags.reachesDefaultLinkGroundPhysics(physics, false, 0, 0), "physics=" + physics);
         }
         for (int physics : new int[] {6, 7, 0x0B, 0x50, 0x51, 0xE0, 0xF0, 0xF3}) {
-            assertFalse(RoomObjectMutations.reachesDefaultGroundPhysics(physics, false, 0, 0), "physics=" + physics);
+            assertFalse(PhysicsFlags.reachesDefaultLinkGroundPhysics(physics, false, 0, 0), "physics=" + physics);
         }
-        assertTrue(RoomObjectMutations.reachesDefaultGroundPhysics(7, false, 0, 0x80)); // raft $76F9
-        assertFalse(RoomObjectMutations.reachesDefaultGroundPhysics(7, false, 1, 0x80)); // $76F1 first
+        assertTrue(PhysicsFlags.reachesDefaultLinkGroundPhysics(7, false, 0, 0x80)); // raft $76F9
+        assertFalse(PhysicsFlags.reachesDefaultLinkGroundPhysics(7, false, 1, 0x80)); // $76F1 first
         // $75C4 bypasses the pit/spikes/conveyor dispatch and uses cached physics at $76C0.
-        assertTrue(RoomObjectMutations.reachesDefaultGroundPhysics(0x50, true, 0, 0));
-        assertTrue(RoomObjectMutations.reachesDefaultGroundPhysics(0xE0, true, 0, 0));
-        assertTrue(RoomObjectMutations.reachesDefaultGroundPhysics(0xF0, true, 0, 0));
+        assertTrue(PhysicsFlags.reachesDefaultLinkGroundPhysics(0x50, true, 0, 0));
+        assertTrue(PhysicsFlags.reachesDefaultLinkGroundPhysics(0xE0, true, 0, 0));
+        assertTrue(PhysicsFlags.reachesDefaultLinkGroundPhysics(0xF0, true, 0, 0));
     }
 
     private static int objectWithPhysics(RoomSession session, int physics) {
