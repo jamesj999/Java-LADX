@@ -14,6 +14,40 @@ import org.junit.jupiter.api.Test;
 final class EntityRoomLoaderTest {
 
     @Test
+    void scrollingIntoF1UsesFreeSlotsAndKeepsTheDefinitionOrderForPersistence() throws Exception {
+        var loader = new EntityRoomLoader(EntityRomTestData.view(loadRom()));
+        var table = EntityRoomLoader.RoomTable.OVERWORLD;
+        // F0 still occupies slots 0, 3 and 4 during the fresh beach approach.
+        var incoming = loader.load(table, 0xF1, 0, -1, null, false, 0x19).loadedEntities();
+        assertEquals(List.of(1, 2, 5), incoming.stream().map(RoomEntity::slot).toList());
+        assertEquals(List.of(9, 14, 14), incoming.stream().map(RoomEntity::type).toList());
+        assertEquals(
+                List.of(0, 1, 2),
+                incoming.stream().map(RoomEntity::sourceLoadOrder).toList());
+
+        var cleared = loader.load(table, 0xF1, 1, -1, null, false, 0x19).loadedEntities();
+        assertEquals(List.of(1, 2), cleared.stream().map(RoomEntity::slot).toList());
+        assertEquals(
+                List.of(1, 2), cleared.stream().map(RoomEntity::sourceLoadOrder).toList());
+        assertTrue(loader.load(table, 0xF1, 0, -1, null, false, 0xFFFF)
+                .loadedEntities()
+                .isEmpty());
+    }
+
+    @Test
+    void initTimeUnloadsLeaveHolesInTheNewRoom() throws Exception {
+        var loader = new EntityRoomLoader(EntityRomTestData.view(loadRom()));
+        byte[] status = new byte[256];
+        status[0xF2] = 0x30;
+        // Owl event and sword pickup both unload at init; the Urchin already has its slot.
+        var remaining = loader.load(EntityRoomLoader.RoomTable.OVERWORLD, 0xF2, 0, -1, status)
+                .loadedEntities();
+        assertEquals(1, remaining.size());
+        assertEquals(0xC5, remaining.getFirst().type());
+        assertEquals(2, remaining.getFirst().slot());
+    }
+
+    @Test
     void roomDropsAreInvisibleBeforeTheFirstSimulationTick() throws IOException {
         byte[] rom;
         try (var input = linksawakening.testing.TestRom.open()) {

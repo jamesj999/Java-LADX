@@ -90,6 +90,19 @@ public final class EntityRoomLoader {
             int mapId, /* Optional saved-room flags; absence bypasses persistence unload rules. */
             byte[] roomStatusTable,
             boolean hasBirdKey) {
+        return load(table, roomId, clearedMask, mapId, roomStatusTable, hasBirdKey, 0);
+    }
+
+    /** Outgoing slots are still occupied when an adjacent room's definitions load at $02:7ABD. */
+    public RoomEntitySnapshot load(
+            RoomTable table,
+            int roomId,
+            int clearedMask,
+            int mapId,
+            byte[] roomStatusTable,
+            boolean hasBirdKey,
+            int occupiedSlots) {
+        if ((occupiedSlots & ~0xFFFF) != 0) throw new IllegalArgumentException("Occupied slots must fit 16 bits");
         if (table == null) {
             throw new IllegalArgumentException("Room entity table cannot be null");
         }
@@ -128,8 +141,13 @@ public final class EntityRoomLoader {
             requireRange(streamOffset, 1, "entity stream type");
             int type = romData.u8(RomAddress.fromOffset(streamOffset++));
             boolean cleared = sourceLoadOrder < 8 && (clearedMask & (1 << sourceLoadOrder)) != 0;
-            boolean unloadedByInitialization = shouldUnloadAtInit(table, roomId, type, roomStatusTable, hasBirdKey);
-            if (!cleared && !unloadedByInitialization && loadedSlot < MAX_ENTITIES) {
+            if (cleared) {
+                sourceLoadOrder++;
+                continue;
+            }
+            // $00:389B scans for a disabled slot. EntityInit may free that slot on a later dispatch.
+            while (loadedSlot < MAX_ENTITIES && (occupiedSlots & (1 << loadedSlot)) != 0) loadedSlot++;
+            if (loadedSlot < MAX_ENTITIES && !shouldUnloadAtInit(table, roomId, type, roomStatusTable, hasBirdKey)) {
                 int x = (location & 0x0F) * 0x10 + 0x08;
                 int y = (location & 0xF0) + 0x10;
                 int[] initializedPosition = applyInitialPositionTransform(table, roomId, type, x, y);
@@ -161,8 +179,8 @@ public final class EntityRoomLoader {
                                 initialZ,
                                 -1,
                                 false));
-                loadedSlot++;
             }
+            if (loadedSlot < MAX_ENTITIES) loadedSlot++;
             sourceLoadOrder++;
         }
 
