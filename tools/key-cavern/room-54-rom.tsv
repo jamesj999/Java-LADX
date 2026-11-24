@@ -1,0 +1,27 @@
+# PyBoy continuation after entrance.tsv.
+# buttons       frames  optional checkpoint
+up              52      stalfos-crystal
+right+a         18
+none            20
+right+a         18
+none            30      stalfos-defeated
+down            48
+left            54
+down+a          18
+none            20
+down+a          18
+none            50      second-key-dropped
+left            10
+up              32
+none            90      second-key
+down            38
+right           42
+down            106     returned-to-basement
+down            18
+right+a         40
+right           150     second-door-crossed
+up              17
+right+a         159
+down            83
+left            82
+down            75      upper-stairs

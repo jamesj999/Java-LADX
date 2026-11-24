@@ -1,0 +1,32 @@
+# Java continuation after entrance.tsv.
+# buttons       frames  optional checkpoint
+none            35
+right+a         17
+none            15
+right+a         18
+none            30
+right+a         20
+none            25
+up+a            26
+none            40      stalfos-defeated
+right+a         18
+none            15
+right+a         18
+none            50
+right           39
+up+a            18
+none            50      second-key-dropped
+left            80
+up              39
+none            90      second-key
+down            38
+right           42
+down            106     returned-to-basement
+down            18
+right+a         40
+right           150     second-door-crossed
+up              17
+right+a         159
+down            83
+left            68
+down            75      upper-stairs

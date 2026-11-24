@@ -1,0 +1,77 @@
+# Controls after direct room 02:52 setup with Sword on A and Bracelet on B.
+# buttons       frames  optional checkpoint
+up              36
+left            32
+down            12
+b               2
+b+up            12
+none            24      pot-held
+right           32
+up              42
+b               3
+none            30      shutter-open
+up              48      entrance-crossed
+none            40
+up              25
+a               12
+none            40
+a               30
+none            15
+a               25
+none            15
+a               25
+none            45
+up              14
+left+a          11
+none            24
+a               16
+none            60
+a               16
+none            50
+up              23
+right           32
+a               16
+none            60
+right           44      chest-revealed
+up              24
+a               12
+none            40
+right           8
+up              2
+a               12
+none            55      first-key
+b               4
+none            45
+b               4
+none            45
+b               4
+none            45
+b               4
+none            45
+b               4
+none            45
+down            12
+left            30
+up              84
+none            44      four-zols
+up              44
+a               15
+none            30
+up+a            16
+none            30
+a               15
+none            40
+up              15
+a               18
+none            30
+a               18
+none            50      zol-shutter-open
+up              145     north-room
+none            40
+up              170     stairs-room
+none            45
+left            17
+up              120     basement-warp
+left            24
+up+a            42
+up              100     key-door-crossed

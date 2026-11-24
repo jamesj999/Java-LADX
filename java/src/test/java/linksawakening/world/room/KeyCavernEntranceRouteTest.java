@@ -106,7 +106,7 @@ final class KeyCavernEntranceRouteTest {
                     link.position().romEntityY());
         }
         assertEquals(0, session.rooms().activeRoomOrNull().shutterDoorMask() & 1);
-        walkToAndCrossIndoorBoundary(coordinator, transition, scroll, collision, link, ScrollController.UP);
+        walkToAndCrossIndoorBoundary(session, coordinator, transition, scroll, collision, link, ScrollController.UP);
         assertEquals(0x51, session.rooms().currentRoomId());
         assertEquals(0x61, RoomDebugFixture.of(session).activeRoomEventForTest());
         assertEquals(0x0D, objectAt(session, 0x28));
@@ -128,7 +128,8 @@ final class KeyCavernEntranceRouteTest {
                                 false,
                                 0,
                                 true,
-                                new SwordBox(true, enemy.x(), 0x10, enemy.y(), 0x10),
+                                // This fixture targets the body. A broad weapon box also hits the Moblin's blade.
+                                new SwordBox(true, enemy.x() + 8, 1, enemy.y() + 8, 1),
                                 linksawakening.world.entity.EnemyAttackContext.standard()));
                 for (int tick = 0; tick < 0x60; tick++) {
                     tickInteractiveEntities(session, frame++, 0x48, 0x70);
@@ -160,7 +161,7 @@ final class KeyCavernEntranceRouteTest {
                 .tickEntities(
                         frame++, link.position().romEntityX(), link.position().romEntityY());
         assertEquals(1, session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
-        walkToAndCrossIndoorBoundary(coordinator, transition, scroll, collision, link, ScrollController.UP);
+        walkToAndCrossIndoorBoundary(session, coordinator, transition, scroll, collision, link, ScrollController.UP);
         assertEquals(0x4F, session.rooms().currentRoomId());
         assertEquals(0x21, RoomDebugFixture.of(session).activeRoomEventForTest());
         tickInteractiveEntities(
@@ -199,9 +200,9 @@ final class KeyCavernEntranceRouteTest {
                 0,
                 RoomDebugFixture.of(session).activeRoomEventForTest(),
                 session.rooms().activeRoomOrNull().entities().loadedEntities().toString());
-        walkToAndCrossIndoorBoundary(coordinator, transition, scroll, collision, link, ScrollController.UP);
+        walkToAndCrossIndoorBoundary(session, coordinator, transition, scroll, collision, link, ScrollController.UP);
         assertEquals(0x4E, session.rooms().currentRoomId());
-        walkToAndCrossIndoorBoundary(coordinator, transition, scroll, collision, link, ScrollController.UP);
+        walkToAndCrossIndoorBoundary(session, coordinator, transition, scroll, collision, link, ScrollController.UP);
         assertEquals(0x4C, session.rooms().currentRoomId());
         Warp stairs = session.rooms().activeRoomOrNull().warps().getFirst();
         assertEquals(0x56, stairs.destRoom());
@@ -237,7 +238,7 @@ final class KeyCavernEntranceRouteTest {
             tickInteractiveEntities(session, frame++, 0x48, 0x19);
         }
         assertEquals(0, session.dungeon().currentDungeonItemFlagsSnapshot()[DungeonItemState.SMALL_KEYS_INDEX]);
-        walkToAndCrossIndoorBoundary(coordinator, transition, scroll, collision, link, ScrollController.UP);
+        walkToAndCrossIndoorBoundary(session, coordinator, transition, scroll, collision, link, ScrollController.UP);
         assertEquals(0x54, session.rooms().currentRoomId());
         assertEquals(0x04, RoomDebugFixture.of(session).indoorRoomStatusForTest(0x02, 0x56) & 0x04);
         assertEquals(0x08, RoomDebugFixture.of(session).indoorRoomStatusForTest(0x02, 0x54) & 0x08);
