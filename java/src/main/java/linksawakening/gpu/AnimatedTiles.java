@@ -4,7 +4,7 @@ import linksawakening.rom.GbcBanks;
 import linksawakening.rom.Rom;
 import linksawakening.rom.RomSymbols;
 
-/** Stateful gameplay tile animation; counters intentionally survive room changes. */
+/** Gameplay tile animation with separate destination-room frame count and graphics data offset. */
 final class AnimatedTiles {
 
     private static final int MAP_COLOR_DUNGEON = 0xFF;
@@ -29,6 +29,10 @@ final class AnimatedTiles {
         this.target = target;
     }
 
+    public void resetFrameCountForRoomEntry() {
+        animatedTilesFrameCount = 0xFF;
+    }
+
     public int animatedTilesFrameCount() {
         return animatedTilesFrameCount;
     }
@@ -40,7 +44,8 @@ final class AnimatedTiles {
         copyAnimatedTilesFrame(romData, animatedTilesDataOffset);
     }
 
-    public void tickAnimatedTiles(Rom romData) {
+    /** Returns true on the ROM path through SkipTilesGroupAnimation, which uploads Link. */
+    public boolean tickAnimatedTiles(Rom romData) {
         animatedTilesFrameCount = (animatedTilesFrameCount + 1) & 0xFF;
 
         if (currentAnimatedTilesGroup == DUNGEON_TWO_ANIMATED_GROUP) {
@@ -56,14 +61,20 @@ final class AnimatedTiles {
                         ANIMATED_TILES_BASE_ADDR + 0x0300 + sourceOffset,
                         ANIMATED_TILES_FRAME_COUNT,
                         ANIMATED_TILES_FRAME_VRAM_INDEX);
+            } else {
+                return true;
             }
-            return;
+            return false;
         }
+
+        // Counter and photo groups have dedicated handlers before DrawLinkSprite.
+        if (currentAnimatedTilesGroup == 0x01) return (animatedTilesFrameCount & 7) != 0;
+        if (currentAnimatedTilesGroup == 0x11) return false;
 
         int newOffset = nextAnimatedTilesDataOffset(
                 currentAnimatedTilesGroup, animatedTilesFrameCount, animatedTilesDataOffset);
         if (newOffset < 0) {
-            return;
+            return true;
         }
         // Dungeon-1/lava index the ping-pong table directly; unlike the
         // linear groups they never write hAnimatedTilesDataOffset ($FFA7).
@@ -71,6 +82,7 @@ final class AnimatedTiles {
             animatedTilesDataOffset = newOffset;
         }
         copyAnimatedTilesFrame(romData, newOffset);
+        return false;
     }
 
     void stageAnimatedScrollingTiles(Rom romData, int mapId, int roomId) {

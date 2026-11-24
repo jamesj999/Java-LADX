@@ -28,6 +28,8 @@ public interface LinkAnimationRole {
 
     int romAnimationState();
 
+    void uploadBodyTiles();
+
     void showRomFallenPose();
 
     boolean dialogGotItemActive();

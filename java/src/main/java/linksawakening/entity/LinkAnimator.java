@@ -38,6 +38,8 @@ final class LinkAnimator {
     private int jumpAnimationFrame;
 
     private int pushingAnimationState = -1;
+    // ROM $20:54F5 uploads the four OBJ tiles and both half-flip attributes together.
+    private int uploadedBodyPose = -1;
 
     LinkAnimator(Dependencies dependencies) {
         dialogGotItemSequence = Objects.requireNonNull(dependencies.dialogGotItemSequence, "dialogGotItemSequence");
@@ -329,18 +331,35 @@ final class LinkAnimator {
         return pushingAnimationState;
     }
 
+    void uploadBodyTiles() {
+        int pose = resolveAnimationState();
+        if (pose != 0xFF) uploadedBodyPose = pose;
+    }
+
     void render(byte[] displayBuffer, int offsetX, int offsetY) {
         if (linkEntityEffects.get().likeLikeCaptured) return;
         int state = resolveAnimationState();
         if (state == 0xFF) return;
-        sprites.render(displayBuffer, offsetX, offsetY, state, renderY(), swordAcquisitionAnimationState >= 0);
+        sprites.render(
+                displayBuffer,
+                offsetX,
+                offsetY,
+                uploadedBodyPose >= 0 ? uploadedBodyPose : state,
+                renderY(),
+                swordAcquisitionAnimationState >= 0);
     }
 
     void submitOam(linksawakening.render.OamSink sink, int offsetX, int offsetY) {
         if (linkEntityEffects.get().likeLikeCaptured) return;
         int state = resolveAnimationState();
         if (state == 0xFF) return;
-        sprites.submitOam(sink, offsetX, offsetY, state, renderY(), swordAcquisitionAnimationState >= 0);
+        sprites.submitOam(
+                sink,
+                offsetX,
+                offsetY,
+                uploadedBodyPose >= 0 ? uploadedBodyPose : state,
+                renderY(),
+                swordAcquisitionAnimationState >= 0);
     }
 
     private int resolveNormalAnimation() {

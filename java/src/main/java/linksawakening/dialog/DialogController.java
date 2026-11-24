@@ -37,6 +37,7 @@ public final class DialogController {
     private int revealTicks;
     private int dialogCooldown;
     private boolean active;
+    private boolean tileTransferPending;
     private boolean interactionLocked;
     private boolean waitingForPageAdvance;
     private int pageWaitAge;
@@ -88,19 +89,30 @@ public final class DialogController {
         openPreformatted(text, linkY < LINK_Y_BOX_THRESHOLD ? BoxPosition.BOTTOM : BoxPosition.TOP);
     }
 
+    /** True while this frame is using the world draw-command buffer for dialog tiles. */
+    public boolean tileTransferPending() {
+        return tileTransferPending;
+    }
+
     public void tick() {
+        tileTransferPending = false;
         if (active && closingAge >= 0) {
-            if (++closingAge >= 8) finishClosing();
+            closingAge++;
+            tileTransferPending = closingAge >= 2 && closingAge <= 6;
+            if (closingAge >= 8) finishClosing();
             return;
         }
         if (active && romTimed && openingAge < 10) {
             openingAge++;
+            tileTransferPending = openingAge >= 5 && openingAge <= 9;
             return;
         }
         // DialogBeginScrolling shifts eight pixels; DialogFinishScrolling
         // waits eight frames, then shifts the remaining eight pixels.
         if (active && scrollAge >= 0) {
-            if (++scrollAge >= 10) scrollAge = -1;
+            scrollAge++;
+            tileTransferPending = scrollAge == 1 || scrollAge == 10;
+            if (scrollAge >= 10) scrollAge = -1;
             return;
         }
         if (active && waitingForPageAdvance) pageWaitAge++;
@@ -113,12 +125,15 @@ public final class DialogController {
             }
             return;
         }
+        // ClearLetterPixels and DialogDrawNextCharacterHandler occupy successive VBlanks.
+        tileTransferPending = romTimed;
         revealTicks++;
         if (revealTicks % 2 != 0) {
             return;
         }
         char revealed = charAtVisibleCell(pageStart, visibleCharactersOnPage);
         if (revealed == ASK_MARKER) {
+            tileTransferPending = false;
             enterChoicePrompt();
             return;
         }

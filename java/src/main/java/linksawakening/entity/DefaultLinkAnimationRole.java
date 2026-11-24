@@ -76,6 +76,11 @@ final class DefaultLinkAnimationRole implements LinkAnimationRole {
     }
 
     @Override
+    public void uploadBodyTiles() {
+        linkAnimator.uploadBodyTiles();
+    }
+
+    @Override
     public void showRomFallenPose() {
         linkAnimator.showRomFallenPose();
     }

@@ -54,6 +54,10 @@ public final class GPU {
         return vram.snapshotEntityTiles();
     }
 
+    public void resetFrameCountForRoomEntry() {
+        animatedTiles.resetFrameCountForRoomEntry();
+    }
+
     public int animatedTilesFrameCount() {
         return animatedTiles.animatedTilesFrameCount();
     }
@@ -62,8 +66,8 @@ public final class GPU {
         animatedTiles.loadAnimatedTilesGroup(rom, group);
     }
 
-    public void tickAnimatedTiles(Rom rom) {
-        animatedTiles.tickAnimatedTiles(rom);
+    public boolean tickAnimatedTiles(Rom rom) {
+        return animatedTiles.tickAnimatedTiles(rom);
     }
 
     // NpcTilesBankTable in bank0.asm:$2E6F, adjusted for the GBC banks used
