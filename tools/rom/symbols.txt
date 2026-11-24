@@ -7,6 +7,7 @@ NoiseSfxHandlersTable1
 NoiseSfxHandlersTable2
 OverworldObjectPhysicFlags
 Options1ForEntity
+PhysicsFlagsForEntity
 HitboxFlagsForEntity
 EntityCollisionPointsX
 EntityCollisionPointsY
@@ -102,6 +103,7 @@ DungeonFloorTilesPointers
 DungeonWallsTilesPointers
 DungeonItemsTilesPointers
 IndoorsTilesetsTable
+ColorDungeonTilesetsTable
 
 # GPU animation, VFX, and title sources.
 AnimatedTiles

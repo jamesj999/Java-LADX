@@ -9,6 +9,7 @@ public final class RomSymbols { private RomSymbols() {}
     public static final RomAddress NoiseSfxHandlersTable2 = new RomAddress(0x1F, 0x646C);
     public static final RomAddress OverworldObjectPhysicFlags = new RomAddress(0x08, 0x4AD4);
     public static final RomAddress Options1ForEntity = new RomAddress(0x03, 0x42F1);
+    public static final RomAddress PhysicsFlagsForEntity = new RomAddress(0x03, 0x4000);
     public static final RomAddress HitboxFlagsForEntity = new RomAddress(0x03, 0x40FB);
     public static final RomAddress EntityCollisionPointsX = new RomAddress(0x03, 0x785F);
     public static final RomAddress EntityCollisionPointsY = new RomAddress(0x03, 0x786F);
@@ -102,6 +103,7 @@ public final class RomSymbols { private RomSymbols() {}
     public static final RomAddress DungeonWallsTilesPointers = new RomAddress(0x20, 0x45A9);
     public static final RomAddress DungeonItemsTilesPointers = new RomAddress(0x20, 0x45CA);
     public static final RomAddress IndoorsTilesetsTable = new RomAddress(0x20, 0x6EB3);
+    public static final RomAddress ColorDungeonTilesetsTable = new RomAddress(0x20, 0x70B3);
     public static final RomAddress AnimatedTiles = new RomAddress(0x0C, 0x6A00);
     public static final RomAddress CharacterVfxTiles = new RomAddress(0x0C, 0x4200);
     public static final RomAddress TitleDXTilesCGB = new RomAddress(0x38, 0x5800);

@@ -4,13 +4,17 @@ public final class EntityPropertyTables {
     private static final int ENTITY_OPTIONS_TABLE_SIZE = 0x100;
     // Options1ForEntity: original loader length.
     private static final int ENTITY_OPTIONS1_LENGTH = 256;
+    // PhysicsFlagsForEntity ends at HitboxFlagsForEntity ($03:40FB).
+    private static final int ENTITY_PHYSICS_FLAGS_LENGTH = 0xFB;
     // HitboxFlagsForEntity: original loader length.
     private static final int ENTITY_HITBOX_FLAGS_LENGTH = 251;
     private final int[] entityOptions1;
     private final int[] entityHitboxFlags;
+    private final int[] entityPhysicsFlags;
 
     private EntityPropertyTables(Rom rom) {
         entityOptions1 = rom.u8Table(RomSymbols.Options1ForEntity, ENTITY_OPTIONS1_LENGTH);
+        entityPhysicsFlags = rom.u8Table(RomSymbols.PhysicsFlagsForEntity, ENTITY_PHYSICS_FLAGS_LENGTH);
         entityHitboxFlags = rom.u8Table(RomSymbols.HitboxFlagsForEntity, ENTITY_HITBOX_FLAGS_LENGTH);
     }
 
@@ -27,6 +31,14 @@ public final class EntityPropertyTables {
             return 0;
         }
         return entityOptions1[entityType];
+    }
+
+    /** Initial ROM {@code PhysicsFlagsForEntity[entityType]} before the init handler runs. */
+    public int entityPhysicsFlags(int entityType) {
+        if (entityType < 0 || entityType >= entityPhysicsFlags.length) {
+            return 0;
+        }
+        return entityPhysicsFlags[entityType];
     }
 
     /** ROM {@code HitboxFlagsForEntity[entityType]}. */

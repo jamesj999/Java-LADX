@@ -14,13 +14,14 @@ import linksawakening.testing.RequiresRom;
 import linksawakening.testing.TestRom;
 import org.junit.jupiter.api.Test;
 
-/** Captured from the original RomTables before splitting; signed values hash as sign-extended ints. */
+/** Digests of the decoded ROM tables. Signed values hash as sign-extended ints. */
 @RequiresRom
 class RomTableChecksumTest {
     private static final String EXPECTED =
             """
 physicsFlags=3b4c5c944bfc899c0b996547699d6f1f789b5c6ef893f6ffd51d48f819065a17
 entityOptions1=b4a7e90b4986ba4a8efc3e927ed22c652d2d1a842726c85cf4ace13716030935
+entityPhysicsFlags=6f1c54d1fd18e5e87a401c5fd6c3f83c620458ab014d2cb5d6e2b32099601a1b
 entityHitboxFlags=1c904db891f25d2dd80a0790a46b7320f575124c7971a31ba71ec6ad4cc50cd2
 entityCollisionPointsX=58e95b8db9c2877068f5dbe008dbfa206933aff96332b3ea2a1c9496965c3d8b
 entityCollisionPointsY=05384ab2d8bb45b49c3a8a3842de36f7145f7c091864ecf1e64e5aee8cbcb78a
