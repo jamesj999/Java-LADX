@@ -289,7 +289,7 @@ final class RoomDoorInteractions implements RoomDoors {
             loaded.contents().puzzles().pushBlockContactTicks(0);
             return false;
         }
-        var contact = probePushableBlockContact(loaded.contents(), linkPixelX, linkPixelY, direction);
+        var contact = countPushableBlockContacts(loaded.contents(), linkPixelX, linkPixelY, direction);
         int touchedLocation = contact.location();
         boolean keyholeBlockContact = contact.keyhole();
         if (touchedLocation < 0) {
@@ -298,7 +298,6 @@ final class RoomDoorInteractions implements RoomDoors {
             }
             return false;
         }
-        loaded.contents().puzzles().postIncrementPushBlockContactTicks();
         if (loaded.contents().puzzles().pushBlockContactTicks() < PUSH_BLOCK_CONTACT_TICKS) {
             return true;
         }
@@ -678,7 +677,7 @@ final class RoomDoorInteractions implements RoomDoors {
 
     private static final int BOSS_DOOR_LEFT_OBJECT = 0xA4;
 
-    private BlockContact probePushableBlockContact(
+    private BlockContact countPushableBlockContacts(
             RoomContents contents, int linkPixelX, int linkPixelY, int direction) {
         int touchedLocation = -1;
         boolean keyholeBlockContact = false;
@@ -689,7 +688,13 @@ final class RoomDoorInteractions implements RoomDoors {
             int object = dependencies.roomSessionViews().objectAtRoomLocation(contents.room(), location);
             if (object == OBJECT_PUSHABLE_BLOCK) {
                 touchedLocation = location;
-                break;
+                // $02:742F counts contacts, including both probes of the same tile.
+                contents.puzzles().postIncrementPushBlockContactTicks();
+                if (contents.puzzles().pushBlockContactTicks() == PUSH_BLOCK_CONTACT_TICKS) break;
+            } else if (dependencies.overworldCollision().objectPhysicsFlagAtPoint(point[0], point[1])
+                    == PhysicsFlags.NONE) {
+                // $02:6F63 to $02:7461 resets the counter on a clear probe.
+                contents.puzzles().pushBlockContactTicks(0);
             }
             keyholeBlockContact |= object == OBJECT_KEYHOLE_BLOCK;
         }

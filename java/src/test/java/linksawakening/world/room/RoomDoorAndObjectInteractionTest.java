@@ -136,25 +136,25 @@ final class RoomDoorAndObjectInteractionTest {
     }
 
     @Test
-    void tailCaveSingleBlockRequiresSixtyFourUninterruptedPushTicks() {
+    void tailCaveSingleBlockRequiresThirtyTwoFramesOfTwoProbeContact() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x00, 0x04);
         int blockIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x32;
         assertEquals(0xA7, session.rooms().activeRoomOrNull().roomObjectsArea()[blockIndex]);
 
-        for (int tick = 0; tick < 32; tick++) {
+        for (int tick = 0; tick < 16; tick++) {
             assertTrue(session.doors()
                     .tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08));
         }
         assertFalse(session.doors()
                 .tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x00));
-        for (int tick = 0; tick < 32; tick++) {
+        for (int tick = 0; tick < 16; tick++) {
             assertTrue(session.doors()
                     .tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08));
         }
         assertEquals(0xA7, session.rooms().activeRoomOrNull().roomObjectsArea()[blockIndex]);
 
-        for (int tick = 32; tick < 63; tick++) {
+        for (int tick = 16; tick < 31; tick++) {
             assertTrue(session.doors()
                     .tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08));
         }
@@ -166,7 +166,7 @@ final class RoomDoorAndObjectInteractionTest {
 
         RoomSession liveDispatch = newSession();
         liveDispatch.rooms().loadIndoor(0x00, 0x04);
-        for (int tick = 0; tick < 64; tick++) {
+        for (int tick = 0; tick < 32; tick++) {
             assertTrue(liveDispatch
                     .doors()
                     .tryInteractWithIndoorBlock(
@@ -192,7 +192,7 @@ final class RoomDoorAndObjectInteractionTest {
         // the source room-template floor remains in the active grid initially.
         assertEquals(0x0D, session.rooms().activeRoomOrNull().roomObjectsArea()[stairsIndex]);
 
-        for (int tick = 0; tick < 64; tick++) {
+        for (int tick = 0; tick < 32; tick++) {
             assertTrue(session.doors()
                     .tryPushIndoorBlock(0x25, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08));
         }
@@ -204,7 +204,7 @@ final class RoomDoorAndObjectInteractionTest {
         assertEquals(0xA6, session.rooms().activeRoomOrNull().roomObjectsArea()[firstDestinationIndex]);
         assertEquals(0xA7, RoomDebugFixture.of(session).activeRoomEventForTest());
 
-        for (int tick = 0; tick < 64; tick++) {
+        for (int tick = 0; tick < 32; tick++) {
             assertTrue(session.doors()
                     .tryPushIndoorBlock(0x5C, 0x28, Direction.fromJavaOrUnknown(Direction.LEFT.javaIndex()), 0x04));
         }
@@ -228,10 +228,22 @@ final class RoomDoorAndObjectInteractionTest {
     }
 
     @Test
+    void clearCollisionProbeResetsPushBlockContactEachFrame() {
+        RoomSession session = newSession();
+        session.rooms().loadIndoor(0x01, 0x2F);
+        int blockIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x36;
+
+        for (int frame = 0; frame < 80; frame++) {
+            assertTrue(session.doors().tryPushIndoorBlock(0x6B, 0x25, Direction.LEFT, 0x04));
+        }
+        assertEquals(0xA7, session.rooms().activeRoomOrNull().roomObjectsArea()[blockIndex]);
+    }
+
+    @Test
     void bottleGrottoRoom2fSettlementUsesFacingSideAndRejectsVerticalPushes() {
         RoomSession oppositeSide = newSession();
         oppositeSide.rooms().loadIndoor(0x01, 0x2F);
-        for (int tick = 0; tick < 64; tick++) {
+        for (int tick = 0; tick < 32; tick++) {
             assertTrue(oppositeSide
                     .doors()
                     .tryPushIndoorBlock(0x25, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08));
@@ -252,7 +264,7 @@ final class RoomDoorAndObjectInteractionTest {
 
         RoomSession vertical = newSession();
         vertical.rooms().loadIndoor(0x01, 0x2F);
-        for (int tick = 0; tick < 64; tick++) {
+        for (int tick = 0; tick < 32; tick++) {
             assertTrue(vertical.doors()
                     .tryPushIndoorBlock(0x2A, 0x38, Direction.fromJavaOrUnknown(Direction.UP.javaIndex()), 0x01));
         }
@@ -308,7 +320,7 @@ final class RoomDoorAndObjectInteractionTest {
     void movingBlockRestoresContactingLinkEvenInAirButNotDuringDialogue() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0, 4);
-        for (int tick = 0; tick < 64; tick++) {
+        for (int tick = 0; tick < 32; tick++) {
             session.doors()
                     .tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08);
         }
@@ -342,7 +354,7 @@ final class RoomDoorAndObjectInteractionTest {
         assertEquals(0x22, RoomDebugFixture.of(session).activeRoomEventForTest());
         assertNotEquals(0, session.rooms().activeRoomOrNull().shutterDoorMask());
 
-        for (int tick = 0; tick < 64; tick++) {
+        for (int tick = 0; tick < 32; tick++) {
             assertTrue(session.doors()
                     .tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08));
         }
@@ -408,7 +420,7 @@ final class RoomDoorAndObjectInteractionTest {
         int sourceIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x32;
         int destinationIndex = RoomConstants.ROOM_OBJECTS_BASE + 0x33;
         blocked.rooms().activeRoomOrNull().roomObjectsArea()[destinationIndex] = 0xA6;
-        for (int tick = 0; tick < 64; tick++) {
+        for (int tick = 0; tick < 32; tick++) {
             assertTrue(blocked.doors()
                     .tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08));
         }
@@ -439,7 +451,7 @@ final class RoomDoorAndObjectInteractionTest {
                 .replaceEntityRuntimeForTest(new RoomEntityRuntimeBuilder(new RoomEntitySnapshot(occupiedSlots))
                         .indoorRoom(true)
                         .build());
-        for (int tick = 0; tick < 64; tick++) {
+        for (int tick = 0; tick < 32; tick++) {
             assertTrue(full.doors()
                     .tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08));
         }
@@ -1566,7 +1578,7 @@ final class RoomDoorAndObjectInteractionTest {
         session.rooms().loadIndoor(0x00, 0x04);
         var sounds = new ArrayList<GameplaySoundEvent>();
         session.entityState().setColorShellSoundSink(sounds::add);
-        for (int tick = 0; tick < 63; tick++) {
+        for (int tick = 0; tick < 31; tick++) {
             session.doors()
                     .tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08);
         }
@@ -1580,7 +1592,7 @@ final class RoomDoorAndObjectInteractionTest {
         blocked.rooms().loadIndoor(0x00, 0x04);
         blocked.entityState().setColorShellSoundSink(sounds::add);
         blocked.rooms().activeRoomOrNull().roomObjectsArea()[RoomConstants.ROOM_OBJECTS_BASE + 0x33] = 0xA6;
-        for (int tick = 0; tick < 64; tick++) {
+        for (int tick = 0; tick < 32; tick++) {
             blocked.doors()
                     .tryPushIndoorBlock(0x15, 0x28, Direction.fromJavaOrUnknown(Direction.RIGHT.javaIndex()), 0x08);
         }
