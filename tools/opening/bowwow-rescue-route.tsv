@@ -1,5 +1,5 @@
-# Fresh-game route through Tail Cave, the Heart Piece and the Moblin Hideout introduction.
-# ROM columns preserve its verified route; Java uses a stationary jump for the final hit.
+# Fresh-game route through Tail Cave and the Moblin Hideout to rescue BowWow.
+# The two controller recordings follow their observed boss and enemy positions.
 # Optional ROM columns: buttons, frame count/target (- keeps Java target), idle frames.
 - 0 620
 a 8 122
@@ -112,7 +112,7 @@ right+b room=0x61 4 right+a* room=0x61 4
 right+a* x=88 4
 down+a* y=88 4
 right+a* room=0x62 4
-right+a* x=120 4
+right x=120 4 right+a*
 up+b room=0xBD 120
 up y=112 4
 left+a* x=24 4
@@ -143,7 +143,7 @@ right x=120 4
 up y=48 4
 right room=0xAC 4
 none 197 0 none 0 0
-right+a* x=56 4
+right x=56 4 right+a* - 4
 down+a* y=64 24 down+a* - 4
 right+a* x=72 4
 down+a* room=0xBD 4
@@ -155,10 +155,10 @@ right x=80 4
 down room=0x62 20 down room=0x62 120
 down+a* y=88 4
 left+a* x=56 4
-up+a*+b room=0x52 4 up+b
-up+a*+b y=64 4 up+b
-right+a*+b x=88 4 right+b
-up+a*+b room=0x42 4 up+b
+up+b room=0x52 4
+up+b y=64 4
+left+b x=88 4 right+b
+up+b room=0x42 4
 a*+b 120 4 none 0 0
 up+a*+b y=88 4 up+a*+b
 right+a*+b x=120 4 right+b
@@ -210,7 +210,7 @@ up y=112 4
 left x=8 4
 up y=96 4
 left+b room=0x43 4
-left+a*+b x=104 4 left+b
+left+b x=104 4
 up+b y=44 4
 left+a*+b x=8 4 left+b
 down+b y=56 4
@@ -444,7 +444,7 @@ up+b y=56 0
 right+b 100 0
 left+b room=0x03 4
 left+b x=104 0
-down+b 8 0 down+b 24 0
+down+b 24 0
 left+b 1 0
 b 12 0
 b 12 0
@@ -454,7 +454,7 @@ b 12 0
 b 12 0
 b 12 0
 b 12 0
-down+b y=64 0 up 12 0
+up 12 0
 left x=75 0
 left+a* x=40 0
 a* 48 0
@@ -464,7 +464,7 @@ up+b 1 0
 b 120 0
 up y=54 0
 up+a* y=40 0
-a* 48 0
+right+a* x=104 0 a* 48 0
 down+b y=64 0 down y=64 0
 left+b x=94 0 none 0 0
 down+b 1 0 none 0 0
@@ -474,7 +474,7 @@ a* 48 0 none 0 0
 up+b y=64 0 none 0 0
 right x=136 0
 up room=0x19 4
-none 64 0
+none 24 0 none 64 0
 down+b y=112 0
 left+a*+b x=24 0
 up+b y=64 0
@@ -536,7 +536,7 @@ up+a* y=80 0
 right+a* room=0x0E 4
 right+a* x=24 0
 down+a* y=112 0
-right+a* x=104 0
+right x=104 0 right+a*
 up+a* y=64 0
 right+a* x=136 0
 up y=48 0 up y=48 0
@@ -599,15 +599,15 @@ a*+b* 24 0
 a*+b* 24 0
 up+a*+b* 24 0
 right+a*+b* 24 0
-left+a 6 0
-a+b 2 0 left+a 2 0
+down+a 6 0 left+a 6 0
+down+a+b 2 0 left+a 2 0
 b 16 0 left 16 0
-none 300 0
+up+left 20 280 none 300 0
 
 # Continue north toward the Nightmare door.
 left x=80 0
-up 40 30
-none 80 0
+up room=0x0B 30 up 40 30
+none 92 0 none 80 0
 up y=96 0
 left x=40 0
 up y=40 0
@@ -615,64 +615,69 @@ right x=48 0
 right+b x=64 0
 up 35 0
 right x=80 0
-up 60 80
+up room=0x06 80 up 60 80
 
 # Let the opening dialogue page finish while the boss remains paused.
 none 60 0
 
-# Close dialogue, approach and pursue the tail.
+# Close the dialogue and pursue Moldorm’s tail with normal controller inputs.
 a 8 16
-up+a*+b* y=88 0
-a*+b* 24 0
-a*+b* 24 0
-a*+b* 24 0
-a*+b* 24 0
-a*+b* 24 0
-a*+b* 24 0
-a*+b* 24 0
-up+a+b 24 0
-a*+b* 24 0
-a*+b* 24 0
-a*+b* 24 0
-a*+b* 24 0
-a*+b* 24 0
-a*+b* 24 0
-a*+b* 24 0
-a*+b* 24 0
-a*+b* 24 0
-a*+b* 24 0
-# Java has landed the lethal hit; ROM continues attacking.
-none 24 0 a*+b* 24 0
-none 24 0 a*+b* 24 0
-none 24 0 a*+b* 24 0
-none 24 0 a*+b* 24 0
-none 24 0 a*+b* 24 0
-none 24 0 a*+b* 24 0
-none 24 0 a*+b* 24 0
-none 24 0 a*+b* 24 0
-none 24 0 a*+b* 24 0
-none 24 0 a*+b* 24 0
-none 24 0 a*+b* 24 0
-none 24 0 a*+b* 24 0
-none 24 0 a*+b* 24 0
-none 24 0 a*+b* 24 0
-none 24 0 a*+b* 24 0
-none 24 0 a*+b* 24 0
-none 24 0 a*+b* 24 0
-none 24 0 a*+b* 24 0
-none 24 0 a*+b* 24 0
-none 24 0 a*+b* 24 0
-none 500 0
+up 32 0 up+a*+b* y=88 0
+a 8 16 a*+b* 24 0
+right 16 0 a*+b* 24 0
+up 8 0 a*+b* 24 0
+right 8 0 a*+b* 24 0
+up 8 0 a*+b* 24 0
+right 8 0 a*+b* 24 0
+up 8 0 a*+b* 24 0
+right 8 0 up+a+b 24 0
+up 16 0 a*+b* 24 0
+down 8 0 a*+b* 24 0
+up 8 0 a*+b* 24 0
+down 24 0 a*+b* 24 0
+a 8 8 a*+b* 24 0
+a 8 8 a*+b* 24 0
+left 32 0 a*+b* 24 0
+down 8 0 a*+b* 24 0
+up 8 0 a*+b* 24 0
+down 8 0 a*+b* 24 0
+left 8 0 a*+b* 24 0
+a 8 16 a*+b* 24 0
+left 8 0 a*+b* 24 0
+up 8 0 a*+b* 24 0
+left 8 0 a*+b* 24 0
+down 8 0 a*+b* 24 0
+a 8 8 a*+b* 24 0
+right 8 0 a*+b* 24 0
+up 16 0 a*+b* 24 0
+right 8 0 a*+b* 24 0
+up 8 8 a*+b* 24 0
+a 8 8 a*+b* 24 0
+down 24 0 a*+b* 24 0
+up 8 0 a*+b* 24 0
+down 8 0 a*+b* 24 0
+a 8 8 a*+b* 24 0
+down 8 0 a*+b* 24 0
+left 8 0 a*+b* 24 0
+down 8 0 a*+b* 24 0
+left 8 0 a*+b* 24 0
+right 8 0 none 0 0
+left 8 0 none 0 0
+right 16 0 none 0 0
+left 8 0 none 0 0
+up 16 0 none 0 0
+a 7 0 none 0 0
+none 360 0 none 500 0
 # Collect the Heart Container at each engine’s boss-death position.
-down 5 0 none 0 0
-right 70 300 left 30 300
+right x=113 0 none 0 0
+up y=46 120 left 30 300
 left x=80 0 right x=80 0
-up 100 80
+up room=0x02 80 up 100 80
 # Approach the instrument and let its reward presentation begin.
-up 60 240
+up y=59 240 up 60 240
 none 20 240 up 20 240
 a 8 0
-# Synchronize to performance state, not wall-clock pickup time.
+# Wait for the instrument’s performance state.
 none instrumentstate=2 0
 none 32 0
 none 32 0
@@ -751,10 +756,10 @@ right+a* x=88 20
 down+a* y=88 20
 right+a*+b* room=0x62 20
 right+a* x=56 20
-up+a*+b* room=0x52 20
-up+a* y=64 20
-right+a* x=88 20
-up+a*+b* room=0x42 20
+up room=0x52 4 up+a*+b* room=0x52 20
+up y=64 0 up+a* y=64 20
+right x=88 0 right+a* x=88 20
+up room=0x42 4 up+a*+b* room=0x42 20
 up+a* y=88 20
 right+a* x=120 20
 up+a* y=56 20
@@ -807,43 +812,94 @@ right+a* x=136 0
 down+a* y=64 0
 right+a* room=0xE1 120
 a* dialog=0 0
-right x=32 20
-down+b* y=112 0
-b* kingstate=3 0
-up y=80 0
-none kingstate=5 0
-down+a* y=96 0
-a* 72 0
-b* kingstate=3 0
-up y=64 0 down y=96 0
-none kingstate=5 0
-down+a* y=82 0 up+a* y=68 0
-a* 72 0
-up+b* y=48 0 none 0 0
-right+b* x=104 0 none 0 0
-down+b* y=112 0 none 0 0
-up+b* y=64 0 none 0 0
-b* kingstate=3 0
-down y=96 0 up y=48 0
-none kingstate=5 0
-up+a* y=76 0 down+a* y=90 0
-a* 72 0
-left+b* x=64 0 none 0 0
-down+b* y=112 0 none 0 0
-b* kingstate=3 0
-up y=80 0 up y=72 0
-none kingstate=5 0
-down+a* y=92 0 down+a* y=90 0
-right+a* 96 0
-none 0 0 none 80 0
-left+b* x=52 20
-up+b* y=48 0 none 0 0
-down+b* y=88 0 none 0 0
-none 0 0 b* kingstate=3 0
-up+b y=56 0 up y=56 0
-none 0 0 none kingstate=5 0
-down+a* y=72 0 down+a* y=76 0
-a* 96 0
+# Bait the King’s charge and attack during the wall stun.
+right 36 0 right x=32 20
+up 12 0 down+b* y=112 0
+down 12 0 b* kingstate=3 0
+up 12 0 up y=80 0
+down 12 0 none kingstate=5 0
+down+b 12 0 down+a* y=96 0
+down 24 0 a* 72 0
+up 36 0 b* kingstate=3 0
+down 33 0 down y=96 0
+up 39 0 none kingstate=5 0
+down 9 0 up+a* y=68 0
+up 15 0 a* 72 0
+down 10 0 none 0 0
+left 2 0 none 0 0
+down+a 4 20 none 0 0
+left 12 0 none 0 0
+down 12 0 b* kingstate=3 0
+right 12 0 up y=48 0
+up 12 0 none kingstate=5 0
+down 12 0 down+a* y=90 0
+up 10 0 a* 72 0
+down 14 0 none 0 0
+up 12 0 none 0 0
+down 12 0 b* kingstate=3 0
+up 12 0 up y=72 0
+down 12 0 none kingstate=5 0
+up 2 0 down+a* y=90 0
+right 58 0 right+a* 96 0
+up 12 0 none 80 0
+down 24 0 left+b* x=52 20
+right 12 0 none 0 0
+up 24 0 none 0 0
+right 12 0 b* kingstate=3 0
+down 12 13 up y=56 0
+down 35 35 none kingstate=5 0
+up 13 0 down+a* y=76 0
+left 12 0 a* 96 0
+up+a 7 17 none 0 0
+left 36 0 none 0 0
+right 24 0 none 0 0
+up 12 0 none 0 0
+right 12 0 none 0 0
+up 12 0 none 0 0
+down 12 0 none 0 0
+up 3 0 none 0 0
+left 69 0 none 0 0
+down 36 0 none 0 0
+up 48 0 none 0 0
+down 12 0 none 0 0
+up 12 0 none 0 0
+down 12 0 none 0 0
+up 12 0 none 0 0
+down 12 0 none 0 0
+left 12 0 none 0 0
+right 12 0 none 0 0
+down 12 0 none 0 0
+down+a 7 17 none 0 0
+right 24 0 none 0 0
+up 5 0 none 0 0
+left 19 0 none 0 0
+down 12 0 none 0 0
+left 12 0 none 0 0
+down 12 0 none 0 0
+up 9 0 none 0 0
+down 3 0 none 0 0
+right 12 0 none 0 0
+left 12 0 none 0 0
+up 12 0 none 0 0
+down 12 0 none 0 0
+up 36 0 none 0 0
+down 36 0 none 0 0
+up 12 0 none 0 0
+down 12 0 none 0 0
+up 36 0 none 0 0
+down 36 0 none 0 0
+right 9 0 none 0 0
+down 15 0 none 0 0
+up 12 0 none 0 0
+down 12 0 none 0 0
+up 12 0 none 0 0
+down 12 0 none 0 0
+up 8 0 none 0 0
+left 4 0 none 0 0
+up 12 0 none 0 0
+left 12 0 none 0 0
+right 12 0 none 0 0
+up+a 4 0 none 0 0
 none 360 0
 up y=64 0
 right room=0xE2 20
