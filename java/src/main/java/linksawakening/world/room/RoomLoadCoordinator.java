@@ -22,11 +22,13 @@ import linksawakening.world.entity.RoomEntityRuntimeBuilder;
 import linksawakening.world.entity.RoomEntitySnapshot;
 import linksawakening.world.entity.event.LiftedEntityState;
 import linksawakening.world.object.SwitchBlockAnimation;
+import linksawakening.world.transition.ScrollController;
 import linksawakening.world.transition.Warp;
 
 /** LoadRoom: coordinates ROM room acquisition, initialization and entity replacement. */
 final class RoomLoadCoordinator implements RoomRooms {
     private final LoadedRoomHandle rooms;
+    private final RoomScrollTileTransfers scrollTileTransfers = new RoomScrollTileTransfers();
 
     RoomRuntime loadWarpGeneration(Warp warp) {
         RoomRuntime previous = rooms.currentOrNull();
@@ -213,8 +215,14 @@ final class RoomLoadCoordinator implements RoomRooms {
         return loadOverworldGeneration(roomId, false);
     }
 
+    private int outgoingEntitySlots(boolean scrolling) {
+        RoomRuntime outgoing = rooms.currentOrNull();
+        return scrolling && outgoing != null ? outgoing.entities().inspection().occupiedSlotMask() : 0;
+    }
+
     RoomRuntime loadOverworldGeneration(int roomId, boolean scrolling) {
         musicSelectionIsScroll = scrolling;
+        int occupiedSlots = outgoingEntitySlots(scrolling);
         dependencies.location().postIncrementRoomLoadSerial();
         dependencies.location().indoorMapPosition(-1);
         dependencies.resetRoomTransients().run();
@@ -229,7 +237,8 @@ final class RoomLoadCoordinator implements RoomRooms {
                 .loadOverworld(
                         roomId,
                         dependencies.entityFrame().recentRoomEntityClears().mask(roomId),
-                        dependencies.roomState().overworldRoomStatus());
+                        dependencies.roomState().overworldRoomStatus(),
+                        occupiedSlots);
         dependencies.gpu().loadAnimatedTilesGroup(dependencies.romData(), room.animatedTilesGroup());
         RoomRuntime loaded = this.setActiveRoom(room, null, puzzles, overrides);
         dependencies.roomStoryState().updateWitchEnvironment(loaded);
@@ -257,6 +266,7 @@ final class RoomLoadCoordinator implements RoomRooms {
 
     RoomRuntime loadIndoor(PreviousPalettes previous, int mapId, int roomId, int mapCategory, int transitionDirection) {
         musicSelectionIsScroll = transitionDirection < 4;
+        int occupiedSlots = outgoingEntitySlots(musicSelectionIsScroll);
         dependencies.location().postIncrementRoomLoadSerial();
         dependencies
                 .location()
@@ -285,7 +295,8 @@ final class RoomLoadCoordinator implements RoomRooms {
                         dependencies.followers().hasBirdKey(),
                         new RoomNpcPaletteInputs(
                                 dependencies.followers().tarinFlag(),
-                                dependencies.followers().playerShieldLevel())));
+                                dependencies.followers().playerShieldLevel()),
+                        occupiedSlots));
         dependencies.gpu().loadAnimatedTilesGroup(dependencies.romData(), room.animatedTilesGroup());
         var palettes = dependencies
                 .roomPaletteLoader()
@@ -325,6 +336,13 @@ final class RoomLoadCoordinator implements RoomRooms {
         dependencies.entityInputs().secretSeashellPegasusCollisionX(0);
         dependencies.entityInputs().secretSeashellPegasusCollisionY(0);
         RoomEntitySnapshot entities = prepareEntities(room, objectPalettes);
+        scrollTileTransfers.select(
+                dependencies.romData(),
+                dependencies.overworldTilesetTable(),
+                room,
+                entities.spriteSelection(),
+                musicSelectionIsScroll,
+                room.mapCategory() != Warp.CATEGORY_OVERWORLD && hasSwitchBlocks(room.roomObjectsArea()));
         ActiveRoom active = ActiveRoom.from(room, entities);
         RoomContents contents = new RoomContents(active, puzzles, overrides);
         configureDoorAndEventState(contents);
@@ -347,28 +365,37 @@ final class RoomLoadCoordinator implements RoomRooms {
         configureRuntimeProgress(loaded);
         dependencies.followers().followingNpcRoomNeedsSync(true);
         loaded = dependencies.roomStoryState().synchronizeFollowingNpcEntitiesIfNeeded(loaded);
+        // Full world loads reset the frame count after spawning followers ($01:4460).
+        // Adjacent rooms do this later, when ApplyRoomTransition finishes the scroll.
+        if (!musicSelectionIsScroll) dependencies.gpu().resetFrameCountForRoomEntry();
         return dependencies.roomLoaded().apply(loaded);
+    }
+
+    ScrollController.Preparation scrollPreparation() {
+        return scrollTileTransfers.preparation();
     }
 
     void initializeSwitchBlockTiles(RoomRuntime loaded) {
         // LoadRoom configures wRoomSwitchableObject only for $DB/$DC.
         // These VRAM slots hold furniture in houses and must stay intact there.
-        boolean hasBlocks = false;
-        for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
-            for (int col = 0; col < RoomConstants.OBJECTS_PER_ROW; col++) {
-                int object = loaded.room()
-                        .roomObjectsArea()[
-                        RoomConstants.ROOM_OBJECTS_BASE + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + col];
-                hasBlocks |= object == 0xDB || object == 0xDC;
-            }
-        }
-        if (!hasBlocks) return;
+        if (!hasSwitchBlocks(loaded.room().roomObjectsArea())) return;
         for (SwitchBlockAnimation.TileCopy copy :
                 SwitchBlockAnimation.initialCopies(dependencies.terrain().switchBlocksState())) {
             dependencies
                     .gpu()
                     .copySwitchBlockTiles(dependencies.romData(), copy.sourceOffset(), copy.destinationTile());
         }
+    }
+
+    private static boolean hasSwitchBlocks(int[] roomObjects) {
+        for (int row = 0; row < RoomConstants.OBJECTS_PER_COLUMN; row++) {
+            for (int col = 0; col < RoomConstants.OBJECTS_PER_ROW; col++) {
+                int object =
+                        roomObjects[RoomConstants.ROOM_OBJECTS_BASE + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + col];
+                if (object == 0xDB || object == 0xDC) return true;
+            }
+        }
+        return false;
     }
 
     void synchronizeSwitchBlockCollisionState() {

@@ -76,6 +76,31 @@ final class EntityRuntimeMoldormTest extends EntityRuntimeTestSupport {
     }
 
     @Test
+    void airborneSwordClinkingOnTheHeadReproducesTheNativeLinkRecoil() {
+        var enemy = new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(0x59)
+                .at(72, 57)
+                .spriteDefinition(pairDefinition(0x59, 2))
+                .build();
+        var runtime = new RoomEntityRuntimeBuilder(snapshot(enemy)).build();
+        var frame = new EntitySwordContactFrame(154, 80, 82, true, true, true, 88, 8, 69, 8);
+        var fixture = EntityRuntimeFixture.debug(runtime);
+        // The common timer pass precedes the native head check.
+        fixture.setEnemyFlashCountdownForTest(0, 0x18);
+        assertTrue(runtime.combat().resolveCombat(frame).isEmpty());
+
+        fixture.setEnemyFlashCountdownForTest(0, 0x19);
+        var events = runtime.combat().resolveCombat(frame);
+        assertEquals(1, events.size());
+        assertEquals(0, events.getFirst().linkDamage());
+        assertEquals(0, events.getFirst().enemyDamage());
+        assertEquals(
+                new EntityCombatEvent.LinkCollisionResponse(7, 24, 16),
+                events.getFirst().linkCollisionResponse());
+    }
+
+    @Test
     void miniMoldormUsesDelayedRomPositionHistoryForItsDynamicTail() throws Exception {
         byte[] rom = loadRom();
         EntitySpriteHandlerCatalog catalog = new EntitySpriteHandlerCatalog(TestRoms.partial(rom));

@@ -315,20 +315,13 @@ public final class RollingBonesMotion {
                     transitionCountdown = 0x18;
                     owner.bossState[slot] = RollingBonesMotion.STATE_PREPARE_ROLL;
                 } else {
-                    x = RollingBonesMotion.moveX(
-                                    entity,
-                                    x,
-                                    y,
-                                    owner.bossSpeedX[slot],
-                                    owner.bossXAccumulator,
-                                    slot,
-                                    backgroundCollision)
-                            .position();
+                    // $06:6D68 applies X speed without the background collision pass.
+                    x = RollingBonesMotion.addSpeed(x, owner.bossSpeedX[slot], owner.bossXAccumulator, slot);
                     if (landed) {
                         owner.bossSpeedZ[slot] = 0x0C;
                     }
+                    variant = 1;
                 }
-                variant = 1;
             }
 
             return true;

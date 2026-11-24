@@ -34,6 +34,7 @@ public final class EntityFrameInputsFactory implements EntityFrameValues {
     private final EntityInputCache cache = new EntityInputCache();
 
     private int frameCounter;
+    private boolean incomingScrollOnly;
     private final CapturedLink link = new CapturedLink();
     // Captured domain values are published only after borrow/create fills every group.
     private PlayerInputs player;
@@ -58,7 +59,13 @@ public final class EntityFrameInputsFactory implements EntityFrameValues {
         borrow(b);
         var position = cache.linkPosition(link.x, link.y, link.z, link.rawDirection, link.collisionType);
         var motion = cache.linkMotion(
-                link.airborne, link.rawState, link.shield, link.invincibility, link.speedX, link.speedY);
+                link.airborne,
+                link.rawState,
+                link.shield,
+                link.invincibility,
+                link.speedX,
+                link.speedY,
+                link.ignoringContactCollisions);
         var linkSnapshot = cache.linkInputs(
                 position, motion, link.attackCountdown, link.finalX, link.freeMovement, link.velocityZ);
         return new EntityFrameInputs(frameCounter, linkSnapshot, player, ui, buttons, sword);
@@ -66,6 +73,7 @@ public final class EntityFrameInputsFactory implements EntityFrameValues {
 
     /** Borrowed until the next borrow/create; the world tick consumes it synchronously. */
     public EntityFrameValues borrow(Sword.CollisionBox b) {
+        incomingScrollOnly = false;
         frameCounter = this.clock.value();
         captureLink();
         player = buildPlayerInputs();
@@ -78,6 +86,17 @@ public final class EntityFrameInputsFactory implements EntityFrameValues {
     @Override
     public int frameCounter() {
         return frameCounter;
+    }
+
+    EntityFrameValues borrowIncomingScroll() {
+        borrow(Sword.CollisionBox.inactive());
+        incomingScrollOnly = true;
+        return this;
+    }
+
+    @Override
+    public boolean incomingScrollOnly() {
+        return incomingScrollOnly;
     }
 
     @Override
@@ -118,6 +137,7 @@ public final class EntityFrameInputsFactory implements EntityFrameValues {
         link.shield = l.equipment().isUsingShield();
         link.invincibility =
                 l.status().isCollisionDamageImmune() ? 1 : p.vitals().invincibilityCounter();
+        link.ignoringContactCollisions = l.status().ignoringContactCollisions();
         link.speedX = l.position().romSpeedX();
         link.speedY = l.position().romSpeedY();
         link.attackCountdown = l.equipment().romAttackStepAnimationCountdown();
@@ -195,7 +215,7 @@ public final class EntityFrameInputsFactory implements EntityFrameValues {
             implements EntityFrameValues.Link, EntityFrameValues.Position, EntityFrameValues.Motion {
         private int x, y, z, rawDirection, collisionType, rawState, invincibility, speedX, speedY;
         private int attackCountdown, finalX, velocityZ;
-        private boolean airborne, shield, freeMovement;
+        private boolean airborne, shield, freeMovement, ignoringContactCollisions;
 
         @Override
         public CapturedLink position() {
@@ -240,6 +260,11 @@ public final class EntityFrameInputsFactory implements EntityFrameValues {
         @Override
         public int invincibility() {
             return invincibility;
+        }
+
+        @Override
+        public boolean ignoringContactCollisions() {
+            return ignoringContactCollisions;
         }
 
         @Override

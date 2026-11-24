@@ -41,6 +41,30 @@ final class RollingBonesMotionTest {
     }
 
     @Test
+    void approachIntegratesThroughBackgroundAndKeepsItsVariantWhenAlreadyNearTheBar() {
+        RollingBonesMotion motion = new RollingBonesMotion();
+        RoomEntity boss = entity(0, RollingBonesMotion.ENTITY_BOSS, 149, 64);
+        RoomEntity bar = entity(1, RollingBonesMotion.ENTITY_BAR, 181, 64);
+        motion.initializeBoss(0);
+        motion.initializeBar(1);
+
+        RollingBonesMotion.BossUpdate halfStep =
+                motion.advanceBoss(boss, bar, 0, 8, (entity, direction, nextX, nextY) -> true);
+        RollingBonesMotion.BossUpdate wholeStep =
+                motion.advanceBoss(halfStep.entity(), bar, 0, 8, (entity, direction, nextX, nextY) -> true);
+        assertEquals(149, halfStep.entity().x());
+        assertEquals(150, wholeStep.entity().x());
+
+        motion.initializeBoss(0);
+        RollingBonesMotion.BossUpdate nearBar =
+                motion.advanceBoss(boss, withX(bar, 150), 0, 8, (entity, direction, nextX, nextY) -> true);
+        assertEquals(149, nearBar.entity().x());
+        assertEquals(0, nearBar.entity().spriteVariant());
+        assertEquals(24, nearBar.transitionCountdown());
+        assertEquals(1, motion.bossState(0));
+    }
+
+    @Test
     void jumpLaunchMovesImmediatelyAndChecksTheWallOnThatFrame() {
         for (boolean wall : new boolean[] {false, true}) {
             RollingBonesMotion motion = new RollingBonesMotion();

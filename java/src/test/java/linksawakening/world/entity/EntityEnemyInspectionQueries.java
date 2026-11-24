@@ -382,9 +382,7 @@ final class EntityEnemyInspectionQueries {
     }
 
     int spikeTrapTransitionCountdown(int slot) {
-        return runtime.motions()
-                .get(SpikeTrapMotion.class, SpikeTrapMotion::new)
-                .transitionCountdown(slot);
+        return runtime.physicsTables().readEnemyTransitionCountdown(slot);
     }
 
     int spikeTrapDirection(int slot) {

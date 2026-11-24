@@ -56,6 +56,7 @@ final class WizrobeProjectileHandler {
                 motion,
                 inputs.frame(),
                 inputs.projectileLinkState(),
+                state.slotProperties().contactDamage(slotState.entity().slot()),
                 inputs.projectileEvents(),
                 inputs.objectCollision(),
                 state.presentation())) {
@@ -71,11 +72,13 @@ final class WizrobeProjectileHandler {
             WizrobeProjectileMotion motion,
             int frame,
             EnemyProjectileCollision.LinkState link,
+            int contactDamage,
             List<EntityProjectileEvent> events,
             RoomEntityObjectCollision objectCollision,
             EntityPresentationFlags presentation) {
         RoomEntity projectile = slotState.entity();
-        var collision = EnemyProjectileCollision.check(projectile, motion.direction(projectile.slot()), link);
+        var collision =
+                EnemyProjectileCollision.check(projectile, motion.direction(projectile.slot()), link, contactDamage);
         if (collision.isPresent()) {
             events.add(collision.orElseThrow());
         }

@@ -25,6 +25,24 @@ class GameplayFrameOrderTest {
     }
 
     @Test
+    void transferOnlyFrameCompletesInputWithoutSimulatingGameplay() {
+        var calls = new ArrayList<String>();
+        var transitions = new GameplayFrame.Transitions() {
+            @Override
+            public void run() {
+                calls.add("transitions");
+            }
+
+            @Override
+            public boolean tileTransferOnlyFrame() {
+                return true;
+            }
+        };
+        new GameplayFrame(transitions, () -> calls.add("simulation"), () -> calls.add("input")).tick();
+        assertEquals(List.of("transitions", "input"), calls);
+    }
+
+    @Test
     void simulationFailureDoesNotAdvanceInput() {
         var calls = new ArrayList<String>();
         var failure = new IllegalStateException("simulation");

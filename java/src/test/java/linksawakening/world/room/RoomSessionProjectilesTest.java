@@ -6,6 +6,7 @@ import static linksawakening.world.room.RoomSessionTestSupport.syntheticEntity;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -328,7 +329,8 @@ final class RoomSessionProjectilesTest {
                 .orElseThrow();
 
         RoomEntity projectile = null;
-        for (int frame = 0; frame < 0x40 && projectile == null; frame++) {
+        // The room-loaded Octorok first waits $A0 ticks, then needs a launch window facing Link.
+        for (int frame = 0; frame < 0xA0 + 4 * 0x60 && projectile == null; frame++) {
             RoomEntity currentParent =
                     session.rooms().activeRoomOrNull().entities().slots().get(parent.slot());
             session.entities()
@@ -338,6 +340,7 @@ final class RoomSessionProjectilesTest {
                     .filter(entity -> entity.type() == 0x0A)
                     .findFirst()
                     .orElse(null);
+            if (frame < 0xA0) assertNull(projectile);
         }
 
         assertNotNull(projectile);

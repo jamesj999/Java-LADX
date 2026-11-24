@@ -51,6 +51,43 @@ final class SpikeTrapLaunchAndCollisionTest {
     }
 
     @Test
+    void dialogueFreezesTravelAndTheSlotTimerCanPauseIndependentlyOfMovement() {
+        var runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x27)
+                        .at(24, 96)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(pairDefinition(0x27, 1))
+                        .build()))
+                .build();
+        for (int frame = 0; frame < 5; frame++) {
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 78, 112, () -> 0));
+        }
+        var trap = new EntityEnemyInspectionQueries(runtime.enemies());
+        assertEquals(28, runtime.inspection().slots().get(0).x());
+        assertEquals(22, trap.spikeTrapTransitionCountdown(0));
+        runtime.inspection().combatTables().writeEnemyIgnoreHitsCountdown(0, 2);
+        runtime.configuration().setDialogActive(true);
+        for (int frame = 5; frame < 40; frame++) {
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 78, 112, () -> 0));
+        }
+        assertEquals(28, runtime.inspection().slots().get(0).x());
+        assertEquals(22, trap.spikeTrapTransitionCountdown(0));
+        assertEquals(2, runtime.enemies().enemyIgnoreHitsCountdown(0));
+        runtime.configuration().setDialogActive(false);
+        runtime.configuration().setOcarinaPlayback(4, 0, 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 40, 78, 112, () -> 0));
+        assertEquals(30, runtime.inspection().slots().get(0).x());
+        assertEquals(22, trap.spikeTrapTransitionCountdown(0));
+        assertEquals(1, runtime.enemies().enemyIgnoreHitsCountdown(0));
+        runtime.configuration().setOcarinaPlayback(0, 0, 0);
+        runtime.tick(EntityTestFrames.frame(runtime, 41, 78, 112, () -> 0));
+        assertEquals(32, runtime.inspection().slots().get(0).x());
+        assertEquals(21, trap.spikeTrapTransitionCountdown(0));
+        assertEquals(0, runtime.enemies().enemyIgnoreHitsCountdown(0));
+    }
+
+    @Test
     void spikeTrapForwardBackgroundCollisionPublishesTheSameRomJingle() {
         EntitySpriteDefinition definition = pairDefinition(0x27, 1);
         RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()

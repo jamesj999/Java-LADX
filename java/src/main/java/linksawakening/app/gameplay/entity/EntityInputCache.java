@@ -40,15 +40,24 @@ final class EntityInputCache {
         return linkPosition;
     }
 
-    LinkMotion linkMotion(boolean airborne, int state, boolean shield, int invincibility, int speedX, int speedY) {
+    LinkMotion linkMotion(
+            boolean airborne,
+            int state,
+            boolean shield,
+            int invincibility,
+            int speedX,
+            int speedY,
+            boolean ignoringContactCollisions) {
         if (linkMotion == null
                 || linkMotion.airborne() != airborne
                 || linkMotion.rawState() != state
                 || linkMotion.shield() != shield
                 || linkMotion.invincibility() != invincibility
                 || linkMotion.speedX() != speedX
-                || linkMotion.speedY() != speedY) {
-            linkMotion = new LinkMotion(airborne, state, shield, invincibility, speedX, speedY);
+                || linkMotion.speedY() != speedY
+                || linkMotion.ignoringContactCollisions() != ignoringContactCollisions) {
+            linkMotion =
+                    new LinkMotion(airborne, state, shield, invincibility, speedX, speedY, ignoringContactCollisions);
         }
         return linkMotion;
     }

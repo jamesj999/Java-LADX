@@ -21,6 +21,7 @@ import static linksawakening.world.entity.EntityRomConstants.ENTITY_BUTTERFLY;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_BUZZ_BLOB;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_CHEST_WITH_ITEM;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_CROW;
+import static linksawakening.world.entity.EntityRomConstants.ENTITY_CRYSTAL_SWITCH;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_CUCCO;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_DESERT_LANMOLA;
 import static linksawakening.world.entity.EntityRomConstants.ENTITY_DOG;
@@ -115,6 +116,7 @@ import static linksawakening.world.entity.EntityRomConstants.LIKE_LIKE_INITIAL_P
 import static linksawakening.world.entity.EntityRomConstants.MAD_BOMBER_INITIAL_PHYSICS_FLAGS;
 import static linksawakening.world.entity.EntityRomConstants.SWORD_SHIELD_PICKUP_INITIAL_PHYSICS_FLAGS;
 
+import java.util.function.IntUnaryOperator;
 import linksawakening.world.entity.motion.BooBuddyMotion;
 import linksawakening.world.entity.motion.BuzzBlobMotion;
 import linksawakening.world.entity.motion.CrowMotion;
@@ -176,6 +178,11 @@ public final class EntityTypeRules {
 
     public static boolean isSparkType(int type) {
         return type == ENTITY_SPARK_COUNTER_CLOCKWISE || type == ENTITY_SPARK_CLOCKWISE;
+    }
+
+    /** Active handlers that consume every incoming ignore-hits tick, including zero-speed recoil. */
+    static boolean handlesActiveRecoilCountdown(int type) {
+        return isSparkType(type) || type == ENTITY_GOOMBA;
     }
 
     public static boolean isZolGelType(int type) {
@@ -261,7 +268,7 @@ public final class EntityTypeRules {
                 || entityType == ENTITY_HINOX;
     }
 
-    static int initialPhysicsFlags(int type) {
+    static int initialPhysicsFlags(int type, IntUnaryOperator romDefaults) {
         return switch (type) {
                 // PhysicsFlagsForEntity ($03:4000), Zol/Gel entries $1B/$1C.
             case ENTITY_ZOL -> 0x12;
@@ -281,6 +288,7 @@ public final class EntityTypeRules {
             case ENTITY_IRON_MASK -> IRON_MASK_INITIAL_PHYSICS_FLAGS;
             case ENTITY_GOOMBA, ENTITY_SNAKE -> GOOMBA_INITIAL_PHYSICS_FLAGS;
             case ENTITY_WIZROBE -> 0x02;
+            case ENTITY_CRYSTAL_SWITCH -> 2 | ENTITY_PHYSICS_HARMLESS;
             case ENTITY_MIMIC -> 0x12;
             case ENTITY_MASKED_MIMIC_GORIYA -> 0x12;
             case ENTITY_MINI_MOLDORM -> 0x02;
@@ -324,7 +332,7 @@ public final class EntityTypeRules {
                     ENTITY_WRECKING_BALL,
                     ENTITY_SIDE_VIEW_POT,
                     ENTITY_HORSE_PIECE -> ENTITY_PHYSICS_GRABBABLE;
-            default -> 0;
+            default -> romDefaults.applyAsInt(type);
         };
     }
 

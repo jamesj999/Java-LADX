@@ -448,6 +448,42 @@ final class RoomRewardLifecycleTest {
     }
 
     @Test
+    void tailCaveSmallKeyChestHoldsBothSparksUntilTheInteractionCountdownExpires() {
+        var session = newSession();
+        session.rooms().loadIndoor(0, 0x0E);
+        // The first movement dispatch is ROM frame 48551, with hFrameCounter $EB.
+        for (int tick = 0; tick <= 615; tick++) {
+            if (tick == 309) {
+                assertTrue(session.doors()
+                        .tryOpenChest(64, 42, Direction.UP, true, 1)
+                        .opened());
+            }
+            // Enter on the first complete text frame and release after the recorded close.
+            if (tick == 348) session.entityState().setEntityDialogActive(true);
+            if (tick == 607) session.entityState().setEntityDialogActive(false);
+            int clock = (0xEA + tick) & 0xFF;
+            tickInteractive(session, clock, 32, 88);
+            if (tick >= 309 && tick <= 610) {
+                assertSparkPose(session, 0x17, 83, 56, clock);
+                assertSparkPose(session, 0x16, 131, 88, clock);
+            } else if (tick == 615) {
+                assertSparkPose(session, 0x17, 82, 60, clock);
+                assertSparkPose(session, 0x16, 130, 84, clock);
+            }
+        }
+    }
+
+    private static void assertSparkPose(RoomSession session, int type, int expectedX, int expectedY, int clock) {
+        var spark = session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
+                .filter(entity -> entity.type() == type)
+                .findFirst()
+                .orElseThrow();
+        assertEquals(expectedX, spark.x());
+        assertEquals(expectedY, spark.y());
+        assertEquals((clock >>> 1) & 1, spark.spriteVariant());
+    }
+
+    @Test
     void openingAClosedChestMutatesTheRoomAndSpawnsTheRomChestEntity() {
         RoomSession session = newSession();
         session.rooms().loadIndoor(0x00, 0x20);

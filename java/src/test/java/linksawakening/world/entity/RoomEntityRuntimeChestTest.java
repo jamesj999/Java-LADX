@@ -40,6 +40,7 @@ final class RoomEntityRuntimeChestTest {
 
         RoomEntity initialized = runtime.inspection().snapshot().slots().get(slot);
         assertEquals(EntityStatus.ACTIVE, initialized.status());
+        assertEquals(42, runtime.inspection().roomVariables().readEntityInteractionCountdown());
         assertEquals(0x58, initialized.y());
         assertEquals(ChestContentsTable.CHEST_POWER_BRACELET, initialized.spriteVariant());
         assertEquals(0xC2, runtime.enemies().physicsFlags(slot));

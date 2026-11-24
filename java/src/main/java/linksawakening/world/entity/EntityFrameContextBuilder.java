@@ -31,6 +31,7 @@ public final class EntityFrameContextBuilder {
     private boolean creditsGameplay;
     // Optional override; null retains the derived/default value.
     private Boolean handlerLinkCollisionEnabled;
+    private boolean incomingScrollOnly;
 
     EntityFrameContextBuilder() {}
 
@@ -146,6 +147,11 @@ public final class EntityFrameContextBuilder {
         return this;
     }
 
+    public EntityFrameContextBuilder incomingScrollOnly(boolean value) {
+        incomingScrollOnly = value;
+        return this;
+    }
+
     public EntityFrameContext build() {
         return new EntityFrameContext(
                 frameCounter,
@@ -171,6 +177,7 @@ public final class EntityFrameContextBuilder {
                 creditsGameplay,
                 handlerLinkCollisionEnabled != null
                         ? handlerLinkCollisionEnabled
-                        : projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE);
+                        : projectileLinkState.motionState() < EnemyProjectileCollision.LINK_MOTION_NON_INTERACTIVE,
+                incomingScrollOnly);
     }
 }

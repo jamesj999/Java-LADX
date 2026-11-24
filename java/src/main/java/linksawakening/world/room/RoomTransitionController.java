@@ -159,8 +159,13 @@ final class RoomTransitionController implements RoomTransitions, RoomBoundaryOpe
                     .add(new EntityCombatEvent(
                             0, ENTITY_OWL_EVENT, 0, false, EntityCombatEvent.SoundChannel.JINGLE, 0x02));
         }
-        scrollController.start(
-                direction, linkScreenX, linkScreenY, previousRoom, RoomInteractionGeometry.scrollTarget(direction));
+        scrollController.startRoomTransition(
+                direction,
+                linkScreenX,
+                linkScreenY,
+                previousRoom,
+                RoomInteractionGeometry.scrollTarget(direction),
+                dependencies.roomLoadCoordinator().scrollPreparation());
     }
 
     void startMysteriousWoodsLostScroll(
@@ -168,12 +173,13 @@ final class RoomTransitionController implements RoomTransitions, RoomBoundaryOpe
         RoomRenderSnapshot previousRoom = loaded.renderSnapshot();
         dependencies.roomLoadCoordinator().loadRoomSpecificTilesIfNeeded(ROOM_OW_MYSTERIOUS_WOODS_LOST);
         dependencies.roomLoadCoordinator().loadOverworldGeneration(ROOM_OW_MYSTERIOUS_WOODS_LOST, true);
-        scrollController.start(
+        scrollController.startRoomTransition(
                 ScrollController.UP,
                 linkScreenX,
                 linkScreenY,
                 previousRoom,
-                RoomInteractionGeometry.scrollTarget(ScrollController.UP));
+                RoomInteractionGeometry.scrollTarget(ScrollController.UP),
+                dependencies.roomLoadCoordinator().scrollPreparation());
         dependencies
                 .entityRuntimeState()
                 .outbox()
@@ -200,8 +206,13 @@ final class RoomTransitionController implements RoomTransitions, RoomBoundaryOpe
                             default -> throw new IllegalArgumentException("Indoor scroll direction " + direction);
                         });
         dependencies.location().indoorMapPosition(destination.mapPosition());
-        scrollController.start(
-                direction, linkScreenX, linkScreenY, previousRoom, RoomInteractionGeometry.scrollTarget(direction));
+        scrollController.startRoomTransition(
+                direction,
+                linkScreenX,
+                linkScreenY,
+                previousRoom,
+                RoomInteractionGeometry.scrollTarget(direction),
+                dependencies.roomLoadCoordinator().scrollPreparation());
     }
 
     boolean beginOcarina(int countdown, int songFlags, int selectedSong) {

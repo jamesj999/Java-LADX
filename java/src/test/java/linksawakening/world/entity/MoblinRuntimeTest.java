@@ -16,6 +16,68 @@ import org.junit.jupiter.api.Test;
 final class MoblinRuntimeTest {
 
     @Test
+    void raisedShieldReproducesRoom52BumpBeforeTheNextEnemyRecoilStep() {
+        RoomEntity moblin = new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(0x0B)
+                .at(63, 80)
+                .spriteDefinition(pairDefinition(0x0B, 8))
+                .build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(moblin)).build();
+        var shield = new EnemyAttackContext(1, false, false, false, false, true, 2, 0);
+        var contact = new EnemyCombatFrame(171, 72, 94, false, 0, true, false, 0, 0, 0, 0, shield);
+
+        var events = runtime.combat().resolveCombat(contact);
+        assertEquals(1, events.size());
+        var bump = events.getFirst();
+        assertEquals(0, bump.linkDamage());
+        assertEquals(0, bump.enemyDamage());
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, bump.soundChannel());
+        assertEquals(0x09, bump.soundId());
+        assertEquals(new EntityCombatEvent.LinkCollisionResponse(11, 18, 12), bump.linkCollisionResponse());
+
+        runtime.tick(EntityTestFrames.frame(runtime, 171, 72, 94, () -> 0));
+        assertEquals(63, runtime.inspection().snapshot().slots().get(0).x());
+        assertEquals(80, runtime.inspection().snapshot().slots().get(0).y());
+        assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(0));
+
+        runtime.tick(EntityTestFrames.frame(runtime, 172, 72, 94, () -> 0));
+        assertEquals(61, runtime.inspection().snapshot().slots().get(0).x());
+        assertEquals(78, runtime.inspection().snapshot().slots().get(0).y());
+        assertEquals(0x09, runtime.enemies().enemyIgnoreHitsCountdown(0));
+        assertEquals(2, runtime.enemies().enemyHealth(0));
+    }
+
+    @Test
+    void bodyContactPrecedesTheShieldAndAnActiveSwordUsesTheWeaponRectangle() {
+        RoomEntity moblin = new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(0x0B)
+                .at(63, 80)
+                .spriteDefinition(pairDefinition(0x0B, 8))
+                .build();
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(moblin)).build();
+        var shield = new EnemyAttackContext(1, false, false, false, false, true, 2, 0);
+
+        var shieldFrame = new EnemyCombatFrame(171, 70, 88, false, 0, true, false, 0, 0, 0, 0, shield);
+        var events = runtime.combat().resolveCombat(shieldFrame);
+        assertEquals(2, events.size());
+        assertEquals(4, events.get(0).linkDamage());
+        assertEquals(16, events.get(0).linkCollisionResponse().ignoreCollisionCountdown());
+        assertEquals(0, events.get(1).linkDamage());
+        assertEquals(12, events.get(1).linkCollisionResponse().ignoreCollisionCountdown());
+        assertEquals(2, runtime.enemies().enemyHealth(0));
+
+        var swordFrame = new EnemyCombatFrame(171, 70, 88, false, 0, true, true, 78, 8, 88, 3, shield);
+        events = runtime.combat().resolveCombat(swordFrame);
+        assertEquals(1, events.size());
+        assertEquals(4, events.getFirst().linkDamage());
+        assertTrue(events.getFirst().swordHit());
+        assertEquals(16, events.getFirst().linkCollisionResponse().ignoreCollisionCountdown());
+        assertEquals(1, runtime.enemies().enemyHealth(0));
+    }
+
+    @Test
     void moblinUsesTheSameRomRoamingStateMachineAndDirectionalDisplayPairs() {
         EntitySpriteDefinition definition = pairDefinition(0x0B, 8);
         RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
@@ -65,6 +127,7 @@ final class MoblinRuntimeTest {
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(1, runtime.enemies().enemyHealth(0));
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         assertEquals(0x18, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(0));
         assertTrue(runtime.combat()
                 .resolveCombat(new EntitySwordContactFrame(1, 120, 120, false, true, true, 72, 1, 72, 1))

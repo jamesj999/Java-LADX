@@ -209,6 +209,59 @@ final class MoldormRuntimeTest {
     }
 
     @Test
+    void terrainProbeSeesDiagonalAndFractionOnlyStepsAndRestoresFrameEntryOnBlock() throws IOException {
+        MoldormMotion motion = new MoldormMotion();
+        RoomEntity boss = moldorm(loadRom());
+        var open = RoomEntityBackgroundInteraction.NONE;
+        var update = motion.advance(boss, 0, 0, 0, 0, 4, sequence(0, 2), open);
+        for (int frame = 1; frame <= 6; frame++) {
+            update = motion.advance(update.entity(), frame, update.transitionCountdown(), 0, 0, 4, sequence(0), open);
+        }
+        int x = update.entity().x();
+        int y = update.entity().y();
+        var probes = new ArrayList<MoldormSegmentPosition>();
+        update = motion.advance(
+                update.entity(),
+                7,
+                update.transitionCountdown(),
+                0,
+                0,
+                4,
+                sequence(0),
+                (entity, direction, nextX, nextY) -> {
+                    probes.add(new MoldormSegmentPosition(nextX, nextY));
+                    return EntityBackgroundCollisionResult.NONE;
+                });
+        assertEquals(List.of(new MoldormSegmentPosition(x, y), new MoldormSegmentPosition(x, y)), probes);
+
+        motion.onSwordHit(boss.slot());
+        probes.clear();
+        update = motion.advance(
+                update.entity(),
+                8,
+                update.transitionCountdown(),
+                0,
+                0,
+                4,
+                sequence(1),
+                (entity, direction, nextX, nextY) -> {
+                    probes.add(new MoldormSegmentPosition(nextX, nextY));
+                    return EntityBackgroundCollisionResult.fromBoolean(
+                            direction == EntityBackgroundCollisionResult.RIGHT && nextY > y, direction, nextX, nextY);
+                });
+        assertEquals(
+                List.of(
+                        new MoldormSegmentPosition(x + 1, y),
+                        new MoldormSegmentPosition(x + 1, y),
+                        new MoldormSegmentPosition(x + 2, y + 1),
+                        new MoldormSegmentPosition(x, y + 1)),
+                probes);
+        assertEquals(x, update.entity().x());
+        assertEquals(y + 1, update.entity().y());
+        assertEquals(1, update.collisionFlags());
+    }
+
+    @Test
     void hitCountdownAndLowHealthRunTwoHistoryAndMovementPasses() throws IOException {
         MoldormMotion hitMotion = new MoldormMotion();
         RoomEntity moldorm = moldorm(loadRom());
@@ -234,6 +287,8 @@ final class MoldormRuntimeTest {
                 linksawakening.world.entity.RoomEntityBackgroundInteraction.NONE);
 
         assertEquals(3, hitAccelerated.inertia());
+        assertEquals(0xC8, hitMotion.privateCountdown2(0));
+        hitMotion.tickPrivateCountdowns(0);
         assertEquals(0xC7, hitMotion.privateCountdown2(0));
 
         MoldormMotion lowHealthMotion = new MoldormMotion();
@@ -337,6 +392,45 @@ final class MoldormRuntimeTest {
         assertEquals(0xD0, runtime.execution().slotProperties().options1(0));
         assertEquals(0x80, EntityRuntimeFixture.enemies(runtime).hitboxFlagsForTest(0));
         assertEquals(0x04, runtime.enemies().enemyHealth(0));
+    }
+
+    @Test
+    void sharedCountdownsTickDuringArenaEntryAndPauseDuringBossDialogue() throws IOException {
+        var nativeDraws = sequence(20, 86);
+        var boss = EntitySnapshots.withMotion(moldorm(loadRom()), 56, 48, 0, 0, 0, -1, false);
+        var runtime =
+                new RoomEntityRuntimeBuilder(snapshot(boss)).indoorRoom(true).build();
+        EntityRuntimeFixture.debug(runtime).setEntityMapIdForTest(0);
+        runtime.configuration().setEntityRoomId(6);
+
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 127, nativeDraws));
+        assertEquals(36, runtime.bosses().moldormTransitionCountdown(0));
+        for (int frame = 1; frame <= 15; frame++) {
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 80, frame <= 13 ? 126 : 115, nativeDraws));
+        }
+        assertEquals(1, runtime.bosses().moldormInertia(0));
+
+        for (int frame = 16; frame <= 31; frame++) {
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 115, nativeDraws));
+        }
+        var before = runtime.inspection().snapshot().slots().getFirst();
+        assertEquals(67, before.x());
+        assertEquals(57, before.y());
+
+        runtime.tick(EntityTestFrames.frame(runtime, 32, 80, 115, nativeDraws));
+        assertEquals(List.of(new DialogRequest(0, 0xB0)), runtime.outbox().consumePendingDialogRequests());
+        assertEquals(4, runtime.bosses().moldormTransitionCountdown(0));
+        runtime.configuration().setDialogActive(true);
+        for (int frame = 33; frame < 146; frame++) {
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 80, 115, nativeDraws));
+        }
+        assertEquals(4, runtime.bosses().moldormTransitionCountdown(0));
+        runtime.configuration().setDialogActive(false);
+        runtime.tick(EntityTestFrames.frame(runtime, 146, 80, 115, nativeDraws));
+        var resumed = runtime.inspection().snapshot().slots().getFirst();
+        assertEquals(3, runtime.bosses().moldormTransitionCountdown(0));
+        assertEquals(68, resumed.x());
+        assertEquals(58, resumed.y());
     }
 
     @Test

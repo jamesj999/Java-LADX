@@ -20,6 +20,7 @@ final class RoamingEnemyMotionTest {
         var motion = new RoamingEnemyMotion();
         var source = entity(0, 0x0B, 0x40, 0x40);
         MotionTestFixture.setStateForTest(motion, 0, 1, 3, 0, 1, 0);
+        motion.speedX()[0] = 0;
         for (int frame = 0; frame < 2; frame++) {
             motion.advance(source, 0x50, 0x40, () -> 0, (e, d, x, y) -> {
                 throw new AssertionError("zero-speed wall probe");
@@ -30,6 +31,22 @@ final class RoamingEnemyMotionTest {
         assertEquals(0, motion.state(0));
         motion.advance(source, 0x50, 0x40, () -> 0, linksawakening.world.entity.RoomEntityBackgroundCollision.OPEN);
         assertEquals(0, motion.state(0));
+    }
+
+    @Test
+    void postRecoilPauseChecksTheRetainedSpeedAtTheCurrentPosition() {
+        var motion = new RoamingEnemyMotion();
+        var source = entity(1, 0x09, 0x5B, 0x17);
+        MotionTestFixture.setStateForTest(motion, 1, 1, 0x40, 0, 0, 2);
+        var update = motion.advance(source, 0x40, 0x18, () -> 0, (e, direction, x, y) -> {
+            assertEquals(2, direction);
+            assertEquals(0x5B, x);
+            assertEquals(0x17, y);
+            return true;
+        });
+        assertEquals(source, update);
+        assertEquals(0x3F, motion.transitionCountdown(1));
+        assertEquals(4, motion.collisionFlags(1));
     }
 
     @Test
@@ -167,7 +184,7 @@ final class RoamingEnemyMotionTest {
     }
 
     @Test
-    void richCollisionRecordsTheRomDirectionBitAndIsConsumedOnTheNextDispatch() {
+    void fractionalStepRecordsTheRomDirectionBitAndIsConsumedOnTheNextDispatch() {
         RoamingEnemyMotion motion = new RoamingEnemyMotion();
         RoomEntity source = entity(0, 0x09, 0x40, 0x40);
         MotionTestFixture.setStateForTest(motion, 0, 0, 0x08, 0, 0, 0);
@@ -180,9 +197,15 @@ final class RoamingEnemyMotionTest {
             return result;
         };
 
-        motion.advanceWithInteraction(source, 0x50, 0x40, () -> 0x0A, interaction, false);
-        RoamingEnemyMotion.Update blocked =
-                motion.advanceWithInteraction(source, 0x50, 0x40, () -> 0x0A, interaction, false);
+        RoamingEnemyMotion.Update blocked = motion.advanceWithInteraction(
+                source,
+                0x50,
+                0x40,
+                () -> {
+                    throw new AssertionError("wall detection must defer the state transition");
+                },
+                interaction,
+                false);
 
         assertEquals(source.x(), blocked.entity().x());
         assertEquals(0x01, motion.collisionFlags(0));
@@ -190,6 +213,7 @@ final class RoamingEnemyMotionTest {
         assertEquals(0x08, motion.speedX(0));
         assertEquals(0, motion.state(0));
         assertEquals(0x01, probe.get().collisionFlag());
+        assertEquals(source.x(), probe.get().sampleX());
 
         RoamingEnemyMotion.Update consumed =
                 motion.advanceWithInteraction(source, 0x50, 0x40, () -> 0x0A, interaction, false);
@@ -232,7 +256,6 @@ final class RoamingEnemyMotionTest {
             }
         };
 
-        motion.advanceWithInteraction(source, 0x50, 0x40, () -> 0x0A, interaction, 0x0A, 0x15, false);
         RoamingEnemyMotion.Update blocked =
                 motion.advanceWithInteraction(source, 0x50, 0x40, () -> 0x0A, interaction, 0x0A, 0x15, false);
 

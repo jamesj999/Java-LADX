@@ -72,7 +72,7 @@ public final class StalfosEvasiveMotion {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
-        MoveResult movement = applyBackground(entity, x, y, backgroundCollision);
+        MoveResult movement = applyBackground(entity, x, y, speedX[slot], speedY[slot], backgroundCollision);
         x = movement.x();
         y = movement.y();
 
@@ -99,7 +99,7 @@ public final class StalfosEvasiveMotion {
         int slot = entity.slot();
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
         int y = addSpeedToPosition(entity.y(), speedY[slot], speedYAccumulator, slot);
-        MoveResult movement = applyBackground(entity, x, y, backgroundCollision);
+        MoveResult movement = applyBackground(entity, x, y, speedX[slot], speedY[slot], backgroundCollision);
         RoomEntity updated =
                 withPositionAndVariant(entity, movement.x(), movement.y(), entity.z(), (frame >>> 3) & 0x01);
         if (movement.blocked() || ignoreHitsCountdown != 0) {
@@ -172,19 +172,17 @@ public final class StalfosEvasiveMotion {
     }
 
     static MoveResult applyBackground(
-            RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
-        boolean xBlocked = false;
-        boolean yBlocked = false;
-        {
-            if (x != entity.x() && backgroundCollision.blocks(entity, directionForX(x - entity.x()), x, entity.y())) {
-                x = entity.x();
-                xBlocked = true;
-            }
-            if (y != entity.y() && backgroundCollision.blocks(entity, directionForY(y - entity.y()), x, y)) {
-                y = entity.y();
-                yBlocked = true;
-            }
-        }
+            RoomEntity entity,
+            int x,
+            int y,
+            int speedX,
+            int speedY,
+            RoomEntityBackgroundCollision backgroundCollision) {
+        // $03:7A36 and $03:7A5D probe any nonzero velocity, including a fraction-only step.
+        boolean xBlocked = speedX != 0 && backgroundCollision.blocks(entity, directionForX(signedByte(speedX)), x, y);
+        if (xBlocked) x = entity.x();
+        boolean yBlocked = speedY != 0 && backgroundCollision.blocks(entity, directionForY(signedByte(speedY)), x, y);
+        if (yBlocked) y = entity.y();
         return new MoveResult(x, y, xBlocked, yBlocked);
     }
 
@@ -395,18 +393,14 @@ public final class StalfosEvasiveMotion {
 
             x = StalfosEvasiveMotion.addSpeedToPosition(entity.x(), owner.speedX[slot], owner.speedXAccumulator, slot);
             y = StalfosEvasiveMotion.addSpeedToPosition(entity.y(), owner.speedY[slot], owner.speedYAccumulator, slot);
-            movement = StalfosEvasiveMotion.applyBackground(entity, x, y, backgroundCollision);
+            movement = StalfosEvasiveMotion.applyBackground(
+                    entity, x, y, owner.speedX[slot], owner.speedY[slot], backgroundCollision);
             x = movement.x();
             y = movement.y();
-            if (movement.xBlocked()) {
-                owner.speedX[slot] ^= 0xF0;
-            }
-            if (movement.yBlocked()) {
-                owner.speedY[slot] ^= 0xF0;
-            }
 
-            distanceX = StalfosEvasiveMotion.signedByte(linkEntityX - entity.x());
-            distanceY = StalfosEvasiveMotion.signedByte(linkEntityY - entity.y());
+            // $15:4F66 and $15:4F6F read the position tables after movement and wall rollback.
+            distanceX = StalfosEvasiveMotion.signedByte(linkEntityX - x);
+            distanceY = StalfosEvasiveMotion.signedByte(linkEntityY - y);
             if (actionButtonsHeld
                     && StalfosEvasiveMotion.distanceInJumpWindow(distanceX)
                     && StalfosEvasiveMotion.distanceInJumpWindow(distanceY)) {
@@ -414,8 +408,8 @@ public final class StalfosEvasiveMotion {
                 owner.hitResponseCountdown[slot] = 0;
                 owner.inertia[slot] = 1;
                 owner.speedZ[slot] = 0x15;
-                StalfosEvasiveMotion.Vector vector = StalfosEvasiveMotion.vectorTowardsLink(
-                        entity.x(), entity.y(), entity.z(), linkEntityX, linkEntityY, 0x12);
+                StalfosEvasiveMotion.Vector vector =
+                        StalfosEvasiveMotion.vectorTowardsLink(x, y, entity.z(), linkEntityX, linkEntityY, 0x12);
                 owner.speedX[slot] = -vector.x() & 0xFF;
                 owner.speedY[slot] = -vector.y() & 0xFF;
 
@@ -428,6 +422,12 @@ public final class StalfosEvasiveMotion {
                 return false;
             }
 
+            // $15:4FAE checks X first and skips the Y reversal when X is blocked.
+            if (movement.xBlocked()) {
+                owner.speedX[slot] ^= 0xF0;
+            } else if (movement.yBlocked()) {
+                owner.speedY[slot] ^= 0xF0;
+            }
             // jr_015_4FCE: the initialization state or random low six bits forces
             // a new choice; otherwise the current fixed-point speed is retained.
             if (owner.state[slot] != 0 || (randomByteSupplier.getAsInt() & 0x2F) == 0) {

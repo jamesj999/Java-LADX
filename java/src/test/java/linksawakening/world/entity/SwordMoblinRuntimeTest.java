@@ -17,6 +17,133 @@ import org.junit.jupiter.api.Test;
 final class SwordMoblinRuntimeTest {
 
     @Test
+    void bladeClashesWithRaisedShieldAtTheRoom52ContactPose() {
+        RoomEntityRuntime runtime = room52BladePose();
+        var shield = new EnemyAttackContext(1, false, false, false, false, true, 2, 0);
+
+        var blocked = new EnemyCombatFrame(148, 63, 102, false, 0, false, false, 0, 0, 0, 0, shield);
+        assertTrue(runtime.combat().resolveCombat(blocked).isEmpty());
+
+        var contact = new EnemyCombatFrame(148, 63, 102, false, 0, true, false, 0, 0, 0, 0, shield);
+        var events = runtime.combat().resolveCombat(contact);
+        assertEquals(1, events.size());
+        var clash = events.getFirst();
+        assertEquals(0, clash.linkDamage());
+        assertEquals(0, clash.enemyDamage());
+        assertEquals(EntityCombatEvent.SoundChannel.JINGLE, clash.soundChannel());
+        assertEquals(0x07, clash.soundId());
+        assertEquals(EntityCombatEvent.LinkAction.SWORD_MOBLIN_BLADE_CLASH, clash.linkAction());
+        assertEquals(new EntityCombatEvent.SwordPokeVfx(63, 86), clash.swordPokeVfx());
+        assertEquals(new EntityCombatEvent.LinkCollisionResponse(18, 14, 8), clash.linkCollisionResponse());
+
+        runtime.tick(EntityTestFrames.frame(runtime, 148, 63, 102, () -> 0));
+        assertEquals(44, runtime.inspection().snapshot().slots().get(1).x());
+        assertEquals(87, runtime.inspection().snapshot().slots().get(1).y());
+        assertEquals(8, runtime.enemies().enemyIgnoreHitsCountdown(1));
+        var inspection = new EntityEnemyInspectionQueries(runtime.enemies());
+        assertEquals(0xE8, inspection.enemyRecoilSpeedX(1));
+        assertEquals(0xEE, inspection.enemyRecoilSpeedY(1));
+    }
+
+    @Test
+    void bladeClashesWithAnActiveSwordOrHurtsLinkOnItsBodyContactFrame() {
+        RoomEntityRuntime runtime = room52BladePose();
+        var attack = new EnemyAttackContext(1, false, false, false, false, false, 2, 0);
+        var touchingSword = new EnemyCombatFrame(149, 63, 102, false, 0, true, true, 74, 8, 102, 3, attack);
+        assertTrue(runtime.combat().resolveCombat(touchingSword).isEmpty());
+        var swordFrame = new EnemyCombatFrame(149, 63, 102, false, 0, true, true, 71, 8, 102, 3, attack);
+        var events = runtime.combat().resolveCombat(swordFrame);
+        assertEquals(1, events.size());
+        assertEquals(
+                EntityCombatEvent.LinkAction.SWORD_MOBLIN_BLADE_CLASH,
+                events.getFirst().linkAction());
+        assertEquals(2, runtime.enemies().enemyHealth(1));
+
+        var bladeOnly = new EnemyCombatFrame(148, 56, 91, false, 0, true, false, 0, 0, 0, 0, attack);
+        events = runtime.combat().resolveCombat(bladeOnly);
+        assertEquals(1, events.size());
+        assertEquals(4, events.getFirst().linkDamage());
+        assertEquals(
+                new EntityCombatEvent.LinkCollisionResponse(20, 6, 16),
+                events.getFirst().linkCollisionResponse());
+        assertTrue(runtime.combat()
+                .resolveCombat(new EnemyCombatFrame(149, 56, 91, false, 0, true, false, 0, 0, 0, 0, attack))
+                .isEmpty());
+    }
+
+    @Test
+    void bladeSeesTheSwordTargetLatchedByAnEarlierEnemySlot() {
+        var attack = new EnemyAttackContext(1, false, false, false, false, false, 2, 0);
+        var activeSword = new EnemyCombatFrame(136, 67, 120, false, 0, true, true, 75, 8, 120, 3, attack);
+        RoomEntity blade = room52OrderingMoblin(0, 0x14, 47, 104, 6);
+        RoomEntity ordinary = room52OrderingMoblin(1, 0x0B, 72, 108, 0);
+
+        var onlyBlade = new RoomEntityRuntimeBuilder(snapshotWithSlots(blade)).build();
+        assertEquals(
+                EntityCombatEvent.LinkAction.SWORD_MOBLIN_BLADE_CLASH,
+                onlyBlade.combat().resolveCombat(activeSword).getFirst().linkAction());
+
+        var priorSwingHit = new EnemyCombatFrame(136, 67, 120, false, 0, true, true, 75, 8, 120, 3, attack, 2, true);
+        assertTrue(onlyBlade.combat().resolveCombat(priorSwingHit).isEmpty());
+
+        var twoEnemies = new RoomEntityRuntimeBuilder(snapshotWithSlots(blade, ordinary)).build();
+        var events = twoEnemies.combat().resolveCombat(activeSword);
+        assertEquals(1, events.size());
+        assertEquals(1, events.getFirst().slot());
+        assertEquals(
+                EntityCombatEvent.LinkAction.RECORD_SWORD_HIT_TARGET,
+                events.getFirst().linkAction());
+        assertEquals(1, twoEnemies.enemies().enemyHealth(1));
+    }
+
+    @Test
+    void earlierBodyHitSuppressesBladeClashOnlyWhenLinkAcceptsDamage() {
+        var attack = new EnemyAttackContext(1, false, false, false, false, false, 2, 0);
+        RoomEntity blade = room52OrderingMoblin(0, 0x14, 47, 104, 6);
+        RoomEntity body = room52OrderingMoblin(1, 0x0B, 65, 123, 0);
+        var runtime = new RoomEntityRuntimeBuilder(snapshotWithSlots(blade, body)).build();
+        var activeSword = new EnemyCombatFrame(136, 67, 120, false, 0, true, true, 75, 8, 120, 3, attack);
+        var events = runtime.combat().resolveCombat(activeSword);
+        assertEquals(1, events.size());
+        assertEquals(4, events.getFirst().linkDamage());
+        assertEquals(
+                new EntityCombatEvent.LinkCollisionResponse(13, 236, 16),
+                events.getFirst().linkCollisionResponse());
+
+        var invincible = new EnemyCombatFrame(136, 67, 120, false, 0, true, true, 75, 8, 120, 3, attack, 0, false);
+        events = runtime.combat().resolveCombat(invincible);
+        assertEquals(
+                EntityCombatEvent.LinkAction.SWORD_MOBLIN_BLADE_CLASH,
+                events.getLast().linkAction());
+        assertEquals(
+                new EntityCombatEvent.LinkCollisionResponse(18, 14, 8),
+                events.getLast().linkCollisionResponse());
+    }
+
+    private static RoomEntity room52OrderingMoblin(int slot, int type, int x, int y, int variant) {
+        return new RoomEntityBuilder()
+                .slot(slot)
+                .sourceLoadOrder(slot)
+                .type(type)
+                .at(x, y)
+                .spriteDefinition(pairDefinition(type, 8))
+                .spriteVariant(variant)
+                .build();
+    }
+
+    private static RoomEntityRuntime room52BladePose() {
+        RoomEntity moblin = new RoomEntityBuilder()
+                .slot(1)
+                .sourceLoadOrder(0)
+                .type(0x14)
+                .at(44, 87)
+                .spriteDefinition(pairDefinition(0x14, 8))
+                .spriteVariant(7)
+                .build();
+        return new RoomEntityRuntimeBuilder(snapshotWithSlots(moblin)).build();
+    }
+
+    @Test
     void moblinSwordUsesTheBankSevenIdleAlertAndSlowWalkingStates() {
         EntitySpriteDefinition definition = pairDefinition(0x14, 8);
         RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
@@ -170,6 +297,7 @@ final class SwordMoblinRuntimeTest {
         EntityCombatEvent event = events.get(0);
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, event.soundChannel());
         assertEquals(0x03, event.soundId());
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0x00)));
         assertEquals(0x18, new EntityEnemyInspectionQueries(runtime.enemies()).enemyFlashCountdown(0));
         assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertTrue(new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(0));

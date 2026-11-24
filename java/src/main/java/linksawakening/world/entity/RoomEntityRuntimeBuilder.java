@@ -151,7 +151,9 @@ public final class RoomEntityRuntimeBuilder {
         final EntitySlotPresentation slotPropertiesState;
         final EntityProjectileState projectileState = new EntityProjectileState();
         final EntityWarpController warpState = new EntityWarpController();
-        final EntitySlots slots = new EntitySlots(initial().slots());
+        final EntitySlots slots = romTablesSupplied
+                ? new EntitySlots(initial().slots(), romTables.entityPropertyTables()::entityPhysicsFlags)
+                : new EntitySlots(initial().slots());
         final EntityRuntimeState entityState = new EntityRuntimeState(slots);
         final EntityFrameExecution frameExecution;
         final EntityPlayerCommands playerCommands;
@@ -420,7 +422,6 @@ public final class RoomEntityRuntimeBuilder {
                 entityState.events(),
                 entityState.linkState(),
                 entityState.motions(),
-                roomInspection,
                 slotProperties,
                 enemyCombatTables,
                 slots,

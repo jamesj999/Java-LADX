@@ -51,6 +51,7 @@ public final class MoldormMotion {
     private final int[] steeringCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     // GetEntityPrivateCountdown2: $C8-frame acceleration after a sword hit.
     private final int[] hitAccelerationCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] accelerationWrittenBeforeTimerPhase = new boolean[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -92,6 +93,7 @@ public final class MoldormMotion {
         turnStep[slot] = 0;
         steeringCountdown[slot] = 0;
         hitAccelerationCountdown[slot] = 0;
+        accelerationWrittenBeforeTimerPhase[slot] = false;
         speedX[slot] = 0;
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;
@@ -122,6 +124,7 @@ public final class MoldormMotion {
         turnStep[slot] = 0;
         steeringCountdown[slot] = 0;
         hitAccelerationCountdown[slot] = 0;
+        accelerationWrittenBeforeTimerPhase[slot] = false;
         speedX[slot] = 0;
         speedY[slot] = 0;
         speedXAccumulator[slot] = 0;
@@ -140,6 +143,35 @@ public final class MoldormMotion {
             int health,
             IntSupplier randomByteSupplier,
             RoomEntityBackgroundInteraction backgroundInteraction) {
+        tickPrivateCountdowns(entity.slot());
+        return advanceAfterPrivateTimers(
+                entity,
+                frameCounter,
+                transitionCountdown,
+                ignoreHitsCountdown,
+                flashCountdown,
+                health,
+                randomByteSupplier,
+                backgroundInteraction);
+    }
+
+    public void tickPrivateCountdowns(int slot) {
+        if (steeringCountdown[slot] > 0) steeringCountdown[slot]--;
+        if (hitAccelerationCountdown[slot] > 0 && !accelerationWrittenBeforeTimerPhase[slot]) {
+            hitAccelerationCountdown[slot]--;
+        }
+        accelerationWrittenBeforeTimerPhase[slot] = false;
+    }
+
+    public Update advanceAfterPrivateTimers(
+            RoomEntity entity,
+            int frameCounter,
+            int transitionCountdown,
+            int ignoreHitsCountdown,
+            int flashCountdown,
+            int health,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundInteraction backgroundInteraction) {
         backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
         int slot = entity.slot();
         if (!initialized[slot]) {
@@ -148,13 +180,6 @@ public final class MoldormMotion {
         if (randomByteSupplier == null) {
             throw new IllegalArgumentException("Moldorm random source cannot be null");
         }
-        if (steeringCountdown[slot] > 0) {
-            steeringCountdown[slot]--;
-        }
-        if (hitAccelerationCountdown[slot] > 0) {
-            hitAccelerationCountdown[slot]--;
-        }
-
         int nextTransition = transitionCountdown & 0xFF;
         if (nextTransition > 0) {
             nextTransition--;
@@ -172,6 +197,7 @@ public final class MoldormMotion {
             // Both accelerated passes record the entry position, not the first pass result.
             recordHistory(slot, entity.x(), (entity.y() - entity.z()) & 0xFF);
             Movement movement = moveAndSteer(
+                    entity,
                     moved,
                     frameCounter,
                     nextTransition,
@@ -221,6 +247,8 @@ public final class MoldormMotion {
 
     public void onSwordHit(int slot) {
         hitAccelerationCountdown[slot] = 0xC8;
+        // The source sets this after its common countdown pass.
+        accelerationWrittenBeforeTimerPhase[slot] = true;
     }
 
     public MoldormSegmentPosition vulnerableTail(int slot) {
@@ -233,6 +261,7 @@ public final class MoldormMotion {
     }
 
     private Movement moveAndSteer(
+            RoomEntity frameEntry,
             RoomEntity entity,
             int frameCounter,
             int transitionCountdown,
@@ -245,40 +274,33 @@ public final class MoldormMotion {
         int y = entity.y() & 0xFF;
         int collisionFlags = 0;
         if ((flashCountdown & 0xFF) == 0) {
-            int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
-            if (nextX != x) {
-                int direction = signedByte(speedX[slot]) < 0
-                        ? EntityBackgroundCollisionResult.LEFT
-                        : EntityBackgroundCollisionResult.RIGHT;
-                EntityBackgroundCollisionResult result = backgroundInteraction.probe(
-                        entity, direction, nextX, y, ignoreHitsCountdown & 0xFF, frameCounter);
-                if (result.blocked()) {
-                    collisionFlags |= result.collisionFlag();
-                } else {
-                    x = nextX;
-                }
-            } else {
-                x = nextX;
+            x = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
+            y = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
+        }
+        // $04:5AEE integrates both axes before the speed-based probes at
+        // $03:7A36/$7A5D. A blocked axis restores the $04:5791 frame-entry
+        // integer, including on the second accelerated pass.
+        if (speedX[slot] != 0) {
+            int direction = signedByte(speedX[slot]) < 0
+                    ? EntityBackgroundCollisionResult.LEFT
+                    : EntityBackgroundCollisionResult.RIGHT;
+            EntityBackgroundCollisionResult result =
+                    backgroundInteraction.probe(entity, direction, x, y, ignoreHitsCountdown & 0xFF, frameCounter);
+            if (result.blocked()) {
+                collisionFlags |= result.collisionFlag();
+                x = frameEntry.x() & 0xFF;
             }
-
-            int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
-            if (nextY != y) {
-                int direction = signedByte(speedY[slot]) < 0
-                        ? EntityBackgroundCollisionResult.UP
-                        : EntityBackgroundCollisionResult.DOWN;
-                EntityBackgroundCollisionResult result = backgroundInteraction.probe(
-                        entity, direction, x, nextY, ignoreHitsCountdown & 0xFF, frameCounter);
-                if (result.blocked()) {
-                    collisionFlags |= result.collisionFlag();
-                } else {
-                    y = nextY;
-                }
-            } else {
-                y = nextY;
+        }
+        if (speedY[slot] != 0) {
+            int direction = signedByte(speedY[slot]) < 0
+                    ? EntityBackgroundCollisionResult.UP
+                    : EntityBackgroundCollisionResult.DOWN;
+            EntityBackgroundCollisionResult result =
+                    backgroundInteraction.probe(entity, direction, x, y, ignoreHitsCountdown & 0xFF, frameCounter);
+            if (result.blocked()) {
+                collisionFlags |= result.collisionFlag();
+                y = frameEntry.y() & 0xFF;
             }
-        } else {
-            collisionFlags = probeBackgroundWithoutMovement(
-                    entity, x, y, ignoreHitsCountdown, frameCounter, backgroundInteraction);
         }
 
         if (collisionFlags != 0) {
@@ -314,39 +336,6 @@ public final class MoldormMotion {
 
     private List<MoldormSegmentPosition> tailSegments(int slot) {
         return tailSnapshots.read(slot, inertia[slot], historyX[slot], historyY[slot], HISTORY_MASK);
-    }
-
-    private int probeBackgroundWithoutMovement(
-            RoomEntity entity,
-            int x,
-            int y,
-            int ignoreHitsCountdown,
-            int frameCounter,
-            RoomEntityBackgroundInteraction backgroundInteraction) {
-        {
-        }
-        int collisionFlags = 0;
-        int signedSpeedX = signedByte(speedX[entity.slot()]);
-        if (signedSpeedX != 0) {
-            int direction =
-                    signedSpeedX < 0 ? EntityBackgroundCollisionResult.LEFT : EntityBackgroundCollisionResult.RIGHT;
-            EntityBackgroundCollisionResult result =
-                    backgroundInteraction.probe(entity, direction, x, y, ignoreHitsCountdown & 0xFF, frameCounter);
-            if (result.blocked()) {
-                collisionFlags |= result.collisionFlag();
-            }
-        }
-        int signedSpeedY = signedByte(speedY[entity.slot()]);
-        if (signedSpeedY != 0) {
-            int direction =
-                    signedSpeedY < 0 ? EntityBackgroundCollisionResult.UP : EntityBackgroundCollisionResult.DOWN;
-            EntityBackgroundCollisionResult result =
-                    backgroundInteraction.probe(entity, direction, x, y, ignoreHitsCountdown & 0xFF, frameCounter);
-            if (result.blocked()) {
-                collisionFlags |= result.collisionFlag();
-            }
-        }
-        return collisionFlags;
     }
 
     private static RoomEntity withPosition(RoomEntity entity, int x, int y) {

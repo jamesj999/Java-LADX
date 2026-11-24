@@ -84,6 +84,31 @@ final class EvasiveStalfosRuntimeTest {
     }
 
     @Test
+    void evasiveStalfosChecksTheJumpWindowAfterItsGroundMovement() {
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x1E)
+                        .at(64, 72)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(pairDefinition(0x1E, 3))
+                        .build()))
+                .build();
+        for (int frame = 0; frame <= 3; frame++) {
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 100, 72, sequence(0x01)));
+        }
+        assertEquals(64, runtime.inspection().slots().get(0).x());
+
+        runtime.configuration().setActionButtonsHeld(true);
+        runtime.tick(EntityTestFrames.frame(runtime, 4, 100, 72, sequence(0x01)));
+
+        var queries = new EntityEnemyInspectionQueries(runtime.enemies());
+        assertEquals(65, runtime.inspection().slots().get(0).x());
+        assertEquals(1, queries.evasiveInertia(0));
+        assertEquals(0xEE, queries.evasiveSpeedX(0));
+        assertEquals(0x08, runtime.enemies().transitionCountdown(0));
+    }
+
+    @Test
     void evasiveStalfosCanBeHitInMidairAfterItsEightFrameJumpGracePeriod() {
         RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)

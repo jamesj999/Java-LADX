@@ -147,6 +147,29 @@ public final class EnemyRecoilMotion {
         return active[slot];
     }
 
+    Update advanceWithHandlerFractions(
+            RoomEntity entity,
+            RoomEntityBackgroundCollision background,
+            int[] xAccumulator,
+            int[] yAccumulator,
+            boolean stopOnDominantCollision) {
+        int slot = entity.slot();
+        int velocityX = recoilSpeedX[slot];
+        int velocityY = recoilSpeedY[slot];
+        int x = addSpeedToPosition(entity.x(), velocityX, xAccumulator, slot);
+        int y = addSpeedToPosition(entity.y(), velocityY, yAccumulator, slot);
+        // Both speed updates precede $03:7A36 and $03:7A5D. A nonzero
+        // speed probes the wall even if this step moved only the fraction.
+        boolean blockedX = velocityX != 0 && background.blocks(entity, horizontalDirection(velocityX), x, y);
+        if (blockedX) x = entity.x();
+        boolean blockedY = velocityY != 0 && background.blocks(entity, verticalDirection(velocityY), x, y);
+        if (blockedY) y = entity.y();
+        // $00:3ECC picks vertical when the absolute components are equal.
+        boolean stop = stopOnDominantCollision
+                && (Math.abs(signedByte(velocityX)) > Math.abs(signedByte(velocityY)) ? blockedX : blockedY);
+        return new Update(withPosition(entity, x, y), stop);
+    }
+
     public int recoilSpeedX(int slot) {
         validateSlot(slot);
         return recoilSpeedX[slot];

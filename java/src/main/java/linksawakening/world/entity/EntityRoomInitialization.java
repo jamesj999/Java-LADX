@@ -2,7 +2,6 @@ package linksawakening.world.entity;
 
 import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
 import static linksawakening.world.entity.EntityTypeRules.initialHitboxFlags;
-import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
 import static linksawakening.world.entity.EntityTypeRules.isBombiteType;
 import static linksawakening.world.entity.EntityTypeRules.isFollowingNpcType;
 import static linksawakening.world.entity.EntityTypeRules.isGhiniType;
@@ -162,8 +161,11 @@ final class EntityRoomInitialization {
         if (entity.loaded()) this.lifecycle.initializeHealthGroup(entity.slot());
         this.combatTables.writeEnemyHealth(
                 entity.slot(), entity.loaded() ? this.slotProperties.initialHealth(entity.type()) : 0);
-        this.physicsTables.writeEnemyPhysicsFlags(
-                entity.slot(), entity.loaded() ? initialPhysicsFlags(entity.type()) : 0);
+        if (entity.loaded()) {
+            this.physicsTables.initializeEnemyPhysicsFlags(entity.slot(), entity.type());
+        } else {
+            this.physicsTables.writeEnemyPhysicsFlags(entity.slot(), 0);
+        }
         this.combatTables.writeEnemyHitboxFlags(entity.slot(), entity.loaded() ? initialHitboxFlags(entity.type()) : 0);
         // Room-loaded indoor warps start at state 1 ($03:4F75).
         // State 0 is reserved for dynamically spawned warps.

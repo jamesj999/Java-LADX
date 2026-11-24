@@ -72,7 +72,7 @@ final class EnemyProjectileCollisionTest {
                         projectile(0x0A, 0x40, 0x50, 0), 0, link(0x40, 0x50, 0, 0x00, 0, false))
                 .orElseThrow();
         assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, rockHit.kind());
-        assertEquals(0x08, rockHit.linkDamage());
+        assertEquals(0x04, rockHit.linkDamage());
         assertEquals(0xFF, rockHit.collisionValue());
         assertEquals(EntityProjectileEvent.SoundChannel.WAVE, rockHit.soundChannel());
         assertEquals(0x03, rockHit.soundId());
@@ -85,7 +85,7 @@ final class EnemyProjectileCollisionTest {
                         projectile(0x0C, 0x40, 0x50, 0), 0, link(0x40, 0x50, 0, 0x00, 0, false))
                 .orElseThrow();
         assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, arrowHit.kind());
-        assertEquals(0x08, arrowHit.linkDamage());
+        assertEquals(0x04, arrowHit.linkDamage());
         assertEquals(0, arrowHit.collisionValue());
         assertTrue(arrowHit.remove());
 
@@ -93,6 +93,32 @@ final class EnemyProjectileCollisionTest {
                         projectile(0x0A, 0x40, 0x50, 0), 0, link(0x40, 0x50, 0, 0x00, 0, true))
                 .orElseThrow();
         assertEquals(EntityProjectileEvent.Kind.LINK_DAMAGE, shieldFacingHit.kind());
+    }
+
+    @Test
+    void arrowRespectsCollisionIgnoreWithoutChangingUnloadOrShieldDeflection() {
+        RoomEntity arrow = projectile(0x0C, 80, 67, 0);
+        var vulnerable = new EnemyProjectileCollision.LinkState(75, 63, 0, 0, 3, true, 1, 0);
+        var hit = EnemyProjectileCollision.check(arrow, 1, vulnerable).orElseThrow();
+        assertEquals(4, hit.linkDamage());
+        assertEquals(236, hit.linkSpeedX());
+        assertEquals(240, hit.linkSpeedY());
+        assertEquals(16, hit.linkIgnoreCollisionCountdown());
+
+        var south = new EnemyProjectileCollision.LinkState(75, 63, 0, 0, 3, true, 1, 0, true);
+        var ignored = EnemyProjectileCollision.check(arrow, 1, south).orElseThrow();
+        assertTrue(ignored.remove());
+        assertEquals(0, ignored.linkDamage());
+        assertEquals(0, ignored.linkSpeedX());
+        assertEquals(0, ignored.linkSpeedY());
+        assertEquals(0, ignored.linkIgnoreCollisionCountdown());
+        assertEquals(EntityProjectileEvent.SoundChannel.NONE, ignored.soundChannel());
+
+        var right = new EnemyProjectileCollision.LinkState(75, 63, 0, 0, 0, true, 1, 0, true);
+        var blocked = EnemyProjectileCollision.check(arrow, 1, right).orElseThrow();
+        assertEquals(EntityProjectileEvent.Kind.SHIELD_BLOCK, blocked.kind());
+        assertEquals(0xFF, blocked.collisionValue());
+        assertFalse(blocked.remove());
     }
 
     @Test

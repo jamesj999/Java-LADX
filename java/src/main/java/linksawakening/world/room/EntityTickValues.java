@@ -4,6 +4,10 @@ package linksawakening.world.room;
 public interface EntityTickValues {
     int frameCounter();
 
+    default boolean incomingScrollOnly() {
+        return false;
+    }
+
     EntityFrameValues.Position position();
 
     EntityFrameValues.Motion motion();

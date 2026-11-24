@@ -19,7 +19,7 @@ final class MoblinHandler {
         var slotState = state.slotFrame();
 
         state.motion(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
-                .initialize(slotState.entity().slot());
+                .initializeWithProjectileDelay(slotState.entity().slot());
 
         return true;
     }

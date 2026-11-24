@@ -1,7 +1,5 @@
 package linksawakening.world.entity;
 
-import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
-
 import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
@@ -726,7 +724,7 @@ public final class EntityPlayerSpawns {
         this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
         this.combatTables.writeDyingCountdown(freeSlot, 0);
         this.combatTables.writePowerRecoilDeath(freeSlot, false);
-        this.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(itemType));
+        this.physicsTables.initializeEnemyPhysicsFlags(freeSlot, itemType);
         this.combatTables.writeEnemyHealth(freeSlot, this.slotProperties.initialHealth(itemType));
         this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
         this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);

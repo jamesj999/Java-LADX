@@ -366,6 +366,10 @@ public final class RoomEntityCombatRules {
 
     static int entityCombatDefaultsContactDamage(int type) {
         return switch (type & 0xFF) {
+            case EntityRomConstants.ENTITY_OCTOROK_ROCK, EntityRomConstants.ENTITY_MOBLIN_ARROW -> 0x04;
+            case EntityRomConstants.ENTITY_WIZROBE_PROJECTILE,
+                    EntityRomConstants.ENTITY_PAIRODD_PROJECTILE,
+                    EntityRomConstants.ENTITY_LASER_BEAM -> 0x08;
             case ENTITY_KEESE,
                     ENTITY_OCTOROK,
                     ENTITY_PEAHAT,

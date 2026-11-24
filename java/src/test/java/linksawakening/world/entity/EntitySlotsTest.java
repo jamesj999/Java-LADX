@@ -27,6 +27,18 @@ class EntitySlotsTest {
     }
 
     @Test
+    void romFreeRoomsKeepExplicitLiftFlagsAndZeroForOmittedTypes() {
+        var initial = EntityRuntimeTestSupport.snapshot(
+                TestEntities.active(0x09).slot(0).build(),
+                TestEntities.active(0xD6).slot(1).build());
+        var runtime = new RoomEntityRuntimeBuilder(initial).build();
+
+        assertEquals(0, runtime.enemies().physicsFlags(0));
+        assertEquals(
+                EntityRomConstants.ENTITY_PHYSICS_GRABBABLE, runtime.enemies().physicsFlags(1));
+    }
+
+    @Test
     void allocationSearchIsDescendingAndResetsOnlyTheSelectedHitbox() {
         var slots = new EntitySlots(List.of(RoomEntity.disabled(0), RoomEntity.disabled(1), RoomEntity.disabled(2)));
         var combat = slots.combat();

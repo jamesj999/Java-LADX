@@ -3,7 +3,6 @@ package linksawakening.world.entity;
 import static linksawakening.world.entity.EntityMotionMath.byteValue;
 import static linksawakening.world.entity.EntityMotionMath.signedByte;
 import static linksawakening.world.entity.EntityTypeRules.initialHitboxFlags;
-import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
 
 import java.util.Objects;
 import linksawakening.entity.EntitySpriteDefinition;
@@ -113,8 +112,7 @@ public final class EntityEnemySpawns {
         this.lifecycle.initializeHealthGroup(freeSlot);
         this.pickups.resetEnemyDropState(freeSlot);
         this.bossRewards.writeDroppedItemBySlot(freeSlot, EntityRomConstants.ENTITY_HIDING_SLIME_KEY);
-        this.physicsTables.writeEnemyPhysicsFlags(
-                freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_MOBLIN_SWORD));
+        this.physicsTables.initializeEnemyPhysicsFlags(freeSlot, EntityRomConstants.ENTITY_MOBLIN_SWORD);
         this.combatTables.writeEnemyHealth(
                 freeSlot, this.slotProperties.initialHealth(EntityRomConstants.ENTITY_MOBLIN_SWORD));
         this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
@@ -325,7 +323,7 @@ public final class EntityEnemySpawns {
         this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
         this.combatTables.writeDyingCountdown(freeSlot, 0);
         this.combatTables.writePowerRecoilDeath(freeSlot, false);
-        this.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_POKEY));
+        this.physicsTables.initializeEnemyPhysicsFlags(freeSlot, EntityRomConstants.ENTITY_POKEY);
         this.combatTables.writeEnemyHitboxFlags(freeSlot, initialHitboxFlags(EntityRomConstants.ENTITY_POKEY));
         this.combatTables.writeEnemyHealth(
                 freeSlot, this.slotProperties.initialHealth(EntityRomConstants.ENTITY_POKEY));

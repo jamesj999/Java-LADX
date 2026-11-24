@@ -13,6 +13,37 @@ record EnemyCombatFrame(
         int swordWidth,
         int swordY,
         int swordHeight,
-        // Optional attack details; null selects the existing default attack context.
-        EnemyAttackContext attackContext)
-        implements EnemyCombatInputs {}
+        EnemyAttackContext attackContext,
+        int swordHitTarget,
+        boolean linkCanTakeContactDamage)
+        implements EnemyCombatInputs {
+    EnemyCombatFrame(
+            int frameCounter,
+            int linkEntityX,
+            int linkEntityY,
+            boolean linkAirborne,
+            int linkVerticalVelocity,
+            boolean linkInteractive,
+            boolean swordCollisionActive,
+            int swordX,
+            int swordWidth,
+            int swordY,
+            int swordHeight,
+            EnemyAttackContext attackContext) {
+        this(
+                frameCounter,
+                linkEntityX,
+                linkEntityY,
+                linkAirborne,
+                linkVerticalVelocity,
+                linkInteractive,
+                swordCollisionActive,
+                swordX,
+                swordWidth,
+                swordY,
+                swordHeight,
+                attackContext,
+                0,
+                true);
+    }
+}

@@ -5,6 +5,7 @@ import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
@@ -54,6 +55,12 @@ public final class RoamingEnemyMotion {
         horizontallyCollidedObject[slot] = 0;
         verticallyCollidedObject[slot] = 0;
         initialized[slot] = true;
+    }
+
+    /** EntityInitWithCountdown ($03:4FAF) initializes Octorok and ordinary Moblin. */
+    public void initializeWithProjectileDelay(int slot) {
+        initialize(slot);
+        attackPauseCountdown[slot] = 0xA0;
     }
 
     public RoomEntity advance(
@@ -142,7 +149,30 @@ public final class RoamingEnemyMotion {
             int ignoreHitsCountdown,
             int frameCounter,
             boolean creditsGameplay) {
-        return advanceInternal(new RoamingEnemyFrame(
+        if (!initialized[entity.slot()]) initialize(entity.slot());
+        tickTimers(entity.slot());
+        return advanceAfterTimers(
+                entity,
+                linkEntityX,
+                linkEntityY,
+                randomByteSupplier,
+                backgroundInteraction,
+                ignoreHitsCountdown,
+                frameCounter,
+                creditsGameplay);
+    }
+
+    /** Executes AnimateRoamingEnemy after the shared entity countdowns have run. */
+    public Update advanceAfterTimers(
+            RoomEntity entity,
+            int linkEntityX,
+            int linkEntityY,
+            IntSupplier randomByteSupplier,
+            RoomEntityBackgroundInteraction backgroundInteraction,
+            int ignoreHitsCountdown,
+            int frameCounter,
+            boolean creditsGameplay) {
+        return roamingEnemyFrameStep.run(new RoamingEnemyFrame(
                 entity,
                 linkEntityX,
                 linkEntityY,
@@ -151,10 +181,6 @@ public final class RoamingEnemyMotion {
                 ignoreHitsCountdown,
                 frameCounter,
                 creditsGameplay));
-    }
-
-    private linksawakening.world.entity.motion.RoamingEnemyMotion.Update advanceInternal(RoamingEnemyFrame inputs) {
-        return roamingEnemyFrameStep.run(inputs);
     }
 
     LaunchRequest launchRequestIfEligible(
@@ -193,6 +219,23 @@ public final class RoamingEnemyMotion {
         state[slot] = 1;
         transitionCountdown[slot] = 0x40;
         initialized[slot] = true;
+    }
+
+    public EnemyRecoilMotion.Update applyIncomingRecoil(
+            RoomEntity entity, RoomEntityBackgroundCollision background, EnemyRecoilMotion recoil) {
+        int slot = entity.slot();
+        if (!initialized[slot]) initialize(slot);
+        if (entity.status() != EntityStatus.DYING) beginRecoil(slot);
+        return recoil.advanceWithHandlerFractions(entity, background, speedXAccumulator, speedYAccumulator, true);
+    }
+
+    public void finishLethalSwordHitWhilePaused(int slot) {
+        state[slot] = 0;
+    }
+
+    public void tickTimers(int slot) {
+        if (attackPauseCountdown[slot] > 0) attackPauseCountdown[slot]--;
+        if (transitionCountdown[slot] > 0) transitionCountdown[slot]--;
     }
 
     public int state(int slot) {
@@ -357,13 +400,6 @@ public final class RoamingEnemyMotion {
             if (!owner.initialized[slot]) {
                 owner.initialize(slot);
             }
-            if (owner.attackPauseCountdown[slot] > 0) {
-                owner.attackPauseCountdown[slot]--;
-            }
-            if (owner.transitionCountdown[slot] > 0) {
-                owner.transitionCountdown[slot]--;
-            }
-
             if (owner.state[slot] != 0) {
                 RoamingEnemyMotion.LaunchRequest launchRequest =
                         owner.launchRequestIfEligible(entity, linkEntityX, linkEntityY, creditsGameplay);
@@ -382,10 +418,7 @@ public final class RoamingEnemyMotion {
                     owner.speedX[slot] = RoamingEnemyMotion.speedXFor(entity.type(), owner.direction[slot]);
                     owner.speedY[slot] = RoamingEnemyMotion.speedYFor(entity.type(), owner.direction[slot]);
                 } else {
-                    // $03:7A30-7A64 clears collisions, then skips both wall
-                    // probes when paused (both speeds are zero).
-                    owner.collisionsTable[slot] = 0;
-                    owner.horizontallyCollidedObject[slot] = 0;
+                    probePausedBackground();
                 }
 
                 completedResult = new RoamingEnemyMotion.Update(entity, launchRequest);
@@ -395,6 +428,31 @@ public final class RoamingEnemyMotion {
             x = entity.x();
             y = entity.y();
             return true;
+        }
+
+        private void probePausedBackground() {
+            // $03:5889 still probes with the ordinary speeds restored by
+            // recoil, at the current coordinates without advancing XY.
+            owner.collisionsTable[slot] = 0;
+            owner.horizontallyCollidedObject[slot] = 0;
+            if (owner.speedX[slot] != 0) {
+                int directionX = (owner.speedX[slot] & 0x80) == 0 ? 0 : 1;
+                var result = backgroundInteraction.probe(
+                        entity, directionX, entity.x(), entity.y(), ignoreHitsCountdown, frameCounter);
+                if (result.blocked()) {
+                    owner.collisionsTable[slot] |= result.collisionFlag();
+                    owner.horizontallyCollidedObject[slot] = result.objectId();
+                }
+            }
+            if (owner.speedY[slot] != 0) {
+                int directionY = (owner.speedY[slot] & 0x80) == 0 ? 3 : 2;
+                var result = backgroundInteraction.probe(
+                        entity, directionY, entity.x(), entity.y(), ignoreHitsCountdown, frameCounter);
+                if (result.blocked()) {
+                    owner.collisionsTable[slot] |= result.collisionFlag();
+                    owner.verticallyCollidedObject[slot] = result.objectId();
+                }
+            }
         }
 
         private boolean chooseDirectionAndAnimation() {
@@ -407,7 +465,9 @@ public final class RoamingEnemyMotion {
                 owner.collisionsTable[slot] = 0;
             } else {
                 int nextX = RoamingEnemyMotion.addSpeedToPosition(x, owner.speedX[slot], owner.speedXAccumulator, slot);
-                if (nextX != x) {
+                // $03:7A36 and $03:7A5D test speed, including steps that
+                // update only the fractional position accumulator.
+                if (owner.speedX[slot] != 0) {
                     EntityBackgroundCollisionResult result = backgroundInteraction.probe(
                             entity, owner.direction[slot], nextX, y, ignoreHitsCountdown, frameCounter);
                     if (result.blocked()) {
@@ -421,7 +481,7 @@ public final class RoamingEnemyMotion {
                 }
 
                 int nextY = RoamingEnemyMotion.addSpeedToPosition(y, owner.speedY[slot], owner.speedYAccumulator, slot);
-                if (nextY != y) {
+                if (owner.speedY[slot] != 0) {
                     EntityBackgroundCollisionResult result = backgroundInteraction.probe(
                             entity, owner.direction[slot], x, nextY, ignoreHitsCountdown, frameCounter);
                     if (result.blocked()) {

@@ -369,7 +369,7 @@ public final class SlimeEyeController {
                         false));
         this.lifecycle.initializeHealthGroup(s);
         this.combatTables.writeEnemyHealth(s, this.slotProperties.initialHealth(type));
-        this.physicsTables.writeEnemyPhysicsFlags(s, EntityTypeRules.initialPhysicsFlags(type));
+        this.physicsTables.initializeEnemyPhysicsFlags(s, type);
         this.combatTables.writeEnemyIgnoreHitsCountdown(s, 1);
         this.physicsTables.writeDynamicEntitySpawnedThisFrame(s, true);
         return s;

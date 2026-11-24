@@ -303,6 +303,9 @@ public final class PhaseFixture {
 
     public AnimatedTilesPhase tiles() {
         return new AnimatedTilesPhase(
+                state.clock(),
+                s.player().link(),
+                s.ui().dialogController(),
                 s.ui().inventoryController(),
                 s.world().roomSession(),
                 s.world().scrollController(),

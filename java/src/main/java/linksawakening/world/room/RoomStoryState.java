@@ -193,8 +193,7 @@ final class RoomStoryState implements RoomStory {
         if (state == null) {
             throw new IllegalArgumentException("Follower state cannot be null");
         }
-        dependencies.followers().followingLinkX(linkX & 0xFF);
-        dependencies.followers().followingLinkY(linkY & 0xFF);
+        rememberFollowingNpcPosition(linkX, linkY);
         dependencies.followers().followingLinkZ(linkZ & 0xFF);
         dependencies.followers().followingEntityYOffset(entityYOffset & 0xFF);
         dependencies.followers().followingLinkDirection(linkDirection & 0xFF);
@@ -202,6 +201,11 @@ final class RoomStoryState implements RoomStory {
             dependencies.followers().followingNpcRoomNeedsSync(true);
         }
         dependencies.followers().followingNpcState(state);
+    }
+
+    void rememberFollowingNpcPosition(int linkX, int linkY) {
+        dependencies.followers().followingLinkX(linkX & 0xFF);
+        dependencies.followers().followingLinkY(linkY & 0xFF);
     }
 
     @Override

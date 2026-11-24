@@ -86,7 +86,13 @@ public final class FrameInputCache {
         return sword;
     }
 
-    public EnemyCombatInputs combat(Sword.CollisionBox b, EnemyAttackContext attackContext) {
+    public EnemyCombatInputs combat(
+            Sword.CollisionBox b,
+            EnemyAttackContext attackContext,
+            boolean bladeClashCoolingDown,
+            boolean goombaBounceActive,
+            int swordHitTarget,
+            boolean linkCanTakeContactDamage) {
         combat.frameCounter = this.clock.value();
         combat.linkEntityX = this.playerLink.position().romEntityX();
         combat.linkEntityY = this.playerLink.position().romEntityY();
@@ -95,9 +101,19 @@ public final class FrameInputCache {
                 ? this.playerLink.position().romSpeedY()
                 : this.playerLink.airborne().zVelocity();
         combat.linkInteractive = !this.debugState.debugNoClip();
+        combat.linkIgnoresContact = this.playerLink.status().ignoringContactCollisions();
+        combat.goombaBounceActive = goombaBounceActive;
+        combat.linkBladeClashCoolingDown = bladeClashCoolingDown;
+        combat.swordHitTarget = swordHitTarget;
+        combat.linkCanTakeContactDamage = linkCanTakeContactDamage;
         combat.sword = sword(b.active(), b.x(), b.width(), b.y(), b.height());
         combat.attackContext = attackContext;
         return combat;
+    }
+
+    boolean keepsShieldCombatRectangle(EnemyAttackContext attack) {
+        // $02:4878 skips overwriting the shield rectangle on odd frames.
+        return attack.usingShield() && !attack.spinAttack() && (clock.value() & 1) != 0;
     }
 
     public EntityPickupFrameInputs pickup(Sword.CollisionBox b) {
@@ -186,6 +202,9 @@ public final class FrameInputCache {
     private static final class CombatFrame implements EnemyCombatInputs {
         private int frameCounter, linkEntityX, linkEntityY, linkVerticalVelocity;
         private boolean linkAirborne, linkInteractive;
+        private boolean linkIgnoresContact, linkBladeClashCoolingDown, goombaBounceActive;
+        private int swordHitTarget;
+        private boolean linkCanTakeContactDamage;
         // Captured values are filled before publication, not optional collaborators.
         private SwordBox sword;
         private EnemyAttackContext attackContext;
@@ -218,6 +237,31 @@ public final class FrameInputCache {
         @Override
         public boolean linkInteractive() {
             return linkInteractive;
+        }
+
+        @Override
+        public boolean linkIgnoresContact() {
+            return linkIgnoresContact;
+        }
+
+        @Override
+        public boolean goombaBounceActive() {
+            return goombaBounceActive;
+        }
+
+        @Override
+        public boolean linkBladeClashCoolingDown() {
+            return linkBladeClashCoolingDown;
+        }
+
+        @Override
+        public int swordHitTarget() {
+            return swordHitTarget;
+        }
+
+        @Override
+        public boolean linkCanTakeContactDamage() {
+            return linkCanTakeContactDamage;
         }
 
         @Override

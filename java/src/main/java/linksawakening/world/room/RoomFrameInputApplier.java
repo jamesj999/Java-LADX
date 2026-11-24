@@ -27,6 +27,8 @@ final class RoomFrameInputApplier {
     }
 
     List<EntityProjectileEvent> tick(EntityFrameValues inputs) {
+        if (inputs.incomingScrollOnly()) return bridge.tickEntities(inputs);
+
         entityInputs.updateEntityDialogActive(inputs.ui().dialogActive());
         entityInputs.updateEntityTalkState(
                 inputs.ui().inventoryAppearing(),

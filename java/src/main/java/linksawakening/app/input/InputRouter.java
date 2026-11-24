@@ -43,9 +43,6 @@ import linksawakening.world.transition.Warp;
 // Menu direction is a signed selection step, not a cardinal facing.
 public final class InputRouter implements DebugScroll {
 
-    private static final int ROOM_PIXEL_WIDTH = 160;
-
-    private static final int ROOM_PIXEL_HEIGHT = 128;
     private final InputServices input;
     private final WorldServices world;
     private final PlayerServices player;
@@ -215,24 +212,26 @@ public final class InputRouter implements DebugScroll {
                 || !world.roomSession().rooms().hasActiveRoom()) {
             return false;
         }
+        int category = world.roomSession().rooms().activeRoomOrNull().mapCategory();
+        var position = player.link().position();
+        int x = position.pixelX();
+        int y = position.pixelY();
         switch (direction) {
-            case ScrollController.LEFT -> player.link()
-                    .position()
-                    .setPixelPosition(-1, player.link().position().pixelY());
-            case ScrollController.RIGHT -> player.link()
-                    .position()
-                    .setPixelPosition(ROOM_PIXEL_WIDTH, player.link().position().pixelY());
-            case ScrollController.UP -> player.link()
-                    .position()
-                    .setPixelPosition(player.link().position().pixelX(), -1);
-            case ScrollController.DOWN -> player.link()
-                    .position()
-                    .setPixelPosition(player.link().position().pixelX(), ROOM_PIXEL_HEIGHT);
-            default -> {
-                return false;
-            }
+            case ScrollController.LEFT -> position.setPixelPosition(-4, y);
+            case ScrollController.RIGHT -> position.setPixelPosition(147, y);
+            case ScrollController.UP -> position.setPixelPosition(x, -4);
+            case ScrollController.DOWN -> position.setPixelPosition(x, 115);
+            default -> throw new AssertionError(direction);
         }
-        if (world.roomSession().rooms().activeRoomOrNull().mapCategory() == Warp.CATEGORY_OVERWORLD) {
+        position.captureRomFinalPosition();
+        switch (direction) {
+            case ScrollController.LEFT -> position.applyRomFinalPosition(0xF0, 0);
+            case ScrollController.RIGHT -> position.applyRomFinalPosition(0x10, 0);
+            case ScrollController.UP -> position.applyRomFinalPosition(0, 0xF0);
+            case ScrollController.DOWN -> position.applyRomFinalPosition(0, 0x10);
+            default -> throw new AssertionError(direction);
+        }
+        if (category == Warp.CATEGORY_OVERWORLD) {
             world.roomTransitionCoordinator().handleOverworldBoundary(player.link());
         } else {
             world.roomTransitionCoordinator().handleWarpAndIndoorBoundaries(player.link());

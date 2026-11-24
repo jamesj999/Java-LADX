@@ -10,4 +10,5 @@ record RoomEntityLoadInputs(
         byte[] roomStatus,
         boolean hasBirdKey,
         boolean sideScrolling,
-        RoomNpcPaletteInputs palettes) {}
+        RoomNpcPaletteInputs palettes,
+        int occupiedSlots) {}

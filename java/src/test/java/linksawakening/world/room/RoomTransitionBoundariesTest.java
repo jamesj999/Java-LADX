@@ -32,6 +32,90 @@ import org.junit.jupiter.api.Test;
 final class RoomTransitionBoundariesTest {
 
     @Test
+    void consecutiveBeachScrollsReserveOutgoingSlotsAndWarpsStartWithEmptySlots() throws Exception {
+        byte[] rom = loadRom();
+        RomTables tables = RomTables.load(TestRoms.partial(rom));
+        RoomSession session = newSession(rom, tables, new OverworldCollision(tables));
+        session.rooms().loadInitialOverworld(0xD0);
+        for (int direction : new int[] {ScrollController.DOWN, ScrollController.DOWN, ScrollController.RIGHT}) {
+            var scroll = new ScrollController();
+            session.transitions().startAdjacentOverworldScroll(scroll, direction, 80, 64);
+            while (scroll.isActive()) scroll.tick(8);
+        }
+        var room = session.rooms().activeRoomOrNull();
+        assertEquals(0xF1, room.roomId());
+        assertEquals(
+                java.util.List.of(1, 2, 5),
+                room.entityView().loadedEntities().stream()
+                        .map(linksawakening.world.entity.RoomEntity::slot)
+                        .toList());
+        session.transitions().loadWarpDestination(new Warp(Warp.CATEGORY_OVERWORLD, 0, 0xF1, 80, 64, 0));
+        assertEquals(
+                java.util.List.of(0, 1, 2),
+                session.rooms().activeRoomOrNull().entityView().loadedEntities().stream()
+                        .map(linksawakening.world.entity.RoomEntity::slot)
+                        .toList());
+    }
+
+    @Test
+    void adjacentScrollRestoresPreviousPixelsAndRetainsMotionFractions() throws Exception {
+        byte[] rom = loadRom();
+        RomTables tables = RomTables.load(TestRoms.partial(rom));
+        int[][] crossings = {
+            {0, 0x17, 0x16, ScrollController.LEFT, 4, 80, 0, 10, 0xF4, 12, 149, 80, Warp.CATEGORY_INDOOR},
+            {0, 0x16, 0x17, ScrollController.RIGHT, 155, 80, 4, 6, 16, 0, 10, 80, Warp.CATEGORY_INDOOR},
+            {0x0A, 0xBD, 0xAC, ScrollController.UP, 73, 12, 4, 6, 0, 0xF0, 73, 128, Warp.CATEGORY_INDOOR},
+            {0x0A, 0xAC, 0xBD, ScrollController.DOWN, 72, 131, 4, 6, 0, 16, 72, 15, Warp.CATEGORY_INDOOR},
+            {0, 0x19, 0x18, ScrollController.LEFT, 4, 64, 6, 11, 0xF0, 0, 149, 64, Warp.CATEGORY_SIDESCROLL},
+            {0, 0x18, 0x19, ScrollController.RIGHT, 155, 64, 0, 4, 16, 0, 10, 64, Warp.CATEGORY_SIDESCROLL},
+            {0, 0xD0, 0xE0, ScrollController.DOWN, 40, 131, 5, 7, 0, 16, 40, 15, Warp.CATEGORY_OVERWORLD},
+            {0, 0xF0, 0xF1, ScrollController.RIGHT, 155, 48, 5, 7, 16, 0, 10, 48, Warp.CATEGORY_OVERWORLD},
+            {0, 0xF1, 0xF0, ScrollController.LEFT, 4, 35, 9, 4, 0xF0, 0, 149, 35, Warp.CATEGORY_OVERWORLD},
+        };
+        for (int[] crossing : crossings) {
+            OverworldCollision collision = new OverworldCollision(tables);
+            RoomSession session = newSession(rom, tables, collision);
+            boolean overworld = crossing[12] == Warp.CATEGORY_OVERWORLD;
+            if (overworld) session.rooms().loadInitialOverworld(crossing[1]);
+            else session.rooms().loadIndoor(crossing[0], crossing[1], crossing[12]);
+            ScrollController scroll = new ScrollController();
+            RoomTransitionCoordinator coordinator =
+                    session.transitions().coordinator(new RoomBoundaryController(), new TransitionController(), scroll);
+            Link link = new Link(
+                    new InputState(),
+                    new InputConfig(1, 2, 3, 4, 5, 6, 7),
+                    tables,
+                    collision,
+                    null,
+                    new PlayerState(),
+                    new ItemRegistry());
+            var position = link.position();
+            position.setPixelPosition(crossing[4] - 8, crossing[5] - 16);
+            position.applyRomFinalPosition(crossing[6], crossing[7]);
+            position.captureRomFinalPosition();
+            position.applyRomFinalPosition(crossing[8], crossing[9]);
+
+            if (overworld) coordinator.handleOverworldBoundary(link);
+            else coordinator.handleWarpAndIndoorBoundaries(link);
+            assertTrue(scroll.isActive());
+            assertEquals(crossing[2], session.rooms().currentRoomId());
+            assertEquals(crossing[3], scroll.direction());
+            assertEquals(crossing[10], position.roomEntryRomPositionX());
+            assertEquals(crossing[11], position.roomEntryRomPositionY());
+            while (scroll.isActive()) scroll.tick(4);
+
+            int fractionX = (crossing[6] + crossing[8]) & 15;
+            int fractionY = (crossing[7] + crossing[9]) & 15;
+            position.applyRomFinalPosition(15 - fractionX, 15 - fractionY);
+            assertEquals(crossing[10], position.romEntityX());
+            assertEquals(crossing[11], position.romEntityY());
+            position.applyRomFinalPosition(1, 1);
+            assertEquals(crossing[10] + 1, position.romEntityX());
+            assertEquals(crossing[11] + 1, position.romEntityY());
+        }
+    }
+
+    @Test
     void downwardScrollAfterFlipAutomaticallyDropsClearOfDestinationWall() throws Exception {
         byte[] rom = loadRom();
         RomTables tables = RomTables.load(TestRoms.partial(rom));

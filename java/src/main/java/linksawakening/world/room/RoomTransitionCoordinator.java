@@ -129,23 +129,36 @@ public final class RoomTransitionCoordinator {
                 .roomCollisionQueries()
                 .boundaryView(loaded, previousX, previousY, link.airborne().isAirborne()));
         if (boundary.type() == RoomBoundaryDecision.Type.OVERWORLD_SCROLL) {
-            link.position().setRoomScrollEntryPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
-            if (boundary.direction() == ScrollController.UP
-                    && dependencies.roomStoryState().shouldGetLostInMysteriousWoods()) {
-                dependencies
-                        .roomTransitionController()
-                        .startMysteriousWoodsLostScroll(loaded, scrollController, previousX, previousY);
-            } else {
-                dependencies
-                        .roomTransitionController()
-                        .startAdjacentOverworldScroll(
-                                loaded, scrollController, boundary.direction(), previousX, previousY);
-            }
-            scrollController.onCompletion(
-                    () -> link.motion().finishRoomScroll(boundary.direction() == ScrollController.DOWN));
+            startAdjacentScroll(loaded, link, boundary);
         } else if (boundary.type() == RoomBoundaryDecision.Type.CLAMP_LINK) {
             link.position().setPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
         }
+    }
+
+    private void startAdjacentScroll(RoomRuntime loaded, Link link, RoomBoundaryDecision boundary) {
+        var position = link.position();
+        int deltaX = boundary.linkTargetX() - position.pixelX();
+        int deltaY = boundary.linkTargetY() - position.pixelY();
+        // $02:6D5C restores the saved integer bytes. $02:790B uses the current fractions.
+        position.restoreRomFinalPositionPixels();
+        int previousX = position.pixelX();
+        int previousY = position.pixelY();
+        position.setRoomScrollEntryPixelPosition(previousX + deltaX, previousY + deltaY);
+        var transitions = dependencies.roomTransitionController();
+        int direction = boundary.direction();
+        if (boundary.type() == RoomBoundaryDecision.Type.INDOOR_SCROLL) {
+            transitions.startAdjacentIndoorScroll(loaded, scrollController, direction, previousX, previousY);
+        } else {
+            // The source creates the follower after the scroll, from the destination coordinates.
+            var story = dependencies.roomStoryState();
+            story.rememberFollowingNpcPosition(position.romEntityX(), position.romEntityY());
+            if (direction == ScrollController.UP && story.shouldGetLostInMysteriousWoods()) {
+                transitions.startMysteriousWoodsLostScroll(loaded, scrollController, previousX, previousY);
+            } else {
+                transitions.startAdjacentOverworldScroll(loaded, scrollController, direction, previousX, previousY);
+            }
+        }
+        scrollController.onCompletion(() -> link.motion().finishRoomScroll(direction == ScrollController.DOWN));
     }
 
     /** Starts a pending Ocarina Mambo transition after entity playback ends. */
@@ -250,14 +263,7 @@ public final class RoomTransitionCoordinator {
             return true;
         }
         if (boundary.type() == RoomBoundaryDecision.Type.INDOOR_SCROLL) {
-            int previousX = link.position().pixelX();
-            int previousY = link.position().pixelY();
-            link.position().setRoomEntryPixelPosition(boundary.linkTargetX(), boundary.linkTargetY());
-            dependencies
-                    .roomTransitionController()
-                    .startAdjacentIndoorScroll(loaded, scrollController, boundary.direction(), previousX, previousY);
-            scrollController.onCompletion(
-                    () -> link.motion().finishRoomScroll(boundary.direction() == ScrollController.DOWN));
+            startAdjacentScroll(loaded, link, boundary);
             return true;
         }
         return false;

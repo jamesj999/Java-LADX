@@ -63,6 +63,10 @@ public interface EntityFrameValues extends EntityTickValues {
 
         int invincibility();
 
+        default boolean ignoringContactCollisions() {
+            return false;
+        }
+
         int speedX();
 
         int speedY();

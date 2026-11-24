@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.motion.EnemyRecoilMotion;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
@@ -69,6 +70,69 @@ final class SparkWallFollowingTest {
         runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, () -> 0));
         assertEquals(65, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(1, runtime.inspection().snapshot().slots().get(0).spriteVariant());
+    }
+
+    @Test
+    void chestDialogKeepsBothSparksFlashingInPlaceAndPreservesTheirTurnTimers() {
+        for (int type : new int[] {0x16, 0x17}) {
+            var runtime = sparkRuntime(type);
+            var inspection = new EntityEnemyInspectionQueries(runtime.enemies());
+            runtime.tick(EntityTestFrames.frame(runtime, 0));
+            runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, () -> 0));
+            var before = runtime.inspection().slots().get(0);
+
+            runtime.configuration().setDialogActive(true);
+            for (int frame = 2; frame < 132; frame++) {
+                runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 120, () -> 0));
+                var spark = runtime.inspection().slots().get(0);
+                assertEquals(before.x(), spark.x());
+                assertEquals(before.y(), spark.y());
+                assertEquals((frame >>> 1) & 1, spark.spriteVariant());
+                assertEquals(9, inspection.sparkTransitionCountdown(0));
+            }
+            runtime.configuration().setDialogActive(false);
+            runtime.configuration().setOcarinaPlayback(4, 0, 0);
+            runtime.tick(EntityTestFrames.frame(runtime, 132, 120, 120, () -> 0));
+            assertEquals(before.x() + 1, runtime.inspection().slots().get(0).x());
+            assertEquals(9, inspection.sparkTransitionCountdown(0));
+            runtime.configuration().setOcarinaPlayback(0, 0, 0);
+            runtime.tick(EntityTestFrames.frame(runtime, 133, 120, 120, () -> 0));
+            assertEquals(8, inspection.sparkTransitionCountdown(0));
+        }
+    }
+
+    @Test
+    void incomingRecoilReplacesWallFollowingThroughTheLastRecoilTick() {
+        var runtime = sparkRuntime(0x16);
+        runtime.tick(EntityTestFrames.frame(runtime, 0));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, () -> 0));
+        var recoil = runtime.enemies().motions().get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        recoil.configureFromSpeed(0, 0x18, 0);
+        runtime.inspection().combatTables().writeEnemyIgnoreHitsCountdown(0, 2);
+        RoomEntityBackgroundCollision wall = (entity, direction, x, y) -> true;
+        runtime.configuration().setDialogActive(true);
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, () -> 0, wall));
+        assertEquals(2, runtime.enemies().enemyIgnoreHitsCountdown(0));
+        assertEquals(64, runtime.inspection().slots().get(0).x());
+        runtime.configuration().setDialogActive(false);
+        runtime.tick(EntityTestFrames.frame(runtime, 3, 120, 120, () -> 0, wall));
+        assertEquals(65, runtime.inspection().slots().get(0).x());
+        runtime.tick(EntityTestFrames.frame(runtime, 4, 120, 120, () -> 0, wall));
+        assertEquals(67, runtime.inspection().slots().get(0).x());
+        assertEquals(0, runtime.enemies().enemyIgnoreHitsCountdown(0));
+        runtime.tick(EntityTestFrames.frame(runtime, 5, 120, 120, () -> 0));
+        assertEquals(68, runtime.inspection().slots().get(0).x());
+    }
+
+    private static RoomEntityRuntime sparkRuntime(int type) {
+        return new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(type)
+                        .at(64, 64)
+                        .status(EntityStatus.INIT)
+                        .spriteDefinition(pairDefinition(type, 2))
+                        .build()))
+                .build();
     }
 
     @Test

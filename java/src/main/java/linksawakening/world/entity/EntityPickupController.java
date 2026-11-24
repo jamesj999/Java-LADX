@@ -7,7 +7,6 @@ import static linksawakening.world.entity.EntityMotionMath.withinUnsignedWindow;
 import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
 import static linksawakening.world.entity.EntitySnapshots.withVariant;
 import static linksawakening.world.entity.EntitySnapshots.withZ;
-import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
 import static linksawakening.world.entity.EntityTypeRules.isCommonDroppableType;
 
 import java.util.Arrays;
@@ -207,7 +206,7 @@ public final class EntityPickupController {
 
     void initializeEntityTimers(RoomEntity entity) {
         int slot = entity.slot();
-        this.physicsTables.writeEnemyPhysicsFlags(slot, initialPhysicsFlags(entity.type()));
+        this.physicsTables.initializeEnemyPhysicsFlags(slot, entity.type());
         if (isCommonDroppableType(entity.type())) {
             initializeCommonDroppable(entity);
         }
@@ -266,6 +265,7 @@ public final class EntityPickupController {
     }
 
     public void initializeChestEntity(RoomEntity entity) {
+        this.lifecycle.delayInteractions(0x2A); // EntityInitChestWithItem, $03:506D.
         int slot = entity.slot();
         int itemType = this.state.readChestItemBySlot(slot) & 0xFF;
         this.state.writeChestSpeedY(slot, 0xFC);
@@ -370,7 +370,7 @@ public final class EntityPickupController {
         this.lifecycle.initializeHealthGroup(freeSlot);
         var zolGelMotion = this.motions.get(ZolGelMotion.class, ZolGelMotion::new);
         zolGelMotion.prepareChestSpawn(freeSlot);
-        this.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_ZOL));
+        this.physicsTables.initializeEnemyPhysicsFlags(freeSlot, EntityRomConstants.ENTITY_ZOL);
         this.combatTables.writeEnemyHitboxFlags(freeSlot, 0);
         this.combatTables.writeEnemyHealth(freeSlot, this.slotProperties.initialHealth(EntityRomConstants.ENTITY_ZOL));
         this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
@@ -413,7 +413,7 @@ public final class EntityPickupController {
         this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
         this.combatTables.writeDyingCountdown(freeSlot, 0);
         this.combatTables.writePowerRecoilDeath(freeSlot, false);
-        this.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(itemType));
+        this.physicsTables.initializeEnemyPhysicsFlags(freeSlot, itemType);
         this.combatTables.writeEnemyHealth(freeSlot, this.slotProperties.initialHealth(itemType));
         this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
         this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
@@ -482,7 +482,7 @@ public final class EntityPickupController {
         this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
         this.combatTables.writeDyingCountdown(freeSlot, 0);
         this.combatTables.writePowerRecoilDeath(freeSlot, false);
-        this.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(itemType));
+        this.physicsTables.initializeEnemyPhysicsFlags(freeSlot, itemType);
         this.combatTables.writeEnemyHealth(freeSlot, this.slotProperties.initialHealth(itemType));
         this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
         this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);

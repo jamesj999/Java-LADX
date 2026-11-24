@@ -27,7 +27,8 @@ public record EntityFrameContext(
         int linkSpeedX,
         int linkSpeedY,
         boolean creditsGameplay,
-        boolean handlerLinkCollisionEnabled) {
+        boolean handlerLinkCollisionEnabled,
+        boolean incomingScrollOnly) {
 
     public EntityFrameContext {
         randomByteSupplier = Objects.requireNonNullElse(randomByteSupplier, EntityFrameRandom.REQUIRED_SOURCE);
@@ -62,7 +63,8 @@ public record EntityFrameContext(
                 .linkSpeedX(linkSpeedX)
                 .linkSpeedY(linkSpeedY)
                 .creditsGameplay(creditsGameplay)
-                .handlerLinkCollisionEnabled(handlerLinkCollisionEnabled);
+                .handlerLinkCollisionEnabled(handlerLinkCollisionEnabled)
+                .incomingScrollOnly(incomingScrollOnly);
     }
 
     EntityFrameContext withRuntimeInputs(int frame, int linkX, int linkY, RoomEntityBackgroundCollision collision) {

@@ -76,6 +76,12 @@ public final class HardHatMotion {
         initialized[slot] = false;
     }
 
+    public EnemyRecoilMotion.Update applyIncomingRecoil(
+            RoomEntity entity, RoomEntityBackgroundCollision background, EnemyRecoilMotion recoil) {
+        if (!initialized[entity.slot()]) initialize(entity.slot());
+        return recoil.advanceWithHandlerFractions(entity, background, speedXAccumulator, speedYAccumulator, false);
+    }
+
     public int speedX(int slot) {
         return speedX[slot];
     }

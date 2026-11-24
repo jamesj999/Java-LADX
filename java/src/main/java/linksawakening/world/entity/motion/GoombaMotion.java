@@ -6,7 +6,7 @@ import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
-/** Bank-$07 GoombaEntityHandler's ordinary-room random walk. */
+/** Bank-$07 Goomba random walk, side-view patrol and stomp states. */
 public final class GoombaMotion {
     private static final int ENTITY_GOOMBA = 0x9F;
     private static final int[] SPEED_X_BY_DIRECTION = {0x08, 0xF8, 0x00, 0x00};
@@ -20,6 +20,12 @@ public final class GoombaMotion {
     private final int[] speedXAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedYAccumulator = new int[EntityRoomLoader.MAX_ENTITIES];
     private final boolean[] initialized = new boolean[EntityRoomLoader.MAX_ENTITIES];
+
+    /** $03:6CFF–6D19, using hLinkSpeedY in side-view and hLinkVelocityZ overhead. */
+    public static boolean canStomp(boolean sideView, boolean airborne, int verticalSpeed, boolean bounceActive) {
+        boolean descending = sideView ? (byte) verticalSpeed >= 0 : (byte) verticalSpeed < 0;
+        return airborne && (descending || bounceActive);
+    }
 
     public void initialize(int slot) {
         state[slot] = 0;
@@ -85,10 +91,10 @@ public final class GoombaMotion {
                 case 1 -> {
                     if (countdown == 0) {
                         countdown = 0x20;
-                        state[slot] = 2;
-                        inertia[slot] = 0;
+                        // $07:6656 increments the state, then immediately writes zero to the same slot.
+                        state[slot] = 0;
                     }
-                    Position position = move(entity, x, y, backgroundCollision);
+                    Position position = move(entity, x, y, backgroundCollision, false);
                     x = position.x();
                     y = position.y();
                     variant = animationVariant(frameCounter);
@@ -110,6 +116,12 @@ public final class GoombaMotion {
         RoomEntity updated =
                 EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), entity.z(), -1, false);
         return new Update(updated, countdown, startDying);
+    }
+
+    /** $07:7DEE uses the patrol fractions and restores ordinary speed before returning from the handler. */
+    public EnemyRecoilMotion.Update applyRecoil(
+            RoomEntity entity, RoomEntityBackgroundCollision collision, EnemyRecoilMotion recoil) {
+        return recoil.advanceWithHandlerFractions(entity, collision, speedXAccumulator, speedYAccumulator, false);
     }
 
     public void enterStomp(int slot) {
@@ -145,38 +157,38 @@ public final class GoombaMotion {
             RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         if (state[slot] == 0) {
-            direction[slot] = linkEntityX - x < 0 ? 1 : 0;
+            direction[slot] = signedByte(linkEntityX - x) < 0 ? 1 : 0;
             speedX[slot] = SPEED_X_BY_DIRECTION[direction[slot]];
             speedY[slot] = 0;
             state[slot] = 1;
-            return new SideUpdate(x, y, animationVariant(frameCounter));
+            return new SideUpdate(x, y, entity.spriteVariant());
         }
         if (state[slot] == 1) {
-            // The side-view branch uses the same bank-$07 position helper and
-            // gravity as the ordinary branch, but chooses horizontal speed
-            // from Link's X distance instead of the random walk tables.
-            Position position = move(entity, x, y, backgroundCollision);
-            return new SideUpdate(position.x(), position.y(), animationVariant(frameCounter));
+            Position position = move(entity, x, y, backgroundCollision, true);
+            return new SideUpdate(position.x(), position.y(), position.onFloor() ? animationVariant(frameCounter) : 0);
         }
         return new SideUpdate(x, y, 2);
     }
 
-    private Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision backgroundCollision) {
-        int nextX = addSpeedToPosition(x, speedX[entity.slot()], speedXAccumulator, entity.slot());
-        int nextY = addSpeedToPosition(y, speedY[entity.slot()], speedYAccumulator, entity.slot());
-        // UpdateEntityPosWithSpeed_07 runs before the handler's two INC [HL]
-        // gravity writes; ApplyEntityInteractionWithBackground then sees the
-        // accelerated speed and can clear it on a floor collision.
-        speedY[entity.slot()] = (speedY[entity.slot()] + 0x02) & 0xFF;
-        if (nextX != x && backgroundCollision.blocks(entity, directionForX(speedX[entity.slot()]), nextX, y)) {
+    private Position move(RoomEntity entity, int x, int y, RoomEntityBackgroundCollision collision, boolean sideView) {
+        int slot = entity.slot();
+        int nextX = addSpeedToPosition(x, speedX[slot], speedXAccumulator, slot);
+        int nextY = addSpeedToPosition(y, speedY[slot], speedYAccumulator, slot);
+        // Only the side-view handler adds gravity before the bank-$03 wall probes.
+        if (sideView) speedY[slot] = (speedY[slot] + 2) & 0xFF;
+        if (speedX[slot] != 0 && collision.blocks(entity, directionForX(speedX[slot]), nextX, nextY)) {
             nextX = x;
-            speedX[entity.slot()] = negateByte(speedX[entity.slot()]);
+            if (sideView) speedX[slot] = negateByte(speedX[slot]);
         }
-        if (nextY != y && backgroundCollision.blocks(entity, directionForY(speedY[entity.slot()]), nextX, nextY)) {
-            nextY = ((nextY & 0xF0) + 0x03) & 0xFF;
-            speedY[entity.slot()] = 0;
+        boolean blockedY = speedY[slot] != 0 && collision.blocks(entity, directionForY(speedY[slot]), nextX, nextY);
+        if (blockedY) nextY = y;
+        boolean onFloor = sideView && blockedY && (speedY[slot] & 0x80) == 0;
+        if (onFloor) {
+            // $07:66DD snaps the restored Y pixel. Ceiling collisions skip this branch.
+            nextY = (nextY & 0xF0) + 3;
+            speedY[slot] = 0;
         }
-        return new Position(nextX, nextY);
+        return new Position(nextX, nextY, onFloor);
     }
 
     private static int animationVariant(int frameCounter) {
@@ -224,7 +236,7 @@ public final class GoombaMotion {
         return value < 0x80 ? value : value - 0x100;
     }
 
-    private record Position(int x, int y) {}
+    private record Position(int x, int y, boolean onFloor) {}
 
     private record SideUpdate(int x, int y, int variant) {}
 

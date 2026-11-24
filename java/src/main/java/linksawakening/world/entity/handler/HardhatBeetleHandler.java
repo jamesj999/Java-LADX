@@ -15,6 +15,11 @@ final class HardhatBeetleHandler {
         registry.registerInitializer(ENTITY_HARDHAT_BEETLE, (entity, random) -> initialize(registry, entity));
         registry.registerTick(
                 ENTITY_HARDHAT_BEETLE,
+                EntityTickStage.PHASE_2_BEFORE_RECOIL_APPLICATION,
+                5,
+                frame -> frame.slotFrame().wasInitializing() || frame.gates().handlerInteractive());
+        registry.registerTick(
+                ENTITY_HARDHAT_BEETLE,
                 EntityTickStage.PHASE_4_BEFORE_FOLLOWER,
                 20,
                 HardhatBeetleHandler::phase4HardhatBeetle);
@@ -24,7 +29,10 @@ final class HardhatBeetleHandler {
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
 
-        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+        // $06:653F discards the caller address even on the last recoil frame.
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
+                && slotState.ignoreHitsBeforeRecoil() == 0) {
             slotState.updated(state.motion(HardHatMotion.class, HardHatMotion::new)
                     .advance(
                             slotState.entity(),

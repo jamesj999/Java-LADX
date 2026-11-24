@@ -753,7 +753,8 @@ final class GameplayRouteScenario {
                 route.link.position().pixelY(),
                 ScrollController.UP);
         assertNotNull(route.entranceExit, collisionGrid(route.collision));
-        route.link.position().setPixelPosition(route.entranceExit[0], -1);
+        route.link.position().setPixelPosition(route.entranceExit[0], -4);
+        RoomNavigationFixture.stepAcrossRoomBoundary(route.link, ScrollController.UP);
         route.coordinator.handleWarpAndIndoorBoundaries(route.link);
         route.finishScroll();
         route.assertInRoom(0x13);
@@ -910,7 +911,7 @@ final class GameplayRouteScenario {
 
         route.movableBlockIndex = ROOM_OBJECTS_BASE + 0x32;
         assertEquals(0xA7, route.session.rooms().activeRoomOrNull().roomObjectsArea()[route.movableBlockIndex]);
-        for (int tick = 0; tick < 64; tick++) {
+        for (int tick = 0; tick < 32; tick++) {
             assertTrue(route.session
                     .doors()
                     .tryInteractWithIndoorBlock(
@@ -961,9 +962,12 @@ final class GameplayRouteScenario {
                                     event.slot() == beetle.slot() && !event.swordHit() && event.soundId() == 0x09),
                     flipEvents.toString());
         }
-        route.session
-                .entities()
-                .tickEntitiesWithProjectileEvents(route.frame++, 0, 0, 0, 0, Direction.DOWN.javaIndex(), false);
+        // The shield-contact dispatch still uses the cached upright state.
+        for (int frame = 0; frame < 2; frame++) {
+            route.session
+                    .entities()
+                    .tickEntitiesWithProjectileEvents(route.frame++, 0, 0, 0, 0, Direction.DOWN.javaIndex(), false);
+        }
         route.beetles = route.session.rooms().activeRoomOrNull().entities().loadedEntities().stream()
                 .filter(entity -> entity.type() == 0x2C)
                 .toList();
@@ -3715,7 +3719,7 @@ final class GameplayRouteScenario {
                         .count());
 
         route.link.position().setPixelPosition(0x25, 0x28);
-        for (int tick = 0; tick < 64; tick++) {
+        for (int tick = 0; tick < 32; tick++) {
             assertTrue(route.session
                     .doors()
                     .tryInteractWithIndoorBlock(
@@ -3737,7 +3741,7 @@ final class GameplayRouteScenario {
         assertEquals(0xA7, RoomDebugFixture.of(route.session).activeRoomEventForTest());
 
         route.link.position().setPixelPosition(0x5C, 0x28);
-        for (int tick = 0; tick < 64; tick++) {
+        for (int tick = 0; tick < 32; tick++) {
             assertTrue(route.session
                     .doors()
                     .tryInteractWithIndoorBlock(
@@ -3828,7 +3832,7 @@ final class GameplayRouteScenario {
             assertFalse(route.transition.isActive());
             assertFalse(route.scroll.isActive());
         }
-        route.link.position().setPixelPosition(-1, route.link.position().pixelY());
+        RoomNavigationFixture.stepAcrossRoomBoundary(route.link, ScrollController.LEFT);
         route.coordinator.handleWarpAndIndoorBoundaries(route.link);
         assertTrue(route.scroll.isActive());
         assertEquals(ScrollController.LEFT, route.scroll.direction());
@@ -3856,10 +3860,7 @@ final class GameplayRouteScenario {
             assertFalse(route.transition.isActive());
             assertFalse(route.scroll.isActive());
         }
-        route.link
-                .position()
-                .setPixelPosition(
-                        RoomConstants.ROOM_PIXEL_WIDTH, route.link.position().pixelY());
+        RoomNavigationFixture.stepAcrossRoomBoundary(route.link, ScrollController.RIGHT);
         route.coordinator.handleWarpAndIndoorBoundaries(route.link);
         assertTrue(route.scroll.isActive());
         assertEquals(ScrollController.RIGHT, route.scroll.direction());
@@ -3933,7 +3934,7 @@ final class GameplayRouteScenario {
         assertEquals(0x70, route.link.position().pixelX(), "entry-column path must end at room-$28 column 7");
         // Cross only after reaching that aligned X; the generic helper would
         // choose the first reachable top-edge column and lose this alignment.
-        route.link.position().setPixelPosition(route.link.position().pixelX(), -1);
+        RoomNavigationFixture.stepAcrossRoomBoundary(route.link, ScrollController.UP);
         route.coordinator.handleWarpAndIndoorBoundaries(route.link);
         assertTrue(route.scroll.isActive());
         assertEquals(ScrollController.UP, route.scroll.direction());
@@ -4703,10 +4704,7 @@ final class GameplayRouteScenario {
         for (int[] position : route.room21EastDoorPath) {
             route.link.position().setPixelPosition(position[0], position[1]);
         }
-        route.link
-                .position()
-                .setPixelPosition(
-                        RoomConstants.ROOM_PIXEL_WIDTH, route.link.position().pixelY());
+        RoomNavigationFixture.stepAcrossRoomBoundary(route.link, ScrollController.RIGHT);
         route.coordinator.handleWarpAndIndoorBoundaries(route.link);
         assertTrue(route.scroll.isActive());
         assertEquals(ScrollController.RIGHT, route.scroll.direction());

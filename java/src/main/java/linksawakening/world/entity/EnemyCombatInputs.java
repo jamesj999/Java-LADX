@@ -14,6 +14,10 @@ public interface EnemyCombatInputs {
 
     boolean linkInteractive();
 
+    default boolean goombaBounceActive() {
+        return false;
+    }
+
     boolean swordCollisionActive();
 
     int swordX();
@@ -24,6 +28,23 @@ public interface EnemyCombatInputs {
 
     int swordHeight();
 
-    /** Optional attack details; absence selects the existing basic attack context. */
+    default boolean linkIgnoresContact() {
+        return false;
+    }
+
+    default boolean linkBladeClashCoolingDown() {
+        return false;
+    }
+
+    /** The ROM sword-hit target latch, stored as slot plus one. */
+    default int swordHitTarget() {
+        return 0;
+    }
+
+    default boolean linkCanTakeContactDamage() {
+        return true;
+    }
+
+    /** Attack details. Callers with no equipment details supply the standard context. */
     EnemyAttackContext attackContext();
 }

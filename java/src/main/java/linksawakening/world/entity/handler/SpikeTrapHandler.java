@@ -23,13 +23,22 @@ final class SpikeTrapHandler {
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
 
-        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
+                && state.gates().handlerInteractive()
+                && !state.gates().countdownBlocksInteraction()) {
+            int slot = slotState.entity().slot();
+            // $06:751D decrements ignore-hits after the handler gate and still runs the trap.
+            int ignoreHits = state.slot().ignoreHits(slot);
+            if (ignoreHits > 0) state.slot().setIgnoreHits(slot, ignoreHits - 1);
             SpikeTrapMotion.Update spikeTrapUpdate = state.motion(SpikeTrapMotion.class, SpikeTrapMotion::new)
                     .advance(
                             slotState.entity(),
                             frameInput.linkEntityX(),
                             frameInput.linkEntityY(),
+                            state.slot().transitionCountdown(slot),
                             frameInput.backgroundCollision());
+            state.slot().setTransitionCountdown(slot, spikeTrapUpdate.transitionCountdown());
             slotState.updated(spikeTrapUpdate.entity());
             if (spikeTrapUpdate.soundChannel() != EntityCombatEvent.SoundChannel.NONE) {
                 state.emit(new EntityCombatEvent(

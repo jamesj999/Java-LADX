@@ -141,7 +141,7 @@ public final class EntitySlotProperties {
         return this.roomInspection.initialHealth(type);
     }
 
-    int contactDamage(int slot) {
+    public int contactDamage(int slot) {
         return this.roomInspection.contactDamage(slot);
     }
 

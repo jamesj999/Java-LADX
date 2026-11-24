@@ -118,13 +118,17 @@ public final class EntityPhase {
         // The original calls AnimateEntities after Link movement and
         // room-transition application. Give handlers the same current
         // position and active-room snapshot.
+        boolean inventoryBlocksEntities = inventoryController.shouldBlockOverworldInput()
+                && !inventoryMenu.transition().worldHandlerActive();
+        boolean warpBlocksEntities = transitionController.isInputBlocked();
         if (shouldTickRoomEntities(
                 scrollController.isActive(),
-                transitionController.isInputBlocked(),
-                inventoryController.shouldBlockOverworldInput()
-                        && !inventoryMenu.transition().worldHandlerActive(),
+                warpBlocksEntities,
+                inventoryBlocksEntities,
                 inventoryMenu.isTransitioning())) {
             stages.run(b);
+        } else if (scrollController.incomingRoomPrepared() && !warpBlocksEntities && !inventoryBlocksEntities) {
+            rooms.tickEntities(inputs.borrowIncomingScroll());
         }
     }
 

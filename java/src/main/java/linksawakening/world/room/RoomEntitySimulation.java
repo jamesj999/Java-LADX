@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Objects;
 import linksawakening.vfx.TransientVfxSystem;
 import linksawakening.world.entity.EnemyProjectileCollision;
+import linksawakening.world.entity.EntityFrameContext;
+import linksawakening.world.entity.EntityFrameContextBuilder;
 import linksawakening.world.entity.FollowingNpcState;
 import linksawakening.world.entity.RomRandomByteSource;
 import linksawakening.world.entity.event.BombExplosionEvent;
@@ -20,8 +22,11 @@ final class RoomEntitySimulation {
     private final Dependencies dependencies;
     private final SetupDependencies setup;
     private final EffectsDependencies effects;
-    private final linksawakening.world.entity.EntityFrameContextBuilder frameInputs =
-            linksawakening.world.entity.EntityFrameContext.builder();
+    private final EntityFrameContextBuilder frameInputs = EntityFrameContext.builder();
+    private final EntityFrameContextBuilder incomingScrollFrame = EntityFrameContext.builder()
+            .projectileLinkState(EnemyProjectileCollision.LinkState.nonInteractive())
+            .handlerLinkCollisionEnabled(false)
+            .incomingScrollOnly(true);
 
     RoomEntitySimulation(Dependencies dependencies, SetupDependencies setup, EffectsDependencies effects) {
         this.setup = Objects.requireNonNull(setup, "setup");
@@ -31,6 +36,15 @@ final class RoomEntitySimulation {
 
     List<EntityProjectileEvent> tickEntities(RoomRuntime loaded, EntityTickValues inputs) {
         int frameCounter = inputs.frameCounter();
+        if (inputs.incomingScrollOnly()) {
+            loaded.entities()
+                    .tick(incomingScrollFrame
+                            .frameCounter(frameCounter)
+                            .randomByteSupplier(dependencies.entityRandomByteSource())
+                            .build());
+            loaded.room().replaceEntities(loaded.entities().inspection().view());
+            return List.of();
+        }
         int linkEntityX = inputs.position().x();
         int linkEntityY = inputs.position().y();
         int linkEntityZ = inputs.position().z();
@@ -76,7 +90,8 @@ final class RoomEntitySimulation {
                                 RoomInteractionGeometry.romDirectionForProjectileCollision(linkDirection),
                                 usingShield,
                                 shieldLevel,
-                                invincibilityCounter))
+                                invincibilityCounter,
+                                inputs.motion().ignoringContactCollisions()))
                         .swordCollisionActive(swordCollisionActive)
                         .swordX(swordX)
                         .swordWidth(swordWidth)

@@ -72,6 +72,40 @@ final class LeeverRuntimeTest {
     }
 
     @Test
+    void dialogFreezesLeeverMovementAndOcarinaFreezesOnlyItsTransitionCountdown() {
+        EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
+                        .sourceLoadOrder(0)
+                        .type(0x0E)
+                        .at(64, 64)
+                        .spriteDefinition(definition)
+                        .build()))
+                .build();
+        IntSupplier randomBytes = sequence(0x00);
+        for (int frame = 0; frame <= 33; frame++) {
+            runtime.tick(EntityTestFrames.frame(runtime, frame, 120, 64, randomBytes));
+        }
+        var queries = new EntityEnemyInspectionQueries(runtime.enemies());
+        int countdown = queries.leeverTransitionCountdown(0);
+        assertEquals(64, runtime.inspection().slots().get(0).x());
+
+        runtime.inspection().linkState().writeDialogActive(true);
+        runtime.tick(EntityTestFrames.frame(runtime, 34, 120, 64, randomBytes));
+        assertEquals(64, runtime.inspection().slots().get(0).x());
+        assertEquals(countdown, queries.leeverTransitionCountdown(0));
+
+        runtime.inspection().linkState().writeDialogActive(false);
+        runtime.inspection().linkState().writeLinkPlayingOcarinaCountdown(1);
+        runtime.tick(EntityTestFrames.frame(runtime, 35, 120, 64, randomBytes));
+        assertEquals(65, runtime.inspection().slots().get(0).x());
+        assertEquals(countdown, queries.leeverTransitionCountdown(0));
+
+        runtime.inspection().linkState().writeLinkPlayingOcarinaCountdown(0);
+        runtime.tick(EntityTestFrames.frame(runtime, 36, 120, 64, randomBytes));
+        assertEquals(countdown - 1, queries.leeverTransitionCountdown(0));
+    }
+
+    @Test
     void leeverBurrowsAfterItsChaseTimerAndStartsTheRomHidingWindow() {
         EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
         RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
@@ -135,7 +169,7 @@ final class LeeverRuntimeTest {
     }
 
     @Test
-    void leeverSwordHitConfiguresBankFourRecoilBeforeItsStateMovement() {
+    void leeverSwordHitStartsRecoilAfterOrdinaryMotion() {
         EntitySpriteDefinition definition = pairDefinition(0x0E, 4);
         RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(snapshot(new RoomEntityBuilder()
                         .sourceLoadOrder(0)
@@ -160,13 +194,18 @@ final class LeeverRuntimeTest {
                 EntityStatus.ACTIVE,
                 runtime.inspection().snapshot().slots().get(0).status());
         assertEquals(1, runtime.enemies().enemyHealth(0));
+        assertEquals(0, runtime.enemies().enemyIgnoreHitsCountdown(0));
+
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
+
+        assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
+        assertEquals(64, runtime.inspection().snapshot().slots().get(0).y());
         assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertTrue(new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilActive(0));
         assertEquals(0xD0, new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilSpeedX(0));
         assertEquals(0xD0, new EntityEnemyInspectionQueries(runtime.enemies()).enemyRecoilSpeedY(0));
 
-        runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
-
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0x00)));
         RoomEntity afterRecoil = runtime.inspection().snapshot().slots().get(0);
         assertEquals(61, afterRecoil.x());
         assertEquals(61, afterRecoil.y());
@@ -193,6 +232,7 @@ final class LeeverRuntimeTest {
         RoomEntityBackgroundCollision wall = (entity, direction, nextX, nextY) -> direction == 1 || direction == 2;
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00), wall));
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0x00), wall));
 
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).x());
         assertEquals(64, runtime.inspection().snapshot().slots().get(0).y());

@@ -57,7 +57,8 @@ final class MoblinSwordHandler {
                             state.projectiles().swordMoblinAlertingSoundCounter(),
                             state.roomInspection().entityMapId(),
                             state.lifecycle().transitionSequenceCounter(),
-                            frameInput.frame()));
+                            frameInput.frame(),
+                            slotState.ignoreHitsBeforeRecoil()));
             slotState.updated(moblinSwordUpdate.entity());
             if (moblinSwordUpdate.dialogRequested()) {
                 state.emit(new DialogRequest(1, DIALOG_MOBLIN));

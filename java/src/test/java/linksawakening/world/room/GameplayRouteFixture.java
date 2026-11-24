@@ -365,7 +365,8 @@ final class GameplayRouteFixture {
 
     void crossIndoorBoundary(int direction) {
         finishQueuedShutterOpenings();
-        RoomNavigationFixture.walkToAndCrossIndoorBoundary(coordinator, transition, scroll, collision, link, direction);
+        RoomNavigationFixture.walkToAndCrossIndoorBoundary(
+                session, coordinator, transition, scroll, collision, link, direction);
     }
 
     void crossOverworldBoundary(int direction) {

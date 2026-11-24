@@ -20,17 +20,26 @@ final class GoombaHandler {
         var slotState = state.slotFrame();
         var frameInput = state.inputs();
 
-        if (slotState.status() == EntityStatus.ACTIVE && !slotState.wasInitializing()) {
-            GoombaMotion.Update goombaUpdate = state.motion(GoombaMotion.class, GoombaMotion::new)
-                    .advance(
-                            slotState.entity(),
-                            frameInput.frame(),
-                            frameInput.linkEntityX(),
-                            frameInput.linkEntityY(),
-                            frameInput.randomByteSupplier(),
-                            frameInput.backgroundCollision(),
-                            state.slot().transitionCountdown(slotState.entity().slot()),
-                            state.background().groundInteractionSideScrolling());
+        if (slotState.status() == EntityStatus.ACTIVE
+                && !slotState.wasInitializing()
+                && state.gates().handlerInteractive()
+                && !state.gates().countdownBlocksInteraction()
+                && slotState.ignoreHitsBeforeRecoil() == 0) {
+            GoombaMotion motion = state.motion(GoombaMotion.class, GoombaMotion::new);
+            int slot = slotState.entity().slot();
+            if (motion.state(slot) == 2) {
+                // $07:666F makes the flattened enemy harmless and lets projectiles pass through.
+                state.slot().setPhysicsFlags(slot, 0xC2);
+            }
+            GoombaMotion.Update goombaUpdate = motion.advance(
+                    slotState.entity(),
+                    frameInput.frame(),
+                    frameInput.linkEntityX(),
+                    frameInput.linkEntityY(),
+                    frameInput.randomByteSupplier(),
+                    frameInput.backgroundCollision(),
+                    state.slot().transitionCountdown(slotState.entity().slot()),
+                    state.background().groundInteractionSideScrolling());
             slotState.updated(goombaUpdate.entity());
             state.slot().setTransitionCountdown(slotState.entity().slot(), goombaUpdate.transitionCountdown());
             if (goombaUpdate.startDying()) {

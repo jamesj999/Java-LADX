@@ -4,8 +4,19 @@ import java.util.Optional;
 import linksawakening.state.LinkMotionState;
 
 /** Motion inputs retain the ROM dispatch byte, including unknown numeric gate values. */
-public record LinkMotion(boolean airborne, int rawState, boolean shield, int invincibility, int speedX, int speedY)
+public record LinkMotion(
+        boolean airborne,
+        int rawState,
+        boolean shield,
+        int invincibility,
+        int speedX,
+        int speedY,
+        boolean ignoringContactCollisions)
         implements EntityFrameValues.Motion {
+    LinkMotion(boolean airborne, int rawState, boolean shield, int invincibility, int speedX, int speedY) {
+        this(airborne, rawState, shield, invincibility, speedX, speedY, false);
+    }
+
     /** Explicit absence for values outside the known ROM dispatch table. */
     public Optional<LinkMotionState> knownState() {
         return Optional.ofNullable(stateForRomByte(rawState));

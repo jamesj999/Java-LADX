@@ -17,6 +17,8 @@ public final class EntitySlotExecution {
     // Absent before initialization or while this reusable execution scratch is inactive.
     private EntityStatus initialStatus;
     private boolean wasInitializing;
+    private boolean finishingLethalSwordHit;
+    private int ignoreHitsBeforeRecoil;
     // Absent before initialization or while this reusable execution scratch is inactive.
     private EntityStatus status;
     private boolean keyDropTransitionActive;
@@ -137,6 +139,22 @@ public final class EntitySlotExecution {
         return wasInitializing;
     }
 
+    public boolean finishingLethalSwordHit() {
+        return finishingLethalSwordHit;
+    }
+
+    void finishingLethalSwordHit(boolean value) {
+        finishingLethalSwordHit = value;
+    }
+
+    public int ignoreHitsBeforeRecoil() {
+        return ignoreHitsBeforeRecoil;
+    }
+
+    void ignoreHitsBeforeRecoil(int value) {
+        ignoreHitsBeforeRecoil = value;
+    }
+
     public EntityStatus status() {
         return status;
     }
@@ -222,6 +240,7 @@ public final class EntitySlotExecution {
         originalEntity = null;
         initialStatus = null;
         wasInitializing = false;
+        ignoreHitsBeforeRecoil = 0;
         status = null;
         keyDropTransitionActive = false;
         preAppliedGroundResult = null;

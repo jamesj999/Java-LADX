@@ -21,6 +21,11 @@ public final class ScrollController {
     private int linkScreenX;
     private int linkScreenY;
     private RoomRenderSnapshot previousRoom;
+    private Preparation preparation;
+    private PreparationPhase preparationPhase;
+    private int transferFramesRemaining;
+    private int switchBlockFramesRemaining;
+    private boolean tileTransferOnlyFrame;
     private final ScreenShake screenShakeMotion = ScreenShake.create();
     private boolean scriptedScreenShakeActive;
     private int scriptedScreenShakeHorizontal;
@@ -33,6 +38,22 @@ public final class ScrollController {
         this.previousRoom = previousRoom;
         this.target = target;
         this.offset = 0;
+        this.preparation = null;
+        this.tileTransferOnlyFrame = false;
+    }
+
+    public void startRoomTransition(
+            int direction,
+            int linkScreenX,
+            int linkScreenY,
+            RoomRenderSnapshot previousRoom,
+            int target,
+            Preparation preparation) {
+        start(direction, linkScreenX, linkScreenY, previousRoom, target);
+        this.preparation = preparation;
+        this.preparationPhase = PreparationPhase.PREPARE_ROOM;
+        this.transferFramesRemaining = 0;
+        this.switchBlockFramesRemaining = preparation.switchBlockTransfers();
     }
 
     /** Runs once after the destination has finished scrolling into view. */
@@ -41,7 +62,12 @@ public final class ScrollController {
     }
 
     public boolean tick(int speed) {
+        tileTransferOnlyFrame = false;
         if (!isActive()) {
+            return false;
+        }
+        if (preparation != null) {
+            tickPreparation();
             return false;
         }
         offset += speed;
@@ -56,6 +82,54 @@ public final class ScrollController {
         completion = NO_COMPLETION;
         finished.run();
         return true;
+    }
+
+    private void tickPreparation() {
+        if (transferFramesRemaining > 0) {
+            transferFramesRemaining--;
+            tileTransferOnlyFrame = true;
+            return;
+        }
+        // The requesting frame can already perform the first transfer in VBlank.
+        switch (preparationPhase) {
+            case PREPARE_ROOM -> {
+                transferFramesRemaining = Math.max(0, preparation.roomTransfers() - 1);
+                preparationPhase = PreparationPhase.SELECT_TILESETS;
+            }
+            case SELECT_TILESETS -> {
+                transferFramesRemaining = Math.max(0, preparation.tilesetTransfers() - 1);
+                if (preparation.tilesetTransfers() == 0 && switchBlockFramesRemaining > 0) {
+                    switchBlockFramesRemaining--;
+                }
+                preparationPhase = PreparationPhase.CONFIGURE_TARGETS;
+            }
+            case CONFIGURE_TARGETS -> {
+                if (switchBlockFramesRemaining > 0) {
+                    switchBlockFramesRemaining--;
+                } else {
+                    preparation = null;
+                }
+            }
+        }
+    }
+
+    /** The main loop's $00:02EF tile gate bypasses gameplay after reading input. */
+    public boolean tileTransferOnlyFrame() {
+        return tileTransferOnlyFrame;
+    }
+
+    /** The destination becomes dispatchable on the Prepare frame, not on boundary detection. */
+    public boolean incomingRoomPrepared() {
+        return isActive() && (preparation == null || preparationPhase != PreparationPhase.PREPARE_ROOM);
+    }
+
+    /** Amount of VBlank work scheduled by the first two ROM scroll handlers. */
+    public record Preparation(int roomTransfers, int tilesetTransfers, int switchBlockTransfers) {}
+
+    private enum PreparationPhase {
+        PREPARE_ROOM,
+        SELECT_TILESETS,
+        CONFIGURE_TARGETS
     }
 
     public boolean isActive() {

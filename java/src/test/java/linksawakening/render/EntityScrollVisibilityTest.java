@@ -19,6 +19,19 @@ final class EntityScrollVisibilityTest {
     private static final int[][] PALETTES = {{0, COLOR, 0, 0}};
 
     @Test
+    void incomingDrawWaitsForThePrepareDispatch() {
+        var scroll = new ScrollController();
+        scroll.startRoomTransition(ScrollController.DOWN, 0, 0, null, 128, new ScrollController.Preparation(0, 0, 0));
+        var visibleAfterLoad = entity(0x09, 40, 8, 0, definition(EntitySpriteDefinition.Shape.PAIR));
+        assertEquals(0, coloredPixels(draw(visibleAfterLoad, scroll)));
+
+        scroll.tick(4);
+
+        assertTrue(coloredPixels(draw(visibleAfterLoad, scroll)) > 0);
+        assertEquals(0, scroll.offset());
+    }
+
+    @Test
     void incomingEnemiesAndDroppedItemsSkipWholeListsUntilVisualYIsAtMost136() {
         for (var shape : List.of(
                 EntitySpriteDefinition.Shape.PAIR,

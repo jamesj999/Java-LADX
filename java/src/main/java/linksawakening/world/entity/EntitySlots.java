@@ -4,11 +4,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.IntUnaryOperator;
 
 /** Owns the fixed ROM slot table and its combat/physics columns, which share slot identity. */
 final class EntitySlots {
     private final EntityCombatTables combat = new EntityCombatTables();
-    private final EntityPhysicsTables physics = new EntityPhysicsTables();
+    private final EntityPhysicsTables physics;
     private final RoomEntity[] values;
     private final List<RoomEntity> view;
     private RoomEntity[] roamingShadowOam = new RoomEntity[RoomEntity.SLOT_COUNT];
@@ -39,6 +40,11 @@ final class EntitySlots {
     }
 
     EntitySlots(List<RoomEntity> initial) {
+        this(initial, ignored -> 0);
+    }
+
+    EntitySlots(List<RoomEntity> initial, IntUnaryOperator initialPhysicsFlagsLookup) {
+        physics = new EntityPhysicsTables(initialPhysicsFlagsLookup);
         values = initial.toArray(RoomEntity[]::new);
         view = Collections.unmodifiableList(Arrays.asList(values));
     }

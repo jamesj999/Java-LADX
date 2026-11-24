@@ -313,30 +313,6 @@ public final class EntityRoomInspection {
         return null;
     }
 
-    boolean canGoombaStomp(
-            RoomEntity entity,
-            int linkEntityX,
-            int linkEntityY,
-            boolean linkAirborne,
-            int linkVerticalVelocity,
-            boolean linkInteractive,
-            int frameCounter) {
-        if (entity.type() != EntityRomConstants.ENTITY_GOOMBA
-                || !linkAirborne
-                || !linkInteractive
-                || !RoomEntityCombatRules.collisionCadenceMatches(frameCounter, entity.slot())
-                || !RoomEntityCombatRules.overlapsLink(entity, linkEntityX, linkEntityY)) {
-            return false;
-        }
-
-        // Top-down hLinkVelocityZ is negative while descending. The side-view
-        // branch instead tests hLinkSpeedY, where a non-negative value means
-        // Link is moving downward onto the Goomba.
-        return this.physicsTables.readGroundInteractionSideScrolling()
-                ? (linkVerticalVelocity & 0x80) == 0
-                : (linkVerticalVelocity & 0x80) != 0;
-    }
-
     boolean hasNoGroundInteractionOverride(int slot) {
         return EntityRoomInspection.entityRoomQueriesHasNoGroundInteractionOverride(this, slot);
     }
@@ -563,6 +539,15 @@ public final class EntityRoomInspection {
     public ColorShellWorld colorShellWorld() {
         var colorShellMotion = this.motions.get(ColorShellMotion.class, ColorShellMotion::new);
         return colorShellMotion.readColorShellWorld();
+    }
+
+    /** Slots unavailable to incoming room definitions while two adjacent rooms scroll. */
+    public int occupiedSlotMask() {
+        int mask = 0;
+        for (int slot = 0; slot < slots.size(); slot++) {
+            if (slots.get(slot).loaded()) mask |= 1 << slot;
+        }
+        return mask;
     }
 
     /** Reusable read-only view for immediate consumption; use snapshot() to retain owned frame data. */

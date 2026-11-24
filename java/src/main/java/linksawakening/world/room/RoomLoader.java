@@ -40,6 +40,10 @@ public final class RoomLoader {
     }
 
     LoadedRoom loadOverworld(int roomId, int clearedEntitiesMask, byte[] overworldRoomStatus) {
+        return loadOverworld(roomId, clearedEntitiesMask, overworldRoomStatus, 0);
+    }
+
+    LoadedRoom loadOverworld(int roomId, int clearedEntitiesMask, byte[] overworldRoomStatus, int occupiedSlots) {
         int roomPointerOffset =
                 RomSymbols.OverworldRoomPointers.plus(roomId * 2).offset();
         int roomLo = romData.u8(RomAddress.fromOffset(roomPointerOffset));
@@ -59,14 +63,16 @@ public final class RoomLoader {
         RoomObjectParseResult parsed = parser.parseOverworld(roomDataOffset + 2, floorObject, roomStatusFlags);
         int[] objects = parsed.roomObjectsArea();
         RoomTilemap tilemap = tilemapBuilder.buildOverworld(roomId, objects);
-        RoomEntitySnapshot entities = loadEntities(
+        RoomEntitySnapshot entities = loadEntities(new RoomEntityLoadInputs(
                 EntityRoomLoader.RoomTable.OVERWORLD,
                 roomId,
                 clearedEntitiesMask,
                 MAP_OVERWORLD,
                 overworldRoomStatus,
                 false,
-                false);
+                false,
+                new RoomNpcPaletteInputs(0, 0),
+                occupiedSlots));
 
         return new LoadedRoom(new LoadedRoomSpec(
                 new LoadedRoomSpec.Identity(roomId, Warp.CATEGORY_OVERWORLD, MAP_OVERWORLD, animatedTilesGroup),
@@ -128,7 +134,8 @@ public final class RoomLoader {
                 clearedEntitiesMask,
                 indoorRoomStatus,
                 hasBirdKey,
-                new RoomNpcPaletteInputs(tarinFlag, 0)));
+                new RoomNpcPaletteInputs(tarinFlag, 0),
+                0));
     }
 
     LoadedRoom loadIndoor(IndoorRoomLoadInputs inputs) {
@@ -168,7 +175,8 @@ public final class RoomLoader {
                 indoorRoomStatus,
                 hasBirdKey,
                 mapCategory == Warp.CATEGORY_SIDESCROLL,
-                new RoomNpcPaletteInputs(tarinFlag, shieldLevel)));
+                new RoomNpcPaletteInputs(tarinFlag, shieldLevel),
+                inputs.occupiedSlots()));
 
         return new LoadedRoom(new LoadedRoomSpec(
                 new LoadedRoomSpec.Identity(roomId, mapCategory, mapId, animatedTilesGroup),
@@ -192,37 +200,6 @@ public final class RoomLoader {
                 entities));
     }
 
-    private RoomEntitySnapshot loadEntities(
-            EntityRoomLoader.RoomTable table,
-            int roomId,
-            int clearedEntitiesMask,
-            int mapId,
-            byte[] roomStatus,
-            boolean hasBirdKey,
-            boolean sideScrolling) {
-        return loadEntities(table, roomId, clearedEntitiesMask, mapId, roomStatus, hasBirdKey, sideScrolling, 0);
-    }
-
-    private RoomEntitySnapshot loadEntities(
-            EntityRoomLoader.RoomTable table,
-            int roomId,
-            int clearedEntitiesMask,
-            int mapId,
-            byte[] roomStatus,
-            boolean hasBirdKey,
-            boolean sideScrolling,
-            int tarinFlag) {
-        return loadEntities(new RoomEntityLoadInputs(
-                table,
-                roomId,
-                clearedEntitiesMask,
-                mapId,
-                roomStatus,
-                hasBirdKey,
-                sideScrolling,
-                new RoomNpcPaletteInputs(tarinFlag, 0)));
-    }
-
     private RoomEntitySnapshot loadEntities(RoomEntityLoadInputs inputs) {
         EntityRoomLoader.RoomTable table = inputs.table();
         int roomId = inputs.roomId();
@@ -235,7 +212,7 @@ public final class RoomLoader {
         int shieldLevel = inputs.palettes().shieldLevel();
 
         return entityLoader
-                .load(table, roomId, clearedEntitiesMask, mapId, roomStatus, hasBirdKey)
+                .load(table, roomId, clearedEntitiesMask, mapId, roomStatus, hasBirdKey, inputs.occupiedSlots())
                 .withSpriteSelection(entitySpriteCatalog.load(
                         table,
                         roomId,

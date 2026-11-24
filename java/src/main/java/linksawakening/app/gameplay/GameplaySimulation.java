@@ -23,6 +23,7 @@ public final class GameplaySimulation implements GameplayFrame.Simulation, Simul
     private final CombatPhase combatPhase;
     private final EntityPhase entityPhase;
     private final AnimatedTilesPhase animatedTilesPhase;
+    private int swordCollisionY;
 
     public GameplaySimulation(Inputs inputs) {
         this.inventoryController = Objects.requireNonNull(inputs.inventoryController);
@@ -54,6 +55,8 @@ public final class GameplaySimulation implements GameplayFrame.Simulation, Simul
 
     @Override
     public void linkEquipment(boolean blocked, boolean inventory) {
+        // ApplyGotItem ($00:1033) samples Y - Z before Link motion and sword animation.
+        swordCollisionY = link.position().romSwordCollisionY();
         linkEquipmentPhase.tick(blocked, inventory);
     }
 
@@ -64,7 +67,7 @@ public final class GameplaySimulation implements GameplayFrame.Simulation, Simul
 
     @Override
     public Sword.CollisionBox combat(boolean blocked) {
-        return combatPhase.tick(blocked);
+        return combatPhase.tick(blocked, swordCollisionY);
     }
 
     @Override
@@ -78,8 +81,8 @@ public final class GameplaySimulation implements GameplayFrame.Simulation, Simul
     }
 
     @Override
-    public void animatedTiles(boolean blocked) {
-        animatedTilesPhase.tick(blocked);
+    public void animatedTiles() {
+        animatedTilesPhase.tick();
     }
     /** The simulation's strict per-frame order, including opening-story gates. */
     @Override

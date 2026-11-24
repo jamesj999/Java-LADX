@@ -6,11 +6,50 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBackgroundCollision;
+import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 import linksawakening.world.entity.RoomEntityBuilder;
 import linksawakening.world.entity.motion.MoblinSwordMotion.MoblinSwordFrame;
 import org.junit.jupiter.api.Test;
 
 final class MoblinSwordMotionTest {
+
+    @Test
+    void walkingAndIncomingRecoilUseTheSamePositionFraction() {
+        MoblinSwordMotion motion = new MoblinSwordMotion();
+        RoomEntity current = entity(0, 0x50, 0x40);
+        for (int frame = 0; frame < 3; frame++) {
+            current = motion.advance(current, 0xC0, 0x40, RoomEntityBackgroundInteraction.NONE, 0, frame)
+                    .entity();
+        }
+        assertEquals(0x50, current.x());
+        // Two ordinary +6 steps leave $C0 in the fraction; the -24 step keeps its carry.
+        RoomEntity moved = motion.applyRecoil(current, RoomEntityBackgroundCollision.OPEN, 0xE8, 0)
+                .entity();
+        assertEquals(0x4F, moved.x());
+        assertEquals(
+                0x4F,
+                motion.advance(moved, 0xC0, 0x40, RoomEntityBackgroundInteraction.NONE, 0, 4)
+                        .entity()
+                        .x());
+    }
+
+    @Test
+    void clashRefreshesThePursuitTimerOnTheNextDispatch() {
+        MoblinSwordMotion motion = new MoblinSwordMotion();
+        RoomEntity current = entity(0, 0x50, 0x40);
+        current = motion.advance(current, 0xC0, 0x40, RoomEntityBackgroundInteraction.NONE, 0, 0)
+                .entity();
+        current = motion.advance(current, 0x70, 0x40, RoomEntityBackgroundInteraction.NONE, 0, 1)
+                .entity();
+        current = motion.advance(new MoblinSwordFrame(
+                        current, 0x70, 0x40, RoomEntityBackgroundInteraction.NONE, 8, 4, 0, 4, 2, 0))
+                .entity();
+        assertEquals(0x7F, motion.transitionCountdown(0));
+        motion.advance(
+                new MoblinSwordFrame(current, 0x70, 0x40, RoomEntityBackgroundInteraction.NONE, 7, 3, 0, 4, 3, 8));
+        assertEquals(0x80, motion.transitionCountdown(0));
+    }
 
     @Test
     void idleStateStartsTheRomWalkingTimerAndFlipsTheInitDirection() {

@@ -79,6 +79,74 @@ class ObjectInteractionSessionTest {
     }
 
     @Test
+    void swordSwingResetsCrackedFloorBeforeItCanCollapse() throws Exception {
+        var game = session();
+        var roomSession = game.diagnostics().roomSession();
+        var player = game.diagnostics().playerState();
+        player.equipmentLevels().setSwordLevel(1);
+        player.inventory().setItemA(linksawakening.state.InventoryItem.SWORD.romValue());
+        player.inventory().setItemB(0);
+        int index = RoomConstants.ROOM_OBJECTS_BASE + 0x33;
+        var objects = roomSession.rooms().activeRoomOrNull().roomObjectsArea();
+        game.headlessFrame();
+        objects[index] = 0xDF;
+        for (int i = 0; i < 39; i++) game.headlessFrame();
+        assertEquals(39, linksawakening.world.room.RoomSessionTestAccess.crackedFloorCounter(roomSession));
+
+        game.headlessButton("a", true);
+        game.headlessFrame();
+        game.headlessButton("a", false);
+        assertEquals(0, linksawakening.world.room.RoomSessionTestAccess.crackedFloorCounter(roomSession));
+        assertEquals(0xDF, objects[index]);
+
+        for (int i = 0; i < 14; i++) {
+            game.headlessFrame();
+            assertEquals(0, linksawakening.world.room.RoomSessionTestAccess.crackedFloorCounter(roomSession));
+        }
+        game.headlessFrame();
+        assertEquals(1, linksawakening.world.room.RoomSessionTestAccess.crackedFloorCounter(roomSession));
+    }
+
+    @Test
+    void groundedSwordDrawStopsFurtherRecoilWithoutClearingItsCountdown() throws Exception {
+        var game = session();
+        var player = game.diagnostics().playerState();
+        var link = game.diagnostics().link();
+        player.equipmentLevels().setSwordLevel(1);
+        player.inventory().setItemA(linksawakening.state.InventoryItem.SWORD.romValue());
+        player.inventory().setItemB(0);
+        var objects =
+                game.diagnostics().roomSession().rooms().requireActiveRoom().roomObjectsArea();
+        for (int row = 2; row <= 3; row++) {
+            for (int column = 2; column <= 3; column++) {
+                objects[RoomConstants.ROOM_OBJECTS_BASE + row * RoomConstants.ROOM_OBJECT_ROW_STRIDE + column] = 0x0D;
+            }
+        }
+        game.headlessFrame();
+        int x = link.position().pixelX();
+        int y = link.position().pixelY();
+        link.position().applyRomSpeed(0xF0, 0xF0);
+        link.status().setCollisionIgnoreFrames(0x10);
+
+        game.headlessButton("a", true);
+        game.headlessFrame();
+
+        assertEquals(
+                linksawakening.equipment.Sword.STATE_DRAW,
+                game.diagnostics().equipmentController().activeSword().state());
+        assertEquals(x - 1, link.position().pixelX());
+        assertEquals(y - 1, link.position().pixelY());
+        assertEquals(0, link.position().romSpeedX());
+        assertEquals(0, link.position().romSpeedY());
+        assertTrue(link.status().ignoringContactCollisions());
+
+        game.headlessFrame();
+        assertEquals(x - 1, link.position().pixelX());
+        assertEquals(y - 1, link.position().pixelY());
+        assertTrue(link.status().ignoringContactCollisions());
+    }
+
+    @Test
     void externalPositionChangeIsComparedAgainstTheLastGroundProbe() throws Exception {
         var game = session();
         var roomSession = game.diagnostics().roomSession();

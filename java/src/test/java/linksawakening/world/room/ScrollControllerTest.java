@@ -32,6 +32,25 @@ final class ScrollControllerTest {
     }
 
     @Test
+    void configureWaitsForSwitchBlockCopiesAfterQueuedTiles() {
+        ScrollController scroll = new ScrollController();
+        RoomRenderSnapshot previous = new RoomRenderSnapshot(new int[] {1}, new int[] {2}, new int[][] {{3}});
+        scroll.startRoomTransition(
+                ScrollController.RIGHT, 10, 20, previous, 8, new ScrollController.Preparation(0, 4, 2));
+
+        // Prepare, select, three remaining copies, two switch updates, configure.
+        for (int frame = 0; frame < 8; frame++) {
+            assertFalse(scroll.tick(4));
+            assertEquals(0, scroll.offset());
+            assertEquals(frame >= 2 && frame <= 4, scroll.tileTransferOnlyFrame());
+        }
+        assertFalse(scroll.tick(4));
+        assertFalse(scroll.tileTransferOnlyFrame());
+        assertEquals(4, scroll.offset());
+        assertTrue(scroll.tick(4));
+    }
+
+    @Test
     void exposesTheRomScreenShakePhaseThroughTheSharedCameraController() {
         ScrollController scroll = new ScrollController();
 

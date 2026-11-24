@@ -88,7 +88,7 @@ final class FollowingNpcEntitySpawnerTest {
                         new FollowingNpcState(true, 1, true, true, 0, 0, false),
                         0x50,
                         0x60,
-                        0,
+                        0x0E,
                         0,
                         0,
                         new LinkPositionHistory()));
@@ -97,6 +97,8 @@ final class FollowingNpcEntitySpawnerTest {
         assertEquals(0xD4, result.snapshot().slots().get(14).type());
         assertEquals(0xC1, result.snapshot().slots().get(13).type());
         assertEquals(0x6D, result.snapshot().slots().get(12).type());
+        assertEquals(0x0E, result.snapshot().slots().get(12).z());
+        assertEquals(0, result.snapshot().slots().get(13).z());
         assertTrue(result.snapshot().slots().get(15).spriteDefinition().supported());
         assertEquals(
                 0x59BC,

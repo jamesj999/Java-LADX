@@ -150,6 +150,12 @@ final class SpikedBeetleShieldTest {
         assertEquals(0x02, runtime.enemies().enemyHealth(0));
 
         runtime.tick(EntityTestFrames.frame(runtime, 1, 120, 120, sequence(0x00)));
+        assertEquals(0xFF, runtime.enemies().transitionCountdown(0));
+        assertEquals(0x48, runtime.execution().slotProperties().options1(0));
+        assertEquals(0x80, EntityRuntimeFixture.enemies(runtime).hitboxFlagsForTest(0));
+
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 120, 120, sequence(0x00)));
+        assertEquals(0xFE, runtime.enemies().transitionCountdown(0));
         assertEquals(0x08, runtime.execution().slotProperties().options1(0));
         assertEquals(0x00, EntityRuntimeFixture.enemies(runtime).hitboxFlagsForTest(0));
     }

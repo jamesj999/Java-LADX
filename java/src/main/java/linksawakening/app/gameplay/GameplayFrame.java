@@ -25,12 +25,18 @@ public final class GameplayFrame {
 
     public void tick() {
         transitions.run();
-        simulation.tick();
+        if (!transitions.tileTransferOnlyFrame()) {
+            simulation.tick();
+        }
         inputCompletion.complete();
     }
     /** Transition advancement performed before simulation. */
     public interface Transitions {
         void run();
+
+        default boolean tileTransferOnlyFrame() {
+            return false;
+        }
     }
     /** Ordered simulation step. */
     public interface Simulation {

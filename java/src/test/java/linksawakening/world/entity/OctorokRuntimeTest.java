@@ -10,10 +10,44 @@ import java.util.List;
 import java.util.function.IntSupplier;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.EntityCombatEvent;
+import linksawakening.world.entity.motion.MotionTestFixture;
+import linksawakening.world.entity.motion.RoamingEnemyMotion;
 import org.junit.jupiter.api.Test;
 
 @linksawakening.testing.RequiresRom
 final class OctorokRuntimeTest {
+
+    @Test
+    void roomLoadedOctorokAndMoblinWaitFor160InteractiveTimerTicksBeforeTheyCanFire() {
+        for (int type : new int[] {0x09, 0x0B}) {
+            var entity = new RoomEntityBuilder()
+                    .sourceLoadOrder(0)
+                    .type(type)
+                    .at(64, 64)
+                    .status(EntityStatus.INIT)
+                    .spriteDefinition(pairDefinition(type, 8))
+                    .build();
+            var runtime = new RoomEntityRuntimeBuilder(snapshot(entity)).build();
+            var motion = runtime.enemies().motions().get(RoamingEnemyMotion.class, RoamingEnemyMotion::new);
+            var inspection = new EntityRoomInspectionQueries(runtime.inspection());
+            runtime.tick(EntityTestFrames.frame(runtime, 0, 96, 64, () -> 0));
+
+            // Freeze the shared countdown during the scroll, then offer a facing shot on each tick.
+            runtime.inspection().roomVariables().writeRoomTransitionActive(true);
+            for (int frame = 1; frame <= 40; frame++) {
+                runtime.tick(EntityTestFrames.frame(runtime, frame, 96, 64, () -> 0));
+            }
+            runtime.inspection().roomVariables().writeRoomTransitionActive(false);
+            for (int active = 1; active <= 160; active++) {
+                MotionTestFixture.setStateForTest(motion, 0, 1, 0x0B, 0, 0, 0);
+                runtime.tick(EntityTestFrames.frame(runtime, 40 + active, 96, 64, () -> 0));
+                assertEquals(
+                        active == 160 ? 1 : 0,
+                        inspection.projectileLaunchRequests().size(),
+                        "entity " + type + " active tick " + active);
+            }
+        }
+    }
 
     @Test
     void octorokUsesTheSharedRoamingEnemyTimersAndDirectionSpeeds() {
@@ -147,6 +181,7 @@ final class OctorokRuntimeTest {
         assertEquals(
                 EntityStatus.DYING,
                 runtime.inspection().snapshot().slots().get(0).status());
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 120, 120, sequence(0)));
         assertEquals(0x0A, runtime.enemies().enemyIgnoreHitsCountdown(0));
         assertEquals(EntityCombatEvent.SoundChannel.JINGLE, events.get(0).soundChannel());
         assertEquals(0x03, events.get(0).soundId());

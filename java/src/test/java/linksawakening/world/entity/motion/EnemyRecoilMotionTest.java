@@ -6,12 +6,69 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBackgroundCollision;
 import linksawakening.world.entity.RoomEntityBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 final class EnemyRecoilMotionTest {
+
+    @Test
+    void octorokShieldRecoilMaintainsTheNativePositionFractionsAndPause() {
+        int slot = 1;
+        RoomEntity octorok = entity(slot, 0x47, 0x18, 0);
+        var recoil = new EnemyRecoilMotion();
+        var roaming = new RoamingEnemyMotion();
+        roaming.initialize(slot);
+        roaming.speedXAccumulator()[slot] = 0x80;
+        roaming.speedYAccumulator()[slot] = 0x80;
+        recoil.configureFromSpeed(slot, 0x20, 0xFE);
+        int[] expectedY = {0x18, 0x18, 0x18, 0x18, 0x17, 0x17, 0x17, 0x17, 0x17, 0x17};
+        for (int i = 0; i < expectedY.length; i++) {
+            octorok = roaming.applyIncomingRecoil(octorok, RoomEntityBackgroundCollision.OPEN, recoil)
+                    .entity();
+            assertEquals(0x49 + i * 2, octorok.x());
+            assertEquals(expectedY[i], octorok.y());
+            assertEquals(0x40, roaming.transitionCountdown(slot));
+        }
+        assertEquals(0x80, roaming.speedXAccumulator()[slot]);
+        assertEquals(0x40, roaming.speedYAccumulator()[slot]);
+    }
+
+    @Test
+    void bankThreeStopsOnTheDominantAxisAndBankFourKeepsItsCountdown() {
+        RoomEntity target = entity(0, 0x31, 0x2C, 0);
+        var recoil = new EnemyRecoilMotion();
+        recoil.configureFromSpeed(0, 0x15, 0x20);
+        var roaming = new RoamingEnemyMotion();
+        var leever = new LeeverMotion();
+        RoomEntityBackgroundCollision horizontalWall = (e, direction, x, y) -> direction == 0;
+        RoomEntityBackgroundCollision verticalWall = (e, direction, x, y) -> direction == 3;
+        assertFalse(roaming.applyIncomingRecoil(target, horizontalWall, recoil).blocked());
+        assertTrue(roaming.applyIncomingRecoil(target, verticalWall, recoil).blocked());
+        assertFalse(leever.applyIncomingRecoil(target, verticalWall, recoil).blocked());
+    }
+
+    @Test
+    void leeverShieldRecoilKeepsIntegratingPastTheBlockedVerticalAxis() {
+        int slot = 2;
+        RoomEntity leever = entity(slot, 0x31, 0x2C, 0);
+        var recoil = new EnemyRecoilMotion();
+        recoil.configureFromSpeed(slot, 0x15, 0x20);
+        int[] fractionX = {0, 0, 0};
+        int[] fractionY = {0, 0, 0x80};
+        int[] expectedX = {0x32, 0x33, 0x34, 0x36, 0x37, 0x38, 0x3A, 0x3B, 0x3C, 0x3E};
+        RoomEntityBackgroundCollision wall = (e, direction, x, y) -> direction == 3 && y > 0x32;
+        for (int i = 0; i < expectedX.length; i++) {
+            leever = recoil.advanceWithHandlerFractions(leever, wall, fractionX, fractionY, false)
+                    .entity();
+            assertEquals(expectedX[i], leever.x());
+            assertEquals(Math.min(0x2E + 2 * i, 0x32), leever.y());
+        }
+        assertEquals(0x20, fractionX[slot]);
+        assertEquals(0x80, fractionY[slot]);
+    }
 
     @Test
     void configureMirrorsRomVectorAwayFromLinkAcrossTheDominantAxes() {

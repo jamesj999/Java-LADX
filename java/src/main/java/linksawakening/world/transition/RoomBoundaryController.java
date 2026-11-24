@@ -9,8 +9,11 @@ public final class RoomBoundaryController {
     private static final int OVERWORLD_COLUMNS = 16;
     private static final int OVERWORLD_ROWS = 16;
     private static final int SIDE_VIEW_NO_FADE_PHYSICS_MODIFIER = 0x02;
-    private static final int SIDE_VIEW_VERTICAL_TOP = -0x04;
-    private static final int SIDE_VIEW_VERTICAL_BOTTOM = 0x74;
+    // CheckPositionForMapTransition ($02:6C99) uses the sprite's ROM center X and bottom Y.
+    private static final int SCROLL_LEFT = 0x04 - 8;
+    private static final int SCROLL_RIGHT = 0x9C - 8;
+    private static final int SCROLL_TOP = 0x0C - 16;
+    private static final int SCROLL_BOTTOM = 0x84 - 16;
 
     public RoomBoundaryDecision decide(RoomBoundaryView state) {
         if (state.mapCategory() == Warp.CATEGORY_OVERWORLD) {
@@ -32,24 +35,17 @@ public final class RoomBoundaryController {
             return RoomBoundaryDecision.none();
         }
 
-        // CheckPositionForMapTransition ($02:6C99) tests ROM entity coordinates,
-        // with vertical edges taking priority. Java stores the sprite top-left.
-        int romX = x + 8;
-        int romY = y + 16;
-        // ApplyRoomTransition integrates $3A/16 per frame: 40 horizontal
-        // steps move 145 pixels; 32 vertical steps move 116. Preserve the
-        // boundary overshoot instead of snapping to a fixed destination edge.
-        if (romY < 0x0C && roomRow > 0) {
-            return RoomBoundaryDecision.overworldScroll(ScrollController.UP, x, y + 116);
+        if (y < SCROLL_TOP && roomRow > 0) {
+            return adjacentScroll(RoomBoundaryDecision.Type.OVERWORLD_SCROLL, ScrollController.UP, x, y);
         }
-        if (romY >= 0x84 && roomRow < OVERWORLD_ROWS - 1) {
-            return RoomBoundaryDecision.overworldScroll(ScrollController.DOWN, x, y - 116);
+        if (y >= SCROLL_BOTTOM && roomRow < OVERWORLD_ROWS - 1) {
+            return adjacentScroll(RoomBoundaryDecision.Type.OVERWORLD_SCROLL, ScrollController.DOWN, x, y);
         }
-        if (romX < 0x04 && roomCol > 0) {
-            return RoomBoundaryDecision.overworldScroll(ScrollController.LEFT, x + 145, y);
+        if (x < SCROLL_LEFT && roomCol > 0) {
+            return adjacentScroll(RoomBoundaryDecision.Type.OVERWORLD_SCROLL, ScrollController.LEFT, x, y);
         }
-        if (romX >= 0x9C && roomCol < OVERWORLD_COLUMNS - 1) {
-            return RoomBoundaryDecision.overworldScroll(ScrollController.RIGHT, x - 145, y);
+        if (x >= SCROLL_RIGHT && roomCol < OVERWORLD_COLUMNS - 1) {
+            return adjacentScroll(RoomBoundaryDecision.Type.OVERWORLD_SCROLL, ScrollController.RIGHT, x, y);
         }
 
         // Interior rooms must allow the off-screen margin required above.
@@ -72,12 +68,6 @@ public final class RoomBoundaryController {
         boolean offLeft = x < 0;
         boolean offRight = x + Link.SPRITE_SIZE > ROOM_PIXEL_WIDTH;
         boolean sideScrolling = state.mapCategory() == Warp.CATEGORY_SIDESCROLL;
-        boolean sideScrollingWithWarp = sideScrolling && state.hasWarps();
-        boolean supportedTailCaveSideView = state.mapCategory() == Warp.CATEGORY_SIDESCROLL
-                && state.mapId() == 0x00
-                && (state.roomId() == 0x18 || state.roomId() == 0x19)
-                && state.hasWarps();
-
         if (offBottom && (state.shutterDoorMask() & 0x02) != 0) {
             return RoomBoundaryDecision.clamp(x, ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE);
         }
@@ -87,56 +77,47 @@ public final class RoomBoundaryController {
         // Ordinary top-down rooms use the source airborne guard before room
         // transition initiation. Side-scrolling rooms take a separate source
         // path below and intentionally remain exempt from this guard.
-        if (state.linkAirborne() && state.mapCategory() != Warp.CATEGORY_SIDESCROLL) {
+        if (state.linkAirborne() && !sideScrolling) {
             return RoomBoundaryDecision.none();
         }
-        // CheckPositionForMapTransition has a small side-view margin in which
-        // Link is off the visible room but the source does not start an
-        // ordinary indoor scroll. The source's vertical path then applies
-        // room exceptions and hLinkPhysicsModifier before its generic fade.
-        if (sideScrolling) {
-            boolean inVerticalMargin =
-                    (offTop && y >= SIDE_VIEW_VERTICAL_TOP) || (offBottom && y < SIDE_VIEW_VERTICAL_BOTTOM);
-            if (inVerticalMargin) {
-                return RoomBoundaryDecision.none();
-            }
-            if (y < SIDE_VIEW_VERTICAL_TOP || y >= SIDE_VIEW_VERTICAL_BOTTOM) {
-                RoomBoundaryDecision sideViewDecision = sideViewVerticalDecision(state, sideScrollingWithWarp);
-                if (sideViewDecision != null) {
-                    return sideViewDecision;
-                }
-            }
+        // Side-view rooms can warp instead of scrolling at a vertical edge ($02:6CD1).
+        if (sideScrolling && (y < SCROLL_TOP || y >= SCROLL_BOTTOM)) {
+            RoomBoundaryDecision sideViewDecision = sideViewVerticalDecision(state, state.hasWarps());
+            if (sideViewDecision != null) return sideViewDecision;
         }
-        if (supportedTailCaveSideView) {
-            if (offTop || offBottom) {
-                return RoomBoundaryDecision.none();
-            }
-            if ((offLeft && x >= -0x04) || (offRight && x < 0x94)) {
-                return RoomBoundaryDecision.none();
-            }
-        }
-        if (offBottom && state.indoorHasSouthEntrance() && state.hasWarps()) {
+        if (!sideScrolling && offBottom && state.indoorHasSouthEntrance() && state.hasWarps()) {
             return RoomBoundaryDecision.indoorFrontDoorWarp();
         }
-        if (offLeft) {
-            if ((state.shutterDoorMask() & 0x04) != 0) {
-                return RoomBoundaryDecision.clamp(0, y);
-            }
-            return RoomBoundaryDecision.indoorScroll(ScrollController.LEFT, ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE, y);
+        if (offLeft && (state.shutterDoorMask() & 0x04) != 0) {
+            return RoomBoundaryDecision.clamp(0, y);
         }
-        if (offRight) {
-            if ((state.shutterDoorMask() & 0x08) != 0) {
-                return RoomBoundaryDecision.clamp(ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE, y);
-            }
-            return RoomBoundaryDecision.indoorScroll(ScrollController.RIGHT, 0, y);
+        if (offRight && (state.shutterDoorMask() & 0x08) != 0) {
+            return RoomBoundaryDecision.clamp(ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE, y);
         }
-        if (offTop) {
-            return RoomBoundaryDecision.indoorScroll(ScrollController.UP, x, ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE);
+        if (y < SCROLL_TOP) {
+            return adjacentScroll(RoomBoundaryDecision.Type.INDOOR_SCROLL, ScrollController.UP, x, y);
         }
-        if (offBottom) {
-            return RoomBoundaryDecision.indoorScroll(ScrollController.DOWN, x, 0);
+        if (y >= SCROLL_BOTTOM) {
+            return adjacentScroll(RoomBoundaryDecision.Type.INDOOR_SCROLL, ScrollController.DOWN, x, y);
+        }
+        if (x < SCROLL_LEFT) {
+            return adjacentScroll(RoomBoundaryDecision.Type.INDOOR_SCROLL, ScrollController.LEFT, x, y);
+        }
+        if (x >= SCROLL_RIGHT) {
+            return adjacentScroll(RoomBoundaryDecision.Type.INDOOR_SCROLL, ScrollController.RIGHT, x, y);
         }
         return RoomBoundaryDecision.none();
+    }
+
+    private static RoomBoundaryDecision adjacentScroll(RoomBoundaryDecision.Type type, int direction, int x, int y) {
+        // ApplyRoomTransition integrates $3A/16 for 40 horizontal or 32 vertical steps.
+        return switch (direction) {
+            case ScrollController.UP -> new RoomBoundaryDecision(type, direction, x, y + 116);
+            case ScrollController.DOWN -> new RoomBoundaryDecision(type, direction, x, y - 116);
+            case ScrollController.LEFT -> new RoomBoundaryDecision(type, direction, x + 145, y);
+            case ScrollController.RIGHT -> new RoomBoundaryDecision(type, direction, x - 145, y);
+            default -> throw new IllegalArgumentException("Room scroll direction " + direction);
+        };
     }
 
     private static RoomBoundaryDecision sideViewVerticalDecision(RoomBoundaryView state, boolean hasWarps) {

@@ -104,14 +104,16 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
 
     @Override
     public List<EntityProjectileEvent> tickEntities(EntityTickValues inputs) {
-        int x = inputs.position().x();
-        int y = inputs.position().y();
-        int z = inputs.position().z();
-        int motion = inputs.motion().rawState();
-        int direction = inputs.position().rawDirection();
-        dependencies.followers().observeLink(x, y, z, direction);
-        dependencies.entityFrame().observeMotionState(motion);
-        dependencies.location().beginEntityTick();
+        if (!inputs.incomingScrollOnly()) {
+            int x = inputs.position().x();
+            int y = inputs.position().y();
+            int z = inputs.position().z();
+            int motion = inputs.motion().rawState();
+            int direction = inputs.position().rawDirection();
+            dependencies.followers().observeLink(x, y, z, direction);
+            dependencies.entityFrame().observeMotionState(motion);
+            dependencies.location().beginEntityTick();
+        }
         return rooms.readOr(this, inputs, List.of(), (room, bridge, frame) -> bridge.tickEntities(room, frame));
     }
 
@@ -452,7 +454,7 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
         return pending;
     }
 
-    void tickGameplayVBlank() {
+    boolean tickGameplayVBlank() {
         if (SwitchBlockAnimation.isAnimating(dependencies.terrain().switchableObjectAnimationStage())) {
             SwitchBlockAnimation.Step step = SwitchBlockAnimation.advance(
                     dependencies.terrain().switchableObjectAnimationStage(),
@@ -471,9 +473,9 @@ final class RoomEntityBridge implements RoomEntities, RoomEntityOutputSource {
             // AnimateTiles returns after UpdateSwitchBlockTiles while the
             // switch animation is active, so ordinary animated BG tiles wait
             // until the next idle VBlank.
-            return;
+            return false;
         }
-        dependencies.gpu().tickAnimatedTiles(dependencies.romData());
+        return dependencies.gpu().tickAnimatedTiles(dependencies.romData());
     }
 
     record Dependencies(

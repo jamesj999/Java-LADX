@@ -167,7 +167,8 @@ public final class SessionWiring {
                         s.world().transitionController(),
                         s.player().link(),
                         4,
-                        wired.music()),
+                        wired.music(),
+                        s.rom().gpu()),
                 wired.simulation(),
                 prepared.completion());
     }

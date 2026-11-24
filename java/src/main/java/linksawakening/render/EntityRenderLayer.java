@@ -106,6 +106,7 @@ final class EntityRenderLayer implements HardwareRenderLayer {
                         EntityRenderInputs.previousRoomOffset(scrollController, previousOffset),
                         previousSprites);
             }
+            if (!scrollController.incomingRoomPrepared()) return;
         }
         renderSnapshot(
                 context,

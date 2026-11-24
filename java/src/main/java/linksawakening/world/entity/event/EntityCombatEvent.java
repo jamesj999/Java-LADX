@@ -130,7 +130,9 @@ public record EntityCombatEvent(
     public enum LinkAction {
         NONE,
         GOOMBA_BOUNCE_TOP_DOWN,
-        GOOMBA_BOUNCE_SIDE_SCROLLING
+        GOOMBA_BOUNCE_SIDE_SCROLLING,
+        SWORD_MOBLIN_BLADE_CLASH,
+        RECORD_SWORD_HIT_TARGET
     }
 
     /**

@@ -30,8 +30,11 @@ class PhaseAllocationTest {
             var tiles = c.tiles();
             report("dialog/story", () -> story.tick());
             report("link/equipment", () -> link.tick(false, false));
-            report("combat", () -> observed = combat.tick(false));
-            report("animated tiles", () -> tiles.tick(false));
+            report(
+                    "combat",
+                    () -> observed = combat.tick(
+                            false, session.diagnostics().link().position().romSwordCollisionY()));
+            report("animated tiles", tiles::tick);
             report("music", () -> session.flows().music().tick());
             report("input", () -> session.flows().inputRouter().tryPresentFileSave());
             var screen = (GameplayScreen) session.state().screens().currentScreen;

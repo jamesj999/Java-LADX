@@ -1,7 +1,6 @@
 package linksawakening.world.room;
 
 import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_HEIGHT;
-import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import linksawakening.entity.Link;
@@ -86,12 +85,30 @@ final class RoomBoundaryControllerTest {
     @Test
     void indoorSideEdgeRequestsScrollWithinIndoorMap() {
         RoomBoundaryDecision decision =
-                controller.decide(new RoomBoundaryState(Warp.CATEGORY_INDOOR, 0xA0, false, true, -1, 40));
+                controller.decide(new RoomBoundaryState(Warp.CATEGORY_INDOOR, 0xA0, false, true, -5, 40));
 
         assertEquals(RoomBoundaryDecision.Type.INDOOR_SCROLL, decision.type());
         assertEquals(ScrollController.LEFT, decision.direction());
-        assertEquals(ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE, decision.linkTargetX());
+        assertEquals(140, decision.linkTargetX());
         assertEquals(40, decision.linkTargetY());
+    }
+
+    @Test
+    void topDownIndoorMarginsAndVerticalPriorityMatchOverworld() {
+        int[][] inside = {{-4, 40}, {147, 40}, {40, -4}, {40, 115}};
+        for (int[] position : inside) {
+            assertEquals(
+                    RoomBoundaryDecision.Type.NONE,
+                    controller
+                            .decide(new RoomBoundaryState(
+                                    Warp.CATEGORY_INDOOR, 0x16, false, false, position[0], position[1]))
+                            .type());
+        }
+
+        var diagonal = controller.decide(new RoomBoundaryState(Warp.CATEGORY_INDOOR, 0x16, false, false, -5, -5));
+        assertEquals(ScrollController.UP, diagonal.direction());
+        assertEquals(-5, diagonal.linkTargetX());
+        assertEquals(111, diagonal.linkTargetY());
     }
 
     @Test
@@ -185,22 +202,24 @@ final class RoomBoundaryControllerTest {
     }
 
     @Test
-    void tailCaveSideScrollingHorizontalEdgesUseRomEntityThresholds() {
-        RoomBoundaryDecision left = controller.decide(
-                new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true, 0, -5, 0x30, 0x00));
-        RoomBoundaryDecision leftMargin = controller.decide(
-                new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x19, false, true, 0, -4, 0x30, 0x00));
-        RoomBoundaryDecision rightMargin = controller.decide(
-                new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x18, false, true, 0, 0x93, 0x30, 0x00));
-        RoomBoundaryDecision right = controller.decide(
-                new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, 0x18, false, true, 0, 0x94, 0x30, 0x00));
+    void sideScrollingHorizontalEdgesUseRomEntityThresholds() {
+        for (int[] passage : new int[][] {{0, 0x19, 0x18}, {1, 0x3F, 0x3E}}) {
+            RoomBoundaryDecision left = controller.decide(
+                    new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, passage[1], false, true, 0, -5, 0x30, passage[0]));
+            RoomBoundaryDecision leftMargin = controller.decide(
+                    new RoomBoundaryState(Warp.CATEGORY_SIDESCROLL, passage[1], false, true, 0, -4, 0x30, passage[0]));
+            RoomBoundaryDecision rightMargin = controller.decide(new RoomBoundaryState(
+                    Warp.CATEGORY_SIDESCROLL, passage[2], false, true, 0, 0x93, 0x30, passage[0]));
+            RoomBoundaryDecision right = controller.decide(new RoomBoundaryState(
+                    Warp.CATEGORY_SIDESCROLL, passage[2], false, true, 0, 0x94, 0x30, passage[0]));
 
-        assertEquals(RoomBoundaryDecision.Type.INDOOR_SCROLL, left.type());
-        assertEquals(ScrollController.LEFT, left.direction());
-        assertEquals(RoomBoundaryDecision.Type.NONE, leftMargin.type());
-        assertEquals(RoomBoundaryDecision.Type.NONE, rightMargin.type());
-        assertEquals(RoomBoundaryDecision.Type.INDOOR_SCROLL, right.type());
-        assertEquals(ScrollController.RIGHT, right.direction());
+            assertEquals(RoomBoundaryDecision.Type.INDOOR_SCROLL, left.type());
+            assertEquals(ScrollController.LEFT, left.direction());
+            assertEquals(RoomBoundaryDecision.Type.NONE, leftMargin.type());
+            assertEquals(RoomBoundaryDecision.Type.NONE, rightMargin.type());
+            assertEquals(RoomBoundaryDecision.Type.INDOOR_SCROLL, right.type());
+            assertEquals(ScrollController.RIGHT, right.direction());
+        }
     }
 
     @Test

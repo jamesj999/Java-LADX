@@ -86,8 +86,17 @@ public final class ActiveLinkPhase {
             this.playerLink.motion().blockNextRomMotionFrame();
         }
         updateLifting(keyholeSequenceActive);
-        tickEquipment(keyholeSequenceActive, swordPickupSequenceActive);
-        moveLink();
+        Sword sword = this.equipmentController.activeSword();
+        boolean swordIdle = sword != null && sword.state() == Sword.STATE_NONE;
+        Sword updatedSword = tickEquipment(sword, keyholeSequenceActive, swordPickupSequenceActive);
+        moveLink(updatedSword);
+        if (swordIdle
+                && updatedSword != null
+                && updatedSword.state() == Sword.STATE_DRAW
+                && !playerLink.airborne().isAirborne()) {
+            // UseSword ($00:1556) clears XY speed after the current motion step.
+            playerLink.position().clearRomPositionIncrement();
+        }
         interactWithDoors();
         updateScreenShake();
         collectPickups();
@@ -168,25 +177,27 @@ public final class ActiveLinkPhase {
                                 != 0);
     }
 
-    private void tickEquipment(boolean keyholeSequenceActive, boolean swordPickupSequenceActive) {
-        if (!keyholeSequenceActive
-                && !this.playerLink.status().recoveryBlocksInput()
-                && !this.playerLink.actions().isCarryingLiftedObject()
-                && !this.playerLink.sideView().romItemAnimationFrameBlocked()) {
-            if (this.playerLink.airborne().romMotionState() == 0x05
-                    || this.rooms.entityState().gelClingingToLink()) {
-                this.equipmentController.tickEquippedItemsWithoutInput(this.clock.value());
-            } else {
-                if (!swordPickupSequenceActive
-                        && (!this.rooms.entityState().powerUpPickupSequenceActive()
-                                && !this.rooms.rooms().heartPiecePickupActive()))
-                    this.equipmentController.dispatchButtonEdges();
-                this.equipmentController.tickEquippedItems(this.clock.value());
-            }
+    private Sword tickEquipment(Sword sword, boolean keyholeSequenceActive, boolean swordPickupSequenceActive) {
+        if (keyholeSequenceActive
+                || this.playerLink.status().recoveryBlocksInput()
+                || this.playerLink.actions().isCarryingLiftedObject()
+                || this.playerLink.sideView().romItemAnimationFrameBlocked()) {
+            return null;
         }
+        if (this.playerLink.airborne().romMotionState() == 0x05
+                || this.rooms.entityState().gelClingingToLink()) {
+            this.equipmentController.tickEquippedItemsWithoutInput(this.clock.value());
+        } else {
+            if (!swordPickupSequenceActive
+                    && (!this.rooms.entityState().powerUpPickupSequenceActive()
+                            && !this.rooms.rooms().heartPiecePickupActive()))
+                this.equipmentController.dispatchButtonEdges();
+            this.equipmentController.tickEquippedItems(this.clock.value());
+        }
+        return sword;
     }
 
-    private void moveLink() {
+    private void moveLink(Sword updatedSword) {
         if (this.debugState.debugNoClip() && this.debugScroll.tryDebugScreenScroll()) {
             this.playerLink.animation().tickAnimation();
         } else {
@@ -208,7 +219,12 @@ public final class ActiveLinkPhase {
                                 this.ground.groundFrame(beforeMotionX, beforeMotionY, groundInteractionBlocked),
                                 this.ground.dialogGotItemActive());
             }
-            this.ground.tickCrackedFloor(groundInteractionBlocked);
+            // UpdateLinkAnimation ($02:4807) sets the block before the post-motion
+            // ground check ($02:7851), even if this tick advances the sword out of its swing.
+            boolean swordBlocksGroundCheck = updatedSword != null
+                    && updatedSword.blocksMotionAfterAnimation(
+                            this.playerState.equipmentLevels().runningWithPegasusBoots());
+            this.ground.tickCrackedFloor(groundInteractionBlocked || swordBlocksGroundCheck);
             var splash = this.playerLink.status().consumeWaterSplash();
             if (splash != null) {
                 // VFX stores ROM/OAM coordinates, as entity VFX requests do.

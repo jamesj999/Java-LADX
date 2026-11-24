@@ -14,7 +14,6 @@ public final class SparkMotion {
     private static final int[] COLLISION_MASK_BY_INDEX = {0x01, 0x08, 0x02, 0x04, 0x01, 0x04, 0x02, 0x08};
 
     // ROM wEntitiesPrivateState1Table: four-way wall-following turn index, combined with the winding offset.
-    // ROM wEntitiesPrivateState1Table.
     private final int[] wallTurnIndex = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState2Table.
     private final int[] windingOffset = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -42,15 +41,16 @@ public final class SparkMotion {
         return withPosition(entity, entity.x(), entity.y() + offset);
     }
 
-    public RoomEntity advance(RoomEntity entity, int frameCounter, RoomEntityBackgroundCollision backgroundCollision) {
+    public void tickTimer(int slot) {
+        if (transitionCountdown[slot] > 0) transitionCountdown[slot]--;
+    }
+
+    public RoomEntity advance(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
         backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
         int slot = entity.slot();
         if (!initialized[slot]) {
             initialize(slot, entity.type());
             entity = applyInitializationOffset(entity);
-        }
-        if (transitionCountdown[slot] > 0) {
-            transitionCountdown[slot]--;
         }
 
         int x = addSpeedToPosition(entity.x(), speedX[slot], speedXAccumulator, slot);
@@ -72,8 +72,19 @@ public final class SparkMotion {
         tableIndex = (wallTurnIndex[slot] + windingOffset[slot]) & 0x07;
         speedY[slot] = SPEED_Y_BY_INDEX[tableIndex];
         speedX[slot] = SPEED_X_BY_INDEX[tableIndex];
-        int variant = (frameCounter >>> 1) & 0x01;
-        return EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), entity.z(), -1, false);
+        return moved;
+    }
+
+    public EnemyRecoilMotion.Update applyRecoil(
+            RoomEntity entity, RoomEntityBackgroundCollision collision, EnemyRecoilMotion recoil) {
+        int slot = entity.slot();
+        int vx = recoil.recoilSpeedX(slot);
+        int vy = recoil.recoilSpeedY(slot);
+        int x = addSpeedToPosition(entity.x(), vx, speedXAccumulator, slot);
+        int y = addSpeedToPosition(entity.y(), vy, speedYAccumulator, slot);
+        if (vx != 0) collision.blocks(entity, (vx & 0x80) == 0 ? 0 : 1, x, y);
+        if (vy != 0) collision.blocks(entity, (vy & 0x80) == 0 ? 3 : 2, x, y);
+        return new EnemyRecoilMotion.Update(withPosition(entity, x, y), false);
     }
 
     public void clear(int slot) {
@@ -108,8 +119,6 @@ public final class SparkMotion {
     }
 
     private static int collisionMask(RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
-        {
-        }
         int mask = 0;
         if (backgroundCollision.blocks(entity, 0, entity.x(), entity.y())) {
             mask |= 0x01;

@@ -23,6 +23,7 @@ public final class SpikedBeetleMotion {
     private static final int[] FLIP_Y_SPEEDS = {0x00, 0x00, 0xF0, 0x10};
 
     private final int[] state = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] stateBeforeShieldFlip = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedX = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
     private final int[] speedZ = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -34,6 +35,7 @@ public final class SpikedBeetleMotion {
 
     public void initialize(int slot) {
         state[slot] = 0;
+        stateBeforeShieldFlip[slot] = -1;
         speedX[slot] = 0;
         speedY[slot] = 0;
         speedZ[slot] = 0;
@@ -80,13 +82,11 @@ public final class SpikedBeetleMotion {
         if (state[slot] == 3) {
             return;
         }
+        stateBeforeShieldFlip[slot] = state[slot];
         state[slot] = 3;
         speedZ[slot] = 0x20;
         speedX[slot] = FLIP_X_SPEEDS[romLinkDirection];
         speedY[slot] = FLIP_Y_SPEEDS[romLinkDirection];
-        speedXAccumulator[slot] = 0;
-        speedYAccumulator[slot] = 0;
-        speedZAccumulator[slot] = 0;
     }
 
     public void clear(int slot) {
@@ -243,6 +243,7 @@ public final class SpikedBeetleMotion {
         private int ignoreHitsCountdown;
         private int slot;
         private int countdown;
+        private int handlerState;
         private int x;
         private int y;
         private int z;
@@ -363,7 +364,16 @@ public final class SpikedBeetleMotion {
                 owner.initialize(slot);
             }
 
-            countdown = transitionCountdown & 0xFF;
+            // $03:6F37 changes the state table after the active state was latched.
+            // Its new countdown is written after the frame's timer update.
+            handlerState = owner.stateBeforeShieldFlip[slot];
+            if (handlerState >= 0) {
+                countdown = 0xFF;
+                owner.stateBeforeShieldFlip[slot] = -1;
+            } else {
+                handlerState = owner.state[slot];
+                countdown = transitionCountdown & 0xFF;
+            }
             x = entity.x() & 0xFF;
             y = entity.y() & 0xFF;
             z = SpikedBeetleMotion.addSpeedToPosition(entity.z(), owner.speedZ[slot], owner.speedZAccumulator, slot);
@@ -383,7 +393,7 @@ public final class SpikedBeetleMotion {
 
             if (landed) {
                 z = 0;
-                if (owner.state[slot] == 3) {
+                if (handlerState == 3) {
                     owner.speedX[slot] = SpikedBeetleMotion.halveSignedSpeed(owner.speedX[slot]);
                     owner.speedY[slot] = SpikedBeetleMotion.halveSignedSpeed(owner.speedY[slot]);
                     owner.speedZ[slot] = SpikedBeetleMotion.complementHalfSpeed(owner.speedZ[slot]);
@@ -401,11 +411,11 @@ public final class SpikedBeetleMotion {
             x = moved.x();
             y = moved.y();
             collided = moved.collided();
-            flippedHandler = owner.state[slot] == 3;
+            flippedHandler = handlerState == 3;
 
             walkAnimationRequested = false;
             flippedAnimationRequested = false;
-            switch (owner.state[slot]) {
+            switch (handlerState) {
                 case 0 -> {
                     if (!advanceState0()) return false;
                 }
@@ -418,7 +428,9 @@ public final class SpikedBeetleMotion {
                 case 3 -> {
                     if (!advanceState3()) return false;
                 }
-                default -> throw new IllegalStateException("Invalid Spiked Beetle state: " + owner.state[slot]);
+                default -> {
+                    // $07:780F returns for any state past the four handlers.
+                }
             }
 
             nextVariant = owner.animationVariant[slot];
@@ -451,6 +463,7 @@ public final class SpikedBeetleMotion {
             ignoreHitsCountdown = 0;
             slot = 0;
             countdown = 0;
+            handlerState = 0;
             x = 0;
             y = 0;
             z = 0;

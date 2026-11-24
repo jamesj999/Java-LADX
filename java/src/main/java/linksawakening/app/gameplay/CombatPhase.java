@@ -35,6 +35,11 @@ public final class CombatPhase {
     private final TransitionController transitionController;
 
     private final Sword.CollisionBox NO_SWORD = Sword.CollisionBox.inactive();
+    private int bladeClashCountdown;
+    /** hLinkCountdown after a Goomba stomp ($03:6D1B), decremented before contact ($00:10DF). */
+    private int goombaBounceCountdown;
+
+    private boolean wasRunningWithPegasusBoots;
 
     public CombatPhase(Inputs inputs) {
         this.equipmentController = Objects.requireNonNull(inputs.equipmentController);
@@ -50,18 +55,23 @@ public final class CombatPhase {
         this.transitionController = Objects.requireNonNull(inputs.transitionController);
     }
 
-    public Sword.CollisionBox tick(boolean dialogBlocksGameplay) {
+    public Sword.CollisionBox tick(boolean dialogBlocksGameplay, int swordCollisionY) {
+        if (bladeClashCountdown > 0) bladeClashCountdown--;
+        if (goombaBounceCountdown > 0) goombaBounceCountdown--;
         Sword.CollisionBox swordBoxForEntityTick = NO_SWORD;
         if (!this.scrollController.isActive()
                 && !this.transitionController.isInputBlocked()
                 && !this.inventoryController.shouldBlockOverworldInput()
                 && !dialogBlocksGameplay) {
             Sword sword = this.equipmentController.activeSword();
+            boolean runningWithBoots = this.playerState.equipmentLevels().runningWithPegasusBoots();
+            if (sword != null && runningWithBoots && !wasRunningWithPegasusBoots) sword.setHitTarget(0);
+            wasRunningWithPegasusBoots = runningWithBoots;
             swordBoxForEntityTick = sword == null
                     ? NO_SWORD
                     : sword.enemyCollisionBox(
                             this.playerLink.position().romEntityX(),
-                            this.playerLink.position().romSwordCollisionY(),
+                            swordCollisionY,
                             this.playerLink.animation().direction(),
                             this.playerState.equipmentLevels().runningWithPegasusBoots());
             EnemyAttackContext attackContext = this.frameInputs.attack(
@@ -73,8 +83,15 @@ public final class CombatPhase {
                     this.playerLink.equipment().isUsingShield(),
                     Direction.fromJava(this.playerLink.animation().direction()).romIndex(),
                     this.playerLink.animation().romEntityZ());
-            var combatEvents =
-                    rooms.entities().resolveEntityCombat(this.frameInputs.combat(swordBoxForEntityTick, attackContext));
+            if (frameInputs.keepsShieldCombatRectangle(attackContext)) swordBoxForEntityTick = NO_SWORD;
+            var combatEvents = rooms.entities()
+                    .resolveEntityCombat(this.frameInputs.combat(
+                            swordBoxForEntityTick,
+                            attackContext,
+                            bladeClashCountdown > 0,
+                            goombaBounceCountdown > 0,
+                            sword == null ? 0 : sword.hitTarget(),
+                            canTakeContactDamage()));
             EnemyCombatEventConsumer.consume(combatEvents, this.sounds.sink(), this.transientVfxSystem);
             for (int eventIndex = 0; eventIndex < combatEvents.size(); eventIndex++) {
                 EntityCombatEvent event = combatEvents.get(eventIndex);
@@ -87,9 +104,7 @@ public final class CombatPhase {
     }
 
     private void applyEvent(EntityCombatEvent event) {
-        if (event.linkDamage() > 0
-                && this.playerState.vitals().invincibilityCounter() == 0
-                && !this.playerLink.status().isCollisionDamageImmune()) {
+        if (event.linkDamage() > 0 && canTakeContactDamage()) {
             int previousPowerUp = this.playerState.equipmentLevels().activePowerUp();
             this.playerState.vitals().applyRomEnemyDamage(event.linkDamage());
             if (previousPowerUp != PowerUp.NONE.romValue()
@@ -122,11 +137,23 @@ public final class CombatPhase {
             this.playerLink.status().setCollisionIgnoreFrames(response.ignoreCollisionCountdown());
             this.playerState.equipmentLevels().setRunningWithPegasusBoots(false);
         }
-        if (event.linkAction() == EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_TOP_DOWN) {
+        if (event.linkAction() == EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_TOP_DOWN
+                || event.linkAction() == EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_SIDE_SCROLLING) {
+            goombaBounceCountdown = 2;
             this.playerLink.airborne().bounceFromGoomba();
-        } else if (event.linkAction() == EntityCombatEvent.LinkAction.GOOMBA_BOUNCE_SIDE_SCROLLING) {
-            this.playerLink.position().applyRomSpeed(0, 0xF0);
+        } else if (event.linkAction() == EntityCombatEvent.LinkAction.SWORD_MOBLIN_BLADE_CLASH) {
+            bladeClashCountdown = 0x0C;
+            Sword sword = this.equipmentController.activeSword();
+            if (sword != null) sword.onBladeClash();
+        } else if (event.linkAction() == EntityCombatEvent.LinkAction.RECORD_SWORD_HIT_TARGET) {
+            Sword sword = this.equipmentController.activeSword();
+            if (sword != null) sword.setHitTarget(event.slot() + 1);
         }
+    }
+
+    private boolean canTakeContactDamage() {
+        return this.playerState.vitals().invincibilityCounter() == 0
+                && !this.playerLink.status().isCollisionDamageImmune();
     }
 
     /** Named construction inputs, consumed once by the phase constructor. */

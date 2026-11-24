@@ -42,7 +42,7 @@ public final class FollowingNpcEntitySpawner {
         return followingNpcEntitySpawnerFrameStep.run(inputs);
     }
 
-    SpawnResult spawn(List<RoomEntity> slots, int type, int x, int y, EntitySpriteDefinition definition) {
+    SpawnResult spawn(List<RoomEntity> slots, int type, int x, int y, int z, EntitySpriteDefinition definition) {
         boolean changed = false;
         // CreateFollowingNpcEntity clears every active instance before calling
         // SpawnNewEntity, and both searches enumerate slots from $0F down.
@@ -67,7 +67,7 @@ public final class FollowingNpcEntitySpawner {
                         definition.initialVariant(),
                         0,
                         0,
-                        0,
+                        z,
                         -1,
                         false);
                 slots.set(slot, entity);
@@ -203,6 +203,7 @@ public final class FollowingNpcEntitySpawner {
                         FollowingNpcEntitySpawner.ENTITY_ROOSTER,
                         FollowingNpcEntitySpawner.byteValue(linkX),
                         FollowingNpcEntitySpawner.byteValue(linkY + entityYOffset),
+                        0,
                         owner.spriteHandlers.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_ROOSTER));
                 changed |= spawn.changed();
                 if (spawn.spawned()) {
@@ -222,6 +223,7 @@ public final class FollowingNpcEntitySpawner {
                         FollowingNpcEntitySpawner.ENTITY_GHOST,
                         FollowingNpcEntitySpawner.byteValue(linkX),
                         FollowingNpcEntitySpawner.byteValue(linkY + entityYOffset),
+                        0,
                         owner.spriteHandlers.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_GHOST));
                 changed |= spawn.changed();
                 if (spawn.spawned()) {
@@ -244,6 +246,7 @@ public final class FollowingNpcEntitySpawner {
                         FollowingNpcEntitySpawner.ENTITY_MARIN_AT_THE_SHORE,
                         FollowingNpcEntitySpawner.byteValue(linkX),
                         FollowingNpcEntitySpawner.byteValue(linkY + entityYOffset),
+                        0,
                         owner.spriteHandlers.forFollowerEntityType(
                                 FollowingNpcEntitySpawner.ENTITY_MARIN_AT_THE_SHORE));
                 changed |= spawn.changed();
@@ -266,11 +269,13 @@ public final class FollowingNpcEntitySpawner {
         private boolean spawnBowWowAndSnapshot() {
 
             if (room.roomId() != FollowingNpcEntitySpawner.ROOM_INDOOR_B_MRS_MEOW_MEOW && state.bowWowFollowing()) {
+                // $01:614C–6160 copies all three coordinates from Link.
                 FollowingNpcEntitySpawner.SpawnResult spawn = owner.spawn(
                         slots,
                         FollowingNpcEntitySpawner.ENTITY_BOW_WOW,
                         FollowingNpcEntitySpawner.byteValue(linkX),
                         FollowingNpcEntitySpawner.byteValue(linkY),
+                        FollowingNpcEntitySpawner.byteValue(linkZ),
                         owner.spriteHandlers.forFollowerEntityType(FollowingNpcEntitySpawner.ENTITY_BOW_WOW));
                 changed |= spawn.changed();
                 if (spawn.spawned()) {

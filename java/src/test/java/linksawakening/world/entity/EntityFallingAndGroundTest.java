@@ -108,7 +108,7 @@ final class EntityFallingAndGroundTest {
     }
 
     @Test
-    void longFallingMoblinSwordAppliesAlertFacingBeforePresentationHandoff() {
+    void longFallingMoblinSwordPreservesIncomingFacingDuringRecoil() {
         List<List<EntitySpriteDefinition.DynamicSprite>> variants = new ArrayList<>();
         for (int variant = 0; variant < 8; variant++) {
             variants.add(List.of(new EntitySpriteDefinition.DynamicSprite(
@@ -145,11 +145,11 @@ final class EntityFallingAndGroundTest {
         RoomEntity falling = runtime.inspection().snapshot().slots().get(0);
         assertEquals(EntityStatus.FALLING, falling.status());
         assertEquals(0x6C, runtime.enemies().transitionCountdown(0));
-        // The active Moblin Sword handler runs before the pit transition. Its
-        // ignore-hits path enters state 2 and faces Link (up on this tie), so
-        // EntityFallHandler's bank-$03 presentation updates use base variant
-        // 2 and cross bit 3 on the final falling frame.
-        assertEquals(3, falling.spriteVariant());
+        // $07:7963 sets pursuit, then $07:7E08 returns past ordinary facing
+        // even at zero recoil speed. The $03:4D19 falling presentation
+        // increments inertia three times per frame with the initialized
+        // left-facing direction, selecting its second variant.
+        assertEquals(5, falling.spriteVariant());
         assertEquals(0x50, falling.x());
         assertEquals(0x50, falling.y());
         assertEquals(0, backgroundProbes.get());

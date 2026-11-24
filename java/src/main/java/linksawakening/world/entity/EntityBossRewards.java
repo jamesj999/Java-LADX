@@ -4,7 +4,6 @@ import static linksawakening.world.entity.EntitySnapshots.withFlipAttribute;
 import static linksawakening.world.entity.EntitySnapshots.withPositionAndVariant;
 import static linksawakening.world.entity.EntitySnapshots.withStatus;
 import static linksawakening.world.entity.EntitySnapshots.withZ;
-import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
 import static linksawakening.world.entity.EntityTypeRules.persistentClearMask;
 
 import java.util.Objects;
@@ -356,8 +355,7 @@ public final class EntityBossRewards {
         this.combatTables.writeEnemyStunnedCountdown(freeSlot, 0);
         this.combatTables.writeDyingCountdown(freeSlot, 0);
         this.combatTables.writePowerRecoilDeath(freeSlot, false);
-        this.physicsTables.writeEnemyPhysicsFlags(
-                freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_HEART_CONTAINER));
+        this.physicsTables.initializeEnemyPhysicsFlags(freeSlot, EntityRomConstants.ENTITY_HEART_CONTAINER);
         this.combatTables.writeEnemyHealth(
                 freeSlot, this.slotProperties.initialHealth(EntityRomConstants.ENTITY_HEART_CONTAINER));
         this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);

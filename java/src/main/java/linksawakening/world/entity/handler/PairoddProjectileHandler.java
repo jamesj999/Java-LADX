@@ -40,7 +40,8 @@ final class PairoddProjectileHandler {
             var collisionEvent = EnemyProjectileCollision.check(
                     slotState.updated(),
                     resolvedPairoddProjectileMotion.direction(slotState.entity().slot()),
-                    frameInput.projectileLinkState());
+                    frameInput.projectileLinkState(),
+                    state.slotProperties().contactDamage(slotState.entity().slot()));
             if (collisionEvent.isPresent()) {
                 EntityProjectileEvent event = collisionEvent.orElseThrow();
                 frameInput.projectileEvents().add(event);

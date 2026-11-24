@@ -48,7 +48,8 @@ public interface RoomEntityState {
 
     List<DialogRequest> consumeEntityDialogRequests();
 
-    void tickGameplayVBlank();
+    /** Advances world tile transfers and returns whether Link can upload his body tiles. */
+    boolean tickGameplayVBlank();
 
     int clearEntity(int slot);
 

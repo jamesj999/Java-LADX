@@ -118,8 +118,8 @@ final class RoomEntityControl implements RoomEntityState {
     }
 
     @Override
-    public void tickGameplayVBlank() {
-        dependencies.entityBridge().tickGameplayVBlank();
+    public boolean tickGameplayVBlank() {
+        return dependencies.entityBridge().tickGameplayVBlank();
     }
 
     @Override

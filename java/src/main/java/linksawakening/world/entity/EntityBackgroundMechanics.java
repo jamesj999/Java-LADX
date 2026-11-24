@@ -20,15 +20,19 @@ import linksawakening.world.entity.motion.EnemyDropMotion;
 import linksawakening.world.entity.motion.EnemyProjectileMotion;
 import linksawakening.world.entity.motion.EnemyRecoilMotion;
 import linksawakening.world.entity.motion.FishMotion;
+import linksawakening.world.entity.motion.GoombaMotion;
+import linksawakening.world.entity.motion.HardHatMotion;
 import linksawakening.world.entity.motion.HidingZolMotion;
 import linksawakening.world.entity.motion.HookshotBridgeMotion;
 import linksawakening.world.entity.motion.HookshotChainMotion;
+import linksawakening.world.entity.motion.LeeverMotion;
 import linksawakening.world.entity.motion.MoblinSwordMotion;
 import linksawakening.world.entity.motion.MoldormMotion;
 import linksawakening.world.entity.motion.PlayerArrowMotion;
 import linksawakening.world.entity.motion.PolsVoiceMotion;
 import linksawakening.world.entity.motion.RoamingEnemyMotion;
 import linksawakening.world.entity.motion.SecretSeashellMotion;
+import linksawakening.world.entity.motion.SparkMotion;
 import linksawakening.world.entity.motion.SpikedBeetleMotion;
 import linksawakening.world.entity.motion.StalfosAggressiveMotion;
 import linksawakening.world.entity.motion.StalfosEvasiveMotion;
@@ -85,14 +89,18 @@ public final class EntityBackgroundMechanics {
         return this.physicsTables.readBackgroundInteraction();
     }
 
-    boolean moldormOrHeadOverlapsSword(RoomEntity entity, int swordX, int swordWidth, int swordY, int swordHeight) {
+    boolean moldormOrHeadOverlapsSword(
+            RoomEntity entity, int swordX, int swordWidth, int swordY, int swordHeight, int flashCountdown) {
+        boolean moldorm = entity.type() == EntityRomConstants.ENTITY_MOLDORM;
+        // $03:6E3B rejects the head sword check in the late flash interval.
+        if (moldorm && flashCountdown > 0 && flashCountdown < 0x18) {
+            return false;
+        }
         if (RoomEntityCombatRules.overlapsSword(entity, swordX, swordWidth, swordY, swordHeight)) {
             return true;
         }
-        if (entity.type() != EntityRomConstants.ENTITY_MOLDORM) {
-            return false;
-        }
-        if (this.combatTables.readEnemyFlashCountdown(entity.slot()) != 0) {
+        // The independent tail check at $04:59ED requires flash to reach zero.
+        if (!moldorm || flashCountdown != 0) {
             return false;
         }
         MoldormSegmentPosition tail =
@@ -372,6 +380,24 @@ public final class EntityBackgroundMechanics {
             RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision) {
         int slot = entity.slot();
         var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
+        if (entity.status() == EntityStatus.ACTIVE
+                && EntityTypeRules.handlesActiveRecoilCountdown(entity.type())
+                && this.combatTables.readEnemyIgnoreHitsCountdown(slot) > 0) {
+            this.combatTables.postEnemyIgnoreHitsCountdown(slot, -1);
+            int options = this.physicsTables.readEntityOptions1Override(slot);
+            var background = options >= 0 && (options & EntityRomConstants.ENTITY_OPT1_ALLOW_OUT_OF_BOUNDS) != 0
+                    ? RoomEntityBackgroundCollision.OPEN
+                    : RoomEntityBackgroundCollision.orOpen(backgroundCollision);
+            if (entity.type() == EntityRomConstants.ENTITY_GOOMBA) {
+                return this.motions
+                        .get(GoombaMotion.class, GoombaMotion::new)
+                        .applyRecoil(entity, background, enemyRecoilMotion);
+            }
+            // The Spark sets hActiveEntityNoBGCollision at $06:6637 before applying recoil.
+            return this.motions
+                    .get(SparkMotion.class, SparkMotion::new)
+                    .applyRecoil(entity, background, enemyRecoilMotion);
+        }
         if (!enemyRecoilMotion.isActive(slot)) {
             return new EnemyRecoilMotion.Update(entity, false);
         }
@@ -380,13 +406,49 @@ public final class EntityBackgroundMechanics {
             return new EnemyRecoilMotion.Update(entity, false);
         }
 
-        if (isRoamingEnemyType(entity.type())) {
-            var roamingEnemyMotion = this.motions.get(RoamingEnemyMotion.class, RoamingEnemyMotion::new);
-            roamingEnemyMotion.beginRecoil(slot);
-        }
-        // ApplyRecoilIfNeeded_03/06 decrements the shared countdown
+        // ApplyRecoilIfNeeded decrements the shared countdown
         // immediately before applying one fixed-point recoil step.
         this.combatTables.postEnemyIgnoreHitsCountdown(slot, -1);
+        boolean activeHardhat =
+                entity.type() == EntityRomConstants.ENTITY_HARDHAT_BEETLE && entity.status() == EntityStatus.ACTIVE;
+        if (activeHardhat
+                || entity.type() == EntityRomConstants.ENTITY_LEEVER
+                || entity.type() == EntityRomConstants.ENTITY_OCTOROK
+                || entity.type() == EntityRomConstants.ENTITY_MOBLIN) {
+            // These ROM types have bounds checks enabled unless their options
+            // are explicitly overridden. Recoil uses the handler's ordinary fractions.
+            int options = this.physicsTables.readEntityOptions1Override(slot);
+            var background = options >= 0 && (options & EntityRomConstants.ENTITY_OPT1_ALLOW_OUT_OF_BOUNDS) != 0
+                    ? RoomEntityBackgroundCollision.OPEN
+                    : RoomEntityBackgroundCollision.orOpen(backgroundCollision);
+            if (activeHardhat) {
+                return this.motions
+                        .get(HardHatMotion.class, HardHatMotion::new)
+                        .applyIncomingRecoil(entity, background, enemyRecoilMotion);
+            }
+            // Generic death dispatch uses bank-03 recoil, even for Leever.
+            var update = entity.type() == EntityRomConstants.ENTITY_LEEVER
+                    ? this.motions
+                            .get(LeeverMotion.class, LeeverMotion::new)
+                            .applyIncomingRecoil(entity, background, enemyRecoilMotion)
+                    : this.motions
+                            .get(RoamingEnemyMotion.class, RoamingEnemyMotion::new)
+                            .applyIncomingRecoil(entity, background, enemyRecoilMotion);
+            if (update.blocked()) this.combatTables.writeEnemyIgnoreHitsCountdown(slot, 0);
+            return update;
+        }
+        if (isRoamingEnemyType(entity.type())) {
+            this.motions.get(RoamingEnemyMotion.class, RoamingEnemyMotion::new).beginRecoil(slot);
+        }
+        if (entity.type() == EntityRomConstants.ENTITY_MOBLIN_SWORD) {
+            return this.motions
+                    .get(MoblinSwordMotion.class, MoblinSwordMotion::new)
+                    .applyRecoil(
+                            entity,
+                            RoomEntityBackgroundCollision.orOpen(backgroundCollision),
+                            enemyRecoilMotion.recoilSpeedX(slot),
+                            enemyRecoilMotion.recoilSpeedY(slot));
+        }
         EnemyRecoilMotion.Update update =
                 enemyRecoilMotion.advance(entity, backgroundCollision, isRoamingEnemyType(entity.type()));
         if (update.blocked() && isRoamingEnemyType(entity.type())) {

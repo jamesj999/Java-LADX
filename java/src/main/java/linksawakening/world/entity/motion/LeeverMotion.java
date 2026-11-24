@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.function.IntSupplier;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
+import linksawakening.world.entity.EntityStatus;
 import linksawakening.world.entity.RoomEntity;
 import linksawakening.world.entity.RoomEntityBackgroundCollision;
 
@@ -45,6 +46,24 @@ public final class LeeverMotion {
     public void clear(int slot) {
         initialize(slot);
         initialized[slot] = false;
+    }
+
+    public EnemyRecoilMotion.Update applyIncomingRecoil(
+            RoomEntity entity, RoomEntityBackgroundCollision background, EnemyRecoilMotion recoil) {
+        int slot = entity.slot();
+        if (!initialized[slot]) initialize(slot);
+        return recoil.advanceWithHandlerFractions(
+                entity, background, speedXAccumulator, speedYAccumulator, entity.status() == EntityStatus.DYING);
+    }
+
+    public void tickTransitionCountdown(int slot) {
+        if (transitionCountdown[slot] > 0) transitionCountdown[slot]--;
+    }
+
+    public void finishLethalSwordHit(int slot) {
+        // $03:7341 clears state inside LeeverChasingHandler. Its expired timer
+        // then increments that new state once at $04:7F53.
+        state[slot] = state[slot] == 3 ? 1 : 0;
     }
 
     public boolean isChasing(int slot) {
@@ -152,10 +171,6 @@ public final class LeeverMotion {
             if (!owner.initialized[slot]) {
                 owner.initialize(slot);
             }
-            if (owner.transitionCountdown[slot] > 0) {
-                owner.transitionCountdown[slot]--;
-            }
-
             x = LeeverMotion.addSpeedToPosition(entity.x(), owner.speedX[slot], owner.speedXAccumulator, slot);
             y = LeeverMotion.addSpeedToPosition(entity.y(), owner.speedY[slot], owner.speedYAccumulator, slot);
 

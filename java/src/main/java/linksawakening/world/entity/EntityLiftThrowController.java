@@ -7,7 +7,6 @@ import static linksawakening.world.entity.EntitySnapshots.withStatus;
 import static linksawakening.world.entity.EntitySnapshots.withType;
 import static linksawakening.world.entity.EntitySnapshots.withVariant;
 import static linksawakening.world.entity.EntityTypeRules.initialHitboxFlags;
-import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
 
 import java.util.Objects;
 import linksawakening.entity.EntitySpriteDefinition;
@@ -415,8 +414,7 @@ public final class EntityLiftThrowController {
         this.combatTables.writeEnemyFlashCountdown(freeSlot, 0);
         this.combatTables.writeEnemyIgnoreHitsCountdown(freeSlot, 1);
         this.combatTables.writeEnemyHitboxFlags(freeSlot, initialHitboxFlags(EntityRomConstants.ENTITY_BUSH_CRAWLER));
-        this.physicsTables.writeEnemyPhysicsFlags(
-                freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_BUSH_CRAWLER));
+        this.physicsTables.initializeEnemyPhysicsFlags(freeSlot, EntityRomConstants.ENTITY_BUSH_CRAWLER);
         var enemyRecoilMotion = this.motions.get(EnemyRecoilMotion.class, EnemyRecoilMotion::new);
         enemyRecoilMotion.clear(freeSlot);
         this.physicsTables.writeFallingVisualYOffset(freeSlot, 0);

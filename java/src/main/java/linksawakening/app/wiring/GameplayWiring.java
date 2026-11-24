@@ -161,6 +161,9 @@ final class GameplayWiring {
                 .transientVfxSystem(s.visual().transientVfxSystem())
                 .transitionController(s.world().transitionController()));
         var tiles = new AnimatedTilesPhase(
+                state.clock(),
+                s.player().link(),
+                s.ui().dialogController(),
                 s.ui().inventoryController(),
                 s.world().roomSession(),
                 s.world().scrollController(),

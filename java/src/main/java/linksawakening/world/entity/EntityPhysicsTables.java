@@ -2,9 +2,11 @@ package linksawakening.world.entity;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.IntUnaryOperator;
 
 /** Owned PhysicsTables storage; preserves ROM slot indexing. */
 final class EntityPhysicsTables {
+    private final IntUnaryOperator initialPhysicsFlagsLookup;
     private RoomEntityGroundInteraction groundInteraction = RoomEntityGroundInteraction.NONE;
     private RoomEntityBackgroundInteraction backgroundInteraction = RoomEntityBackgroundInteraction.NONE;
     private final int[] slowTransitionCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -30,6 +32,14 @@ final class EntityPhysicsTables {
     private boolean groundInteractionSideScrolling;
     private RoomEntityObjectQuery objectQuery = RoomEntityObjectQuery.NONE;
     private RoomEntityObjectQuery objectIntersectionQuery = RoomEntityObjectQuery.NONE;
+
+    EntityPhysicsTables(IntUnaryOperator initialPhysicsFlagsLookup) {
+        this.initialPhysicsFlagsLookup = initialPhysicsFlagsLookup;
+    }
+
+    void initializeEnemyPhysicsFlags(int slot, int type) {
+        writeEnemyPhysicsFlags(slot, EntityTypeRules.initialPhysicsFlags(type, initialPhysicsFlagsLookup));
+    }
 
     RoomEntityGroundInteraction readGroundInteraction() {
         return groundInteraction;

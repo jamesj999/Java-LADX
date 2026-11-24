@@ -8,4 +8,5 @@ record IndoorRoomLoadInputs(
         int clearedEntitiesMask,
         byte[] indoorRoomStatus,
         boolean hasBirdKey,
-        RoomNpcPaletteInputs palettes) {}
+        RoomNpcPaletteInputs palettes,
+        int occupiedSlots) {}

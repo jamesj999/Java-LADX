@@ -410,17 +410,7 @@ final class RoomNavigationFixture {
 
     static void crossOverworldBoundary(
             RoomTransitionCoordinator coordinator, ScrollController scroll, Link link, int direction) {
-        switch (direction) {
-            case ScrollController.UP -> link.position()
-                    .setPixelPosition(link.position().pixelX(), -5);
-            case ScrollController.DOWN -> link.position()
-                    .setPixelPosition(link.position().pixelX(), 116);
-            case ScrollController.LEFT -> link.position()
-                    .setPixelPosition(-5, link.position().pixelY());
-            case ScrollController.RIGHT -> link.position()
-                    .setPixelPosition(148, link.position().pixelY());
-            default -> throw new IllegalArgumentException("Unknown scroll direction: " + direction);
-        }
+        stepAcrossRoomBoundary(link, direction);
         coordinator.handleOverworldBoundary(link);
         while (scroll.isActive()) {
             scroll.tick(8);
@@ -475,8 +465,8 @@ final class RoomNavigationFixture {
         int[] exit = reachableBoundaryPosition(
                 collision, link.position().pixelX(), link.position().pixelY(), direction, (x, y) -> {
                     int landingX =
-                            direction == ScrollController.LEFT ? 140 : direction == ScrollController.RIGHT ? 3 : x;
-                    int landingY = direction == ScrollController.UP ? 111 : direction == ScrollController.DOWN ? 0 : y;
+                            direction == ScrollController.LEFT ? 141 : direction == ScrollController.RIGHT ? 2 : x;
+                    int landingY = direction == ScrollController.UP ? 112 : direction == ScrollController.DOWN ? -1 : y;
                     int dx = direction == ScrollController.LEFT ? -1 : direction == ScrollController.RIGHT ? 1 : 0;
                     int dy = direction == ScrollController.UP ? -1 : direction == ScrollController.DOWN ? 1 : 0;
                     return !leadingEdgeBlocked(landingCollision, landingX + dx, landingY + dy, movementDirection, true)
@@ -490,22 +480,11 @@ final class RoomNavigationFixture {
                         + link.position().pixelX() + "," + link.position().pixelY() + ") toward " + direction
                         + "\n" + collisionGrid(collision));
         link.position().setPixelPosition(exit[0], exit[1]);
-        // Gameplay publishes the destination Link pose before the room-load
-        // CreateFollowingNpcEntity call. This low-level harness must do so too.
-        int arrivalX = direction == ScrollController.LEFT ? 140 : direction == ScrollController.RIGHT ? 3 : exit[0];
-        int arrivalY = direction == ScrollController.UP ? 111 : direction == ScrollController.DOWN ? 0 : exit[1];
-        session.story()
-                .setFollowingNpcState(
-                        session.story().followingNpcState(),
-                        arrivalX + 8,
-                        arrivalY + 16,
-                        0,
-                        0,
-                        link.animation().direction());
         crossOverworldBoundary(coordinator, scroll, link, direction);
     }
 
     static void walkToAndCrossIndoorBoundary(
+            RoomSession session,
             RoomTransitionCoordinator coordinator,
             TransitionController transition,
             ScrollController scroll,
@@ -523,30 +502,15 @@ final class RoomNavigationFixture {
         }
         int[] exit = path.getLast();
         link.position().setPixelPosition(exit[0], exit[1]);
-        switch (direction) {
-            case ScrollController.UP -> link.position()
-                    .setPixelPosition(link.position().pixelX(), -5);
-            case ScrollController.DOWN -> link.position()
-                    .setPixelPosition(link.position().pixelX(), RoomConstants.ROOM_PIXEL_HEIGHT);
-            case ScrollController.LEFT -> link.position()
-                    .setPixelPosition(-5, link.position().pixelY());
-            case ScrollController.RIGHT -> link.position()
-                    .setPixelPosition(
-                            RoomConstants.ROOM_PIXEL_WIDTH, link.position().pixelY());
-            default -> throw new IllegalArgumentException("Unknown indoor scroll direction: " + direction);
-        }
+        stepAcrossRoomBoundary(link, direction);
         coordinator.handleWarpAndIndoorBoundaries(link);
         assertTrue(scroll.isActive());
         assertEquals(direction, scroll.direction());
         switch (direction) {
-            case ScrollController.UP -> assertEquals(
-                    RoomConstants.ROOM_PIXEL_HEIGHT - Link.SPRITE_SIZE,
-                    link.position().pixelY());
-            case ScrollController.DOWN -> assertEquals(0, link.position().pixelY());
-            case ScrollController.LEFT -> assertEquals(
-                    RoomConstants.ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE,
-                    link.position().pixelX());
-            case ScrollController.RIGHT -> assertEquals(0, link.position().pixelX());
+            case ScrollController.UP -> assertEquals(112, link.position().pixelY());
+            case ScrollController.DOWN -> assertEquals(-1, link.position().pixelY());
+            case ScrollController.LEFT -> assertEquals(141, link.position().pixelX());
+            case ScrollController.RIGHT -> assertEquals(2, link.position().pixelX());
             default -> throw new AssertionError(direction);
         }
         while (scroll.isActive()) {
@@ -612,23 +576,33 @@ final class RoomNavigationFixture {
 
         int[] exit = path.getLast();
         link.position().setPixelPosition(exit[0], exit[1]);
-        switch (direction) {
-            case ScrollController.UP -> link.position()
-                    .setPixelPosition(link.position().pixelX(), -5);
-            case ScrollController.DOWN -> link.position()
-                    .setPixelPosition(link.position().pixelX(), RoomConstants.ROOM_PIXEL_HEIGHT);
-            case ScrollController.LEFT -> link.position()
-                    .setPixelPosition(-5, link.position().pixelY());
-            case ScrollController.RIGHT -> link.position()
-                    .setPixelPosition(
-                            RoomConstants.ROOM_PIXEL_WIDTH, link.position().pixelY());
-            default -> throw new IllegalArgumentException("Unknown indoor scroll direction: " + direction);
-        }
+        stepAcrossRoomBoundary(link, direction);
         coordinator.handleWarpAndIndoorBoundaries(link);
         assertTrue(scroll.isActive());
         assertEquals(direction, scroll.direction());
         while (scroll.isActive()) {
             scroll.tick(8);
+        }
+    }
+
+    static void stepAcrossRoomBoundary(Link link, int direction) {
+        var position = link.position();
+        // Place the fixture one pixel before the production trigger, capture
+        // the pre-motion shadow, then apply one boundary-crossing input step.
+        switch (direction) {
+            case ScrollController.UP -> position.setPixelPosition(position.pixelX(), -4);
+            case ScrollController.DOWN -> position.setPixelPosition(position.pixelX(), 115);
+            case ScrollController.LEFT -> position.setPixelPosition(-4, position.pixelY());
+            case ScrollController.RIGHT -> position.setPixelPosition(147, position.pixelY());
+            default -> throw new IllegalArgumentException("Unknown indoor scroll direction: " + direction);
+        }
+        position.captureRomFinalPosition();
+        switch (direction) {
+            case ScrollController.UP -> position.applyRomFinalPosition(0, 0xF0);
+            case ScrollController.DOWN -> position.applyRomFinalPosition(0, 0x10);
+            case ScrollController.LEFT -> position.applyRomFinalPosition(0xF0, 0);
+            case ScrollController.RIGHT -> position.applyRomFinalPosition(0x10, 0);
+            default -> throw new AssertionError(direction);
         }
     }
 

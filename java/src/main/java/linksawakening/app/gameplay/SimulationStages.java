@@ -21,9 +21,14 @@ interface SimulationStages {
 
     void completeInput();
 
-    void animatedTiles(boolean dialogBlocks);
+    void animatedTiles();
 
     default void run(boolean inventoryBlocked) {
+        runWorld(inventoryBlocked);
+        animatedTiles();
+    }
+
+    private void runWorld(boolean inventoryBlocked) {
         if (!dialogStory()) return;
         boolean blocked = dialogBlocks();
         linkEquipment(blocked, inventoryBlocked);
@@ -31,6 +36,5 @@ interface SimulationStages {
         var sword = combat(blocked);
         entities(sword);
         completeInput();
-        animatedTiles(blocked);
     }
 }

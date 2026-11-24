@@ -4,6 +4,7 @@ import linksawakening.world.entity.EntityBackgroundCollisionResult;
 import linksawakening.world.entity.EntityRoomLoader;
 import linksawakening.world.entity.EntitySnapshots;
 import linksawakening.world.entity.RoomEntity;
+import linksawakening.world.entity.RoomEntityBackgroundCollision;
 import linksawakening.world.entity.RoomEntityBackgroundInteraction;
 
 /** MoblinSwordEntityHandler ($07:7941), plus bank-$03 falling presentation state. */
@@ -121,8 +122,13 @@ public final class MoblinSwordMotion {
             alertCountdown[slot]--;
         }
 
-        if (mapId == MAP_BOWWOW_HIDEOUT || ignoreHitsCountdown > 0 || alertingSoundCounter > 0) {
+        if (mapId == MAP_BOWWOW_HIDEOUT || inputs.ignoreHitsBeforeRecoil() > 0) {
             enterAlertState(slot);
+        }
+        if (inputs.ignoreHitsBeforeRecoil() > 0) {
+            // ApplyRecoilIfNeeded_07 discards the caller's return address at
+            // $07:7E08. The recoil step finishes this handler dispatch.
+            return new Update(entity);
         }
 
         RoomEntity updated = entity;
@@ -131,7 +137,8 @@ public final class MoblinSwordMotion {
         boolean enteredStateTwo = false;
         if (state[slot] == 0) {
             inertia[slot] = 0;
-            if (shouldAlert(entity.x(), entity.y(), linkEntityX, linkEntityY, direction[slot])) {
+            if (alertingSoundCounter > 0
+                    || shouldAlert(entity.x(), entity.y(), linkEntityX, linkEntityY, direction[slot])) {
                 enterAlertState(slot);
                 enteredStateTwo = true;
             } else if (transitionCountdown[slot] == 0) {
@@ -142,7 +149,8 @@ public final class MoblinSwordMotion {
             }
         }
         if (state[slot] == 1 && !enteredWalkingState) {
-            if (shouldAlert(entity.x(), entity.y(), linkEntityX, linkEntityY, direction[slot])) {
+            if (alertingSoundCounter > 0
+                    || shouldAlert(entity.x(), entity.y(), linkEntityX, linkEntityY, direction[slot])) {
                 enterAlertState(slot);
                 enteredStateTwo = true;
             }
@@ -182,7 +190,7 @@ public final class MoblinSwordMotion {
         return new Update(updated, dialogRequested);
     }
 
-    /** Mirrors the three SetEntityVariantForDirection calls before the sword handler. */
+    // Mirrors the three SetEntityVariantForDirection calls before the sword handler.
     public int advancePresentationVariant(int slot, int activeX, int repetitions) {
         if (!initialized[slot]) {
             initialize(slot, activeX);
@@ -286,6 +294,25 @@ public final class MoblinSwordMotion {
         }
         RoomEntity moved = withPosition(entity, x, y);
         return renderVariant ? setVariant(moved) : moved;
+    }
+
+    // Bank-$07 temporarily swaps speeds, and ordinary motion and recoil use the same fractions.
+    public EnemyRecoilMotion.Update applyRecoil(
+            RoomEntity entity, RoomEntityBackgroundCollision backgroundCollision, int recoilX, int recoilY) {
+        int slot = entity.slot();
+        if (!initialized[slot]) initialize(slot, entity.x());
+        int x = addSpeedToPosition(entity.x(), recoilX, speedXAccumulator, slot);
+        int y = addSpeedToPosition(entity.y(), recoilY, speedYAccumulator, slot);
+        int horizontalDirection = recoilX < 0x80 ? 0 : 1;
+        int verticalDirection = recoilY < 0x80 ? 3 : 2;
+        boolean blocksX = recoilX != 0 && backgroundCollision.blocks(entity, horizontalDirection, x, y);
+        if (blocksX) x = entity.x();
+        boolean blocksY = recoilY != 0 && backgroundCollision.blocks(entity, verticalDirection, x, y);
+        if (blocksY) y = entity.y();
+        collisionsTable[slot] =
+                (blocksX ? EntityBackgroundCollisionResult.collisionFlagForDirection(horizontalDirection) : 0)
+                        | (blocksY ? EntityBackgroundCollisionResult.collisionFlagForDirection(verticalDirection) : 0);
+        return new EnemyRecoilMotion.Update(withPosition(entity, x, y), blocksX || blocksY);
     }
 
     private RoomEntity faceLink(RoomEntity entity, int linkEntityX, int linkEntityY) {
@@ -403,9 +430,33 @@ public final class MoblinSwordMotion {
             int alertingSoundCounter,
             int mapId,
             int transitionSequenceCounter,
-            int frameCounter) {
+            int frameCounter,
+            int ignoreHitsBeforeRecoil) {
         public MoblinSwordFrame {
             backgroundInteraction = RoomEntityBackgroundInteraction.orNone(backgroundInteraction);
+        }
+
+        public MoblinSwordFrame(
+                RoomEntity entity,
+                int linkEntityX,
+                int linkEntityY,
+                RoomEntityBackgroundInteraction backgroundInteraction,
+                int ignoreHitsCountdown,
+                int alertingSoundCounter,
+                int mapId,
+                int transitionSequenceCounter,
+                int frameCounter) {
+            this(
+                    entity,
+                    linkEntityX,
+                    linkEntityY,
+                    backgroundInteraction,
+                    ignoreHitsCountdown,
+                    alertingSoundCounter,
+                    mapId,
+                    transitionSequenceCounter,
+                    frameCounter,
+                    ignoreHitsCountdown);
         }
     }
 }

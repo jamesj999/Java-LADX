@@ -44,6 +44,12 @@ final class EntityRuntimeWitchTest extends EntityRuntimeTestSupport {
                 .enemyCombatTables(tables)
                 .build();
 
+        List<EntityCombatEvent> contact =
+                runtime.combat().resolveCombat(new EntitySwordContactFrame(1, 64, 64, false, true, false, 0, 0, 0, 0));
+        assertEquals(1, contact.size());
+        assertEquals(0, contact.getFirst().linkDamage());
+        assertFalse(contact.getFirst().linkCollisionResponse().active());
+
         List<EntityCombatEvent> hit = runtime.combat()
                 .resolveCombat(new EntitySwordContactFrame(0, 120, 120, false, true, true, 72, 1, 72, 1));
 

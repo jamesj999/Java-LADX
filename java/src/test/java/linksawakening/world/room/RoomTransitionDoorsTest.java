@@ -1,6 +1,5 @@
 package linksawakening.world.room;
 
-import static linksawakening.world.room.RoomConstants.ROOM_PIXEL_WIDTH;
 import static linksawakening.world.room.RoomNavigationFixture.INDOOR_ROOM_WITH_NO_WARPS;
 import static linksawakening.world.room.RoomNavigationFixture.MAP_WITH_NO_WARP_ROOM;
 import static linksawakening.world.room.RoomNavigationFixture.loadRom;
@@ -167,14 +166,15 @@ final class RoomTransitionDoorsTest {
                 new ItemRegistry());
 
         link.position().setRoomEntryPixelPosition(0x30, 0x30);
-        link.position().setPixelPosition(ROOM_PIXEL_WIDTH - Link.SPRITE_SIZE + 1, 0x28);
+        link.position().setPixelPosition(147, 0x28);
+        RoomNavigationFixture.stepAcrossRoomBoundary(link, ScrollController.RIGHT);
 
         coordinator.handleWarpAndIndoorBoundaries(link);
 
         assertTrue(scrollController.isActive());
         assertEquals(ScrollController.RIGHT, scrollController.direction());
         assertEquals(0x01, session.rooms().currentRoomId());
-        assertEquals(0x00, link.position().pixelX());
+        assertEquals(0x02, link.position().pixelX());
         assertEquals(0x28, link.position().pixelY());
 
         collision.setRoom(roomWithPitAt(0, 3));
@@ -183,7 +183,7 @@ final class RoomTransitionDoorsTest {
         runUntilPitFallStarts(link);
         runUntilPitFallFinishes(link);
 
-        assertEquals(0x00, link.position().pixelX());
+        assertEquals(0x02, link.position().pixelX());
         assertEquals(0x28, link.position().pixelY());
     }
 

@@ -27,6 +27,10 @@ import linksawakening.world.entity.motion.MoldormMotion;
 /** ROM handler stages for Moldorm. */
 final class MoldormHandler {
     static void install(EntityHandlerRegistry registry) {
+        registry.registerTick(
+                ENTITY_MOLDORM, EntityTickStage.PHASE_1_AFTER_STATUS_TIMERS, 0, MoldormHandler::tickPrivateCountdowns);
+        registry.registerTick(
+                ENTITY_MOLDORM, EntityTickStage.PHASE_1_BEFORE_BOSS_INTRO, 0, MoldormHandler::tickIgnoreHits);
         registry.registerTick(ENTITY_MOLDORM, EntityTickStage.PHASE_1_BOSS_INTRO, 0, MoldormHandler::phase1Moldorm);
         registry.registerTick(ENTITY_MOLDORM, EntityTickStage.PHASE_1_BOSS_DOORWAY, 0, MoldormHandler::phase1Moldorm2);
         registry.registerTick(
@@ -40,6 +44,23 @@ final class MoldormHandler {
                 frame -> phase2Moldorm2(frame.slotFrame(), frame.inputs(), frame.bossRewards()));
         registry.registerTick(
                 ENTITY_MOLDORM, EntityTickStage.PHASE_2_AFTER_INITIALIZE, 5, MoldormHandler::phase2Moldorm3);
+    }
+
+    private static boolean tickPrivateCountdowns(EntityFrameExecution state) {
+        // $14:4DB1/$4DBA tick before $04:7FA3's independent movement guard.
+        state.motion(MoldormMotion.class, MoldormMotion::new)
+                .tickPrivateCountdowns(state.slotFrame().entity().slot());
+        return true;
+    }
+
+    private static boolean tickIgnoreHits(EntityFrameExecution state) {
+        // $04:56B6 decrements this even when the shared clock is paused.
+        var entity = state.slotFrame().entity();
+        if (!state.slotFrame().wasInitializing()) {
+            int countdown = state.slot().ignoreHits(entity.slot());
+            if (countdown > 0) state.slot().setIgnoreHits(entity.slot(), countdown - 1);
+        }
+        return true;
     }
 
     private static boolean phase1Moldorm(EntityFrameExecution state) {
@@ -156,7 +177,7 @@ final class MoldormHandler {
                 // The direct motion API performs the same decrement.
                 transitionForMotion = (transitionForMotion + 1) & 0xFF;
             }
-            MoldormMotion.Update update = motion.advance(
+            MoldormMotion.Update update = motion.advanceAfterPrivateTimers(
                     entity,
                     frameInput.frame(),
                     transitionForMotion,

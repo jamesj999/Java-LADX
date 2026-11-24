@@ -60,8 +60,7 @@ class SimulationOrderTest {
         }
 
         @Override
-        public void animatedTiles(boolean dialog) {
-            assertEquals(blocked, dialog);
+        public void animatedTiles() {
             calls.add("tiles");
         }
     }
@@ -75,11 +74,11 @@ class SimulationOrderTest {
     }
 
     @Test
-    void openingStoryStopsAllLaterSimulation() {
+    void openingStoryStillRunsVBlank() {
         var r = new Recording();
         r.proceed = false;
         r.run(true);
-        assertEquals(List.of("story"), r.calls);
+        assertEquals(List.of("story", "tiles"), r.calls);
     }
 
     @Test
@@ -87,6 +86,6 @@ class SimulationOrderTest {
         var r = new Recording();
         r.passingOut = true;
         r.run(true);
-        assertEquals(List.of("story", "blockers", "link", "passout"), r.calls);
+        assertEquals(List.of("story", "blockers", "link", "passout", "tiles"), r.calls);
     }
 }

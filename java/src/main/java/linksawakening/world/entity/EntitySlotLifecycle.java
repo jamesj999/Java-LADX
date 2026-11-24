@@ -4,7 +4,6 @@ import static linksawakening.world.entity.EntitySnapshots.withDeathPresentation;
 import static linksawakening.world.entity.EntitySnapshots.withStatus;
 import static linksawakening.world.entity.EntitySnapshots.withType;
 import static linksawakening.world.entity.EntityTypeRules.initialHitboxFlags;
-import static linksawakening.world.entity.EntityTypeRules.initialPhysicsFlags;
 
 import java.util.List;
 import java.util.Objects;
@@ -244,7 +243,7 @@ public final class EntitySlotLifecycle {
                 -1,
                 false);
         // ConfigureNewEntity ($03:485B) reloads these for the new type.
-        this.physicsTables.writeEnemyPhysicsFlags(slot, initialPhysicsFlags(EntityRomConstants.ENTITY_GEL));
+        this.physicsTables.initializeEnemyPhysicsFlags(slot, EntityRomConstants.ENTITY_GEL);
         this.combatTables.writeEnemyHitboxFlags(slot, initialHitboxFlags(EntityRomConstants.ENTITY_GEL));
         this.physicsTables.writeEntityOptions1Override(slot, -1);
         this.physicsTables.writeEnemyTransitionCountdown(slot, 0);
@@ -279,7 +278,7 @@ public final class EntitySlotLifecycle {
                     false);
             this.slots.replace(freeSlot, spawnedGel);
             this.initializeHealthGroup(freeSlot);
-            this.physicsTables.writeEnemyPhysicsFlags(freeSlot, initialPhysicsFlags(EntityRomConstants.ENTITY_GEL));
+            this.physicsTables.initializeEnemyPhysicsFlags(freeSlot, EntityRomConstants.ENTITY_GEL);
             this.combatTables.writeEnemyHitboxFlags(freeSlot, initialHitboxFlags(EntityRomConstants.ENTITY_GEL));
             this.physicsTables.writeEntityOptions1Override(freeSlot, -1);
             this.physicsTables.writeEnemyTransitionCountdown(freeSlot, 0);
@@ -368,14 +367,14 @@ public final class EntitySlotLifecycle {
         return false;
     }
 
-    void decrementEnemyStatusCountdowns(int slot) {
+    void decrementEnemyStatusCountdowns(int slot, boolean tickDyingCountdown) {
         if (this.physicsTables.readEnemyTransitionCountdown(slot) > 0) {
             this.physicsTables.postEnemyTransitionCountdown(slot, -1);
         }
         if (this.combatTables.readEnemyStunnedCountdown(slot) > 0) {
             this.combatTables.postEnemyStunnedCountdown(slot, -1);
         }
-        if (this.combatTables.readDyingCountdown(slot) > 0) {
+        if (tickDyingCountdown && this.combatTables.readDyingCountdown(slot) > 0) {
             this.combatTables.postDyingCountdown(slot, -1);
         }
         if (this.bombInteractions.readBombCollisionGraceCountdown(slot) > 0) {
