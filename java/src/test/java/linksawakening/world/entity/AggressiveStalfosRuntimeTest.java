@@ -5,6 +5,7 @@ import static linksawakening.world.entity.EntityRuntimeTestSupport.sequence;
 import static linksawakening.world.entity.EntityRuntimeTestSupport.snapshot;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.ArrayList;
 import java.util.List;
 import linksawakening.entity.EntitySpriteDefinition;
 import linksawakening.world.entity.event.EntityCombatEvent;
@@ -56,6 +57,35 @@ final class AggressiveStalfosRuntimeTest {
         assertEquals(0, runtime.inspection().snapshot().slots().get(0).z());
         assertEquals(0x20, new EntityEnemyInspectionQueries(runtime.enemies()).stalfosTransitionCountdown(0));
         assertEquals(0, new EntityEnemyInspectionQueries(runtime.enemies()).stalfosSpeedZ(0));
+    }
+
+    @Test
+    void stalfosJumpRestoresTheBlockedAxisAndRetainsVerticalAndHeightMotion() {
+        RoomEntitySnapshot initial = snapshot(new RoomEntityBuilder()
+                .sourceLoadOrder(0)
+                .type(0x1A)
+                .at(97, 79)
+                .spriteDefinition(pairDefinition(0x1A, 3))
+                .build());
+        RoomEntityRuntime runtime = new RoomEntityRuntimeBuilder(initial).build();
+        var probes = new ArrayList<List<Integer>>();
+        RoomEntityBackgroundCollision crystal = (entity, direction, x, y) -> {
+            probes.add(List.of(direction, x, y));
+            return direction == 1;
+        };
+
+        runtime.tick(EntityTestFrames.frame(runtime, 0, 80, 69, sequence(0), crystal));
+        runtime.tick(EntityTestFrames.frame(runtime, 1, 80, 69, sequence(0), crystal));
+        assertEquals(List.of(List.of(1, 96, 78), List.of(2, 97, 78)), probes);
+        var jumping = runtime.inspection().snapshot().slots().get(0);
+        assertEquals(97, jumping.x());
+        assertEquals(78, jumping.y());
+
+        runtime.tick(EntityTestFrames.frame(runtime, 2, 80, 69, sequence(0), crystal));
+        var airborne = runtime.inspection().snapshot().slots().get(0);
+        assertEquals(97, airborne.x());
+        assertEquals(2, airborne.z());
+        assertEquals(2, new EntityEnemyInspectionQueries(runtime.enemies()).stalfosState(0));
     }
 
     @Test

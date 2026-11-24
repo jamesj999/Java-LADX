@@ -33,7 +33,6 @@ final class StalfosAggressiveHandler {
                             frameInput.frame(),
                             frameInput.linkEntityX(),
                             frameInput.linkEntityY(),
-                            frameInput.randomByteSupplier(),
                             frameInput.backgroundCollision()));
         }
         return true;

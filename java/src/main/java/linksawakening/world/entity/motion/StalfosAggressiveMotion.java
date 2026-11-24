@@ -44,11 +44,9 @@ public final class StalfosAggressiveMotion {
             int frameCounter,
             int linkEntityX,
             int linkEntityY,
-            IntSupplier randomByteSupplier,
             RoomEntityBackgroundCollision backgroundCollision) {
         backgroundCollision = RoomEntityBackgroundCollision.orOpen(backgroundCollision);
-        return stalfosAggressiveFrameStep.run(
-                entity, frameCounter, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision);
+        return stalfosAggressiveFrameStep.run(entity, frameCounter, linkEntityX, linkEntityY, backgroundCollision);
     }
 
     public void clear(int slot) {
@@ -145,6 +143,7 @@ public final class StalfosAggressiveMotion {
         private int frameCounter;
         private int linkEntityX;
         private int linkEntityY;
+        private RoomEntityBackgroundCollision backgroundCollision;
 
         private int slot;
         private int frame;
@@ -188,10 +187,6 @@ public final class StalfosAggressiveMotion {
                 default -> throw new IllegalStateException("Invalid aggressive Stalfos state: " + owner.state[slot]);
             }
 
-            // ApplyEntityInteractionWithBackground_06 supplies collision flags and
-            // may spawn landing dust. The current room query has no equivalent
-            // directional/object-under flags, so this handler leaves that side
-            // effect pending instead of treating a generic collision as identical.
             return EntitySnapshots.withMotion(entity, x, y, variant, entity.entityFlipAttribute(), z, -1, false);
         }
 
@@ -226,16 +221,14 @@ public final class StalfosAggressiveMotion {
                 owner.state[slot] = 2;
             }
 
-            x = StalfosAggressiveMotion.addSpeedToPosition(x, owner.speedX[slot], owner.speedXAccumulator, slot);
-            y = StalfosAggressiveMotion.addSpeedToPosition(y, owner.speedY[slot], owner.speedYAccumulator, slot);
+            moveAgainstBackground();
             variant = (frame >>> 2) & 0x01;
 
             return true;
         }
 
         private boolean advanceState2() {
-            x = StalfosAggressiveMotion.addSpeedToPosition(x, owner.speedX[slot], owner.speedXAccumulator, slot);
-            y = StalfosAggressiveMotion.addSpeedToPosition(y, owner.speedY[slot], owner.speedYAccumulator, slot);
+            moveAgainstBackground();
             z = StalfosAggressiveMotion.addSpeedToPosition(z, owner.speedZ[slot], owner.speedZAccumulator, slot);
             owner.speedZ[slot] = (owner.speedZ[slot] - 2) & 0xFF;
             if (owner.speedZ[slot] < 0x02) {
@@ -248,6 +241,22 @@ public final class StalfosAggressiveMotion {
             variant = 2;
 
             return true;
+        }
+
+        private void moveAgainstBackground() {
+            int speedX = owner.speedX[slot];
+            int speedY = owner.speedY[slot];
+            x = StalfosAggressiveMotion.addSpeedToPosition(x, speedX, owner.speedXAccumulator, slot);
+            y = StalfosAggressiveMotion.addSpeedToPosition(y, speedY, owner.speedYAccumulator, slot);
+
+            // Bank $03 probes both integrated coordinates, restoring only the blocked axis.
+            // Its Y probe sees the X value left by the X collision check.
+            if (speedX != 0 && backgroundCollision.blocks(entity, speedX < 0x80 ? 0 : 1, x, y)) {
+                x = entity.x();
+            }
+            if (speedY != 0 && backgroundCollision.blocks(entity, speedY < 0x80 ? 3 : 2, x, y)) {
+                y = entity.y();
+            }
         }
 
         private boolean advanceState3() {
@@ -271,11 +280,10 @@ public final class StalfosAggressiveMotion {
                 int frameCounter,
                 int linkEntityX,
                 int linkEntityY,
-                IntSupplier randomByteSupplier,
-                linksawakening.world.entity.RoomEntityBackgroundCollision backgroundCollision) {
+                RoomEntityBackgroundCollision backgroundCollision) {
             if (inUse) {
                 return new StalfosAggressiveFrameStep(owner)
-                        .run(entity, frameCounter, linkEntityX, linkEntityY, randomByteSupplier, backgroundCollision);
+                        .run(entity, frameCounter, linkEntityX, linkEntityY, backgroundCollision);
             }
             inUse = true;
             slot = 0;
@@ -290,6 +298,7 @@ public final class StalfosAggressiveMotion {
             this.frameCounter = frameCounter;
             this.linkEntityX = linkEntityX;
             this.linkEntityY = linkEntityY;
+            this.backgroundCollision = backgroundCollision;
 
             try {
                 return run();
@@ -297,6 +306,7 @@ public final class StalfosAggressiveMotion {
                 inUse = false;
 
                 this.entity = null;
+                this.backgroundCollision = null;
 
                 this.completedResult = null;
             }
