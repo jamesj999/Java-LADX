@@ -91,6 +91,8 @@ import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_RICHARD_FR
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_ROLLING_BONES_BAR;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_SAND_CRAB;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_SIDE_VIEW_PLATFORM_HORIZONTAL;
+import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_SIDE_VIEW_PLATFORM_VERTICAL;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_SLEEPY_TOADSTOOL;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_SNAKE;
 import static linksawakening.entity.EntitySpriteHandlerCatalog.ENTITY_SPARK_CLOCKWISE;
@@ -320,6 +322,8 @@ final class EntitySpriteRegistrationData {
 
     /** GoombaSpriteVariants at $07:$65CE. */
     private static final RomAddress SIDEVIEW_GOOMBA_SPRITE_VARIANTS = new RomAddress(0x07, 0x65CE);
+    /** Data_007_6348 used by both autonomous side-view platforms. */
+    private static final RomAddress SIDEVIEW_AUTOMATIC_PLATFORM_OAM = new RomAddress(0x07, 0x6348);
 
     /** ZolSpriteVariants at $06:$7C09. */
     private static final RomAddress SLIMEENEMY_ZOL_SPRITE_VARIANTS = new RomAddress(0x06, 0x7C09);
@@ -1089,6 +1093,15 @@ final class EntitySpriteRegistrationData {
     }
 
     private static EntitySpriteRecipe sideViewLookup(int entityType) {
+        if (entityType == ENTITY_SIDE_VIEW_PLATFORM_HORIZONTAL || entityType == ENTITY_SIDE_VIEW_PLATFORM_VERTICAL) {
+            return EntitySpriteRecipe.rectangle(
+                    entityType,
+                    SIDEVIEW_AUTOMATIC_PLATFORM_OAM.bank(),
+                    SIDEVIEW_AUTOMATIC_PLATFORM_OAM.address(),
+                    1,
+                    4,
+                    0);
+        }
         if (entityType == ENTITY_GOOMBA) {
             return EntitySpriteRecipe.pair(
                     entityType,

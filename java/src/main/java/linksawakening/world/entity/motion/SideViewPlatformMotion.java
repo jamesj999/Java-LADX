@@ -7,6 +7,8 @@ import linksawakening.world.entity.RoomEntity;
 
 /** Motion state for the side-view moving platform entity (bank $07). */
 public final class SideViewPlatformMotion {
+    public static final int ENTITY_HORIZONTAL = 0xA3;
+    public static final int ENTITY_VERTICAL = 0xA4;
     public static final int ENTITY_TYPE = 0xA5;
 
     private final int[] speedY = new int[EntityRoomLoader.MAX_ENTITIES];
@@ -17,11 +19,37 @@ public final class SideViewPlatformMotion {
     private final int[] rumbleCountdown = new int[EntityRoomLoader.MAX_ENTITIES];
     // ROM wEntitiesPrivateState4Table.
     private final int[] pressureTicks = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final int[] automaticInertia = new int[EntityRoomLoader.MAX_ENTITIES];
+    private final boolean[] automaticReturning = new boolean[EntityRoomLoader.MAX_ENTITIES];
 
     public record Update(
             RoomEntity entity, int verticalDelta, int speedY, int privateState2, int privateState4, boolean rumble) {}
 
     public record Frame(RoomEntity entity, int horizontalDelta, int verticalDelta) {}
+
+    /** Applies the autonomous acceleration at $07:6363 and $07:63FB before movement. */
+    public boolean advanceAutomaticSpeed(RoomEntity entity, int countdown, int roomId) {
+        validateEntity(entity);
+        int slot = entity.slot();
+        boolean vertical = entity.type() == ENTITY_VERTICAL;
+        if (automaticInertia[slot]++ == 0 && vertical && roomId == 0x65 && entity.y() >= 0x50) {
+            automaticReturning[slot] = true;
+        }
+        if ((automaticInertia[slot] & 3) != 0 || countdown != 0) return false;
+        int[] speeds = vertical ? speedY : speedX;
+        boolean returning = automaticReturning[slot];
+        int speed = (speeds[slot] + (returning ? -1 : 1)) & 0xFF;
+        speeds[slot] = speed;
+        if (speed != (returning ? 0xFA : 0x06)) return false;
+        automaticReturning[slot] = !returning;
+        return true;
+    }
+
+    /** Records the standing flag written by the automatic platform's contact path. */
+    public void markAutomaticStanding(int slot) {
+        validateSlot(slot);
+        rumbleCountdown[slot] = 0x10;
+    }
 
     public Frame beginFrame(RoomEntity entity) {
         Objects.requireNonNull(entity, "Platform entity cannot be null");
@@ -141,6 +169,8 @@ public final class SideViewPlatformMotion {
         speedYAccumulator[slot] = 0;
         rumbleCountdown[slot] = 0;
         pressureTicks[slot] = 0;
+        automaticInertia[slot] = 0;
+        automaticReturning[slot] = false;
     }
 
     private static int addSpeedToPosition(int position, int speed, int[] accumulator, int slot) {
@@ -170,7 +200,7 @@ public final class SideViewPlatformMotion {
     }
 
     private static void validateEntity(RoomEntity entity) {
-        if (entity.type() != ENTITY_TYPE) {
+        if (entity.type() != ENTITY_TYPE && entity.type() != ENTITY_HORIZONTAL && entity.type() != ENTITY_VERTICAL) {
             throw new IllegalArgumentException(
                     "Unsupported side-view platform type: 0x" + Integer.toHexString(entity.type()));
         }

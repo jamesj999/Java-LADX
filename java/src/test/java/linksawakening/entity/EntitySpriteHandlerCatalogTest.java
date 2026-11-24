@@ -13,6 +13,24 @@ import org.junit.jupiter.api.Test;
 final class EntitySpriteHandlerCatalogTest extends EntitySpriteHandlerCatalogFixture {
 
     @Test
+    void autonomousPlatformsShareTheNativeFourSpriteDisplayList() throws Exception {
+        var catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
+        for (int type : new int[] {0xA3, 0xA4}) {
+            var platform = catalog.forEntityType(type, EntityRoomLoader.RoomTable.INDOORS_A, 1);
+            assertDefinition(platform, 0x07, 0x6348, EntitySpriteDefinition.Shape.RECTANGLE, 1, 0);
+            var sprites = platform.rectangleVariant(0);
+            assertEquals(4, sprites.size());
+            for (int i = 0; i < sprites.size(); i++) {
+                var sprite = sprites.get(i);
+                assertEquals(i * 8, sprite.xOffset());
+                assertEquals(0, sprite.yOffset());
+                assertEquals(i == 0 || i == 3 ? 0x50 : 0x52, sprite.oam().tile());
+                assertEquals(i < 2 ? 0x07 : 0x27, sprite.oam().attributes());
+            }
+        }
+    }
+
+    @Test
     void liftableStatuesUseTheOriginalFourSpriteRectangles() throws Exception {
         var catalog = new EntitySpriteHandlerCatalog(Rom.of(loadRom()));
         for (int map : new int[] {1, 5}) {

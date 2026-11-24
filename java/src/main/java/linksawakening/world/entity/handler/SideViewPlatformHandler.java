@@ -14,11 +14,13 @@ import linksawakening.world.entity.motion.SideViewPlatformMotion;
 /** ROM handler stages for SideViewPlatform. */
 final class SideViewPlatformHandler {
     static void install(EntityHandlerRegistry registry) {
-        registry.registerTick(
-                SideViewPlatformMotion.ENTITY_TYPE,
-                EntityTickStage.PHASE_2_BEFORE_RECOIL,
-                0,
-                SideViewPlatformHandler::phase2Type);
+        for (int type : new int[] {
+            SideViewPlatformMotion.ENTITY_HORIZONTAL,
+            SideViewPlatformMotion.ENTITY_VERTICAL,
+            SideViewPlatformMotion.ENTITY_TYPE
+        }) {
+            registry.registerTick(type, EntityTickStage.PHASE_2_BEFORE_RECOIL, 0, SideViewPlatformHandler::phase2Type);
+        }
     }
 
     private static boolean phase2Type(EntityFrameExecution state) {
@@ -34,7 +36,18 @@ final class SideViewPlatformHandler {
                 && state.background().entityTimersInteractive()
                 && !frameInput.creditsGameplay()
                 && state.lifecycle().transitionSequenceCounter() == 0x04) {
-            SideViewPlatformMotion.Frame platformFrame = resolvedSideViewPlatformMotion.beginFrame(slotState.entity());
+            var platform = slotState.entity();
+            int slot = platform.slot();
+            boolean automatic = platform.type() != SideViewPlatformMotion.ENTITY_TYPE;
+            if (automatic
+                    && resolvedSideViewPlatformMotion.advanceAutomaticSpeed(
+                            platform,
+                            state.slot().transitionCountdown(slot),
+                            state.roomInspection().entityRoomId())) {
+                state.slot().setTransitionCountdown(slot, 0x6A);
+            }
+            SideViewPlatformMotion.Frame platformFrame = resolvedSideViewPlatformMotion.beginFrame(platform);
+            int appliedHorizontalDelta = platformFrame.horizontalDelta();
             RoomEntity movedPlatform = platformFrame.entity();
             if (platformFrame.horizontalDelta() != 0
                     && frameInput
@@ -59,19 +72,26 @@ final class SideViewPlatformHandler {
                 }
             }
             boolean standing = state.background().groundInteractionSideScrolling()
-                    && (frameInput.linkZ() & 0xFF) == 0
+                    && (automatic || (frameInput.linkZ() & 0xFF) == 0)
                     && (state.link().currentLinkSpeedY() & 0x80) == 0
-                    && sideViewPlatformOverlapsLink(movedPlatform, frameInput.linkEntityX(), frameInput.linkEntityY())
+                    && sideViewPlatformOverlapsLink(
+                            automatic ? platform : movedPlatform, frameInput.linkEntityX(), frameInput.linkEntityY())
                     && (((frameInput.linkEntityY() - movedPlatform.y() + 0x08) & 0x80) != 0);
-            boolean activationAllowed = state.roomInspection().entityRoomId() == 0x3B || slotState.carryingEntity();
+            boolean activationAllowed =
+                    !automatic && (state.roomInspection().entityRoomId() == 0x3B || slotState.carryingEntity());
             if (standing) {
                 state.emit(new SideViewPlatformLinkRequest(
                         slotState.entity().slot(),
-                        platformFrame.horizontalDelta(),
+                        automatic ? appliedHorizontalDelta : platformFrame.horizontalDelta(),
                         (movedPlatform.y() - 0x10) & 0xFF,
                         0x02,
                         true,
                         activationAllowed));
+            }
+            if (automatic) {
+                if (standing) resolvedSideViewPlatformMotion.markAutomaticStanding(slot);
+                slotState.updated(movedPlatform);
+                return true;
             }
             SideViewPlatformMotion.Update platformUpdate = resolvedSideViewPlatformMotion.finishFrame(
                     movedPlatform, platformFrame, frameInput.frame(), standing, activationAllowed);

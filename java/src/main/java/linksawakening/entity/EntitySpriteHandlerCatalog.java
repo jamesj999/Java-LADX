@@ -121,6 +121,8 @@ public final class EntitySpriteHandlerCatalog {
     public static final int ENTITY_GOPONGA_FLOWER_PROJECTILE = 0x7D;
     public static final int ENTITY_POKEY = 0xE3;
     public static final int ENTITY_PIRANHA_PLANT = 0xA2;
+    static final int ENTITY_SIDE_VIEW_PLATFORM_HORIZONTAL = 0xA3;
+    static final int ENTITY_SIDE_VIEW_PLATFORM_VERTICAL = 0xA4;
     public static final int ENTITY_ZORA = 0xCB;
     public static final int ENTITY_ZOMBIE = 0xBF;
     public static final int ENTITY_BUZZ_BLOB = 0xB9;

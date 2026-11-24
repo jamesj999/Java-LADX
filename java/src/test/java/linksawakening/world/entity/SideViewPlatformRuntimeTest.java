@@ -10,8 +10,50 @@ import linksawakening.world.entity.event.EntityCombatEvent;
 import linksawakening.world.entity.event.SideViewPlatformLinkRequest;
 import linksawakening.world.entity.motion.SideViewPlatformMotion;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 final class SideViewPlatformRuntimeTest {
+
+    @ParameterizedTest
+    @CsvSource({"0xA3,0x3F,0x44,0x50", "0xA4,0x3E,0x40,0x54"})
+    void autonomousPlatformAcceleratesEveryFourthHandlerTickAndHoldsItsEndpointSpeed(
+            int type, int roomId, int xAfterAcceleration, int yAfterAcceleration) {
+        RoomEntityRuntime runtime = runtime(roomId, platform(type, EntityStatus.ACTIVE));
+        for (int frame = 0; frame < 24; frame++) {
+            tick(runtime, frame, 0x10, 0x20, 0, 0);
+        }
+        var accelerated = runtime.inspection().snapshot().slots().get(0);
+        assertEquals(xAfterAcceleration, accelerated.x());
+        assertEquals(yAfterAcceleration, accelerated.y());
+        assertEquals(0x6A, runtime.enemies().transitionCountdown(0));
+        for (int frame = 24; frame < 131; frame++) {
+            tick(runtime, frame, 0x10, 0x20, 0, 0);
+        }
+        var inspection = EntityRuntimeFixture.inspection(runtime);
+        assertEquals(
+                6,
+                type == 0xA3
+                        ? inspection.sideViewPlatformSpeedXForTest(0)
+                        : inspection.sideViewPlatformSpeedYForTest(0));
+        tick(runtime, 131, 0x10, 0x20, 0, 0);
+        assertEquals(
+                5,
+                type == 0xA3
+                        ? inspection.sideViewPlatformSpeedXForTest(0)
+                        : inspection.sideViewPlatformSpeedYForTest(0));
+    }
+
+    @Test
+    void autonomousHorizontalPlatformCarriesLinkWithoutPressureActivation() {
+        var runtime = runtime(0x3F, platform(SideViewPlatformMotion.ENTITY_HORIZONTAL, EntityStatus.ACTIVE));
+        EntityRuntimeFixture.debug(runtime).setSideViewPlatformSpeedXForTest(0, 0x10);
+        tick(runtime, 0, 0x48, 0x40, 0, 0);
+        assertEquals(
+                List.of(new SideViewPlatformLinkRequest(0, 1, 0x40, 0x02, true, false)),
+                runtime.outbox().consumePendingSideViewPlatformLinkRequests());
+        assertTrue(runtime.outbox().consumePendingEntityEvents().isEmpty());
+    }
 
     @Test
     void room3BContactMovesLinkAndActivatesPlatform() {
@@ -347,12 +389,16 @@ final class SideViewPlatformRuntimeTest {
     }
 
     private static RoomEntity platform(EntityStatus status) {
+        return platform(SideViewPlatformMotion.ENTITY_TYPE, status);
+    }
+
+    private static RoomEntity platform(int type, EntityStatus status) {
         return new RoomEntityBuilder()
                 .sourceLoadOrder(0)
-                .type(SideViewPlatformMotion.ENTITY_TYPE)
+                .type(type)
                 .at(0x40, 0x50)
                 .status(status)
-                .spriteDefinition(EntitySpriteDefinition.unsupported(SideViewPlatformMotion.ENTITY_TYPE))
+                .spriteDefinition(EntitySpriteDefinition.unsupported(type))
                 .build();
     }
 }
